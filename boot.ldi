@@ -1,0 +1,85 @@
+#include "include/config.h"
+OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
+OUTPUT_ARCH(arm)
+ENTRY(_start)
+
+#ifdef PLATFORM_SPIBAREMETAL
+#define ROM_BASE 0x98000000 /* spi baremetal boot */
+#else
+#define ROM_BASE 0xffff0000 /* ROM code */
+#endif
+
+MEMORY
+{
+
+	romshare        : ORIGIN = ROM_BASE + 0x0400  , LENGTH = 2K + 256
+
+
+	xboot_buf       : ORIGIN = 0x9e800000, LENGTH = XBOOT_BUF_SIZE      /*    18K @ 0        */
+	cdata           : ORIGIN = 0x9e804800, LENGTH = CDATA_SIZE          /*    256 @ 18K      */
+	bootinfo        : ORIGIN = 0x9e804900, LENGTH = BOOTINFO_SIZE       /*    512 @ 18K+256  */
+	boothead        : ORIGIN = 0x9e804b00, LENGTH = GLOBAL_HEADER_SIZE  /*    512 @ 18K+768  */
+	storage_buf     : ORIGIN = 0x9e804d00, LENGTH = STORAGE_BUF_SIZE    /*    11K @ 19K+256  */
+	stack           : ORIGIN = 0x9e807900, LENGTH = STACK_SIZE          /* 2K-320 @ 30K+256  */
+	bootcompat      : ORIGIN = 0x9e807fc0, LENGTH = 64                  /*     64 @ 32K-64   */
+}
+
+SECTIONS
+{
+	/* ROM */
+	.romshare :
+	{
+		__rom_vsr_base = .;
+	} > romshare
+
+	/* RAM */
+	.text (0x9e800020) :
+	{
+		start.o (.text*)
+		*(.rodata*)
+		*(.text*)
+		__etext = .;
+	} > xboot_buf
+
+        .data : AT (__etext)
+	{
+		__data = .;
+		*(.data*)
+		__edata = .;
+	} > cdata
+
+	.bootinfo (NOLOAD):
+	{
+		*(bootinfo_sect)
+	} > bootinfo
+
+	.boothead (NOLOAD):
+	{
+		*(boothead_sect)
+	} > boothead
+
+	.storage_buf (NOLOAD):
+	{
+		__storage_buf_beg = .;
+		*(storage_buf_sect)
+		__except_stack_top = __storage_buf_beg + STORAGE_BUF_SIZE ; /* borrow storage buf end */
+	} > storage_buf
+
+	.bss :
+	{
+		__bss_start = .;
+		*(.bss)
+		*(.bss.*)
+		*(.sbss)
+		*(.sbss.*)
+		*(COMMON)
+		. = ALIGN(4);
+		__bss_end__ = .;
+	} > cdata
+
+	.stack :
+	{
+		__stack_base = .;
+		__stack_top = __stack_base + STACK_SIZE;
+	} > stack
+}

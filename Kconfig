@@ -1,0 +1,77 @@
+choice
+        prompt "Platform"
+        default PLATFORM_Q628
+        config PLATFORM_Q628
+                bool "Q628"
+        config PLATFORM_8388
+                bool "8388"
+        config PLATFORM_I137
+                bool "I137"
+endchoice
+
+config XIP_SPIBAREMETAL
+	bool "Build for XIP on SPI NOR (SPI Baremetal Boot)"
+	default n
+	help
+		Build iBoot to XIP on SPI_NOR.
+
+config BOOT_ON_CSIM
+	bool "Build for CSIM"
+	default n
+
+config HAVE_UART_BOOTSTRAP
+	bool "UART Bootstrap"
+	default y
+
+config HAVE_USB_DISK
+	bool "USB disk driver"
+	default y
+	select HAVE_FS_FAT
+
+config HAVE_MMC
+	bool "MMC common"
+	default n
+	depends on HAVE_SDCARD || HAVE_EMMC
+	help
+		Common MMC code for SD Card or eMMC.
+
+config HAVE_SDCARD
+	bool "SD Card driver"
+	default y
+	select HAVE_MMC
+	select HAVE_FS_FAT
+
+config HAVE_EMMC
+	bool "eMMC driver"
+	default y
+	select HAVE_MMC
+
+config HAVE_NAND_COMMON
+	bool "NAND common"
+	default n
+	depends on HAVE_PARA_NAND || HAVE_SPI_NAND
+	help
+		Common NAND code, like BCH support.
+
+config HAVE_PARA_NAND
+	bool "Parallel NAND"
+	default y
+	select HAVE_NAND_COMMON
+
+config HAVE_SPI_NAND
+	bool "SPI NAND"
+	default y
+	select HAVE_NAND_COMMON
+
+config HAVE_FS_FAT
+	bool "FAT32 filesystem"
+	default n
+	depends on HAVE_USB_DISK || HAVE_SDCARD
+
+config HAVE_SPI_NOR
+	bool "SPI NOR boot"
+	default y
+
+config HAVE_MON_SHELL
+	bool "MON Shell"
+	default y
