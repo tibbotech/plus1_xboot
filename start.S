@@ -1,4 +1,5 @@
 #include <config.h>
+#include <config_xboot.h>
 #include <asm/link.h>
 #include <asm/common.h>
 
@@ -59,3 +60,11 @@ FUNC(exit_bootROM)
 	WORD_ISB
 	bx	r0
 ENDFUNC(exit_bootROM)
+
+FUNC(run_linux_no_stack)
+	mov	r0, #0			@ 0
+	mov	r1, #0			@ mach id
+	ldr	r2, =DTB_RUN_ADDR	@ dtb
+	ldr	r12, =LINUX_RUN_ADDR
+	bx	r12
+ENDFUNC(run_linux_no_stack)

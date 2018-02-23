@@ -97,12 +97,14 @@ inline int get_current_spi_pinmux(void)
 #ifdef CONFIG_HAVE_SPI_NOR
 
 // return image data size (exclude header)
-static int nor_load_uhdr_image(const char *img_name, void *dst, void *src)
+static int nor_load_uhdr_image(const char *img_name, void *dst, void *src, int verify)
 {
 	struct image_header *hdr;
 	int len;
 
-	prn_string("load "); prn_string(img_name); prn_string("\n");
+	prn_string("load "); prn_string(img_name);
+	prn_string("@"); prn_dword((u32)dst);
+	prn_string("\n");
 
 	dbg();
 	memcpy32(dst, src, sizeof(*hdr)/4); // 64/4
@@ -130,11 +132,23 @@ static int nor_load_uhdr_image(const char *img_name, void *dst, void *src)
 	// load image data
 	len = image_get_size(hdr);
 	prn_string("load data size="); prn_decimal(len); prn_string("\n");
-	//memcpy(dst + sizeof(*hdr), src + sizeof(*hdr), len); // slow
+
+	//FIXME: fast copy
+#if 0
 	memcpy32(dst + sizeof(*hdr), src + sizeof(*hdr), (len+3)/4);
+#else
+	int i;
+	int step = 0x40000; // 256KB
+        for (i = 0; i < len; i += step) {
+                prn_string(".");
+                memcpy32(dst + sizeof(*hdr) + i, src + sizeof(*hdr) + i,
+                        (len - i < step) ? (len - i + 3) / 4 : step / 4);
+        }
+        prn_string("\n");
+#endif
 
 	// verify image data
-	if (!image_check_dcrc(hdr)) {
+	if (verify && !image_check_dcrc(hdr)) {
 		prn_string("corrupted image\n");
 		return -1;
 	}
@@ -156,17 +170,67 @@ static int nor_load_draminit(void)
 	len = sizeof(struct xboot_hdr)  + xhdr->length;
 
 	return nor_load_uhdr_image("draminit", (void *)DRAMINIT_LOAD_ADDR,
-			(void *)(SPI_FLASH_BASE + SPI_XBOOT_OFFSET + len));
+			(void *)(SPI_FLASH_BASE + SPI_XBOOT_OFFSET + len), 1);
 }
+
+#define XBOOT_LOAD_LINUX
+#ifdef XBOOT_LOAD_LINUX
+#if 0
+static void run_linux_no_stackx(void)
+{
+	/* directly boot to Linux */
+	void (*kernel_entry)(int zero, int mach_num, u32 params);
+	kernel_entry = (void *)LINUX_RUN_ADDR;
+	kernel_entry(0, 0, DTB_RUN_ADDR);
+}
+#endif
+static void spi_nor_linux(void)
+{
+	int res;
+
+	res = nor_load_uhdr_image("dtb", (void *)DTB_LOAD_ADDR,
+			(void *)(SPI_FLASH_BASE + SPI_DTB_OFFSET), 1);
+	if (res <= 0) {
+		prn_string("No dtb\n");
+		return;
+	}
+
+	res = nor_load_uhdr_image("linux", (void *)LINUX_LOAD_ADDR,
+			(void *)(SPI_FLASH_BASE + SPI_LINUX_OFFSET), 1);
+	if (res <= 0) {
+		prn_string("No linux\n");
+		return;
+	}
+
+
+	// if B, wake up A to boot Linux
+	if (g_bootinfo.bootcpu == 0) {
+		prn_string("wake up A to run linux\n");
+		*(volatile unsigned int *)CPU_A_START_POS = (u32)&run_linux_no_stack;
+		while (1);
+	} else {
+		prn_string("run linux@"); prn_dword(LINUX_RUN_ADDR);
+		run_linux_no_stack();
+		mon_shell();
+	}
+}
+#endif
 
 static void spi_nor_boot(int pin_x)
 {
+	SPI_CTRL_REG->spi_ctrl = (SPI_CTRL_REG->spi_ctrl & ~0x7) | 0x5; // CLK_SPI/16
+
 	if (nor_load_draminit() <= 0) {
 		prn_string("No draminit\n");
 	} else {
 		cpu_invalidate_icache_all();
 		run_draminit();
 	}
+
+	// spi linux
+#ifdef XBOOT_LOAD_LINUX
+	spi_nor_linux();
+#endif
 
 	//FIXME: spi uboot
 	mon_shell();

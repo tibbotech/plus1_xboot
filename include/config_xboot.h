@@ -11,7 +11,9 @@
 //
 
 // SPI NOR
-#define SPI_UBOOT_OFFSET      (256 * 1024)
+#define SPI_DTB_OFFSET        0x020000   // 128K
+#define SPI_UBOOT_OFFSET      0x040000   // 256K
+#define SPI_LINUX_OFFSET      0x600000   // 6M
 
 //
 // Load & Run Address
@@ -30,9 +32,13 @@
 #define UBOOT_RUN_ADDR       0x200000   // @2MB
 #define UBOOT_LOAD_ADDR      (UBOOT_RUN_ADDR - 0x40)
 
-// fat
-//#define FAT_DRAM_BUF_ADDR    0x800000   // @8MB
+// DTB
+#define DTB_LOAD_ADDR        0x280000                   /* dtb */
+#define DTB_RUN_ADDR         0x280040                   /* skip header */
 
+// Linux
+#define LINUX_RUN_ADDR       0x308000                   /* vmlinux */
+#define LINUX_LOAD_ADDR      (LINUX_RUN_ADDR - 0x40)    /* - header */
 
 /////////////////////////
 // mkimage Type

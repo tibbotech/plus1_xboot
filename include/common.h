@@ -2,7 +2,9 @@
 #define _COMMON_INC_
 
 #include <config.h>
+#ifdef XBOOT_BUILD
 #include <config_xboot.h>
+#endif
 #include <types.h>
 #include <stc.h>
 #include <fat/fat.h>
@@ -115,11 +117,11 @@ struct bootinfo {
 	u32     gbootRom_boot_mode;  // sw boot mode (category: nand, sd, usb)
 	u32     bootdev;             // boot device (exact device: sd0, sd1, ...)
 	u32     bootdev_pinx;        // boot device pinmux
-	u32	bootdev_port;        // usb0~1, sd0~1
+	u32     bootdev_port;        // usb0~1, sd0~1
 	u32     app_blk_start;       // the block after xboot block(s)
 	u32     mp_flag;             // mp machine flag
-	u32     hw_cfg;              // hw_cfg
-	u32	in_xboot;            // 0=in iboot, 1=in xboot
+	u32     bootcpu;             // 0: B, 1: A
+	u32     in_xboot;            // 0=in iboot, 1=in xboot
 
 	/*
 	 * ROM code puts all C code global variables here so that :
@@ -173,5 +175,7 @@ extern  u8                 g_boothead[GLOBAL_HEADER_SIZE];
 #define gDEV_SDCTRL_BASE_ADRS     (g_bootinfo.sd_cur_base)
 #define gStorage_dev              (g_bootinfo.sd_Storage_dev)
 #define p_desc_comm               (g_bootinfo.nand_desc_comm)
+
+void run_linux_no_stack(void);
 
 #endif /* _COMMON_INC_ */

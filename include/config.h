@@ -143,7 +143,7 @@
 #define SRAM0_END           (SRAM0_BASE + SRAM0_SIZE)
 
 /* Physically AB_SRAM0_BASE == SRAM0_BASE */
-#define AB_SRAM0_BASE       0x9e000000
+#define AB_SRAM0_BASE       0x9e800000
 #define AB_SRAM0_END        (AB_SRAM0_BASE + SRAM0_SIZE)
 
 /* RAM region : must match with boot.ldi */
@@ -157,14 +157,9 @@
 /**********************
  * CPU boot address
  *********************/
-#define CPU_WAIT_INIT_VAL    0xffffffff
+#define CPU_WAIT_INIT_VAL   0xffffffff
 #define CPU_B_START_POS     (SRAM0_END - 0x8)       // 0x9e807ff8
-
-#ifdef PLATFORM_8388
-#define AB_CPU_A_START_POS  (SRAM0_END - 0xc)       // 0x9e807ff4
-#else
-#define AB_CPU_A_START_POS  (AB_SRAM0_END - 0xc)    // 0x9e007ff4 - (core# * 4)
-#endif
+#define CPU_A_START_POS     (SRAM0_END - 0xc)       // 0x9e807ff4
 
 /**********************
  * UART
