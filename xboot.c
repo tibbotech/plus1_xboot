@@ -6,6 +6,8 @@
 #include <fat/fat.h>
 #include <cpu/cpu.h>
 #include <cpu/arm.h>
+#include <image.h>
+#include <misc.h>
 #ifdef CONFIG_HAVE_EMMC
 #include <sdmmc_boot/drv_sd_mmc.h>    /* initDriver_SD */
 #include <part_efi.h>
@@ -58,6 +60,20 @@ static void init_hw(void)
 	dbg();
 }
 
+static void run_draminit(void)
+{
+	void (*dram_init)() = (void *)DRAMINIT_RUN_ADDR;
+
+	prn_string("Run draiminit@"); prn_dword((u32)dram_init);
+	dram_init();
+	prn_string("Done draiminit\n");
+
+	// put a brieft dram test
+	if (dram_test()) {
+		mon_shell();
+	}
+}
+
 static inline void release_spi_ctrl(void)
 {
 	// SPIFL & SPI_COMBO no reset
@@ -79,8 +95,79 @@ inline int get_current_spi_pinmux(void)
 }
 
 #ifdef CONFIG_HAVE_SPI_NOR
+
+// return image data size (exclude header)
+static int nor_load_uhdr_image(const char *img_name, void *dst, void *src)
+{
+	struct image_header *hdr;
+	int len;
+
+	prn_string("load "); prn_string(img_name); prn_string("\n");
+
+	dbg();
+	memcpy32(dst, src, sizeof(*hdr)/4); // 64/4
+
+	dbg();
+	hdr = (struct image_header *)dst;
+
+	dbg();
+	// magic check
+	if (!image_check_magic(hdr)) {
+		prn_string("bad mgaic\n");
+		return -1;
+	}
+	// check name
+	if (memcmp((const u8 *)image_get_name(hdr), (const u8 *)img_name, strlen(img_name)) != 0) {
+		prn_string("bad name\n");
+		return -1;
+	}
+	// header crc
+	if (!image_check_hcrc(hdr)) {
+		prn_string("bad hcrc\n");
+		return -1;
+	}
+
+	// load image data
+	len = image_get_size(hdr);
+	prn_string("load data size="); prn_decimal(len); prn_string("\n");
+	//memcpy(dst + sizeof(*hdr), src + sizeof(*hdr), len); // slow
+	memcpy32(dst + sizeof(*hdr), src + sizeof(*hdr), (len+3)/4);
+
+	// verify image data
+	if (!image_check_dcrc(hdr)) {
+		prn_string("corrupted image\n");
+		return -1;
+	}
+
+	return len;
+}
+
+static int nor_load_draminit(void)
+{
+	struct xboot_hdr *xhdr = (struct xboot_hdr*)(SPI_FLASH_BASE + SPI_XBOOT_OFFSET);
+	int len;
+
+	if (xhdr->magic != XBOOT_HDR_MAGIC) {
+		prn_string("no xboot hdr\n");
+		return -1;
+	}
+
+	// locate to where xboot.img.orig ends
+	len = sizeof(struct xboot_hdr)  + xhdr->length;
+
+	return nor_load_uhdr_image("draminit", (void *)DRAMINIT_LOAD_ADDR,
+			(void *)(SPI_FLASH_BASE + SPI_XBOOT_OFFSET + len));
+}
+
 static void spi_nor_boot(int pin_x)
 {
+	if (nor_load_draminit() <= 0) {
+		prn_string("No draminit\n");
+	} else {
+		cpu_invalidate_icache_all();
+		run_draminit();
+	}
+
 	//FIXME: spi uboot
 	mon_shell();
 }
@@ -106,7 +193,8 @@ static void do_fat_boot(u32 type, u32 port)
 
 	dbg();
 	prn_string("loading file\n");
-	//FIXME: usb  read
+
+	//FIXME: usb draminit + uboot
 	mon_shell();
 }
 #endif /* CONFIG_HAVE_FS_FAT */
@@ -208,7 +296,7 @@ static void spi_nand_boot(int pin_x)
 void boot_not_support(void)
 {
 	diag_printf("Not support boot mode 0x%x in this build\n",
-		    g_bootinfo.gbootRom_boot_mode);
+			g_bootinfo.gbootRom_boot_mode);
 	mon_shell();
 }
 
@@ -230,62 +318,62 @@ static void boot_flow(void)
 	while (1) {
 		/* Read boot mode */
 		switch (g_bootinfo.gbootRom_boot_mode) {
-		case UART_ISP:
+			case UART_ISP:
 #ifdef CONFIG_HAVE_UART_BOOTSTRAP
-			dbg();
-			uart_isp(1);
+				dbg();
+				uart_isp(1);
 #else
-			boot_not_support();
+				boot_not_support();
 #endif
-			break;
-		case USB_ISP:
+				break;
+			case USB_ISP:
 #ifdef CONFIG_HAVE_USB_DISK
-			dbg();
-			usb_isp();
+				dbg();
+				usb_isp();
 #else
-			boot_not_support();
+				boot_not_support();
 #endif
-			break;
-		case SDCARD_ISP:
+				break;
+			case SDCARD_ISP:
 #ifdef CONFIG_HAVE_SDCARD
-			CSTAMP(0xC0DE000C);
-			dbg();
-			sdcard_isp();
+				CSTAMP(0xC0DE000C);
+				dbg();
+				sdcard_isp();
 #else
-			boot_not_support();
+				boot_not_support();
 #endif
-			break;
-		case SPI_NOR_BOOT:
+				break;
+			case SPI_NOR_BOOT:
 #ifdef CONFIG_HAVE_SPI_NOR
-			spi_nor_boot(g_bootinfo.bootdev_pinx);
+				spi_nor_boot(g_bootinfo.bootdev_pinx);
 #else
-			boot_not_support();
+				boot_not_support();
 #endif
-			break;
-		case SPINAND_BOOT:
+				break;
+			case SPINAND_BOOT:
 #ifdef CONFIG_HAVE_SPI_NAND 
-			spi_nand_boot(g_bootinfo.bootdev_pinx);
+				spi_nand_boot(g_bootinfo.bootdev_pinx);
 #else
-			boot_not_support();
+				boot_not_support();
 #endif
-			break;
-		case NAND_LARGE_BOOT:
+				break;
+			case NAND_LARGE_BOOT:
 #ifdef CONFIG_HAVE_PARA_NAND 
-			para_nand_boot(g_bootinfo.bootdev_pinx);
+				para_nand_boot(g_bootinfo.bootdev_pinx);
 #else
-			boot_not_support();
+				boot_not_support();
 #endif
-			break;
-		case EMMC_BOOT:
+				break;
+			case EMMC_BOOT:
 #ifdef CONFIG_HAVE_EMMC
-			emmc_boot();
+				emmc_boot();
 #else
-			boot_not_support();
+				boot_not_support();
 #endif
-			break;
-		default:
-			dbg();
-			boot_not_support();
+				break;
+			default:
+				dbg();
+				boot_not_support();
 		}
 	}
 }
@@ -295,7 +383,7 @@ static inline void init_cdata(void)
 	char *src = (char *)&__etext;
 	char *dst = (char *)&__data;
 	while (dst < (char *)&__edata) {
-	        *dst++ = *src++;
+		*dst++ = *src++;
 	}
 }
 

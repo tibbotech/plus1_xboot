@@ -462,6 +462,7 @@ SINT32 SPINANDReadNANDPage_1K60(UINT8 which_cs, UINT32 pageNo, UINT32 * ptrPyldD
 	return ret;
 }
 
+#ifndef XBOOT_BUILD
 SINT32 SPINANDReadBootBlock(UINT32 *target_address)
 {
 	struct BootProfileHeader *ptr = Get_Header_Profile_Ptr();
@@ -537,3 +538,4 @@ SINT32 SPINANDReadBootBlock(UINT32 *target_address)
 	dbg();
 	return ROM_FAIL;
 }
+#endif /* CONFIG_HAVE_PARA_NAND */

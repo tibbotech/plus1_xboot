@@ -2,6 +2,7 @@
 #define _COMMON_INC_
 
 #include <config.h>
+#include <config_xboot.h>
 #include <types.h>
 #include <stc.h>
 #include <fat/fat.h>

@@ -176,6 +176,7 @@ SINT32 ReadNANDSector_1K60(UINT8 which_cs, UINT32* ptrPyldData, UINT32 pageNo)
 	return ret;
 }
 
+#ifndef XBOOT_BUILD
 SINT32 ReadBootBlock(UINT32 *target_address)
 {
 	struct BootProfileHeader *ptr = Get_Header_Profile_Ptr();
@@ -251,7 +252,8 @@ SINT32 ReadBootBlock(UINT32 *target_address)
 	dbg();
 	return ROM_FAIL;
 }
-#endif
+#endif /* XBOOT_BUILD */
+#endif /* CONFIG_HAVE_PARA_NAND */
 
 struct BootProfileHeader *Get_Header_Profile_Ptr(void)
 {
