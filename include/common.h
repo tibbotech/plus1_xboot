@@ -82,14 +82,14 @@ union storage_buf {
 	/* nand */
 	struct nand_io {
 		u8 data[8 * 1024];
-		u8 spare[1024];
+		u8 spare[512];
 #define NAND_MAX_DESC_SIZE 4
 		desc_command_t descInfo[NAND_MAX_DESC_SIZE];    /* 32*4 bytes */
 	} nand;
 
 	/* usb */
 	struct usb_io {
-		u8           draminit_tmp[9*1024];
+		u8           draminit_tmp[7 * 1024];
 		u8           sect_buf[512];         /* for FAT data read,  sector-size buffer */
 		u8           cmd_buf[1024];         /* for USB_vendorCmd(), usb descriptors */
 		ehci_usb     ehci;                  /* for all usb transfer, 320 bytes */

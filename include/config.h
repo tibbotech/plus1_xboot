@@ -147,11 +147,11 @@
 #define AB_SRAM0_END        (AB_SRAM0_BASE + SRAM0_SIZE)
 
 /* RAM region : must match with boot.ldi */
-#define XBOOT_BUF_SIZE      (18 * 1024)
-#define CDATA_SIZE          (256)
+#define XBOOT_BUF_SIZE      (20 * 1024)
+#define STORAGE_BUF_SIZE    (9 * 1024)
 #define BOOTINFO_SIZE       (512)
 #define GLOBAL_HEADER_SIZE  (512)
-#define STORAGE_BUF_SIZE    (11 * 1024)
+#define CDATA_SIZE          (256)
 #define STACK_SIZE          (2 * 1024 - 320)
 
 /**********************

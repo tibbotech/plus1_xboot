@@ -15,11 +15,11 @@ MEMORY
 	romshare        : ORIGIN = ROM_BASE + 0x0400  , LENGTH = 2K + 256
 
 
-	xboot_buf       : ORIGIN = 0x9e800000, LENGTH = XBOOT_BUF_SIZE      /*    18K @ 0        */
-	cdata           : ORIGIN = 0x9e804800, LENGTH = CDATA_SIZE          /*    256 @ 18K      */
-	bootinfo        : ORIGIN = 0x9e804900, LENGTH = BOOTINFO_SIZE       /*    512 @ 18K+256  */
-	boothead        : ORIGIN = 0x9e804b00, LENGTH = GLOBAL_HEADER_SIZE  /*    512 @ 18K+768  */
-	storage_buf     : ORIGIN = 0x9e804d00, LENGTH = STORAGE_BUF_SIZE    /*    11K @ 19K+256  */
+	xboot_buf       : ORIGIN = 0x9e800000, LENGTH = XBOOT_BUF_SIZE      /*    20K @ 0        */
+	storage_buf     : ORIGIN = 0x9e805000, LENGTH = STORAGE_BUF_SIZE    /*     9K @ 20K      */
+	bootinfo        : ORIGIN = 0x9e807400, LENGTH = BOOTINFO_SIZE       /*    512 @ 29K      */
+	boothead        : ORIGIN = 0x9e807600, LENGTH = GLOBAL_HEADER_SIZE  /*    512 @ 29K+512  */
+	cdata           : ORIGIN = 0x9e807800, LENGTH = CDATA_SIZE          /*    256 @ 30K      */
 	stack           : ORIGIN = 0x9e807900, LENGTH = STACK_SIZE          /* 2K-320 @ 30K+256  */
 	bootcompat      : ORIGIN = 0x9e807fc0, LENGTH = 64                  /*     64 @ 32K-64   */
 }

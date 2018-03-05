@@ -12,11 +12,9 @@
 #warning "******************************************"
 #define WORD_DSB	dsb
 #define WORD_ISB	isb
-#define WORD_WFENE	wfene
 #else /* ARMv5 */
 #define WORD_DSB	.word	0xf57ff04f
 #define WORD_ISB	.word	0xf57ff06f
-#define WORD_WFENE	.word	0x1320f002
 #endif
 
 .global _start
@@ -43,7 +41,15 @@ clbss_e:
 boot_fail:
 	b       boot_fail
 
+
+/* Read CPU ID */
+.macro set_Z_if_B rd
+        mrc     p15, 0, \rd, c0, c0, 0  @ read ID Code: 9260 vs C070
+        tst     \rd, #(1 << 14)         @ 9 vs C = Z vs z
+.endm
+
 FUNC(exit_bootROM)
+	mov	r12, r0
 	mov     r1, #0
 	mov     r2, #0
 	mov     r3, #0
@@ -56,9 +62,12 @@ FUNC(exit_bootROM)
 	mov     r10, #0
 	mov     r11, #0
 
+set_Z_if_B r0
+	beq     skip_dsb_isb            @ ARM926 skips DSB ISB
 	WORD_DSB
 	WORD_ISB
-	bx	r0
+skip_dsb_isb:
+	bx      r12
 ENDFUNC(exit_bootROM)
 
 FUNC(run_linux_no_stack)
