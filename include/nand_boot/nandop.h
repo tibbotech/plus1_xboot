@@ -195,7 +195,6 @@ SINT32 ReadWritePage(UINT8 which_cs, UINT32 u32PhyAddr,UINT32* PyldBuffer,UINT32
 
 int InitDevice(int type);
 void initNandFunptr(void);
-int ReadSDSector(unsigned int sectorNo, unsigned int pageCount, unsigned int *ptrPyldData);
 SINT32 ReadBootBlock(UINT32 *target_address);
 
 SINT32 SPINANDReadBootBlock(u32 *xbuffer);

@@ -33,8 +33,8 @@
 #define UBOOT_LOAD_ADDR      (UBOOT_RUN_ADDR - 0x40)
 
 // DTB
-#define DTB_LOAD_ADDR        0x280000                   /* dtb */
-#define DTB_RUN_ADDR         0x280040                   /* skip header */
+#define DTB_LOAD_ADDR        0x300000                   /* dtb */
+#define DTB_RUN_ADDR         0x300040                   /* skip header */
 
 // Linux
 #define LINUX_RUN_ADDR       0x308000                   /* vmlinux */

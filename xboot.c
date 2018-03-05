@@ -30,7 +30,7 @@ extern void *__except_stack_top;
 __attribute__ ((section("storage_buf_sect")))    union storage_buf   g_io_buf;
 __attribute__ ((section("bootinfo_sect")))       struct bootinfo     g_bootinfo;
 __attribute__ ((section("boothead_sect")))       u8                  g_boothead[GLOBAL_HEADER_SIZE];
-//__attribute__ ((section("xboot_buf_sect")))      u8                  g_xboot_buf[XBOOT_BUF_SIZE];
+__attribute__ ((section("xboot_header_sect")))   u8                  g_xboot_buf[32];
 
 static void init_hw(void)
 {
@@ -60,7 +60,7 @@ static void init_hw(void)
 	dbg();
 }
 
-static void run_draminit(void)
+static int run_draminit(void)
 {
 	void (*dram_init)() = (void *)DRAMINIT_RUN_ADDR;
 
@@ -71,7 +71,9 @@ static void run_draminit(void)
 	// put a brieft dram test
 	if (dram_test()) {
 		mon_shell();
+		return -1;
 	}
+	return 0;
 }
 
 static inline void release_spi_ctrl(void)
@@ -80,7 +82,8 @@ static inline void release_spi_ctrl(void)
 #if defined(PLATFORM_8388) || defined(PLATFORM_I137)
 	MOON0_REG->reset[0] &= ~(0x3 << 9);
 #else
-	MOON0_REG->reset[0] = RF_MASK_V_CLR(3 << 9);
+	//FIXME: q628
+	//MOON0_REG->reset[0] = RF_MASK_V_CLR(3 << 9);
 #endif
 }
 
@@ -90,7 +93,8 @@ inline int get_current_spi_pinmux(void)
 #if defined(PLATFORM_8388) || defined(PLATFORM_I137)
 	return (MOON1_REG->sft_cfg[1] & 0x3);
 #else
-	return ((MOON1_REG->sft_cfg[1] >> 5) & 0x3);
+	//FIXME: q628
+	return 1; //((MOON1_REG->sft_cfg[1] >> 5) & 0x3);
 #endif
 }
 
@@ -149,7 +153,7 @@ static int nor_load_uhdr_image(const char *img_name, void *dst, void *src, int v
 
 	// verify image data
 	if (verify && !image_check_dcrc(hdr)) {
-		prn_string("corrupted image\n");
+		prn_string("corrupted\n");
 		return -1;
 	}
 
@@ -173,17 +177,19 @@ static int nor_load_draminit(void)
 			(void *)(SPI_FLASH_BASE + SPI_XBOOT_OFFSET + len), 1);
 }
 
+static int nor_draminit(void)
+{
+	if (nor_load_draminit() <= 0) {
+		prn_string("No draminit\n");
+		return -1;
+	}
+
+	cpu_invalidate_icache_all();
+	return run_draminit();
+}
+
 #define XBOOT_LOAD_LINUX
 #ifdef XBOOT_LOAD_LINUX
-#if 0
-static void run_linux_no_stackx(void)
-{
-	/* directly boot to Linux */
-	void (*kernel_entry)(int zero, int mach_num, u32 params);
-	kernel_entry = (void *)LINUX_RUN_ADDR;
-	kernel_entry(0, 0, DTB_RUN_ADDR);
-}
-#endif
 static void spi_nor_linux(void)
 {
 	int res;
@@ -219,13 +225,15 @@ static void spi_nor_linux(void)
 
 static void spi_nor_boot(int pin_x)
 {
+#if defined(PLATFORM_8388) || defined(PLATFORM_I137)
 	SPI_CTRL_REG->spi_ctrl = (SPI_CTRL_REG->spi_ctrl & ~0x7) | 0x5; // CLK_SPI/16
+#else
+        SPI_CTRL_REG->spi_ctrl = (SPI_CTRL_REG->spi_ctrl & ~(7 << 16)) | (5 << 16); // 3: CLK_SPI/16
+#endif
 
-	if (nor_load_draminit() <= 0) {
-		prn_string("No draminit\n");
-	} else {
-		cpu_invalidate_icache_all();
-		run_draminit();
+	if (nor_draminit()) {
+		dbg();
+		return;
 	}
 
 	// spi linux
@@ -245,7 +253,7 @@ static void do_fat_boot(u32 type, u32 port)
 {
 	fat_info        g_finfo;
 	u32 ret;
-	u8 *buf = (u8 *) g_io_buf.usb.draminit_tmp;
+	u8 *buf = (u8 *)DRAMINIT_LOAD_ADDR;
 
 	dbg();
 	prn_string("finding file\n");
@@ -291,11 +299,225 @@ static void uart_isp(u32 forever)
 #endif
 
 #ifdef CONFIG_HAVE_EMMC
+
+#define EMMC_BLOCK_SZ 512     // bytes in a eMMC sector
+
+static int emmc_read(u8 *buf, u32 blk_off, u32 count)
+{
+#ifdef EMMC_USE_DMA_READ
+        /* dma mode supports multi-sector read */
+        return ReadSDSector(blk_off, count, (unsigned int *)buf);
+#else
+        /* polling mode supports single-sector read */
+        int res;
+        for (; count > 0; count--, buf += EMMC_BLOCK_SZ, blk_off++) {
+                res = ReadSDSector(blk_off, 1, (unsigned int *)buf);
+                if (res < 0) {
+                        return res;
+                }
+        }
+        return 0;
+#endif
+}
+
+static int emmc_bootmode_read(u8 *buf, u32 count)
+{
+        //FIXME: reading Boot Area
+        return -1;
+}
+
+/**
+ * emmc_load_uhdr_image
+ * img_name       - image name in uhdr
+ * dst            - destination address
+ * loaded         - some data has been loaded
+ * blk_off        - emmc block offset number
+ * only_load_hdr  - only load header
+ * size_limit     - image size in header > this limit, return error
+ * mmc_part       - current active mmc part
+ *
+ * Return image data size (> 0) if ok (exclude header)
+ */
+static int emmc_load_uhdr_image(const char *img_name, u8 *dst, u32 loaded,
+	u32 blk_off, int only_load_hdr, int size_limit, int mmc_part)
+{
+	struct image_header *hdr = (struct image_header *) dst;
+	int len, res, blks;
+
+	prn_string("emmc load "); prn_string(img_name);
+	if (loaded) {
+		prn_string("\nloaded=");
+		prn_decimal_ln(loaded);
+	}
+
+	// load uhdr
+	if (loaded < sizeof(*hdr)) {
+		if (mmc_part == MMC_BOOT_AREA1) {
+			res = emmc_bootmode_read(dst + loaded, 1);
+		} else {
+			prn_string("@blk="); prn_dword(blk_off);
+			res = emmc_read(dst + loaded, blk_off, 1);
+		}
+		if (res) {
+			prn_string("fail to read hdr\n");
+			return -1;
+		}
+		loaded += EMMC_BLOCK_SZ;
+		blk_off++;
+	}
+
+	// verify header
+	if (!image_check_magic(hdr)) {
+		prn_string("bad mg\n");
+		return -1;
+	}
+	if (memcmp((const u8 *)image_get_name(hdr), (const u8 *)img_name, strlen(img_name)) != 0) {
+		prn_string("bad name\n");
+		return -1;
+	}
+	if (!image_check_hcrc(hdr)) {
+		prn_string("bad hcrc\n");
+		return -1;
+	}
+
+	len = image_get_size(hdr);
+	if (len <= 0 || (sizeof(*hdr) + len) > size_limit)
+		return -1;
+
+	if (only_load_hdr)
+		return len;
+
+	// load image data
+	prn_string("data size="); prn_decimal_ln(len);
+	if ((len <= 0) || (len + sizeof(*hdr)) >= size_limit) {
+		prn_string("size > limit="); prn_decimal_ln(size_limit);
+		return -1;
+	}
+
+	// load remaining
+	res = sizeof(*hdr) + len - loaded;
+	if (res > 0) {
+		blks = (res + EMMC_BLOCK_SZ - 1) / EMMC_BLOCK_SZ;
+		if (mmc_part == MMC_BOOT_AREA1) {
+			res = emmc_bootmode_read(dst + loaded, blks);
+		} else {
+			res = emmc_read(dst + loaded, blk_off, blks);
+		}
+		if (res) {
+			prn_string("failed to load data\n");
+			return -1;
+		}
+	}
+
+	// verify image data
+	prn_string("verify img...\n");
+	if (!image_check_dcrc(hdr)) {
+		prn_string("corrupted\n");
+		return -1;
+	}
+
+	return len;
+}
+
+int emmc_load_draminit(void *buf, int mmc_part)
+{
+	u32 sz_sect = EMMC_BLOCK_SZ;
+	u32 xbsize, loaded;
+
+	/* Because draminit.img is catenated to xboot.img,
+	 * initial part of draminit.img may have been loaded by xboot's last sector */
+	xbsize = get_xboot_size(g_xboot_buf);
+	prn_string("xbsize="); prn_dword(xbsize);
+	loaded = xbsize;
+	while (loaded >= sz_sect) {
+		loaded -= sz_sect;
+	}
+	if (loaded) {
+		loaded = sz_sect - loaded;
+	}
+	prn_string("loaded="); prn_dword(loaded);
+	if (loaded) {
+		memcpy32((u32 *)buf, (u32 *)(g_xboot_buf + xbsize), loaded / 4);
+	}
+
+	/* Load remaining draminit.img from xboot's following sectors */
+
+	if (emmc_load_uhdr_image("draminit", buf, loaded, g_bootinfo.app_blk_start, 0,
+				 0x10000, mmc_part) <= 0) {
+		dbg();
+		return -1;
+	}
+	return 0;
+}
+
 static void emmc_boot(void)
 {
+	gpt_header *gpt_hdr;
+	gpt_entry *gpt_part;
+	u32 blk_start1;
+	int res, len = 0;
+	int i;
+
 	prn_string("\n{{emmc_boot}}\n");
-	//FIXME: emmc boot
-	mon_shell();
+
+	SetBootDev(DEVICE_EMMC, 1, 0);
+
+	/* continue to load draminit after iboot loading xboot */
+	if (emmc_load_draminit(DRAMINIT_LOAD_ADDR, g_bootinfo.mmc_active_part)) {
+		dbg();
+		return;
+	}
+
+	if (run_draminit()) {
+		return;
+	}
+
+	if (initDriver_SD(EMMC_SLOT_NUM, MMC_USER_AREA)) {
+		prn_string("init fail\n");
+		return;
+	} else {
+		/* load uboot from GPT disk */
+		prn_string("Read GPT\n");
+		res = emmc_read(g_boothead, 1, 1); /* LBA 1 */
+		if (res < 0) {
+			prn_string("can't read LBA 1\n");
+			return;
+		}
+
+		gpt_hdr = (gpt_header *)g_boothead;
+		if (gpt_hdr->signature != GPT_HEADER_SIGNATURE) {
+			prn_string("bad hdr sig\n");
+			return;
+		}
+
+		res = emmc_read(g_boothead, 2, 1); /* LBA 2 */
+		if (res < 0) {
+			dbg();
+			return;
+		}
+		gpt_part = (gpt_entry *)g_boothead;
+
+		/* look for uboot at GPT part 1 or 2 */
+		for (i = 0; i < 2; i++) {
+			blk_start1 = (u32) gpt_part[i].starting_lba;
+			prn_string("part"); prn_decimal(1 + i);
+			prn_string(" LBA="); prn_dword(blk_start1);
+
+			len = emmc_load_uhdr_image("uboot", (void *)UBOOT_LOAD_ADDR, 0,
+				blk_start1, 0, 0x200000, MMC_USER_AREA);
+			if (len > 0)
+				break;
+		}
+
+		if (len <= 0) {
+			prn_string("bad uboot\n");
+			return;
+		}
+	}
+
+	prn_string("Run u-boot @");
+	prn_dword(UBOOT_RUN_ADDR);
+	exit_bootROM(UBOOT_RUN_ADDR);
 }
 #endif /* CONFIG_HAVE_EMMC */
 
@@ -371,6 +593,7 @@ void boot_not_support(void)
 static void boot_flow(void)
 {
 	/* Force romcode boot mode for xBoot testings :
+	 * g_bootinfo.gbootRom_boot_mode = EMMC_BOOT;
 	 * g_bootinfo.gbootRom_boot_mode = UART_ISP;
 	 * g_bootinfo.gbootRom_boot_mode = NAND_LARGE_BOOT; g_bootinfo.app_blk_start = 2;
 	 * g_bootinfo.gbootRom_boot_mode = SPI_NAND_BOOT;
@@ -378,6 +601,7 @@ static void boot_flow(void)
 	 * g_bootinfo.gbootRom_boot_mode = SDCARD_ISP; g_bootinfo.bootdev = DEVICE_SD0; g_bootinfo.bootdev_pinx = 1;
 	 * prn_string("force boot mode="); prn_dword(g_bootinfo.gbootRom_boot_mode);
 	 */
+
 	prn_string("mode=");
 	prn_dword(g_bootinfo.gbootRom_boot_mode);
 

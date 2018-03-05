@@ -181,19 +181,26 @@ u32 fat_boot(u32 type, u32 port, fat_info *info, u8 *buffer)
 	dbg_info();
 	info->startSector = 0;
 	info->bytePerSect = 0;
+	info->init = NULL;
 
 	/* Set init function and read_sector function*/
 	if (type == USB_ISP) {
+#ifdef CONFIG_HAVE_USB_DISK
 		dbg_info();
 		info->init = usb_init;
 		info->read_sector = usb_readSector;
+#endif
 	} else if (type == SDCARD_ISP) {
+#ifdef CONFIG_HAVE_SDCARD
 		dbg_info();
 		info->init = initDriver_SD;
 		info->read_sector = ReadSDSector;
-	} else {
+#endif
+	}
+
+	if (info->init == NULL) {
 		dbg_info();
-		return 0;
+		return FAIL;
 	}
 
 	memcpy(g_bootinfo.fat_fileName[0], (u8 *)FILENAMES[0], 12);
@@ -202,7 +209,7 @@ u32 fat_boot(u32 type, u32 port, fat_info *info, u8 *buffer)
 	/*
 	 * Initialization
 	 */
-	if (info->init(port) != ROM_SUCCESS) {
+	if (info->init(port, 0) != ROM_SUCCESS) {
 		dbg_info();
 		return FAIL;
 	}

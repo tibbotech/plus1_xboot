@@ -32,6 +32,11 @@ SECTIONS
 		__rom_vsr_base = .;
 	} > romshare
 
+	.xhdr (NOLOAD):
+	{
+		*(xboot_header_sect)
+	} > xboot_buf
+
 	/* RAM */
 	.text (0x9e800020) :
 	{

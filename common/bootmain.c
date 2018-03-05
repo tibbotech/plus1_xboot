@@ -29,7 +29,7 @@ static inline void set_spi_nor_pinmux(int pin_x)
 	MOON1_REG->sft_cfg[1] = ((MOON1_REG->sft_cfg[1] & ~0x3) | pin_x);
 #else
 	//FIXME: Q628 SPI_NOR pinmux
-	MOON1_REG->sft_cfg[1] = RF_MASK_V(0x3, pin_x);
+	//MOON1_REG->sft_cfg[1] = RF_MASK_V(0x3, pin_x);
 #endif
 }
 
@@ -39,7 +39,7 @@ static inline void set_spi_nand_pinmux(int pin_x)
         MOON1_REG->sft_cfg[1] = ((MOON1_REG->sft_cfg[1] & ~0xC) | ((pin_x) << 2));
 #else
 	//FIXME: Q628 SPI_NAND pinmux
-	MOON1_REG->sft_cfg[1] = RF_MASK_V(0x3 << 2, pin_x << 2);
+	//MOON1_REG->sft_cfg[1] = RF_MASK_V(0x3 << 2, pin_x << 2);
 #endif
 }
 
@@ -238,6 +238,7 @@ void initfunptr(UINT32 devId)
 	}
 }
 
+#ifdef CONFIG_HAVE_NAND_COMMON
 static long InitBootDev(void)
 {
         g_bootinfo.gInitNand_flag = 0;
@@ -247,7 +248,6 @@ static long InitBootDev(void)
         return InitNand();
 }
 
-#ifdef CONFIG_HAVE_NAND_COMMON
 int InitDevice(int type)
 {
         int ret;

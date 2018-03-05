@@ -69,7 +69,8 @@ void AV1_STC_init(void)
 #if defined(PLATFORM_8388) || defined(PLATFORM_I137)
 	MOON0_REG->reset[0] &= ~(1 << 22);
 #else
-	MOON0_REG->reset[1] = RF_MASK_V_CLR(1 << 6);
+	// Q628 STC_AV1 : default is released
+	//MOON0_REG->reset[1] = RF_MASK_V_CLR(1 << 6);
 #endif
 
 	STC_hw_init(BOOT_TIME_STC);

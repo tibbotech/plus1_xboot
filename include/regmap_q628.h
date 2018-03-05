@@ -138,21 +138,24 @@ struct dpll_regs {
 
 struct spi_ctrl_regs {
 	unsigned int spi_ctrl;       // 22.0
-	unsigned int spi_wait;       // 22.1
-	unsigned int spi_cust_cmd;   // 22.2
-	unsigned int spi_addr_l;     // 22.3
-	unsigned int spi_addr_h;     // 22.4
-	unsigned int spi_data_l;     // 22.5
-	unsigned int spi_data_h;     // 22.6
-	unsigned int spi_status;     // 22.7
-	unsigned int spi_cfg[9];     // 22.8
-	unsigned int spi_cust_cmd_2; // 22.17
-	unsigned int spi_data_64;    // 22.18
-	unsigned int spi_buf_addr;   // 22.19
-	unsigned int spi_status_2;   // 22.20
-	unsigned int spi_status_3;   // 22.21
-	unsigned int spi_mode_status;// 22.22
-	unsigned int spi_err_status; // 22.23
+	unsigned int spi_timing;     // 22.1
+	unsigned int spi_page_addr;  // 22.2
+	unsigned int spi_data;       // 22.3
+	unsigned int spi_status;     // 22.4
+	unsigned int spi_auto_cfg;   // 22.5
+	unsigned int spi_cfg[3];     // 22.6
+	unsigned int spi_data_64;    // 22.9
+	unsigned int spi_buf_addr;   // 22.10
+	unsigned int spi_statu_2;    // 22.11
+	unsigned int spi_err_status; // 22.12
+	unsigned int spi_data_addr;  // 22.13
+	unsigned int mem_parity_addr;// 22.14
+	unsigned int spi_col_addr;   // 22.15
+	unsigned int spi_bch;        // 22.16
+	unsigned int spi_intr_msk;   // 22.17
+	unsigned int spi_intr_sts;   // 22.18
+	unsigned int spi_page_size;  // 22.19
+	unsigned int g20_reserved_0; // 22.20
 };
 #define SPI_CTRL_REG ((volatile struct spi_ctrl_regs *)RF_GRP(22, 0))
 

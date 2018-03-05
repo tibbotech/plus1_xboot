@@ -153,6 +153,7 @@ struct bootinfo {
 	int gSD_HIGHSPEED_EN_SET_val[4];
 	int gSD_RD_CLK_DELAY_TIME_val[4];
 	struct STORAGE_DEVICE sd_Storage_dev;
+	int mmc_active_part;
 
 	/* fat */
 	unsigned char fat_fileName[FAT_FILES][12];
@@ -162,7 +163,7 @@ struct bootinfo {
  * global variables
  */
 extern union storage_buf   g_io_buf;
-extern u8                  g_xboot_buf[XBOOT_BUF_SIZE];
+extern u8                  g_xboot_buf[];
 extern struct bootinfo     g_bootinfo;
 extern  u8                 g_boothead[GLOBAL_HEADER_SIZE];
 

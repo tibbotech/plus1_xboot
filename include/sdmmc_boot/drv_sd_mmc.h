@@ -1,15 +1,12 @@
 #ifndef DRV_SD_MMC_H
 #define DRV_SD_MMC_H
 
-#define MAX_SD_COUNT 8
+enum mmc_area {
+	MMC_USER_AREA = 0,
+	MMC_BOOT_AREA1 = 1,
+};
 
-int initDriver_SD(int port);
-
-int ReadSDMultipleSector(
-	unsigned int SectorIdx,
-	unsigned int SectorNum,
-	unsigned char* pRecBuff
-);
+int initDriver_SD(int port, int mmc_part);
 
 int ReadSDSector(
 	unsigned int sectorNo,

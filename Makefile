@@ -150,13 +150,15 @@ sinclude .depend
 clean:
 	@rm -rf .depend $(LD_GEN) $(OBJS) *.o >/dev/null
 	@rm -rf  $(BIN)/v5
-	@cd $(BIN) && rm -rf $(TARGET) $(TARGET).bin $(TARGET).map $(TARGET).dis \
-		$(TARGET).img $(TARGET).img.orig $(TARGET).rcf >/dev/null
+	@if [ -d $(BIN) ];then \
+		cd $(BIN) && rm -rf $(TARGET) $(TARGET).bin $(TARGET).map $(TARGET).dis $(TARGET).img $(TARGET).img.orig >/dev/null ;\
+	 fi;
 	@echo "$@: done"
 
 distclean: clean
 	@rm -rf .config .config.old $(BIN)/v7
 	@rm -f GPATH GTAGS GRTAGS
+	@-rmdir $(BIN)
 	@echo "$@: done"
 
 #################
@@ -187,13 +189,12 @@ auto_config: chkconfig
 
 chkconfig:
 	@if [ ! -f .config ];then \
-		echo "Please make XXX to generate .config. Find configs by make list." ; \
+		echo "Please make XXX to generate .config. Find configs by: make list" ; \
 		exit 1; \
 	fi
 
 config menuconfig:
 	@$(MCONF) Kconfig
-
 
 #################
 # misc

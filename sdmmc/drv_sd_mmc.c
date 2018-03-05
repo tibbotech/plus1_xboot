@@ -11,12 +11,21 @@
 
 extern int get_card_number(void);
 
-int initDriver_SD(int port)
+int initDriver_SD(int port, int mmc_part)
 {
 	int ret;
 	int retry = 8;
 
 	memset((u8 *)&gStorage_dev, 0, sizeof(gStorage_dev));
+
+	//FIXME: init eMMC Boot Area
+	if (mmc_part == MMC_BOOT_AREA1) {
+		prn_string("FIXME: please support BootArea init\n");
+		return ROM_FAIL;
+	}
+
+	/* mark active part */
+	g_bootinfo.mmc_active_part = mmc_part;
 
 	dbg();
 	InitChipCtrl();
