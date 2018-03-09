@@ -10,10 +10,10 @@ choice
 endchoice
 
 config XIP_SPIBAREMETAL
-	bool "Build for XIP on SPI NOR (SPI Baremetal Boot)"
+	bool "iBoot is XIP on SPI NOR (SPI Baremetal Boot)"
 	default n
 	help
-		Build iBoot to XIP on SPI_NOR.
+		Select if iBoot is XIP on SPI_NOR.
 
 config BOOT_ON_CSIM
 	bool "Build for CSIM"
@@ -75,3 +75,23 @@ config HAVE_SPI_NOR
 config HAVE_MON_SHELL
 	bool "MON Shell"
 	default y
+
+config STANDALONE_DRAMINIT
+	bool "Use standalone draminit bin (depricated)"
+	default n
+	help
+		If yes, load and run draminit image at run-time.
+		If no, link draminit obj into xboot.
+
+config PREBUILT_DRAMINIT_OBJ
+	string "Provide pebuilt draminit obj path"
+	depends on !STANDALONE_DRAMINIT
+	default ""
+	help
+		If empty, use recent ../draminit/plf_dram.o.
+
+menu "Experiments"
+	config LOAD_LINUX
+		bool "Load and run Linux"
+		default n
+endmenu

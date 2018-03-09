@@ -138,28 +138,41 @@
 /**********************
  * SRAM 
  *********************/
-#define SRAM0_BASE          0x9e800000
+#ifdef PLATFORM_I137
 #define SRAM0_SIZE          (32 * 1024)
+#else
+#define SRAM0_SIZE          (40 * 1024)
+#endif
+
+#define SRAM0_BASE          0x9e800000
 #define SRAM0_END           (SRAM0_BASE + SRAM0_SIZE)
 
-/* Physically AB_SRAM0_BASE == SRAM0_BASE */
-#define AB_SRAM0_BASE       0x9e800000
-#define AB_SRAM0_END        (AB_SRAM0_BASE + SRAM0_SIZE)
-
 /* RAM region : must match with boot.ldi */
+#ifdef PLATFORM_I137
 #define XBOOT_BUF_SIZE      (20 * 1024)
+#else
+#define XBOOT_BUF_SIZE      (28 * 1024)
+#endif
 #define STORAGE_BUF_SIZE    (9 * 1024)
 #define BOOTINFO_SIZE       (512)
 #define GLOBAL_HEADER_SIZE  (512)
-#define CDATA_SIZE          (256)
-#define STACK_SIZE          (2 * 1024 - 320)
+#define CDATA_SIZE          (512)
+#define STACK_SIZE          (1472) /* 1.5K - 64 */
 
 /**********************
  * CPU boot address
  *********************/
 #define CPU_WAIT_INIT_VAL   0xffffffff
-#define CPU_B_START_POS     (SRAM0_END - 0x8)       // 0x9e807ff8
-#define CPU_A_START_POS     (SRAM0_END - 0xc)       // 0x9e807ff4
+#define B_START_POS         (SRAM0_END - 0x8)       // 9e809ff8
+
+#ifdef PLATFORM_I137
+#define A_START_POS_B_VIEW  (SRAM0_END - 0xc)       // 9e809ff4
+#define SRAM0_BASE_A_VIEW   0x9e000000
+#define A_START_POS_A_VIEW  (SRAM0_BASE_A_VIEW + SRAM0_SIZE - 0xc) // 9e007ff4
+#else
+#define A_START_POS_B_VIEW  (SRAM0_END - 0xc)       // 9e809ff4
+#define A_START_POS_A_VIEW  A_START_POS_B_VIEW
+#endif
 
 /**********************
  * UART

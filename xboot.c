@@ -62,7 +62,16 @@ static void init_hw(void)
 
 static int run_draminit(void)
 {
-	void (*dram_init)() = (void *)DRAMINIT_RUN_ADDR;
+	int (*dram_init)(void);
+
+#ifdef CONFIG_STANDALONE_DRAMINIT
+	dram_init = (void *)DRAMINIT_RUN_ADDR;
+	prn_string("standalone draiminit\n");
+	dram_init = (void *)DRAMINIT_RUN_ADDR;
+#else
+	extern int dram_init_main(void);
+	dram_init = (void *)dram_init_main;
+#endif
 
 	prn_string("Run draiminit@"); prn_dword((u32)dram_init);
 	dram_init();
@@ -160,6 +169,7 @@ static int nor_load_uhdr_image(const char *img_name, void *dst, void *src, int v
 	return len;
 }
 
+#ifdef CONFIG_STANDALONE_DRAMINIT
 static int nor_load_draminit(void)
 {
 	struct xboot_hdr *xhdr = (struct xboot_hdr*)(SPI_FLASH_BASE + SPI_XBOOT_OFFSET);
@@ -176,20 +186,22 @@ static int nor_load_draminit(void)
 	return nor_load_uhdr_image("draminit", (void *)DRAMINIT_LOAD_ADDR,
 			(void *)(SPI_FLASH_BASE + SPI_XBOOT_OFFSET + len), 1);
 }
+#endif
 
 static int nor_draminit(void)
 {
+#ifdef CONFIG_STANDALONE_DRAMINIT
 	if (nor_load_draminit() <= 0) {
 		prn_string("No draminit\n");
 		return -1;
 	}
 
 	cpu_invalidate_icache_all();
+#endif
 	return run_draminit();
 }
 
-#define XBOOT_LOAD_LINUX
-#ifdef XBOOT_LOAD_LINUX
+#ifdef CONFIG_LOAD_LINUX
 static void spi_nor_linux(void)
 {
 	int res;
@@ -208,13 +220,13 @@ static void spi_nor_linux(void)
 		return;
 	}
 
-	//g_bootinfo.bootcpu = 1; // B boots linux
-
-	// if B, wake up A to boot Linux
-	if (g_bootinfo.bootcpu == 0) {
-		prn_string("wake up A to run linux\n");
-		*(volatile unsigned int *)CPU_A_START_POS = (u32)&run_linux_no_stack;
+	// if B (and vmlinux is not B's), wake up A
+	if (g_bootinfo.bootcpu == 0 && *(u32 *)LINUX_RUN_ADDR != 0xe321f0d3) { // don't boot arm9 vmlinux.bin
+		prn_string("wake up A to run linux@");
+		prn_dword(LINUX_RUN_ADDR);
+		*(volatile unsigned int *)A_START_POS_B_VIEW = (u32)&run_linux_no_stack;
 		while (1);
+	// directly run Linux
 	} else {
 		prn_string("run linux@"); prn_dword(LINUX_RUN_ADDR);
 		run_linux_no_stack();
@@ -237,7 +249,7 @@ static void spi_nor_boot(int pin_x)
 	}
 
 	// spi linux
-#ifdef XBOOT_LOAD_LINUX
+#ifdef CONFIG_LOAD_LINUX
 	spi_nor_linux();
 #endif
 
@@ -320,12 +332,6 @@ static int emmc_read(u8 *buf, u32 blk_off, u32 count)
 #endif
 }
 
-static int emmc_bootmode_read(u8 *buf, u32 count)
-{
-        //FIXME: reading Boot Area
-        return -1;
-}
-
 /**
  * emmc_load_uhdr_image
  * img_name       - image name in uhdr
@@ -352,12 +358,8 @@ static int emmc_load_uhdr_image(const char *img_name, u8 *dst, u32 loaded,
 
 	// load uhdr
 	if (loaded < sizeof(*hdr)) {
-		if (mmc_part == MMC_BOOT_AREA1) {
-			res = emmc_bootmode_read(dst + loaded, 1);
-		} else {
-			prn_string("@blk="); prn_dword(blk_off);
-			res = emmc_read(dst + loaded, blk_off, 1);
-		}
+		prn_string("@blk="); prn_dword(blk_off);
+		res = emmc_read(dst + loaded, blk_off, 1);
 		if (res) {
 			prn_string("fail to read hdr\n");
 			return -1;
@@ -398,11 +400,7 @@ static int emmc_load_uhdr_image(const char *img_name, u8 *dst, u32 loaded,
 	res = sizeof(*hdr) + len - loaded;
 	if (res > 0) {
 		blks = (res + EMMC_BLOCK_SZ - 1) / EMMC_BLOCK_SZ;
-		if (mmc_part == MMC_BOOT_AREA1) {
-			res = emmc_bootmode_read(dst + loaded, blks);
-		} else {
-			res = emmc_read(dst + loaded, blk_off, blks);
-		}
+		res = emmc_read(dst + loaded, blk_off, blks);
 		if (res) {
 			prn_string("failed to load data\n");
 			return -1;
@@ -419,6 +417,7 @@ static int emmc_load_uhdr_image(const char *img_name, u8 *dst, u32 loaded,
 	return len;
 }
 
+#ifdef CONFIG_STANDALONE_DRAMINIT
 int emmc_load_draminit(void *buf, int mmc_part)
 {
 	u32 sz_sect = EMMC_BLOCK_SZ;
@@ -449,6 +448,7 @@ int emmc_load_draminit(void *buf, int mmc_part)
 	}
 	return 0;
 }
+#endif
 
 static void emmc_boot(void)
 {
@@ -462,11 +462,13 @@ static void emmc_boot(void)
 
 	SetBootDev(DEVICE_EMMC, 1, 0);
 
+#ifdef CONFIG_STANDALONE_DRAMINIT
 	/* continue to load draminit after iboot loading xboot */
 	if (emmc_load_draminit(DRAMINIT_LOAD_ADDR, g_bootinfo.mmc_active_part)) {
 		dbg();
 		return;
 	}
+#endif
 
 	if (run_draminit()) {
 		return;
