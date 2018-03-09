@@ -142,16 +142,20 @@ void SetBootDev(unsigned int bootdev, unsigned int pin_x, unsigned int dev_port)
 			set_para_nand_pinmux(pin_x);
 			set_para_nand_padctl(1);
 			break;
+#ifdef CONFIG_HAVE_EMMC
 		case DEVICE_EMMC:
 			g_bootinfo.gbootRom_boot_mode = EMMC_BOOT;
 			gDEV_SDCTRL_BASE_ADRS = (unsigned int)CARD0_CTL_REG; /* eMMC is on SD0 */
 			set_emmc_pinmux(pin_x);
 			break;
+#endif
+#ifdef CONFIG_HAVE_SDCARD
 		case DEVICE_SDCARD:
 			g_bootinfo.gbootRom_boot_mode = SDCARD_ISP;
 			gDEV_SDCTRL_BASE_ADRS = (unsigned int)CARD1_CTL_REG;
 			set_sdcard1_pinmux(pin_x);
 			break;
+#endif
 	}
 
 	CSTAMP(0xC0DE5556);
