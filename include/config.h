@@ -60,6 +60,9 @@
 #define AHB_GRP(_ahb_grp, _grp, _reg) \
 	((((_grp) * 32 + (_reg)) * 4) + ((_ahb_grp) * 0x1000) + AHB0_REG_BASE)
 
+#define A_REG_BASE              0x9ec00000
+#define A_RF_GRP(_grp, _reg)    ((((_grp) * 32 + (_reg)) * 4) + A_REG_BASE)
+
 #define RF_MASK_V(_mask, _val)       (((_mask) << 16) | (_val))
 #define RF_MASK_V_SET(_mask)         (((_mask) << 16) | (_mask))
 #define RF_MASK_V_CLR(_mask)         (((_mask) << 16) | 0)
@@ -146,6 +149,16 @@
 
 #define SRAM0_BASE          0x9e800000
 #define SRAM0_END           (SRAM0_BASE + SRAM0_SIZE)
+
+#ifdef PLATFORM_I137
+#define B_SRAM_BASE_A_VIEW  0x9e000000
+#define A_WORK_MEM_BASE     0x9e800000
+#else
+#define B_SRAM_BASE_A_VIEW  0x9e800000
+#define A_WORK_MEM_BASE     0x9ea00000
+#endif
+
+#define A_WORK_MEM_SIZE     (512 * 1024)
 
 /* RAM region : must match with boot.ldi */
 #ifdef PLATFORM_I137

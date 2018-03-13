@@ -62,18 +62,72 @@ FUNC(exit_bootROM)
 	mov     r10, #0
 	mov     r11, #0
 
-set_Z_if_B r0
-	beq     skip_dsb_isb            @ ARM926 skips DSB ISB
+	set_Z_if_B r0
+	beq	1f			@ ARM926 skips DSB ISB
 	WORD_DSB
 	WORD_ISB
-skip_dsb_isb:
-	bx      r12
+1:
+	bx	r12
 ENDFUNC(exit_bootROM)
 
+#ifdef PLATFORM_I137
+/*
+ * r0 : A RGST base
+ * r1 : A G0.3 clk_cfg
+ * lr : return address
+ */
+A_setup_iobus_start:
+	str	r1, [r0, #0xc]
+	/* delay before using ABIO */
+	mov	r1, #0x10000
+1:
+	subs	r1, r1, #1
+	bne	1b
+	bx	lr
+A_setup_iobus_end:
+
+/* A : setup abio on A_SRAM */
+.macro A_setup_abio
+	ldr	r1, =(B_SRAM_BASE_A_VIEW - SRAM0_BASE) + A_setup_iobus_start
+	ldr	r2, =(B_SRAM_BASE_A_VIEW - SRAM0_BASE) + A_setup_iobus_end
+	ldr	r3, =A_WORK_MEM_BASE
+iobus_cpy:
+	cmp	r1, r2
+	bge	iobus_start
+	ldr	r0, [r1], #4
+	str	r0, [r3], #4
+	b	iobus_cpy
+iobus_start:
+	ldr	r0, =A_REG_BASE
+	//ldr	r1, =0x80718		@ 100M  (BogoMIPS: SDR=1.53 DDR=1.71)
+	ldr	r1, =0x40718		@ 200M  (BogoMIPS: SDR=2.06 DDR=2.18)
+	//ldr	r1, =0x20718		@ 400M  (BogoMIPS: SDR=2.45 DDR=NA)
+	mov	lr, pc
+	ldr	pc, =A_WORK_MEM_BASE
+.endm
+#endif
+
 FUNC(run_linux_no_stack)
+#ifdef PLATFORM_I137
+	set_Z_if_B r5
+	beq	skip_abio_up
+	ldr	r0, =RF_GRP(18, 0)
+	ldr	r1, ='O'		@ print 'O'
+	str	r1, [r0]
+	A_setup_abio			@ A: speed up ABIO bus clock
+	ldr	r0, =RF_GRP(18, 0)
+	ldr	r1, ='K'		@ print 'K'
+	str	r1, [r0]
+skip_abio_up:
+#endif
 	mov	r0, #0			@ 0
 	mov	r1, #0			@ mach id
 	ldr	r2, =DTB_RUN_ADDR	@ dtb
 	ldr	r12, =LINUX_RUN_ADDR
+	set_Z_if_B r5
+	beq	1f			@ ARM926 skips DSB ISB
+	WORD_DSB
+	WORD_ISB
+1:
 	bx	r12
 ENDFUNC(run_linux_no_stack)

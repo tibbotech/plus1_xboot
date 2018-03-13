@@ -243,4 +243,30 @@ struct usbh_sys_regs {
 #define USBH0_SYS_REG ((volatile struct usbh_sys_regs *)AHB_GRP(2, 0, 0)) // 0x9c102000
 #define USBH1_SYS_REG ((volatile struct usbh_sys_regs *)AHB_GRP(3, 0, 0)) // 0x9c103000
 
-#endif /* __INC_REGMAP_GEMINI_H */
+struct bio_ctl_regs {
+	unsigned int ch0_addr; // 0x9c10_5000
+	unsigned int ch0_ctrl; // 0x9c10_5004
+	unsigned int ch1_addr; // 0x9c10_5008
+	unsigned int ch1_ctrl; // 0x9c10_500c
+	unsigned int ch2_addr; // 0x9c10_5010
+	unsigned int ch2_ctrl; // 0x9c10_5014
+	unsigned int ch3_addr; // 0x9c10_5018
+	unsigned int ch3_ctrl; // 0x9c10_501c
+	unsigned int ch4_addr; // 0x9c10_5020
+	unsigned int ch4_ctrl; // 0x9c10_5024
+	unsigned int ch5_addr; // 0x9c10_5028
+	unsigned int ch5_ctrl; // 0x9c10_502c
+	unsigned int io_ctrl ; // 0x9c10_5030
+	unsigned int io_tctl ; // 0x9c10_5034
+	unsigned int macro_c0; // 0x9c10_5038
+	unsigned int macro_c1; // 0x9c10_503c
+	unsigned int macro_c2; // 0x9c10_5040
+	unsigned int io_tpctl; // 0x9c10_5044
+	unsigned int io_rpctl; // 0x9c10_5048
+	unsigned int boot_ra ; // 0x9c10_504c
+	unsigned int io_tdat0; // 0x9c10_5050
+	unsigned int reserved[11];
+};
+#define BIO_CTL_REG ((volatile struct bio_ctl_regs *)0x9c105000)
+
+#endif /* __INC_REGMAP_I137_H */

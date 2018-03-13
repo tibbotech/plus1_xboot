@@ -325,4 +325,4 @@ struct card_dma_regs {
 /* SPI NAND */
 #define CONFIG_SP_SPINAND_BASE   ((volatile unsigned int *)RF_GRP(87, 0))
 
-#endif /* __INC_REGMAP_GEMINI_H */
+#endif /* __INC_REGMAP_Q628_H */

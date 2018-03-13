@@ -221,10 +221,14 @@ static void spi_nor_linux(void)
 	}
 
 	// if B (and vmlinux is not B's), wake up A
-	if (g_bootinfo.bootcpu == 0 && *(u32 *)LINUX_RUN_ADDR != 0xe321f0d3) { // don't boot arm9 vmlinux.bin
+	if (g_bootinfo.bootcpu == 0 && *(u32 *)LINUX_RUN_ADDR != 0xe321f0d3) { /* arm9 vmlinux.bin first word */
 		prn_string("wake up A to run linux@");
 		prn_dword(LINUX_RUN_ADDR);
+#ifdef PLATFORM_I137 /* B_SRAM address is 9e00_0000 from A view */
+		*(volatile unsigned int *)A_START_POS_B_VIEW = ((u32)&run_linux_no_stack) - 0x800000;
+#else
 		*(volatile unsigned int *)A_START_POS_B_VIEW = (u32)&run_linux_no_stack;
+#endif
 		while (1);
 	// directly run Linux
 	} else {
