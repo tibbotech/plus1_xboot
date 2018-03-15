@@ -90,6 +90,10 @@ config PREBUILT_DRAMINIT_OBJ
 	help
 		If empty, use recent ../draminit/plf_dram.o.
 
+config HAVE_ARCH_FASTMEM
+        bool "Use memset/memcpy fast assembly code"
+        default y
+
 menu "Experiments"
 	config LOAD_LINUX
 		bool "Load and run Linux"

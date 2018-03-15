@@ -12,7 +12,7 @@ ENTRY(_start)
 MEMORY
 {
 
-	romshare        : ORIGIN = ROM_BASE + 0x0400  , LENGTH = 2K + 256
+	romshare        : ORIGIN = ROM_BASE + 0x0400  , LENGTH = 4K
 
 
 #ifdef PLATFORM_I137

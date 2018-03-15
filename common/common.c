@@ -4,6 +4,7 @@
 #include <config.h>
 #include <stc.h>
 
+#ifndef CONFIG_HAVE_ARCH_FASTMEM
 void *memcpy(UINT8 *s1, const UINT8 *s2, int n)
 {
 	UINT8 *s1_end = s1 + n;
@@ -13,19 +14,27 @@ void *memcpy(UINT8 *s1, const UINT8 *s2, int n)
 
 	return s1;
 }
+#endif
 
 void *memcpy32(UINT32 *s1, const UINT32 *s2, int n)
 {
+#ifdef CONFIG_HAVE_ARCH_FASTMEM
+	return memcpy((UINT8 *)s1, (const UINT8 *)s2, n << 2);
+#else
 	UINT32 *s1_end = s1 + n;
 
 	while(s1 != s1_end)
 		*s1++ = *s2++;
 
 	return s1;
+#endif
 }
 
 void *memcpy128(UINT32 *s1, const UINT32 *s2, int n)
 {
+#ifdef CONFIG_HAVE_ARCH_FASTMEM
+	return memcpy((UINT8 *)s1, (const UINT8 *)s2, n << 4);
+#else
 	UINT32 *s1_end = s1 + n;
 
 	while(s1 != s1_end) {
@@ -36,6 +45,7 @@ void *memcpy128(UINT32 *s1, const UINT32 *s2, int n)
 	}
 
 	return s1;
+#endif
 }
 
 int memcmp(const UINT8 *s1, const UINT8 *s2, int n)
@@ -51,8 +61,10 @@ int memcmp(const UINT8 *s1, const UINT8 *s2, int n)
 	return ret;
 }
 
+#ifndef CONFIG_HAVE_ARCH_FASTMEM
 void *memset(UINT8 *s1, int c, int n)
 {
+	return memset(s1, c, n);
 	UINT8 *s1_end = s1 + n;
 
 	while (s1 != s1_end)
@@ -60,6 +72,7 @@ void *memset(UINT8 *s1, int c, int n)
 
 	return s1;
 }
+#endif
 
 void *memset32(UINT32 *s1, UINT32 val, int n)
 {

@@ -35,12 +35,10 @@ void prn_decimal_ln(unsigned int);
 void prn_dump_buffer(unsigned char *buf, int len);
 void uart0_putc(unsigned char c);
 
-void *memcpy(u8 *s1, const u8 *s2, int n);
 void *memcpy16(u16 *s1, const u16 *s2, int n);
 void *memcpy32(u32 *s1, const u32 *s2, int n);
 void *memcpy128(u32 *s1, const u32 *s2, int n);
 int   memcmp(const u8 *s1, const u8 *s2, int n);
-void *memset(u8 *s1, int c, int n);
 void *memset32(u32 *s1, u32 val, int n);
 
 void exit_bootROM(u32 addr);
@@ -55,9 +53,19 @@ void diag_printf(const char *fmt, ...);
 #define diag_printf    rom_printf
 #endif
 
+#if !defined(XBOOT_BUILD) || !defined(CONFIG_HAVE_ARCH_FASTMEM)
+void *memcpy(u8 *s1, const u8 *s2, int n);
+void *memset(u8 *s1, int c, int n);
+#else
+#define memcpy         rom_memcpy
+#define memset         rom_memset
+#endif
+
 /* rom share : APIs for external callers */
 #define rom_printf     (*(rom_printf_t)(p_romvsr->printf))
 #define rom_shell      (*(rom_shell_t)(p_romvsr->shell))
+#define rom_memcpy     (*(rom_memcpy_t)(p_romvsr->memcpy))
+#define rom_memset     (*(rom_memset_t)(p_romvsr->memset))
 
 /*
  * build-time checker
