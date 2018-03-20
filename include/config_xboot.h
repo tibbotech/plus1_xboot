@@ -29,8 +29,8 @@
 #define DRAM_TEST_END        (DRAM_TEST_BEGIN + DRAM_TEST_LEN)
 
 // u-boot
-#define UBOOT_RUN_ADDR       0x200000   // @2MB
-#define UBOOT_LOAD_ADDR      (UBOOT_RUN_ADDR - 0x40)
+#define UBOOT_LOAD_ADDR      0x200000
+#define UBOOT_RUN_ADDR       0x200040
 
 // DTB
 #define DTB_LOAD_ADDR        0x300000                   /* dtb */
@@ -45,5 +45,9 @@
 // mkimage -T standalone --> uhdr with CRC32
 // mkimage -T quickboot  --> uhdr with SUM32
 #define USE_QKBOOT_IMG  // consistent with draminit and uboot image
+
+/* ISP image offset */
+#define ISP_IMG_OFF_XBOOT    (0)
+#define ISP_IMG_OFF_UBOOT    (64 * 1024)
 
 #endif

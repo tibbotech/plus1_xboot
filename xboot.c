@@ -146,7 +146,6 @@ static int nor_load_uhdr_image(const char *img_name, void *dst, void *src, int v
 	len = image_get_size(hdr);
 	prn_string("load data size="); prn_decimal(len); prn_string("\n");
 
-	//FIXME: fast copy
 #if 0
 	memcpy32(dst + sizeof(*hdr), src + sizeof(*hdr), (len+3)/4);
 #else
@@ -239,6 +238,25 @@ static void spi_nor_linux(void)
 }
 #endif
 
+static void spi_uboot(void)
+{
+	int len;
+
+	prn_string("Init NOR\n");
+
+	// already set by iboot
+	//SetBootDev(DEVICE_SPI_NOR, 1, 0);
+
+	len = nor_load_uhdr_image("uboot", (void *)UBOOT_LOAD_ADDR,
+			(void *)(SPI_FLASH_BASE + SPI_UBOOT_OFFSET), 1);
+	if (len <= 0)
+		return;
+
+	prn_string("Run u-boot @");
+	prn_dword(UBOOT_RUN_ADDR);
+	exit_bootROM(UBOOT_RUN_ADDR);
+}
+
 static void spi_nor_boot(int pin_x)
 {
 #if defined(PLATFORM_8388) || defined(PLATFORM_I137)
@@ -257,34 +275,140 @@ static void spi_nor_boot(int pin_x)
 	spi_nor_linux();
 #endif
 
-	//FIXME: spi uboot
-	mon_shell();
+	spi_uboot();
 }
-#endif
+#endif /* CONFIG_HAVE_SPI_NOR */
 
 #ifdef CONFIG_HAVE_FS_FAT
 
-#define ISP_IMG_OFF_XBOOT    0
+/* return image data size (exclude header) */
+static int fat_load_uhdr_image(fat_info *finfo, const char *img_name, void *dst,
+	u32 img_offs, int max_img_sz)
+{
+	struct image_header *hdr = dst;
+	int len;
+	int ret;
+	u8 *buf = g_io_buf.usb.sect_buf;
+
+	prn_string("fat load ");
+	prn_string(img_name);
+	prn_string("\n");
+
+	/* usb dma need aligned address */
+	if ((u32)dst & 0x7ff) {
+		prn_string("WARN: unaligned dst "); prn_dword((u32)dst);
+	}
+
+	/* read header first */
+	len = 64;
+	ret = fat_read_file(0, finfo, buf, img_offs, len, dst);
+	if (ret == FAIL) {
+		prn_string("load hdr failed\n");
+		return -1;
+	}
+
+	/* uhdr_dump(hdr); */
+
+	/* magic check */
+	if (!image_check_magic(hdr)) {
+		prn_string("bad mgaic\n");
+		return -1;
+	}
+
+	/* header crc */
+	if (!image_check_hcrc(hdr)) {
+		prn_string("bad hcrc\n");
+		return -1;
+	}
+
+	/* load image data */
+	len = image_get_size(hdr);
+	prn_string("load data size=");
+	prn_decimal(len);
+	prn_string("\n");
+
+	if (len + 64 > max_img_sz) {
+		prn_string("image is too big, size=");
+		prn_decimal(len + 64);
+		return -1;
+	}
+
+	ret = fat_read_file(0, finfo, buf, img_offs + 64, len, dst + 64);
+	if (ret == FAIL) {
+		prn_string("load body failed\n");
+		return -1;
+	}
+
+	/* verify image data */
+	if (!image_check_dcrc(hdr)) {
+		prn_string("corrupted image\n");
+		/* prn_crc(dst, len + 64, 4096); */
+		return -1;
+	}
+
+	return len;
+}
+
 static void do_fat_boot(u32 type, u32 port)
 {
-	fat_info        g_finfo;
 	u32 ret;
-	u8 *buf = (u8 *)DRAMINIT_LOAD_ADDR;
+	fat_info g_finfo;
+#ifdef CONFIG_STANDALONE_DRAMINIT
+	u8 *buf = (u8 *) g_io_buf.usb.draminit_tmp;
+	struct xboot_hdr *xhdr = (struct xboot_hdr *)buf;
+	int len;
+#endif
 
-	dbg();
 	prn_string("finding file\n");
 
-	ret = fat_boot(type, port, &g_finfo, buf);
+	ret = fat_boot(type, port, &g_finfo, g_io_buf.usb.sect_buf);
 	if (ret == FAIL) {
-		dbg();
+		prn_string("no file\n");
 		return;
 	}
 
+#ifdef CONFIG_STANDALONE_DRAMINIT
+	/* nor_load_draminit(); */
 	dbg();
-	prn_string("loading file\n");
 
-	//FIXME: usb draminit + uboot
-	mon_shell();
+	/* check xboot0 header to know draminit offset */
+	len = 32;
+	ret = fat_read_file(0, &g_finfo, g_io_buf.usb.sect_buf, ISP_IMG_OFF_XBOOT, len, buf);
+	if (ret == FAIL) {
+		prn_string("load xboot hdr failed\n");
+		return;
+	}
+
+	if (xhdr->magic != XBOOT_HDR_MAGIC) {
+		prn_string("xboot0 magic is wrong\n");
+		return;
+	}
+
+	prn_string("xboot len=");
+	prn_dword(32 + xhdr->length);
+
+	/* draminit.img offset = size of xboot.img */
+	len = fat_load_uhdr_image(&g_finfo, "draminit", buf, 32 + xhdr->length, sizeof(g_io_buf.usb.draminit_tmp));
+	if (len <= 0) {
+		prn_string("load draminit failed\n");
+		return;
+	}
+
+	if ((u32)buf != (u32)DRAMINIT_LOAD_ADDR)
+		memcpy32((u32 *) DRAMINIT_LOAD_ADDR, (u32 *) buf, (64 + len + 3) / 4);
+#endif
+
+	run_draminit();
+
+	/* load u-boot from usb */
+	if (fat_load_uhdr_image(&g_finfo, "uboot", (void *)UBOOT_LOAD_ADDR, ISP_IMG_OFF_UBOOT, 0x00200000) <= 0) {
+		prn_string("failed to load uboot\n");
+		return;
+	}
+
+	prn_string("Run u-boot @");
+	prn_dword(UBOOT_RUN_ADDR);
+	exit_bootROM(UBOOT_RUN_ADDR);
 }
 #endif /* CONFIG_HAVE_FS_FAT */
 
@@ -293,7 +417,6 @@ static void usb_isp(void)
 {
 	dbg();
 	prn_string("\n{{usb_isp}}\n");
-
 	do_fat_boot(USB_ISP, g_bootinfo.bootdev_port);
 }
 #endif
@@ -599,11 +722,11 @@ void boot_not_support(void)
 static void boot_flow(void)
 {
 	/* Force romcode boot mode for xBoot testings :
+	 * g_bootinfo.gbootRom_boot_mode = USB_ISP; g_bootinfo.bootdev = DEVICE_USB_ISP; g_bootinfo.bootdev_port = 1;
 	 * g_bootinfo.gbootRom_boot_mode = EMMC_BOOT;
 	 * g_bootinfo.gbootRom_boot_mode = UART_ISP;
 	 * g_bootinfo.gbootRom_boot_mode = NAND_LARGE_BOOT; g_bootinfo.app_blk_start = 2;
 	 * g_bootinfo.gbootRom_boot_mode = SPI_NAND_BOOT;
-	 * g_bootinfo.gbootRom_boot_mode = USB_ISP; g_bootinfo.bootdev = DEVICE_USB1_ISP;
 	 * g_bootinfo.gbootRom_boot_mode = SDCARD_ISP; g_bootinfo.bootdev = DEVICE_SD0; g_bootinfo.bootdev_pinx = 1;
 	 * prn_string("force boot mode="); prn_dword(g_bootinfo.gbootRom_boot_mode);
 	 */
