@@ -9,7 +9,7 @@
 // Configurations for different iboot build
 // * ASIC iBoot:  default
 // * CSIM iBoot:  CSIM_NEW
-// * Zebu iBoot:  CSIM_NEW + ZEBU_ZMEM_XBOOT_ADDR
+// * Zebu iBoot:  CSIM_NEW + CONFIG_BOOT_ON_ZEBU
 // * NOR_iBoot:   PLATFORM_SPIBAREMETAL
 // * 8388_iBoot:  PLATFORM_SPIBAREMETAL & PLATFORM_8388
 //////////////////////////////////////////////////
@@ -32,18 +32,16 @@
 #define CSIM_NEW
 #endif
 
-#ifdef CSIM_NEW
-#define ZEBU_SPEED_UP
-// Enable zmem support (skip loading xboot if it's preloaded on Zebu DRAM)
-//#define ZEBU_ZMEM_XBOOT_ADDR    0x1000
-#endif
-
-// ZEBU ?
-#ifdef ZEBU_SPEED_UP
+/* Zebu build: speed up options */
+#ifdef CONFIG_BOOT_ON_ZEBU
 #define SPEED_UP_UART_BAUDRATE
 #define SPEED_UP_SPI_NOR_CLK    /* speed up SPI_NOR flash (eg. Zebu) */
 #endif
 
+/* zmem support */
+#ifdef CONFIG_USE_ZMEM
+#define ZMEM_XBOOT_ADDR    0x1000
+#endif
 
 /***********************
  * xBoot
@@ -263,7 +261,7 @@
 #define OTP_WHO_BOOT_REG	0x9e80fffc	/* Fake &OTP[WHO_BOOT] */
 #define OTP_WHO_BOOT_BIT	2
 #else
-//FIXME: q628 OTP[WHO_BOOT]
-#define OTP_WHO_BOOT_REG	RF_GRP(350, 0)	/* &OTP[WHO_BOOT] */
-#define OTP_WHO_BOOT_BIT	2
+/* FIXME: Q628 OTP[WHO_BOOT] */
+#define OTP_WHO_BOOT_REG	RF_GRP(4, 31)
+#define OTP_WHO_BOOT_BIT	0
 #endif

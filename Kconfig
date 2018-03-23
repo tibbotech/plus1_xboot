@@ -19,6 +19,16 @@ config BOOT_ON_CSIM
 	bool "Build for CSIM"
 	default n
 
+config BOOT_ON_ZEBU
+        bool "Boot on Zebug"
+        default n
+        depends on BOOT_ON_CSIM
+
+config USE_ZMEM
+        bool "Use ZMEM to skip image loading"
+        default n
+        depends on BOOT_ON_ZEBU
+
 config HAVE_UART_BOOTSTRAP
 	bool "UART Bootstrap"
 	default y

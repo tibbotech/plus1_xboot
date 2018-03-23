@@ -34,37 +34,42 @@ __attribute__ ((section("xboot_header_sect")))   u8                  g_xboot_buf
 
 static void init_hw(void)
 {
+	int i;
 	dbg();
 
-	/* clken0 ~ 3 enable */
-	MOON0_REG->clken[0] = 0xFFFFFFFF;
-	MOON0_REG->clken[1] = 0xFFFFFFFF;
-	MOON0_REG->clken[2] = 0xFFFFFFFF;
-	MOON0_REG->clken[3] = 0xFFFFFFFF;
-	MOON0_REG->clken[4] = 0xFFFFFFFF;
-
-	/* gclken0 ~ 3 */
-	MOON0_REG->gclken[0] = 0;
-	MOON0_REG->gclken[1] = 0;
-	MOON0_REG->gclken[2] = 0;
-	MOON0_REG->gclken[3] = 0;
-	MOON0_REG->gclken[4] = 0;
-
-	/* release module reset */
-	MOON0_REG->reset[0] = 0;
-	MOON0_REG->reset[1] = 0;
-	MOON0_REG->reset[2] = 0;
-	MOON0_REG->reset[3] = 0;
-	MOON0_REG->reset[4] = 0;
+#ifdef CONFIG_PLATFORM_Q628
+	/* clken[all]  = enable */
+	for (i = 0; i < sizeof(MOON0_REG->clken) / 4; i++)
+		MOON0_REG->clken[i] = RF_MASK_V_SET(0xffff);
+	/* gclken[all] = no */
+	for (i = 0; i < sizeof(MOON0_REG->gclken) / 4; i++)
+		MOON0_REG->gclken[i] = RF_MASK_V_CLR(0xffff);
+	/* reset[all] = clear */
+	for (i = 0; i < sizeof(MOON0_REG->reset) / 4; i++)
+		MOON0_REG->reset[i] = RF_MASK_V_CLR(0xffff);
+#else
+	/* clken[all] enable */
+	for (i = 0; i < sizeof(MOON0_REG->clken) / 4; i++)
+		MOON0_REG->clken[i] = 0xffffffff;
+	/* gclken[all] = no */
+	for (i = 0; i < sizeof(MOON0_REG->clken) / 4; i++)
+		MOON0_REG->gclken[i] = 0;
+	/* reset[all] = clear */
+	for (i = 0; i < sizeof(MOON0_REG->reset) / 4; i++)
+		MOON0_REG->reset[i] = 0;
+#endif
 
 	dbg();
 }
 
 static int run_draminit(void)
 {
-	int (*dram_init)(void);
-
+	/* skip dram init on csim/zebu */
+#ifdef CONFIG_BOOT_ON_CSIM
+	prn_string("skip draminit\n");
+#else
 #ifdef CONFIG_STANDALONE_DRAMINIT
+	int (*dram_init)(void);
 	dram_init = (void *)DRAMINIT_RUN_ADDR;
 	prn_string("standalone draiminit\n");
 	dram_init = (void *)DRAMINIT_RUN_ADDR;
@@ -76,6 +81,7 @@ static int run_draminit(void)
 	prn_string("Run draiminit@"); prn_dword((u32)dram_init);
 	dram_init();
 	prn_string("Done draiminit\n");
+#endif
 
 	// put a brieft dram test
 	if (dram_test()) {
@@ -110,10 +116,13 @@ inline int get_current_spi_pinmux(void)
 #ifdef CONFIG_HAVE_SPI_NOR
 
 // return image data size (exclude header)
+#ifdef CONFIG_USE_ZMEM
+__attribute__((unused))
+#endif
 static int nor_load_uhdr_image(const char *img_name, void *dst, void *src, int verify)
 {
 	struct image_header *hdr;
-	int len;
+	int i, len, step;
 
 	prn_string("load "); prn_string(img_name);
 	prn_string("@"); prn_dword((u32)dst);
@@ -146,18 +155,19 @@ static int nor_load_uhdr_image(const char *img_name, void *dst, void *src, int v
 	len = image_get_size(hdr);
 	prn_string("load data size="); prn_decimal(len); prn_string("\n");
 
-#if 0
-	memcpy32(dst + sizeof(*hdr), src + sizeof(*hdr), (len+3)/4);
+	/* copy chunk size */
+#ifdef CSIM_NEW
+	step = 2048;
 #else
-	int i;
-	int step = 0x40000; // 256KB
+	step = 256 * 1024;
+#endif
+
         for (i = 0; i < len; i += step) {
                 prn_string(".");
                 memcpy32(dst + sizeof(*hdr) + i, src + sizeof(*hdr) + i,
                         (len - i < step) ? (len - i + 3) / 4 : step / 4);
         }
         prn_string("\n");
-#endif
 
 	// verify image data
 	if (verify && !image_check_dcrc(hdr)) {
@@ -203,21 +213,49 @@ static int nor_draminit(void)
 #ifdef CONFIG_LOAD_LINUX
 static void spi_nor_linux(void)
 {
+#ifdef CONFIG_USE_ZMEM
+	struct image_header *hdr;
+	prn_string("[zmem] check dtb\n");
+	hdr = (struct image_header *)DTB_LOAD_ADDR;
+	if (!image_check_magic(hdr)) {
+		prn_string("[zmem] no uhdr magic: "); prn_dword(image_get_magic(hdr));
+		mon_shell();
+	} else if (!image_check_dcrc(hdr)) {
+		prn_string("corrupted\n");
+		mon_shell();
+	}
+	prn_string("[zmem] check linux\n");
+	hdr = (struct image_header *)LINUX_LOAD_ADDR;
+	if (!image_check_magic(hdr)) {
+		prn_string("[zmem] no uhdr magic: "); prn_dword(image_get_magic(hdr));
+		mon_shell();
+	} else if (!image_check_hcrc(hdr)) {
+		prn_string("bad hcrc\n");
+		mon_shell();
+	}
+	prn_string((const char *)image_get_name(hdr)); prn_string("\n");
+#else
 	int res;
+	int verify = 1;
 
 	res = nor_load_uhdr_image("dtb", (void *)DTB_LOAD_ADDR,
-			(void *)(SPI_FLASH_BASE + SPI_DTB_OFFSET), 1);
+			(void *)(SPI_FLASH_BASE + SPI_DTB_OFFSET), verify);
 	if (res <= 0) {
 		prn_string("No dtb\n");
 		return;
 	}
 
+#ifdef CONFIG_BOOT_ON_CSIM
+	verify = 0; /* big image */
+#endif
+
 	res = nor_load_uhdr_image("linux", (void *)LINUX_LOAD_ADDR,
-			(void *)(SPI_FLASH_BASE + SPI_LINUX_OFFSET), 1);
+			(void *)(SPI_FLASH_BASE + SPI_LINUX_OFFSET), verify);
 	if (res <= 0) {
 		prn_string("No linux\n");
 		return;
 	}
+#endif
 
 	// if B (and vmlinux is not B's), wake up A
 	if (g_bootinfo.bootcpu == 0 && *(u32 *)LINUX_RUN_ADDR != 0xe321f0d3) { /* arm9 vmlinux.bin first word */
@@ -238,19 +276,30 @@ static void spi_nor_linux(void)
 }
 #endif
 
-static void spi_uboot(void)
+static void spi_nor_uboot(void)
 {
-	int len;
+	int len = 0;
 
-	prn_string("Init NOR\n");
+#ifdef CONFIG_USE_ZMEM
+	struct image_header *hdr;
 
-	// already set by iboot
-	//SetBootDev(DEVICE_SPI_NOR, 1, 0);
-
+	prn_string("[zmem] check uboot\n");
+	hdr = (struct image_header *)UBOOT_LOAD_ADDR;
+	if (!image_check_magic(hdr)) {
+		prn_string("[zmem] no uhdr magic: "); prn_dword(image_get_magic(hdr));
+		mon_shell();
+	} else {
+		len = image_get_size(hdr);
+		prn_string("[zmem] uboot len="); prn_dword(len);
+	}
+#else
 	len = nor_load_uhdr_image("uboot", (void *)UBOOT_LOAD_ADDR,
 			(void *)(SPI_FLASH_BASE + SPI_UBOOT_OFFSET), 1);
-	if (len <= 0)
+	if (len <= 0) {
+		mon_shell();
 		return;
+	}
+#endif
 
 	prn_string("Run u-boot @");
 	prn_dword(UBOOT_RUN_ADDR);
@@ -259,10 +308,14 @@ static void spi_uboot(void)
 
 static void spi_nor_boot(int pin_x)
 {
+#ifdef SPEED_UP_SPI_NOR_CLK
+	dbg();
 #if defined(PLATFORM_8388) || defined(PLATFORM_I137)
 	SPI_CTRL_REG->spi_ctrl = (SPI_CTRL_REG->spi_ctrl & ~0x7) | 0x5; // CLK_SPI/16
 #else
-        SPI_CTRL_REG->spi_ctrl = (SPI_CTRL_REG->spi_ctrl & ~(7 << 16)) | (5 << 16); // 3: CLK_SPI/16
+	SPI_CTRL_REG->spi_ctrl = (SPI_CTRL_REG->spi_ctrl & ~(7 << 16)) | (3 << 16); // 3: CLK_SPI/6
+	SPI_CTRL_REG->spi_cfg[2] = 0x00150095; // restore default after seeting spi_ctrl
+#endif
 #endif
 
 	if (nor_draminit()) {
@@ -275,7 +328,7 @@ static void spi_nor_boot(int pin_x)
 	spi_nor_linux();
 #endif
 
-	spi_uboot();
+	spi_nor_uboot();
 }
 #endif /* CONFIG_HAVE_SPI_NOR */
 
