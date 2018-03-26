@@ -68,8 +68,8 @@ static int run_draminit(void)
 #ifdef CONFIG_BOOT_ON_CSIM
 	prn_string("skip draminit\n");
 #else
-#ifdef CONFIG_STANDALONE_DRAMINIT
 	int (*dram_init)(void);
+#ifdef CONFIG_STANDALONE_DRAMINIT
 	dram_init = (void *)DRAMINIT_RUN_ADDR;
 	prn_string("standalone draiminit\n");
 	dram_init = (void *)DRAMINIT_RUN_ADDR;
