@@ -185,6 +185,6 @@ extern  u8                 g_boothead[GLOBAL_HEADER_SIZE];
 #define gStorage_dev              (g_bootinfo.sd_Storage_dev)
 #define p_desc_comm               (g_bootinfo.nand_desc_comm)
 
-void run_linux_no_stack(void);
+void boot_next_no_stack(void);
 
 #endif /* _COMMON_INC_ */

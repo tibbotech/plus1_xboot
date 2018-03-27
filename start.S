@@ -107,7 +107,7 @@ iobus_start:
 .endm
 #endif
 
-FUNC(run_linux_no_stack)
+FUNC(boot_next_no_stack)
 #ifdef PLATFORM_I137
 	set_Z_if_B r5
 	beq	skip_abio_up
@@ -123,11 +123,13 @@ skip_abio_up:
 	mov	r0, #0			@ 0
 	mov	r1, #0			@ mach id
 	ldr	r2, =DTB_RUN_ADDR	@ dtb
-	ldr	r12, =LINUX_RUN_ADDR
 	set_Z_if_B r5
+	ldrne	r12, =BOOT_ANOTHER_POS_A_VIEW
+	ldreq	r12, =BOOT_ANOTHER_POS
+	ldr	r12, [r12]
 	beq	1f			@ ARM926 skips DSB ISB
 	WORD_DSB
 	WORD_ISB
 1:
 	bx	r12
-ENDFUNC(run_linux_no_stack)
+ENDFUNC(boot_next_no_stack)

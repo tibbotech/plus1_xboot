@@ -210,11 +210,31 @@ static int nor_draminit(void)
 	return run_draminit();
 }
 
+static void boot_next_set_addr(unsigned int addr)
+{
+	volatile unsigned int *next = (volatile unsigned int *)BOOT_ANOTHER_POS;
+	*next = addr;
+	prn_string("boot next @"); prn_dword(*next);
+}
+
+static void boot_next_in_another(void)
+{
+	prn_string("wake up another to run\n");
+
+#ifdef PLATFORM_I137 /* B_SRAM address is 9e00_0000 from A view */
+	*(volatile unsigned int *)A_START_POS_B_VIEW = ((u32)&boot_next_no_stack) - 0x800000;
+#else
+	*(volatile unsigned int *)A_START_POS_B_VIEW = (u32)&boot_next_no_stack;
+#endif
+	while (1);
+}
+
 #ifdef CONFIG_LOAD_LINUX
 static void spi_nor_linux(void)
 {
-#ifdef CONFIG_USE_ZMEM
 	struct image_header *hdr;
+
+#ifdef CONFIG_USE_ZMEM
 	prn_string("[zmem] check dtb\n");
 	hdr = (struct image_header *)DTB_LOAD_ADDR;
 	if (!image_check_magic(hdr)) {
@@ -233,7 +253,6 @@ static void spi_nor_linux(void)
 		prn_string("bad hcrc\n");
 		mon_shell();
 	}
-	prn_string((const char *)image_get_name(hdr)); prn_string("\n");
 #else
 	int res;
 	int verify = 1;
@@ -248,30 +267,26 @@ static void spi_nor_linux(void)
 #ifdef CONFIG_BOOT_ON_CSIM
 	verify = 0; /* big image */
 #endif
-
 	res = nor_load_uhdr_image("linux", (void *)LINUX_LOAD_ADDR,
 			(void *)(SPI_FLASH_BASE + SPI_LINUX_OFFSET), verify);
 	if (res <= 0) {
 		prn_string("No linux\n");
 		return;
 	}
+	hdr = LINUX_LOAD_ADDR;
 #endif
+
+	prn_string((const char *)image_get_name(hdr)); prn_string("\n");
+
+	boot_next_set_addr(LINUX_RUN_ADDR);
 
 	// if B (and vmlinux is not B's), wake up A
 	if (g_bootinfo.bootcpu == 0 && *(u32 *)LINUX_RUN_ADDR != 0xe321f0d3) { /* arm9 vmlinux.bin first word */
-		prn_string("wake up A to run linux@");
-		prn_dword(LINUX_RUN_ADDR);
-#ifdef PLATFORM_I137 /* B_SRAM address is 9e00_0000 from A view */
-		*(volatile unsigned int *)A_START_POS_B_VIEW = ((u32)&run_linux_no_stack) - 0x800000;
-#else
-		*(volatile unsigned int *)A_START_POS_B_VIEW = (u32)&run_linux_no_stack;
-#endif
-		while (1);
+		boot_next_in_another();
 	// directly run Linux
 	} else {
 		prn_string("run linux@"); prn_dword(LINUX_RUN_ADDR);
-		run_linux_no_stack();
-		mon_shell();
+		boot_next_no_stack();
 	}
 }
 #endif
@@ -279,12 +294,13 @@ static void spi_nor_linux(void)
 static void spi_nor_uboot(void)
 {
 	int len = 0;
-
-#ifdef CONFIG_USE_ZMEM
 	struct image_header *hdr;
 
-	prn_string("[zmem] check uboot\n");
 	hdr = (struct image_header *)UBOOT_LOAD_ADDR;
+
+#ifdef CONFIG_USE_ZMEM
+
+	prn_string("[zmem] check uboot\n");
 	if (!image_check_magic(hdr)) {
 		prn_string("[zmem] no uhdr magic: "); prn_dword(image_get_magic(hdr));
 		mon_shell();
@@ -301,9 +317,17 @@ static void spi_nor_uboot(void)
 	}
 #endif
 
-	prn_string("Run u-boot @");
-	prn_dword(UBOOT_RUN_ADDR);
-	exit_bootROM(UBOOT_RUN_ADDR);
+	prn_string((const char *)image_get_name(hdr)); prn_string("\n");
+
+	boot_next_set_addr(UBOOT_RUN_ADDR);
+
+	/* if B and u-boot is A's, wake up A */
+	if (g_bootinfo.bootcpu == 0 && memcmp((const u8 *)image_get_name(hdr), (const u8 *)"uboot_B", 7)) {
+		boot_next_in_another();
+	} else {
+		prn_string("Run u-boot @"); prn_dword(UBOOT_RUN_ADDR);
+		exit_bootROM(UBOOT_RUN_ADDR);
+	}
 }
 
 static void spi_nor_boot(int pin_x)

@@ -27,4 +27,4 @@ CONFIG_HAVE_ARCH_FASTMEM=y
 #
 # Experiments
 #
-CONFIG_LOAD_LINUX=y
+# CONFIG_LOAD_LINUX is not set
