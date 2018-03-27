@@ -1,8 +1,7 @@
 sinclude .config
 
 # Toolchain path
-export PATH := ../../build/tools/armv5-eabi--glibc--stable/bin/:$(PATH)
-CROSS   := armv5-glibc-linux-
+CROSS   := ../../build/tools/armv5-eabi--glibc--stable/bin/armv5-glibc-linux-
 
 BIN     := bin
 TARGET  := xboot
