@@ -25,6 +25,8 @@
 #define PLATFORM_8388                   /* Build for 8388 */
 #elif defined(CONFIG_PLATFORM_I137)
 #define PLATFORM_I137                   /* Build for I137 */
+#elif defined(CONFIG_PLATFORM_3502)
+#define PLATFORM_3502                   /* Build for 3502 */
 #endif
 
 /* CSIM build: Enable Stamp. No UART. Less delay. */
@@ -85,9 +87,12 @@
 #if defined(PLATFORM_8388) || defined(PLATFORM_I137)
 #define HW_CFG_REG              RF_GRP(0, 28)
 #define HW_CFG_SHIFT            10
+#elif defined(PLATFORM_3502)
+#define HW_CFG_REG              RF_GRP(0, 28)
+#define HW_CFG_SHIFT            14
 #else
-#define HW_CFG_REG              RF_GRP(0, 30)
-#define HW_CFG_SHIFT            7
+#define HW_CFG_REG              RF_GRP(0, 31)
+#define HW_CFG_SHIFT            12
 #endif
 #define HW_CFG_MASK             (0x1D << HW_CFG_SHIFT)
 
@@ -174,14 +179,14 @@
  * CPU boot address
  *********************/
 #define CPU_WAIT_INIT_VAL        0xffffffff
-#define BOOT_ANOTHER_POS         (SRAM0_END - 0x4)       // 9e809ffc
 #define B_START_POS              (SRAM0_END - 0x8)       // 9e809ff8
+#define BOOT_ANOTHER_POS         (SRAM0_END - 0x4)       // 9e809ffc
 
 #ifdef PLATFORM_I137
 #define A_START_POS_B_VIEW       (SRAM0_END - 0xc)       // 9e809ff4
 #define SRAM0_BASE_A_VIEW        0x9e000000
-#define BOOT_ANOTHER_POS_A_VIEW  (SRAM0_BASE_A_VIEW + SRAM0_SIZE - 0x4) // 9e007ffc
 #define A_START_POS_A_VIEW       (SRAM0_BASE_A_VIEW + SRAM0_SIZE - 0xc) // 9e007ff4
+#define BOOT_ANOTHER_POS_A_VIEW  (SRAM0_BASE_A_VIEW + SRAM0_SIZE - 0x4) // 9e007ffc
 #else
 #define A_START_POS_B_VIEW        (SRAM0_END - 0xc)       // 9e809ff4
 #define A_START_POS_A_VIEW        A_START_POS_B_VIEW
@@ -194,6 +199,8 @@
  *********************/
 #ifdef PLATFORM_8388
 #define UART_SRC_CLK        (270 * 1000 * 1000)  /* 8388 SYSSLOW */
+#elif defined(PLATFORM_3502)
+#define UART_SRC_CLK        (250 * 1000 * 1000)  /* 3502 SYSCLK */
 #else
 #define UART_SRC_CLK        (XTAL_CLK)
 #endif

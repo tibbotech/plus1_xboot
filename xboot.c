@@ -68,6 +68,7 @@ static int run_draminit(void)
 #ifdef CONFIG_BOOT_ON_CSIM
 	prn_string("skip draminit\n");
 #else
+	int save_val;
 	int (*dram_init)(void);
 #ifdef CONFIG_STANDALONE_DRAMINIT
 	dram_init = (void *)DRAMINIT_RUN_ADDR;
@@ -79,7 +80,12 @@ static int run_draminit(void)
 #endif
 
 	prn_string("Run draiminit@"); prn_dword((u32)dram_init);
+	save_val = g_bootinfo.mp_flag;
+#ifdef PLATFORM_3502
+	g_bootinfo.mp_flag = 1;		/* mask prints */
+#endif
 	dram_init();
+	g_bootinfo.mp_flag = save_val;	/* restore prints */
 	prn_string("Done draiminit\n");
 #endif
 
@@ -273,7 +279,7 @@ static void spi_nor_linux(void)
 		prn_string("No linux\n");
 		return;
 	}
-	hdr = LINUX_LOAD_ADDR;
+	hdr = (struct image_header *)LINUX_LOAD_ADDR;
 #endif
 
 	prn_string((const char *)image_get_name(hdr)); prn_string("\n");

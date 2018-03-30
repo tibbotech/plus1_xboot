@@ -7,6 +7,8 @@ choice
                 bool "8388"
         config PLATFORM_I137
                 bool "I137"
+        config PLATFORM_3502
+                bool "3502"
 endchoice
 
 config XIP_SPIBAREMETAL

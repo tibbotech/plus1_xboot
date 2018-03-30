@@ -119,7 +119,7 @@ u32 fat_read_file(u32 idx, fat_info *info, u8 *buffer, u32 offset, u32 length, u
 		cluster = next_cluster(info, cluster, (u8*)buffer);
 	}
 
-#ifdef FAT_USB_4K_READ
+#if defined(CONFIG_HAVE_USB_DISK) && defined(FAT_USB_4K_READ)
 	/* USB: transfer clusters in 4K unit to speed up */
 	if (info->read_sector == usb_readSector && !(info->sectPerClus % 8)) {
 		txfer_sects = 8;

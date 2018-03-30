@@ -7,6 +7,8 @@
 #include <regmap_gemini.h>
 #elif defined(PLATFORM_I137)
 #include <regmap_i137.h>
+#elif defined(PLATFORM_3502)
+#include <regmap_3502.h>
 #else
 #include <regmap_q628.h>
 #endif
