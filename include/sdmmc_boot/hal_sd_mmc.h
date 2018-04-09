@@ -450,9 +450,8 @@ InitChipCtrl_Boot(
     void
 );
 
-
 int
-SetMMCPartitionNun(
+SetMMCPartitionNum(
     unsigned char PartitionNum
 );
 
@@ -494,6 +493,9 @@ ClearChipCtrlStatusReg(
     void
 );
 
-void sdTryNextReadDelay(int card_num);
+void
+sdTryNextReadDelay(
+		int card_num
+);
 
 #endif		//HAL_SD_MMC_H

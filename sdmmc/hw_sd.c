@@ -59,15 +59,20 @@ void hwSdInit(unsigned int mmcMode)
 {
 	SD_WAIT_RSP_TIME_SET(0x7ff);
 	SD_WAIT_CRC_TIME_SET(0x3ff);
-
 	// sd_config
 	// Bit17: rx4B_en    - 1: 4 bytes, 0: 2 bytes
 	// Bit14: sdmmcmode  - 0: sd mode, 1: mmc mode
 	// Bit13: sdcrctmren - crc timer enable
 	// Bit12: sdrsptmren - rsp timer enable
-
-	SD_CONFIG_SET((SD_CONFIG_GET()&~(0x7000 | (1<<17))) | 0x3000 | (1 << 17));
+#ifdef PLATFORM_8388
+	SD_CONFIG_SET((SD_CONFIG_GET() & ~ (0x7000 | (1<<17))) | 0x3000 | (1 << 17));
 	SD_RXDATTMR_SET(3);
+#else
+	RX4_EN(1);
+	SDRSPTMREN(1);
+	SDCRCTMREN(1);
+	SD_RXDATTMR_SET(SD_RXDATTMR_MASK);
+#endif
 	SD_TXDUMMY_SET(8);
 	SD_RST();
 }
@@ -89,23 +94,30 @@ void hwSdInit(unsigned int mmcMode)
  **************************************************************************/
 void hwSdBusWidthSet(unsigned char sdBusWidth)
 {
+#ifdef PLATFORM_8388
 	unsigned int value;
 	unsigned int tval;
 
 	tval = (sdBusWidth==BUS_WIDTH_4BIT) ? 1 : 0;
-
 	value = SD_CONFIG_GET();
 	value = (value & ~(1<<10)) | (tval << 10);
 	SD_CONFIG_SET(value);
+#else
+	SDDATAWD((sdBusWidth==BUS_WIDTH_4BIT) ? 1 : 0);
+#endif
 }
 
 void hwSdFreqSet(unsigned int sdFreq)
 {
+#ifdef PLATFORM_8388
 	unsigned int value;
 
 	value = SD_CONFIG_GET();
 	value = (value & 0xfffffc00) | (sdFreq & 0x3ff);
 	SD_CONFIG_SET(value);
+#else
+	SDFQSEL(sdFreq & MMC_FREQ_DIV_MASK);
+#endif
 }
 
 /**************************************************************************
@@ -128,6 +140,7 @@ void hwSdFreqSet(unsigned int sdFreq)
 //void hwSdConfig(unsigned int sdFreq, unsigned int sdBusWidth, unsigned int mmcMode)
 void hwSdConfig(unsigned int sdBusWidth, unsigned int mmcMode)
 {
+#ifdef PLATFORM_8388
 	unsigned int tmp;
 
 	tmp = SD_CONFIG_GET();
@@ -138,6 +151,12 @@ void hwSdConfig(unsigned int sdBusWidth, unsigned int mmcMode)
 	tmp |= (unsigned short) ((mmcMode << 14) | (sdBusWidth << 10) | 0x3000);
 
 	SD_CONFIG_SET(tmp);
+#else
+	SDDATAWD(sdBusWidth);
+	SDMMCMODE(mmcMode);
+	SDRSPTMREN(1);
+	SDCRCTMREN(1);
+#endif
 }
 
 unsigned int hwSdBlockSizeGet()
@@ -168,23 +187,11 @@ unsigned int hwSdBlockSizeGet()
  **************************************************************************/
 unsigned int hwSdRxResponse(unsigned char * rspBuf, unsigned int rspType)
 {
-	unsigned int crc7;
 	unsigned int status = SD_SUCCESS;
 	unsigned int rspNum;
 	unsigned int value;
 	unsigned int time0 = AV1_GetStc32() / 90;  //ms
 	unsigned int time1 = 0;
-#ifdef PLATFORM_3502
-	if (rspType != RSP_TYPE_R2) {
-		value = SD_CONFIG_GET();
-		SD_CONFIG_SET(value & 0xfffff7ff);	/* Set response type to 6 bytes*/
-	} else {
-		value = SD_CONFIG_GET();
-		SD_CONFIG_SET(value | 0x00000800);	/*Set response type to 17 bytes*/
-	}
-
-	SD_CTRL_SET(0x02);	/* Start receiving response*/
-#endif
 
 	while (1) {
 		value = SD_STATUS0_GET();
@@ -205,57 +212,55 @@ unsigned int hwSdRxResponse(unsigned char * rspBuf, unsigned int rspType)
 		}
 	}
 
-#ifdef PLATFORM_3502
-	rspBuf[0] = SD_RSP_BUF0_GET;
-	rspBuf[1] = SD_RSP_BUF1_GET;
-	rspBuf[2] = SD_RSP_BUF2_GET;
-	rspBuf[3] = SD_RSP_BUF3_GET;
-	rspBuf[4] = SD_RSP_BUF4_GET;
-	crc7 = SD_RSP_BUF5_GET;
-#else
 	value = SD_RSP_BUF0_3_GET;
 	rspBuf[0] = (value >> 24) & 0xff;
 	rspBuf[1] = (value >> 16) & 0xff;
 	rspBuf[2] = (value >>  8) & 0xff;
 	rspBuf[3] = (value)       & 0xff;
+	CSTAMP(*((unsigned int *)rspBuf));
 	value = SD_RSP_BUF4_5_GET;
 	rspBuf[4] = (value >>  8) & 0xff;
-	crc7      = (value)       & 0xff;
-#endif
-	rspBuf[5] = crc7;
 
 #ifdef SD_VERBOSE
 	// SD RSP print start
 	prn_string("SD RSP=");
-	for (rspNum = 0; rspNum < 6; rspNum++)
+	for (rspNum = 0; rspNum < 5; rspNum++)
 		prn_byte(rspBuf[rspNum]);
 #endif
 
 	if (rspType == RSP_TYPE_R2) {
-		rspBuf[5] = crc7;
-		for (rspNum = 6; rspNum < 17; rspNum++) {
-			while (1) {
-				value = SD_STATUS0_GET();
-				if ((value & 0x02) == 0x02) {
-					break;	/* Wait until response buffer full*/
-				} else if ((value & 0x40) == 0x40) {
-					EPRINTK("Rsp timeout (1)...\n");
-					return SD_RSP_TIMEOUT;
-				}
-			}
-
-#ifdef PLATFORM_3502
-			rspBuf[rspNum] = SD_RSP_BUF5_GET;
-#else
-			rspBuf[rspNum] = (SD_RSP_BUF4_5_GET & 0xff);
-#endif
-
+#ifdef PLATFORM_8388
+		for (rspNum = 5; rspNum < 16; rspNum++) {
+				while (1) {
+							value = SD_STATUS0_GET();
+							if ((value & 0x02) == 0x02) {
+									break;	/* Wait until response buffer full*/
+							} else if ((value & 0x40) == 0x40) {
+									EPRINTK("Rsp timeout (1)...\n");
+									return SD_RSP_TIMEOUT;
+							}
+					}
+					rspBuf[rspNum] = (SD_RSP_BUF4_5_GET & 0xff);
 #ifdef SD_VERBOSE
-			prn_byte(rspBuf[rspNum]); // conti. SD RSP print
+					prn_byte(rspBuf[rspNum]); // conti. SD RSP print
 #endif
+			}
+#else
+		for (rspNum = 5; rspNum < 16; ) {
+			value = SD_RSP_BUF0_3_GET;
+			rspBuf[rspNum++] = (value >> 24) & 0xff;
+			rspBuf[rspNum++] = (value >> 16) & 0xff;
+			rspBuf[rspNum++] = (value >>  8) & 0xff;
+			rspBuf[rspNum++] = (value)       & 0xff;
+			value = SD_RSP_BUF4_5_GET;
+			rspBuf[rspNum++] = (value >>  8) & 0xff;
 		}
+#ifdef SD_VERBOSE
+		for (rspNum = 5; rspNum < 16; rspNum++)
+			prn_byte(rspBuf[rspNum]);
+#endif
+#endif
 	}
-
 #ifdef SD_VERBOSE
 	// SD RSP print end
 	prn_string("\n");
@@ -263,11 +268,7 @@ unsigned int hwSdRxResponse(unsigned char * rspBuf, unsigned int rspType)
 
 	// Check RSP CRC7 error
 	if ((rspType == RSP_TYPE_R1) || (rspType == RSP_TYPE_R6) || rspType == RSP_TYPE_R7) {
-#ifdef PLATFORM_3502
-		if (crc7 != SD_CRC7_BUF_GET()) {
-#else
 		if (SD_STATUS0_GET() & (1 << 9)) {
-#endif
 			prn_string("RSP CRC7 err\n");
 			status = SD_CRC_ERROR;	/*CRC7 error*/
 		}
@@ -291,11 +292,7 @@ unsigned int hwSdRxResponse(unsigned char * rspBuf, unsigned int rspType)
  **************************************************************************/
 unsigned int hwSdTxDummy(void)
 {
-#ifdef PLATFORM_3502
-	SD_CTRL_SET(0x20);	/*trigger TxDummy command*/
-#else
 	SD_CTRL_SET(0x2);	/*trigger TxDummy command*/
-#endif
 	return hwSdIdleWait();
 }
 
@@ -317,17 +314,6 @@ unsigned int hwSdTxDummy(void)
 unsigned int hwSdIdleWait(void)
 {
 	register unsigned int i = 0;
-
-#ifdef PLATFORM_3502
-	// Wait until idle
-	while (SD_STATUS1_GET() & 0x07) {
-		if (i++ == 0xffff) {
-			EPRINTK("Idle Wait Timeout, status=%x\n", (((unsigned char) SD_STATUS1_GET()) & 0x0f));
-			return SD_FAIL;
-		}
-	}
-	return SD_SUCCESS;
-#else
 	unsigned int status;
 
 	// Wait until finish
@@ -344,7 +330,6 @@ unsigned int hwSdIdleWait(void)
 	prn_string("SDCTL wait timeout\n");
 	prn_sd_status();
 	return SD_FAIL;
-#endif
 }
 
 /**************************************************************************
@@ -366,7 +351,9 @@ unsigned int hwSdIdleWait(void)
 void SetMediaTypeMode(unsigned char ActFlash, unsigned short PageSize)
 {
 	CARD_MEDIA_TYPE_SET(ActFlash);
+#ifdef PLATFORM_8388
 	DMA_SIZE_SET((PageSize - 1) & 0x7ff);	/*setup dma buffer size*/
+#endif
 }
 
 /**************************************************************************
@@ -442,7 +429,9 @@ unsigned int hwSdCmdSend(unsigned int cmd, unsigned int arg,
 {
 	unsigned int err;
 	unsigned int ori_cmd;
+#ifdef PLATFORM_8388
 	unsigned int value;
+#endif
 
 	CSTAMP(0xCCAD0001); // prepare to send CMD
 	CSTAMP(cmd);
@@ -462,7 +451,6 @@ unsigned int hwSdCmdSend(unsigned int cmd, unsigned int arg,
 	//prn_string("\n");
 #endif
 
-#ifndef PLATFORM_3502
 	//
 	// Set Transcation Mode
 	//
@@ -502,13 +490,20 @@ unsigned int hwSdCmdSend(unsigned int cmd, unsigned int arg,
 
 	// Set RSP type
 	if (rspType != RSP_TYPE_R2) {
+#ifdef PLATFORM_8388
 		value = SD_CONFIG_GET();
 		SD_CONFIG_SET(value & 0xfffff7ff);	/* Set response type to 6 bytes*/
+#else
+		SDRSPTYPE_R2(0);
+#endif
 	} else {
+#ifdef PLATFORM_8388
 		value = SD_CONFIG_GET();
 		SD_CONFIG_SET(value | 0x00000800);	/*Set response type to 17 bytes*/
-	}
+#else
+		SDRSPTYPE_R2(1);
 #endif
+	}
 
 	SD_CMD_BUF0_SET( (unsigned char) (cmd + 0x40));
 	SD_CMD_BUF1_SET( (unsigned char) ((arg >> 24) & 0x000000ff));
@@ -522,17 +517,6 @@ unsigned int hwSdCmdSend(unsigned int cmd, unsigned int arg,
 
 	err = 0xffff;		/* Check if timeout occurs */
 
-#ifdef PLATFORM_3502
-	// Wait until SM idle
-	while ((SD_STATUS1_GET() & 0x0f) != 0x00) {
-		err--;		/* Wait for response */
-		if (err == 0) {
-			prn_string("Timeout cmd="); prn_dword(cmd);
-			prn_sd_status();
-			return SD_FAIL;
-		}
-	}
-#else
 	if (rspType == RSP_TYPE_NORSP) {
 		// Wait until SM idle
 		while ((SD_STATUS1_GET() & 0x0f) != 0x00) {
@@ -545,7 +529,6 @@ unsigned int hwSdCmdSend(unsigned int cmd, unsigned int arg,
 		}
 		return SD_SUCCESS;
 	}
-#endif
 
 	CSTAMP(0xCCAD0003); // wait end
 

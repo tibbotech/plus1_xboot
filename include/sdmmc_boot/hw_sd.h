@@ -64,7 +64,7 @@ enum SD_HANDLE_STATE {
 #define DMA_DRAM      			1
 #define DMA_FLASH     			2
 
-
+#ifdef PLATFORM_8388
 
 /******************************************************************************
 *                          MACRO Function Define
@@ -93,24 +93,13 @@ enum SD_HANDLE_STATE {
 #define sd_cmdbuf2(adrs)              (((volatile struct card_sd_regs *)(adrs+1*32*4))->sd_cmdbuf[2])
 #define sd_cmdbuf3(adrs)              (((volatile struct card_sd_regs *)(adrs+1*32*4))->sd_cmdbuf[3])
 #define sd_cmdbuf4(adrs)              (((volatile struct card_sd_regs *)(adrs+1*32*4))->sd_cmdbuf[4])
-#ifndef PLATFORM_3502
 #define sd_config0(adrs)              (((volatile struct card_sd_regs *)(adrs+1*32*4))->sd_config0)
-#endif
 #define sd_page_num(adrs)          (((volatile struct card_sd_regs *)(adrs+1*32*4))->sd_page_num)
 #define sd_int(adrs) 					(((volatile struct card_sd_regs *)(adrs+1*32*4))->sd_int)
 
 // CARD_CTL: SD controller and MS controller
-#ifdef PLATFORM_3502
-#define sd_rspbuf0(adrs)              (((volatile struct card_sdms_regs *)(adrs+2*32*4))->sd_rspbuf[0])
-#define sd_rspbuf1(adrs)              (((volatile struct card_sdms_regs *)(adrs+2*32*4))->sd_rspbuf[1])
-#define sd_rspbuf2(adrs)              (((volatile struct card_sdms_regs *)(adrs+2*32*4))->sd_rspbuf[2])
-#define sd_rspbuf3(adrs)              (((volatile struct card_sdms_regs *)(adrs+2*32*4))->sd_rspbuf[3])
-#define sd_rspbuf4(adrs)              (((volatile struct card_sdms_regs *)(adrs+2*32*4))->sd_rspbuf[4])
-#define sd_rspbuf5(adrs)              (((volatile struct card_sdms_regs *)(adrs+2*32*4))->sd_rspbuf[5])
-#else
 #define sd_rspbuf0_3(adrs)            (((volatile struct card_sdms_regs *)(adrs+2*32*4))->sd_rspbuf0_3)
 #define sd_rspbuf4_5(adrs)            (((volatile struct card_sdms_regs *)(adrs+2*32*4))->sd_rspbuf4_5)
-#endif
 #define sd_crc7buf(adrs)              (((volatile struct card_sdms_regs *)(adrs+2*32*4))->sd_crc7buf)
 #define sd_crc16buf0lsb(adrs)         (((volatile struct card_sdms_regs *)(adrs+2*32*4))->sd_crc16buf0)
 #define sd_hw_state(adrs)             (((volatile struct card_sdms_regs *)(adrs+2*32*4))->sd_hw_state)
@@ -119,9 +108,6 @@ enum SD_HANDLE_STATE {
 #define sd_crc16buf2lsb(adrs)         (((volatile struct card_sdms_regs *)(adrs+2*32*4))->sd_crc16buf2)
 #define sd_tx_dummy_num(adrs)         (((volatile struct card_sdms_regs *)(adrs+2*32*4))->sd_tx_dummy_num)
 #define sd_crc16buf3lsb(adrs)         (((volatile struct card_sdms_regs *)(adrs+2*32*4))->sd_crc16buf3)
-#ifdef PLATFORM_3502
-#define sd_crc16flag(adrs)            (((volatile struct card_sdms_regs *)(adrs+2*32*4))->sd_crc16flag)
-#endif
 #define sd_clk_dly(adrs)              (((volatile struct card_sdms_regs *)(adrs+2*32*4))->sd_clk_dly)
 #define ms_piodmarst(adrs)            (((volatile struct card_sdms_regs *)(adrs+2*32*4))->ms_piodmarst)
 #define ms_cmd(adrs)                  (((volatile struct card_sdms_regs *)(adrs+2*32*4))->ms_cmd)
@@ -245,7 +231,6 @@ enum SD_HANDLE_STATE {
 		sd_hw_config(gDEV_SDCTRL_BASE_ADRS) = sd_hw_config(gDEV_SDCTRL_BASE_ADRS) | (0x1<<3); \
 	}while(0)
 
-#ifndef PLATFORM_3502
 
 #define SD_TRANS_SDRSPCHK_EN(_x) \
 	do{ \
@@ -289,7 +274,6 @@ enum SD_HANDLE_STATE {
 		sd_config0(gDEV_SDCTRL_BASE_ADRS) = sd_config0(gDEV_SDCTRL_BASE_ADRS) | ((_x) & 0x1); \
 	}while(0)
 
-#endif
 
 #define SD_CMD_BUF0_GET()      (sd_cmdbuf0(gDEV_SDCTRL_BASE_ADRS) & 0x3f)
 
@@ -301,32 +285,18 @@ enum SD_HANDLE_STATE {
 
 #define SD_PAGE_NUM_SET(x)      sd_page_num(gDEV_SDCTRL_BASE_ADRS) = (x)
 
-
-#ifdef PLATFORM_3502
-#define SD_RSP_BUF0_GET         sd_rspbuf0(gDEV_SDCTRL_BASE_ADRS)
-#define SD_RSP_BUF1_GET         sd_rspbuf1(gDEV_SDCTRL_BASE_ADRS)
-#define SD_RSP_BUF2_GET         sd_rspbuf2(gDEV_SDCTRL_BASE_ADRS)
-#define SD_RSP_BUF3_GET         sd_rspbuf3(gDEV_SDCTRL_BASE_ADRS)
-#define SD_RSP_BUF4_GET         sd_rspbuf4(gDEV_SDCTRL_BASE_ADRS)
-#define SD_RSP_BUF5_GET         sd_rspbuf5(gDEV_SDCTRL_BASE_ADRS)
-#else
 #define SD_RSP_BUF0_3_GET       sd_rspbuf0_3(gDEV_SDCTRL_BASE_ADRS)
 #define SD_RSP_BUF4_5_GET       sd_rspbuf4_5(gDEV_SDCTRL_BASE_ADRS)
-#endif
 
 #define SD_CRC7_BUF_GET()        sd_crc7buf(gDEV_SDCTRL_BASE_ADRS)
 #define SD_HW_STATE_GET()        sd_hw_state(gDEV_SDCTRL_BASE_ADRS)
 #define SD_HW_CMD13_RCA_SET(x)   sd_hw_cmd13_rca(gDEV_SDCTRL_BASE_ADRS) = (x)
 
-#ifdef PLATFORM_3502
-#define SD_CRC16_FLAG_GET()      sd_crc16flag(gDEV_SDCTRL_BASE_ADRS)
-#else
 #define SD_RSP_TIMEOUT_ERROR() 		((sd_status0(gDEV_SDCTRL_BASE_ADRS) >> 6) & 0x01)
 #define SD_DATA_CRC_TIMEOUT_ERROR() ((sd_status0(gDEV_SDCTRL_BASE_ADRS) >> 7) & 0x01)
 #define SD_DATA_STB_TIMEOUT_ERROR() ((sd_status0(gDEV_SDCTRL_BASE_ADRS) >> 8) & 0x01)
 #define SD_DATA_CRC7_ERROR()     	((sd_status0(gDEV_SDCTRL_BASE_ADRS) >> 9) & 0x01)
 #define SD_DATA_CRC_ERROR()      	((sd_status0(gDEV_SDCTRL_BASE_ADRS) >> 11) & 0x01)
-#endif
 
 #define CARD_MEDIA_TYPE_SET(x)   card_mediatype(gDEV_SDCTRL_BASE_ADRS) = (x)
 
@@ -337,17 +307,13 @@ enum SD_HANDLE_STATE {
 #define SD_CONFIG_SET(x)         sd_config(gDEV_SDCTRL_BASE_ADRS) = (x)
 #define SD_CONFIG_GET()          sd_config(gDEV_SDCTRL_BASE_ADRS)
 
-#ifndef PLATFORM_3502
 #define SD_CONFIG0_GET()		 sd_config0(gDEV_SDCTRL_BASE_ADRS)
-#endif
 #define SD_RST()                 sd_rst(gDEV_SDCTRL_BASE_ADRS) = 0x03
 #define SD_CTRL_SET(x)           sd_ctrl(gDEV_SDCTRL_BASE_ADRS) = (x)
 
 #define SD_STATUS0_GET()         sd_status0(gDEV_SDCTRL_BASE_ADRS)
 #define SD_STATUS1_GET()         sd_status1(gDEV_SDCTRL_BASE_ADRS)
-#ifndef PLATFORM_3502
 #define SD_STATUS_NEW_ERR()      ((sd_status1(gDEV_SDCTRL_BASE_ADRS)>>13)&0x01)
-#endif
 
 #define SD_PIO_RX_DATA_GET()     sd_piodatarx(gDEV_SDCTRL_BASE_ADRS)
 
@@ -370,4 +336,190 @@ enum SD_HANDLE_STATE {
 			sd_clk_dly(gDEV_SDCTRL_BASE_ADRS) = sd_clk_dly(gDEV_SDCTRL_BASE_ADRS) &(~0x3); \
 			sd_clk_dly(gDEV_SDCTRL_BASE_ADRS) = sd_clk_dly(gDEV_SDCTRL_BASE_ADRS) | (0x3 & x); \
 		}while(0)
+
+#else
+
+/******************************************************************************
+*                          MACRO Function Define
+*******************************************************************************/
+#define TO_CARD_REG(adrs)				((volatile struct card_ctl_regs *)(adrs))
+
+#define mediatype(adrs)					(TO_CARD_REG(adrs)->mediatype)
+#define card_fm_page_cnt(adrs)			(TO_CARD_REG(adrs)->card_ctl_page_cnt)
+#define card_ring_page_limit(adrs)		(TO_CARD_REG(adrs)->sdram_sector_0_size)
+#define sd_rst(adrs)					(TO_CARD_REG(adrs)->sd_rst)
+
+#define sdrsptmren(adrs)				(TO_CARD_REG(adrs)->sdrsptmren)
+#define sdcrctmren(adrs)				(TO_CARD_REG(adrs)->sdcrctmren)
+#define rx4_en(adrs)					(TO_CARD_REG(adrs)->rx4_en)
+#define sddatawd(adrs)					(TO_CARD_REG(adrs)->sddatawd)
+#define sdfqsel(adrs)					(TO_CARD_REG(adrs)->sdfqsel)
+#define sdmmcmode(adrs)					(TO_CARD_REG(adrs)->sdmmcmode)
+#define sdrsptype(adrs)					(TO_CARD_REG(adrs)->sdrsptype)
+#define sd_config0(adrs)				(TO_CARD_REG(adrs)->sd_config0)
+#define sd_config1(adrs)				(TO_CARD_REG(adrs)->sd_config1)
+
+#define sd_ctrl(adrs)					(TO_CARD_REG(adrs)->sd_ctrl)
+#define sd_status0(adrs)              	(TO_CARD_REG(adrs)->sd_status)
+#define sd_status1(adrs)              	(TO_CARD_REG(adrs)->sd_state)
+#define sd_blocksize(adrs)            	(TO_CARD_REG(adrs)->sd_blocksize)
+#define sd_clk_dly_sel(adrs)			(TO_CARD_REG(adrs)->sd_clk_dly_sel)
+#define sd_rd_dly_sel(adrs)				(TO_CARD_REG(adrs)->sd_rd_dly_sel)
+#define sd_piodatatx(adrs)            	(TO_CARD_REG(adrs)->sd_piodatatx)
+#define sd_piodatarx(adrs)            	(TO_CARD_REG(adrs)->sd_piodatarx)
+#define sd_cmdbuf0(adrs)              	(TO_CARD_REG(adrs)->sd_cmdbuf[3])
+#define sd_cmdbuf1(adrs)              	(TO_CARD_REG(adrs)->sd_cmdbuf[2])
+#define sd_cmdbuf2(adrs)              	(TO_CARD_REG(adrs)->sd_cmdbuf[1])
+#define sd_cmdbuf3(adrs)              	(TO_CARD_REG(adrs)->sd_cmdbuf[0])
+#define sd_cmdbuf4(adrs)              	(TO_CARD_REG(adrs)->sd_cmdbuf[4])
+#define sd_page_num(adrs)				(TO_CARD_REG(adrs)->sd_page_num)
+#define sd_cmp(adrs) 					(TO_CARD_REG(adrs)->sd_cmp)
+#define sdio_int_en(adrs) 				(TO_CARD_REG(adrs)->sdio_int_en)
+#define hwdmacmpen(adrs) 				(TO_CARD_REG(adrs)->hwdmacmpen)
+
+#define sd_rspbuf0_3(adrs)				(TO_CARD_REG(adrs)->sd_rspbuf0_3)
+#define sd_rspbuf4_5(adrs)            	(TO_CARD_REG(adrs)->sd_rspbuf4_5)
+#define sd_hw_state(adrs)             	(TO_CARD_REG(adrs)->sd_hw_state)
+#define sd_tx_dummy_num(adrs)         	(TO_CARD_REG(adrs)->tx_dummy_num)
+
+#define sd_clk_dly(adrs)              	(TO_CARD_REG(adrs)->sd_clk_dly_sel)
+#define sd_wr_dly(adrs)              	(TO_CARD_REG(adrs)->sd_wr_dly_sel)
+#define sd_rd_dly(adrs)              	(TO_CARD_REG(adrs)->sd_rd_dly_sel)
+
+#define sd_rxdattmr(adrs)              	(TO_CARD_REG(adrs)->sd_rxdattmr)
+
+#define dmasrc(adrs)					(TO_CARD_REG(adrs)->dmasrc)
+#define dmadst(adrs)					(TO_CARD_REG(adrs)->dmadst)
+
+#define dma_base_addr(adrs)          	(TO_CARD_REG(adrs)->dma_base_addr)
+
+#define dma_hw_page_cnt(adrs)         	(TO_CARD_REG(adrs)->dma_hw_page_cnt)
+
+#define hw_dma_cmp(adrs)                (TO_CARD_REG(adrs)->hw_dma_cmp)
+#define hwdmacmpen(adrs)               	(TO_CARD_REG(adrs)->hwdmacmpen)
+
+#define hw_wait_num(adrs)				(TO_CARD_REG(adrs)->hw_wait_num)
+#define sd_high_speed_en(adrs)			(TO_CARD_REG(adrs)->sd_high_speed_en)
+#define sd_rspchk_en(adrs)				(TO_CARD_REG(adrs)->sdrspchk_en)
+#define sd_cmddummy(adrs)				(TO_CARD_REG(adrs)->sdcmddummy)
+#define sd_autorsp(adrs)				(TO_CARD_REG(adrs)->sdautorsp)
+#define sd_trans_mode(adrs)				(TO_CARD_REG(adrs)->sd_trans_mode)
+#define sd_len_mode(adrs)				(TO_CARD_REG(adrs)->sd_len_mode)
+#define sd_ddrmode(adrs)				(TO_CARD_REG(adrs)->sdddrmode)
+#define sd_piomode(adrs)				(TO_CARD_REG(adrs)->sdpiomode)
+#define sdcrctmr(adrs)					(TO_CARD_REG(adrs)->sdcrctmr)
+#define sdrsptmr(adrs)					(TO_CARD_REG(adrs)->sdrsptmr)
+
+
+#define SD_HIGHSPEED_EN_SET(x)			sd_high_speed_en(gDEV_SDCTRL_BASE_ADRS)	= !!(x)
+
+#define SD_DELAY_MASK					0x7
+#define SD_WT_CLK_DELAY_TIME_SET(x)		sd_wr_dly(gDEV_SDCTRL_BASE_ADRS)		= (x) & SD_DELAY_MASK
+#define SD_WT_CLK_DELAY_TIME_GET()		sd_high_speed_en(gDEV_SDCTRL_BASE_ADRS)
+
+#define SD_RD_CLK_DELAY_TIME_SET(x)		sd_rd_dly(gDEV_SDCTRL_BASE_ADRS)		= (x) & SD_DELAY_MASK
+#define SD_RD_CLK_DELAY_TIME_GET()		sd_rd_dly(gDEV_SDCTRL_BASE_ADRS)
+
+#define SD_BLOCK_SIZE_MASK				0x7FF
+#define SD_BLOCK_SIZE_SET(x)			sd_blocksize(gDEV_SDCTRL_BASE_ADRS)		= ((x) & SD_BLOCK_SIZE_MASK)
+#define SD_BLOCK_SIZE_GET()				sd_blocksize(gDEV_SDCTRL_BASE_ADRS) & SD_BLOCK_SIZE_MASK
+
+#define SD_TRANS_SDRSPCHK_EN(x)			sd_rspchk_en(gDEV_SDCTRL_BASE_ADRS)		= !!(x)
+
+#define SD_TRANS_SDDUMMY(x)				sd_cmddummy(gDEV_SDCTRL_BASE_ADRS)		= !!(x)
+#define SD_TRANS_SDAUTORSP(x)			sd_autorsp(gDEV_SDCTRL_BASE_ADRS)		= !!(x)
+#define SD_TRANS_MODE_MASK				0x3
+#define SD_TRANS_MODE_SET(x)			sd_trans_mode(gDEV_SDCTRL_BASE_ADRS)	= (x) & SD_TRANS_MODE_MASK
+
+#define SD_TRANS_SDLENMODE(x)			sd_len_mode(gDEV_SDCTRL_BASE_ADRS)		= !!(x)
+
+#define SD_TRANS_SDDDRMODE(x)			sd_ddrmode(gDEV_SDCTRL_BASE_ADRS)		= !!(x)
+
+#define SD_TRANS_SDPIOMODE(x)			sd_piomode(gDEV_SDCTRL_BASE_ADRS)		= !!(x)
+
+#define SD_CMD_BUF0_GET()				(sd_cmdbuf0(gDEV_SDCTRL_BASE_ADRS) & 0x3f)
+#define SD_CMD_BUF0_SET(x)     			sd_cmdbuf0(gDEV_SDCTRL_BASE_ADRS)		= (x)
+#define SD_CMD_BUF1_SET(x)     			sd_cmdbuf1(gDEV_SDCTRL_BASE_ADRS) 		= (x)
+#define SD_CMD_BUF2_SET(x)     			sd_cmdbuf2(gDEV_SDCTRL_BASE_ADRS) 		= (x)
+#define SD_CMD_BUF3_SET(x)     			sd_cmdbuf3(gDEV_SDCTRL_BASE_ADRS) 		= (x)
+#define SD_CMD_BUF4_SET(x)     			sd_cmdbuf4(gDEV_SDCTRL_BASE_ADRS) 		= (x)
+
+#define SD_PAGE_NUM_SET(x)     			sd_page_num(gDEV_SDCTRL_BASE_ADRS)		= (x)
+#define SD_PAGE_NUM_GET(x)     			sd_page_num(gDEV_SDCTRL_BASE_ADRS)
+
+#define SD_RSP_BUF0_3_GET      			sd_rspbuf0_3(gDEV_SDCTRL_BASE_ADRS)
+#define SD_RSP_BUF4_5_GET      			sd_rspbuf4_5(gDEV_SDCTRL_BASE_ADRS)
+
+#define SD_HW_STATE_GET()				sd_hw_state(gDEV_SDCTRL_BASE_ADRS)
+#define SD_HW_CMD13_RCA_SET(x)			sd_hw_cmd13_rca(gDEV_SDCTRL_BASE_ADRS)	= (x)
+
+#define SD_RSP_TIMEOUT_ERROR()			((sd_status0(gDEV_SDCTRL_BASE_ADRS) >> 6) & 0x01)
+#define SD_DATA_CRC_TIMEOUT_ERROR() 	((sd_status0(gDEV_SDCTRL_BASE_ADRS) >> 7) & 0x01)
+#define SD_DATA_STB_TIMEOUT_ERROR() 	((sd_status0(gDEV_SDCTRL_BASE_ADRS) >> 8) & 0x01)
+#define SD_DATA_CRC7_ERROR()     		((sd_status0(gDEV_SDCTRL_BASE_ADRS) >> 9) & 0x01)
+#define SD_DATA_CRC_ERROR()      		((sd_status0(gDEV_SDCTRL_BASE_ADRS) >> 11) & 0x01)
+
+#define CARD_MEDIA_TYPE_SET(x)			mediatype(gDEV_SDCTRL_BASE_ADRS) = (x)
+
+#define hwSdCardCrcState()      		((((sd_status1(gDEV_SDCTRL_BASE_ADRS)) & 0x70) >> 4) == 0x02)
+#define hwSdDat0Check()         		(((sd_status0(gDEV_SDCTRL_BASE_ADRS)) & 0x20) >> 5)
+#define hwSdTimeOut()           		(((sd_status0(gDEV_SDCTRL_BASE_ADRS)) >> 7) & 0x01)
+
+#define SD_CONFIG0_GET()				sd_config0(gDEV_SDCTRL_BASE_ADRS)
+#define SD_CONFIG_GET()          		sd_config1(gDEV_SDCTRL_BASE_ADRS)
+#define SD_RST()                		sd_rst(gDEV_SDCTRL_BASE_ADRS)			= 0x03
+#define SD_CTRL_SET(x)          		sd_ctrl(gDEV_SDCTRL_BASE_ADRS)			= (x)
+
+#define SD_STATUS0_GET()        		sd_status0(gDEV_SDCTRL_BASE_ADRS)
+#define SD_STATUS1_GET()        		sd_status1(gDEV_SDCTRL_BASE_ADRS)
+#define SD_STATUS_NEW_ERR()				((sd_status1(gDEV_SDCTRL_BASE_ADRS)>>13)&0x01)
+
+#define SD_PIO_RX_DATA_GET()			sd_piodatarx(gDEV_SDCTRL_BASE_ADRS)
+
+#define DMA_FROM_DEVICE					0
+#define DMA_TO_DEVICE					1
+
+#define Q628_MEMORY						1
+#define MMC_FLASH						2
+
+#define DMA_SRCDST_SET(x) \
+	do { \
+		if ((x) ==  DMA_TO_DEVICE) { \
+			dmasrc(Q628_MEMORY); \
+			dmadst(MMC_FLASH); \
+		} else { \
+			dmasrc(Q628_MEMORY); \
+			dmadst(MMC_FLASH); \
+		} \
+	} while (0)
+
+#define SET_HW_DMA_BASE_ADDR(DRAMAddr)	dma_base_addr(gDEV_SDCTRL_BASE_ADRS)	= (UINT32) DRAMAddr
+#define DMA_HW_EN(x)					hwdmacmpen(gDEV_SDCTRL_BASE_ADRS)		= !!(x)
+#define SDIO_INT_EN(x)					sdio_int_en(gDEV_SDCTRL_BASE_ADRS)		= !!(x)
+#define SD_CMP_EN(x)					sd_cmp(gDEV_SDCTRL_BASE_ADRS)			= !!(x)
+
+#define SD_TXDUMMY_MASK					0x1FF
+#define SD_TXDUMMY_SET(x)				sd_tx_dummy_num(gDEV_SDCTRL_BASE_ADRS)	= (x) & SD_TXDUMMY_MASK
+
+#define SD_RXDATTMR_MASK				0x1FFFFFFF
+#define SD_RXDATTMR_GET()				sd_rxdattmr(gDEV_SDCTRL_BASE_ADRS)
+#define SD_RXDATTMR_SET(x)				sd_rxdattmr(gDEV_SDCTRL_BASE_ADRS)		= (x) & SD_RXDATTMR_MASK
+
+#define SD_WAIT_RSP_TIME_MASK			0x7FF
+#define SD_WAIT_RSP_TIME_SET(x)			sdrsptmr(gDEV_SDCTRL_BASE_ADRS)			= (x) & SD_WAIT_RSP_TIME_MASK
+#define SD_WAIT_CRC_TIME_MASK			0x7FF
+#define SD_WAIT_CRC_TIME_SET(x)			sdcrctmr(gDEV_SDCTRL_BASE_ADRS)			= (x) & SD_WAIT_CRC_TIME_MASK
+
+#define RX4_EN(x)						rx4_en(gDEV_SDCTRL_BASE_ADRS)			= !!(x)
+#define SDRSPTMREN(x)					sdrsptmren(gDEV_SDCTRL_BASE_ADRS)		= !!(x)
+#define SDCRCTMREN(x)					sdcrctmren(gDEV_SDCTRL_BASE_ADRS)		= !!(x)
+#define SDDATAWD(x)						sddatawd(gDEV_SDCTRL_BASE_ADRS)			= !!(x)
+#define MMC_FREQ_DIV_MASK				0xFFF
+#define SDFQSEL(x)						sdfqsel(gDEV_SDCTRL_BASE_ADRS)			= (x) & MMC_FREQ_DIV_MASK
+#define SDFQSEL_GET()					sdfqsel(gDEV_SDCTRL_BASE_ADRS)
+#define SDMMCMODE(x)					sdmmcmode(gDEV_SDCTRL_BASE_ADRS)		= !!(x)
+#define	SDRSPTYPE_R2(x)					sdrsptype(gDEV_SDCTRL_BASE_ADRS)		= !!(x)
+
+#endif
+
 #endif //#ifndef _HWSD_H_

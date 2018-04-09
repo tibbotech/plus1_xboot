@@ -209,7 +209,7 @@ u32 fat_boot(u32 type, u32 port, fat_info *info, u8 *buffer)
 	/*
 	 * Initialization
 	 */
-	if (info->init(port, 0) != ROM_SUCCESS) {
+	if (info->init(port) != ROM_SUCCESS) {
 		dbg_info();
 		return FAIL;
 	}

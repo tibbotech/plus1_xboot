@@ -527,18 +527,22 @@ static void uart_isp(u32 forever)
 static int emmc_read(u8 *buf, u32 blk_off, u32 count)
 {
 #ifdef EMMC_USE_DMA_READ
-        /* dma mode supports multi-sector read */
-        return ReadSDSector(blk_off, count, (unsigned int *)buf);
+	/* dma mode supports multi-sector read */
+	return ReadSDSector(blk_off, count, (unsigned int *)buf);
 #else
-        /* polling mode supports single-sector read */
-        int res;
-        for (; count > 0; count--, buf += EMMC_BLOCK_SZ, blk_off++) {
-                res = ReadSDSector(blk_off, 1, (unsigned int *)buf);
-                if (res < 0) {
-                        return res;
-                }
-        }
-        return 0;
+#ifdef PLATFORM_8388
+	/* polling mode supports single-sector read */
+	int res;
+	for (; count > 0; count--, buf += EMMC_BLOCK_SZ, blk_off++) {
+		res = ReadSDSector(blk_off, 1, (unsigned int *)buf);
+		if (res < 0) {
+			return res;
+		}
+	}
+	return 0;
+#else
+	return ReadSDSector(blk_off, count, (unsigned int *)buf);
+#endif
 #endif
 }
 
@@ -684,47 +688,54 @@ static void emmc_boot(void)
 		return;
 	}
 
-	if (initDriver_SD(EMMC_SLOT_NUM, MMC_USER_AREA)) {
+	if (initDriver_SD(EMMC_SLOT_NUM)) {
 		prn_string("init fail\n");
 		return;
-	} else {
-		/* load uboot from GPT disk */
-		prn_string("Read GPT\n");
-		res = emmc_read(g_boothead, 1, 1); /* LBA 1 */
-		if (res < 0) {
-			prn_string("can't read LBA 1\n");
-			return;
-		}
+	}
 
-		gpt_hdr = (gpt_header *)g_boothead;
-		if (gpt_hdr->signature != GPT_HEADER_SIGNATURE) {
-			prn_string("bad hdr sig\n");
-			return;
-		}
+	/* mark active part */
+	g_bootinfo.mmc_active_part = MMC_USER_AREA;
+	if (SetMMCPartitionNum(0)) {
+		prn_string("switch user area fail\n");
+		return;
+	}
 
-		res = emmc_read(g_boothead, 2, 1); /* LBA 2 */
-		if (res < 0) {
-			dbg();
-			return;
-		}
-		gpt_part = (gpt_entry *)g_boothead;
+	/* load uboot from GPT disk */
+	prn_string("Read GPT\n");
+	res = emmc_read(g_boothead, 1, 1); /* LBA 1 */
+	if (res < 0) {
+		prn_string("can't read LBA 1\n");
+		return;
+	}
 
-		/* look for uboot at GPT part 1 or 2 */
-		for (i = 0; i < 2; i++) {
-			blk_start1 = (u32) gpt_part[i].starting_lba;
-			prn_string("part"); prn_decimal(1 + i);
-			prn_string(" LBA="); prn_dword(blk_start1);
+	gpt_hdr = (gpt_header *)g_boothead;
+	if (gpt_hdr->signature != GPT_HEADER_SIGNATURE) {
+		prn_string("bad hdr sig: "); prn_dword((u32)gpt_hdr->signature);
+		return;
+	}
 
-			len = emmc_load_uhdr_image("uboot", (void *)UBOOT_LOAD_ADDR, 0,
+	res = emmc_read(g_boothead, 2, 1); /* LBA 2 */
+	if (res < 0) {
+		dbg();
+		return;
+	}
+	gpt_part = (gpt_entry *)g_boothead;
+
+	/* look for uboot at GPT part 1 or 2 */
+	for (i = 0; i < 2; i++) {
+		blk_start1 = (u32) gpt_part[i].starting_lba;
+		prn_string("part"); prn_decimal(1 + i);
+		prn_string(" LBA="); prn_dword(blk_start1);
+
+		len = emmc_load_uhdr_image("uboot", (void *)UBOOT_LOAD_ADDR, 0,
 				blk_start1, 0, 0x200000, MMC_USER_AREA);
-			if (len > 0)
-				break;
-		}
+		if (len > 0)
+			break;
+	}
 
-		if (len <= 0) {
-			prn_string("bad uboot\n");
-			return;
-		}
+	if (len <= 0) {
+		prn_string("bad uboot\n");
+		return;
 	}
 
 	prn_string("Run u-boot @");

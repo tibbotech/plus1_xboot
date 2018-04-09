@@ -1,6 +1,6 @@
 /******************************************************************************
-*                          Include File
-*******************************************************************************/
+ *                          Include File
+ *******************************************************************************/
 #include <nand_boot/nandop.h>
 #include <sdmmc_boot/hal_sd_mmc.h>
 #include <sdmmc_boot/hw_sd.h>
@@ -10,13 +10,13 @@
 //#include <config_xboot.h>  //for xboot. marked in iboot
 #include <stdarg.h>
 /******************************************************************************
-*                          MACRO Function Define
-*******************************************************************************/
-//#define SDEMMC_DBUG_ON
+ *                          MACRO Function Define
+ *******************************************************************************/
+//#define SDEMMC_DBUG_ON // verbose
 #ifdef  SDEMMC_DBUG_ON
-#define DEBUG_PRINTF_E(fmt, args...)  		emmcPrintf(fmt, ##args)
-#define DEBUG_PRINTF_FUNLINE(fmt, args...) 	emmcPrintf(fmt, ##args)
-#define DEBUG_PRINTF(fmt, args...) 			emmcPrintf(fmt, ##args)
+#define DEBUG_PRINTF_E(fmt, args...)  		diag_printf(fmt, ##args)
+#define DEBUG_PRINTF_FUNLINE(fmt, args...) 	diag_printf(fmt, ##args)
+#define DEBUG_PRINTF(fmt, args...) 		diag_printf(fmt, ##args)
 #else
 #define DEBUG_PRINTF_E(fmt, args...) 		do{}while(0)
 #define DEBUG_PRINTF_FUNLINE(fmt, args...) 	do{}while(0)
@@ -24,45 +24,45 @@
 #endif
 
 #define BSWAP_CONSTANT_32(x)			\
-    (unsigned int)((((unsigned int)(x) & 0xff000000u) >> 24) |	\
-                   (((unsigned int)(x) & 0x00ff0000u) >>  8) |	\
-                   (((unsigned int)(x) & 0x0000ff00u) <<  8) |	\
-                   (((unsigned int)(x) & 0x000000ffu) << 24))
+	(unsigned int)((((unsigned int)(x) & 0xff000000u) >> 24) |	\
+			(((unsigned int)(x) & 0x00ff0000u) >>  8) |	\
+			(((unsigned int)(x) & 0x0000ff00u) <<  8) |	\
+			(((unsigned int)(x) & 0x000000ffu) << 24))
 
 #define IS_DMA_ADDR_2BYTE_ALIGNED(x)  (!((x) & 0x1))
 extern void _delay_1ms(UINT32 period);
 extern unsigned int sdTranStateWait(void);
 extern void prn_sd_status(void);
 /******************************************************************************
-*                          Global Variabl
-*******************************************************************************/
+ *                          Global Variabl
+ *******************************************************************************/
 static const unsigned int tran_exp[] =
 {
-    10000,		100000,		1000000,	10000000,
-    0,		0,		0,		0
+	10000,		100000,		1000000,	10000000,
+	0,		0,		0,		0
 };
 
 static const unsigned char tran_mant[] =
 {
-    0,	10,	12,	13,	15,	20,	25,	30,
-    35,	40,	45,	50,	55,	60,	70,	80,
+	0,	10,	12,	13,	15,	20,	25,	30,
+	35,	40,	45,	50,	55,	60,	70,	80,
 };
 
 static const unsigned int tacc_exp[] =
 {
-    1,	10,	100,	1000,	10000,	100000,	1000000, 10000000,
+	1,	10,	100,	1000,	10000,	100000,	1000000, 10000000,
 };
 
 static const unsigned int tacc_mant[] =
 {
-    0,	10,	12,	13,	15,	20,	25,	30,
-    35,	40,	45,	50,	55,	60,	70,	80,
+	0,	10,	12,	13,	15,	20,	25,	30,
+	35,	40,	45,	50,	55,	60,	70,	80,
 };
 
 
 #define SUPPORT_RD_DLY_TESTING 1
 #define SD_RD_CLK_DLY_BEG       2 // for SDCARD
-#define EMMC_RD_CLK_DLY_BEG     3 // for eMMC
+#define EMMC_RD_CLK_DLY_BEG     0 // for eMMC
 
 const inline int get_SD_RD_CLK_DLY_BEG(int card_num)
 {
@@ -74,12 +74,12 @@ const inline int get_SD_RD_CLK_DLY_BEG(int card_num)
 }
 
 /******************************************************************************
-*                          External Definition
-*******************************************************************************/
+ *                          External Definition
+ *******************************************************************************/
 
 /******************************************************************************
-*                         Function Prototype
-*******************************************************************************/
+ *                         Function Prototype
+ *******************************************************************************/
 int ReadSectorByPolling(unsigned char* pRecBuf,unsigned int*  pRecLenInByte);
 int SetSD74Clk(void);
 int DoMMCSwitch(struct STORAGE_DEVICE* pStroage_dev,unsigned char CmdSet,unsigned char Index,unsigned char Value);
@@ -114,146 +114,7 @@ void prn_sd_reg_dump(void)
 	}
 }
 #endif
-#ifdef SDEMMC_DBUG_ON
-#define ADDCH(str, ch) do { \
-	if ((str) < end) \
-		*(str) = (ch); \
-	++str; \
-	} while (0)
-static char *string(char *buf, char *end, char *s)
-{
-	if (s == NULL)
-		s = "<NULL>";
-	while(*s)
-		ADDCH(buf, *s++);
-	return buf;
-}
 
-static  char *put_dec(char *buf, u32 num)
-{
-	int numRem, numQuo;
-
-	do{
-		numQuo = num / 10;
-		numRem = num % 10;
-		num = numQuo;
-		*buf++ = (char) numRem + '0';
-	}while(numQuo);
-	return buf;
-}
-
-static char *number(char *buf, char *end, u32 num, int base)
-{
-	/* we are called with base 8, 10 or 16, only, thus don't need "G..."  */
-	static const char digits[16] = "0123456789ABCDEF";
-
-	char tmp[66];
-	int i;
-
-
-	/* generate full string in tmp[], in reverse order */
-	i = 0;
-	if (num == 0)
-		tmp[i++] = '0';
-	else if (base != 10) { /* 8 or 16 */
-		int mask = base - 1;
-		int shift = 3;
-
-		if (base == 16)
-			shift = 4;
-
-		do {
-			tmp[i++] = (digits[((unsigned char)num) & mask]);
-			num >>= shift;
-		} while (num);
-	} else { /* base 10 */
-		i = put_dec(tmp, num) - tmp;
-	}
-
-	/* actual digits of result */
-	while (--i >= 0)
-		ADDCH(buf, tmp[i]);
-	return buf;
-}
-
-static int emmcSnprintf(char *buf, size_t size, const char *fmt,
-			      va_list args)
-{
-	u64 num;
-	int base = 10;
-	char *str;
-
-	char *end = buf + size;
-
-	str = buf;
-
-	for (; *fmt ; ++fmt) {
-		if (*fmt != '%') {
-			ADDCH(str, *fmt);
-			continue;
-		}
-		++fmt;		/* this also skips first '%' */
-		switch (*fmt) {
-		case 'c':
-			ADDCH(str, (unsigned char) va_arg(args, int));
-			continue;
-
-		case 's':
-			str = string(str, end, va_arg(args, char *));
-			continue;
-
-		case '%':
-			ADDCH(str, '%');
-			continue;
-
-		/* integer number formats - set up the flags and "break" */
-		case 'o':
-			base = 8;
-			break;
-
-		case 'x':
-		case 'X':
-		case 'p':
-			base = 16;
-			break;
-
-		case 'd':
-		case 'i':
-		case 'u':
-			base = 10;
-			break;
-
-		default:
-			ADDCH(str, '%');
-			if (*fmt)
-				ADDCH(str, *fmt);
-			else
-				--fmt;
-			continue;
-		}
-
-		num = va_arg(args, unsigned int);
-		num = (signed int) num;
-		str = number(str, end, num, base);
-	}
-
-
-	*str = '\0';
-	/* the trailing null byte doesn't count towards the total */
-	return str - buf;
-}
-
-void emmcPrintf(const char *fmt, ...){
-	char buf[256];
-	//va_arg(args, const char *)
-	va_list args;
-	va_start(args, fmt);
-	emmcSnprintf(buf, 256, fmt, args);
-	va_end(args);
-
-	prn_string(buf);
-}
-#endif
 /**
  *	UNSTUFF_BITS - Get n bits
  *  @resp: buffer pointer
@@ -327,11 +188,7 @@ void InitChipCtrl(void)
 	if (get_card_number() == EMMC_SLOT_NUM) {
 		hwSdInit(SD_MODE);
 		hwSdConfig(SD_1BIT_MODE, MMC_MODE);
-#ifdef PLATFORM_3502
-		SetChipCtrlClk(CARD_CLK,400000);
-#else
 		SetChipCtrlClk(CARD012_CLK, 200000);
-#endif
 	} else {
 		hwSdInit(SD_MODE);
 		hwSdConfig(SD_1BIT_MODE, SD_MODE);
@@ -342,11 +199,9 @@ void InitChipCtrl(void)
 	SetChipCtrlBlkLen(BLOCK_LEN_BYTES_512);
 
 	// Transaction Mode
-#ifndef PLATFORM_3502
 	SD_TRANS_SDDDRMODE(0); // 0: SDR mode with Tx/Rx data
 	SD_TRANS_SDLENMODE(1); // 1: hw will not send stop cmd
 	SD_TRANS_SDPIOMODE(1); // 1: enable PIO
-#endif
 
 	/* ----- Start 74 cycles on SD Clk Bus ----- */
 	CSTAMP(0xCAD00001);
@@ -367,7 +222,7 @@ void InitChipCtrl(void)
  *	SetChipCtrlClk - Set chip ctrl's clk
  *
  */
-void
+	void
 SetChipCtrlClk(unsigned int sysClock, unsigned int busSpeed)
 {
 	unsigned int speedFactor;
@@ -388,11 +243,7 @@ SetChipCtrlClk(unsigned int sysClock, unsigned int busSpeed)
  */
 void SetChipCtrlBlkLen(int blklen)
 {
-#ifdef PLATFORM_3502
-	SD_BLOCK_SIZE_SET(blklen & 0x3ff);
-#else
 	SD_BLOCK_SIZE_SET((blklen - 1) & 0x3ff);
-#endif
 }
 
 //-------------------------------------
@@ -495,7 +346,7 @@ int CheckSDAppOpCond(struct STORAGE_DEVICE* pStroage_dev)
 		}
 		loop_count++;
 		_delay_1ms(1);
-/*	spec says it needs 1 second */
+		/*	spec says it needs 1 second */
 		if (loop_count > (TIME_OUT_LOOP_COUNT_SHORT*3)) {
 			CSTAMP(0xCAD05007);
 			DEBUG_PRINTF_FUNLINE("ACMD41: Cards with non compatible voltage range or time out coocurs \n");
@@ -589,11 +440,11 @@ int GetAllSendCIDNum(struct STORAGE_DEVICE* pStroage_dev)
 	pStroage_dev->dev_card.raw_cid[0] = (rsp_buf[13] << 24) + (rsp_buf[14] << 16) + (rsp_buf[15] << 8) + rsp_buf[16];
 
 	/*
-	prn_string("CID[3]="); prn_dword(pStroage_dev->dev_card.raw_cid[3]);
-	prn_string("CID[2]="); prn_dword(pStroage_dev->dev_card.raw_cid[2]);
-	prn_string("CID[1]="); prn_dword(pStroage_dev->dev_card.raw_cid[1]);
-	prn_string("CID[0]="); prn_dword(pStroage_dev->dev_card.raw_cid[0]);
-	*/
+	   prn_string("CID[3]="); prn_dword(pStroage_dev->dev_card.raw_cid[3]);
+	   prn_string("CID[2]="); prn_dword(pStroage_dev->dev_card.raw_cid[2]);
+	   prn_string("CID[1]="); prn_dword(pStroage_dev->dev_card.raw_cid[1]);
+	   prn_string("CID[0]="); prn_dword(pStroage_dev->dev_card.raw_cid[0]);
+	 */
 
 	return SD_SUCCESS;
 }
@@ -663,11 +514,11 @@ int GetSendCSDNum(struct STORAGE_DEVICE* pStroage_dev)
 	pStroage_dev->dev_card.raw_csd[0] = (rsp_buf[13] << 24) + (rsp_buf[14] << 16) + (rsp_buf[15] << 8) + rsp_buf[16];
 
 	/*
-	prn_string("CSD[3]="); prn_dword(pStroage_dev->dev_card.raw_csd[3]);
-	prn_string("CSD[2]="); prn_dword(pStroage_dev->dev_card.raw_csd[2]);
-	prn_string("CSD[1]="); prn_dword(pStroage_dev->dev_card.raw_csd[1]);
-	prn_string("CSD[0]="); prn_dword(pStroage_dev->dev_card.raw_csd[0]);
-	*/
+	   prn_string("CSD[3]="); prn_dword(pStroage_dev->dev_card.raw_csd[3]);
+	   prn_string("CSD[2]="); prn_dword(pStroage_dev->dev_card.raw_csd[2]);
+	   prn_string("CSD[1]="); prn_dword(pStroage_dev->dev_card.raw_csd[1]);
+	   prn_string("CSD[0]="); prn_dword(pStroage_dev->dev_card.raw_csd[0]);
+	 */
 
 	return ret;
 }
@@ -760,7 +611,7 @@ FAIL_GET_SCR:
  *  @pReg_Status:
  *
  */
-int
+	int
 CheckCardStatus(struct STORAGE_DEVICE* pStroage_dev)
 {
 	int ret, nrRetry;
@@ -1055,7 +906,7 @@ int ChangeMMCToHiSpeedMode(struct STORAGE_DEVICE* pStroage_dev)
 }
 #endif /* CONFIG_HAVE_EMMC */
 
-#if 0 // unused
+#if 1 // unused
 //-------------------------------------
 /**
  */
@@ -1103,7 +954,7 @@ int GetBootPartitionNum(void)
  * 6: Access to General Purpose partition 3
  * 7: Access to General Purpose partition 4
  */
-int SetMMCPartitionNun(unsigned char PartitionNum)
+int SetMMCPartitionNum(unsigned char PartitionNum)
 {
 	int ret_value = ERR_SUCCESS;
 	struct STORAGE_DEVICE* pstorage_device = 0;
@@ -1410,105 +1261,105 @@ void DecodeCSD(struct STORAGE_DEVICE* pStorage_device)
 void DecodeCID(struct STORAGE_DEVICE* pStorage_device)
 {
 #if 0
-    unsigned int* resp = pStorage_device->dev_card.raw_cid;
+	unsigned int* resp = pStorage_device->dev_card.raw_cid;
 
-    // Decode SD's CID
-    if (pStorage_device->what_dev < WHAT_STORAGE_STANDARD_CAPACITY_MMC)
-    {
-        pStorage_device->dev_card.reg_CID.manfid = UNSTUFF_BITS(resp,4, 120, 8);
-        pStorage_device->dev_card.reg_CID.oemid = UNSTUFF_BITS(resp,4, 104, 16);
-        pStorage_device->dev_card.reg_CID.prod_name[0] = UNSTUFF_BITS(resp,4, 96, 8);
-        pStorage_device->dev_card.reg_CID.prod_name[1] = UNSTUFF_BITS(resp,4, 88, 8);
-        pStorage_device->dev_card.reg_CID.prod_name[2] = UNSTUFF_BITS(resp,4, 80, 8);
-        pStorage_device->dev_card.reg_CID.prod_name[3] = UNSTUFF_BITS(resp,4, 72, 8);
-        pStorage_device->dev_card.reg_CID.prod_name[4] = UNSTUFF_BITS(resp,4, 64, 8);
+	// Decode SD's CID
+	if (pStorage_device->what_dev < WHAT_STORAGE_STANDARD_CAPACITY_MMC)
+	{
+		pStorage_device->dev_card.reg_CID.manfid = UNSTUFF_BITS(resp,4, 120, 8);
+		pStorage_device->dev_card.reg_CID.oemid = UNSTUFF_BITS(resp,4, 104, 16);
+		pStorage_device->dev_card.reg_CID.prod_name[0] = UNSTUFF_BITS(resp,4, 96, 8);
+		pStorage_device->dev_card.reg_CID.prod_name[1] = UNSTUFF_BITS(resp,4, 88, 8);
+		pStorage_device->dev_card.reg_CID.prod_name[2] = UNSTUFF_BITS(resp,4, 80, 8);
+		pStorage_device->dev_card.reg_CID.prod_name[3] = UNSTUFF_BITS(resp,4, 72, 8);
+		pStorage_device->dev_card.reg_CID.prod_name[4] = UNSTUFF_BITS(resp,4, 64, 8);
 
-        pStorage_device->dev_card.reg_CID.hwrev = UNSTUFF_BITS(resp,4, 60, 4);
-        pStorage_device->dev_card.reg_CID.fwrev = UNSTUFF_BITS(resp,4, 56, 4);
-        pStorage_device->dev_card.reg_CID.serial = UNSTUFF_BITS(resp,4, 24, 32);
-        pStorage_device->dev_card.reg_CID.year = (UNSTUFF_BITS(resp,4, 12, 8)+2000);
-        pStorage_device->dev_card.reg_CID.month = UNSTUFF_BITS(resp,4, 8, 4);
+		pStorage_device->dev_card.reg_CID.hwrev = UNSTUFF_BITS(resp,4, 60, 4);
+		pStorage_device->dev_card.reg_CID.fwrev = UNSTUFF_BITS(resp,4, 56, 4);
+		pStorage_device->dev_card.reg_CID.serial = UNSTUFF_BITS(resp,4, 24, 32);
+		pStorage_device->dev_card.reg_CID.year = (UNSTUFF_BITS(resp,4, 12, 8)+2000);
+		pStorage_device->dev_card.reg_CID.month = UNSTUFF_BITS(resp,4, 8, 4);
 
-        DEBUG_PRINTF_E("MID(Manufacturer ID) = %d \n",pStorage_device->dev_card.reg_CID.manfid);
-        DEBUG_PRINTF_E("OID(OEM/Application ID) = %d \n",pStorage_device->dev_card.reg_CID.oemid);
-        DEBUG_PRINTF_E("PVM0(Product Name) = %c \n",pStorage_device->dev_card.reg_CID.prod_name[0]);
-        DEBUG_PRINTF_E("PVM1(Product Name) = %c \n",pStorage_device->dev_card.reg_CID.prod_name[1]);
-        DEBUG_PRINTF_E("PVM2(Product Name) = %c \n",pStorage_device->dev_card.reg_CID.prod_name[2]);
-        DEBUG_PRINTF_E("PVM3(Product Name) = %c \n",pStorage_device->dev_card.reg_CID.prod_name[3]);
-        DEBUG_PRINTF_E("PVM4(Product Name) = %c \n",pStorage_device->dev_card.reg_CID.prod_name[4]);
-        DEBUG_PRINTF_E("PRV(Product revision) = hw:%d/fw:%d \n",pStorage_device->dev_card.reg_CID.hwrev,pStorage_device->dev_card.reg_CID.fwrev);
-        DEBUG_PRINTF_E("PSN(Product serial number) = %d \n",pStorage_device->dev_card.reg_CID.serial);
-        DEBUG_PRINTF_E("MDT_Year(Manufacturing date) = %d \n",pStorage_device->dev_card.reg_CID.year );
-        DEBUG_PRINTF_E("MDT_Month(Manufacturing date) = %d \n",pStorage_device->dev_card.reg_CID.month);
-    }
-    else
-    {
-        // Decode MMC's CID
-        switch (pStorage_device->dev_card.reg_CSD.mmca_vsn)
-        {
-            case 0: /* MMC v1.0 - v1.2 */
-            case 1: /* MMC v1.4 */
-                pStorage_device->dev_card.reg_CID.manfid	= UNSTUFF_BITS(resp,4, 104, 24);
-                pStorage_device->dev_card.reg_CID.prod_name[0]	= UNSTUFF_BITS(resp,4, 96, 8);
-                pStorage_device->dev_card.reg_CID.prod_name[1]	= UNSTUFF_BITS(resp,4, 88, 8);
-                pStorage_device->dev_card.reg_CID.prod_name[2]	= UNSTUFF_BITS(resp,4, 80, 8);
-                pStorage_device->dev_card.reg_CID.prod_name[3]	= UNSTUFF_BITS(resp,4, 72, 8);
-                pStorage_device->dev_card.reg_CID.prod_name[4]	= UNSTUFF_BITS(resp,4, 64, 8);
-                pStorage_device->dev_card.reg_CID.prod_name[5]	= UNSTUFF_BITS(resp,4, 56, 8);
-                pStorage_device->dev_card.reg_CID.prod_name[6]	= UNSTUFF_BITS(resp,4, 48, 8);
-                pStorage_device->dev_card.reg_CID.hwrev		= UNSTUFF_BITS(resp,4, 44, 4);
-                pStorage_device->dev_card.reg_CID.fwrev		= UNSTUFF_BITS(resp,4, 40, 4);
-                pStorage_device->dev_card.reg_CID.serial	= UNSTUFF_BITS(resp,4, 16, 24);
-                pStorage_device->dev_card.reg_CID.month		= UNSTUFF_BITS(resp,4, 12, 4);
-                pStorage_device->dev_card.reg_CID.year		= UNSTUFF_BITS(resp,4, 8, 4) + 1997;
+		DEBUG_PRINTF_E("MID(Manufacturer ID) = %d \n",pStorage_device->dev_card.reg_CID.manfid);
+		DEBUG_PRINTF_E("OID(OEM/Application ID) = %d \n",pStorage_device->dev_card.reg_CID.oemid);
+		DEBUG_PRINTF_E("PVM0(Product Name) = %c \n",pStorage_device->dev_card.reg_CID.prod_name[0]);
+		DEBUG_PRINTF_E("PVM1(Product Name) = %c \n",pStorage_device->dev_card.reg_CID.prod_name[1]);
+		DEBUG_PRINTF_E("PVM2(Product Name) = %c \n",pStorage_device->dev_card.reg_CID.prod_name[2]);
+		DEBUG_PRINTF_E("PVM3(Product Name) = %c \n",pStorage_device->dev_card.reg_CID.prod_name[3]);
+		DEBUG_PRINTF_E("PVM4(Product Name) = %c \n",pStorage_device->dev_card.reg_CID.prod_name[4]);
+		DEBUG_PRINTF_E("PRV(Product revision) = hw:%d/fw:%d \n",pStorage_device->dev_card.reg_CID.hwrev,pStorage_device->dev_card.reg_CID.fwrev);
+		DEBUG_PRINTF_E("PSN(Product serial number) = %d \n",pStorage_device->dev_card.reg_CID.serial);
+		DEBUG_PRINTF_E("MDT_Year(Manufacturing date) = %d \n",pStorage_device->dev_card.reg_CID.year );
+		DEBUG_PRINTF_E("MDT_Month(Manufacturing date) = %d \n",pStorage_device->dev_card.reg_CID.month);
+	}
+	else
+	{
+		// Decode MMC's CID
+		switch (pStorage_device->dev_card.reg_CSD.mmca_vsn)
+		{
+			case 0: /* MMC v1.0 - v1.2 */
+			case 1: /* MMC v1.4 */
+				pStorage_device->dev_card.reg_CID.manfid	= UNSTUFF_BITS(resp,4, 104, 24);
+				pStorage_device->dev_card.reg_CID.prod_name[0]	= UNSTUFF_BITS(resp,4, 96, 8);
+				pStorage_device->dev_card.reg_CID.prod_name[1]	= UNSTUFF_BITS(resp,4, 88, 8);
+				pStorage_device->dev_card.reg_CID.prod_name[2]	= UNSTUFF_BITS(resp,4, 80, 8);
+				pStorage_device->dev_card.reg_CID.prod_name[3]	= UNSTUFF_BITS(resp,4, 72, 8);
+				pStorage_device->dev_card.reg_CID.prod_name[4]	= UNSTUFF_BITS(resp,4, 64, 8);
+				pStorage_device->dev_card.reg_CID.prod_name[5]	= UNSTUFF_BITS(resp,4, 56, 8);
+				pStorage_device->dev_card.reg_CID.prod_name[6]	= UNSTUFF_BITS(resp,4, 48, 8);
+				pStorage_device->dev_card.reg_CID.hwrev		= UNSTUFF_BITS(resp,4, 44, 4);
+				pStorage_device->dev_card.reg_CID.fwrev		= UNSTUFF_BITS(resp,4, 40, 4);
+				pStorage_device->dev_card.reg_CID.serial	= UNSTUFF_BITS(resp,4, 16, 24);
+				pStorage_device->dev_card.reg_CID.month		= UNSTUFF_BITS(resp,4, 12, 4);
+				pStorage_device->dev_card.reg_CID.year		= UNSTUFF_BITS(resp,4, 8, 4) + 1997;
 
-                DEBUG_PRINTF_E("MID(Manufacturer ID) = %d \n",pStorage_device->dev_card.reg_CID.manfid);
-                DEBUG_PRINTF_E("PVM0(Product Name) = %c \n",pStorage_device->dev_card.reg_CID.prod_name[0]);
-                DEBUG_PRINTF_E("PVM1(Product Name) = %c \n",pStorage_device->dev_card.reg_CID.prod_name[1]);
-                DEBUG_PRINTF_E("PVM2(Product Name) = %c \n",pStorage_device->dev_card.reg_CID.prod_name[2]);
-                DEBUG_PRINTF_E("PVM3(Product Name) = %c \n",pStorage_device->dev_card.reg_CID.prod_name[3]);
-                DEBUG_PRINTF_E("PVM4(Product Name) = %c \n",pStorage_device->dev_card.reg_CID.prod_name[4]);
-                DEBUG_PRINTF_E("PVM5(Product Name) = %c \n",pStorage_device->dev_card.reg_CID.prod_name[5]);
-                DEBUG_PRINTF_E("PVM6(Product Name) = %c \n",pStorage_device->dev_card.reg_CID.prod_name[6]);
-                DEBUG_PRINTF_E("PRV(Product revision) = hw:%d/fw:%d \n",pStorage_device->dev_card.reg_CID.hwrev,pStorage_device->dev_card.reg_CID.fwrev);
-                DEBUG_PRINTF_E("PSN(Product serial number) = %d \n",pStorage_device->dev_card.reg_CID.serial);
-                DEBUG_PRINTF_E("MDT_Year(Manufacturing date) = %d \n",pStorage_device->dev_card.reg_CID.year );
-                DEBUG_PRINTF_E("MDT_Month(Manufacturing date) = %d \n",pStorage_device->dev_card.reg_CID.month);
-                break;
+				DEBUG_PRINTF_E("MID(Manufacturer ID) = %d \n",pStorage_device->dev_card.reg_CID.manfid);
+				DEBUG_PRINTF_E("PVM0(Product Name) = %c \n",pStorage_device->dev_card.reg_CID.prod_name[0]);
+				DEBUG_PRINTF_E("PVM1(Product Name) = %c \n",pStorage_device->dev_card.reg_CID.prod_name[1]);
+				DEBUG_PRINTF_E("PVM2(Product Name) = %c \n",pStorage_device->dev_card.reg_CID.prod_name[2]);
+				DEBUG_PRINTF_E("PVM3(Product Name) = %c \n",pStorage_device->dev_card.reg_CID.prod_name[3]);
+				DEBUG_PRINTF_E("PVM4(Product Name) = %c \n",pStorage_device->dev_card.reg_CID.prod_name[4]);
+				DEBUG_PRINTF_E("PVM5(Product Name) = %c \n",pStorage_device->dev_card.reg_CID.prod_name[5]);
+				DEBUG_PRINTF_E("PVM6(Product Name) = %c \n",pStorage_device->dev_card.reg_CID.prod_name[6]);
+				DEBUG_PRINTF_E("PRV(Product revision) = hw:%d/fw:%d \n",pStorage_device->dev_card.reg_CID.hwrev,pStorage_device->dev_card.reg_CID.fwrev);
+				DEBUG_PRINTF_E("PSN(Product serial number) = %d \n",pStorage_device->dev_card.reg_CID.serial);
+				DEBUG_PRINTF_E("MDT_Year(Manufacturing date) = %d \n",pStorage_device->dev_card.reg_CID.year );
+				DEBUG_PRINTF_E("MDT_Month(Manufacturing date) = %d \n",pStorage_device->dev_card.reg_CID.month);
+				break;
 
-            case 2: /* MMC v2.0 - v2.2 */
-            case 3: /* MMC v3.1 - v3.3 */
-            case 4: /* MMC v4 */
-                pStorage_device->dev_card.reg_CID.manfid	= UNSTUFF_BITS(resp,4, 120, 8);
-                pStorage_device->dev_card.reg_CID.oemid		= UNSTUFF_BITS(resp,4, 104, 16);
-                pStorage_device->dev_card.reg_CID.prod_name[0]	= UNSTUFF_BITS(resp,4, 96, 8);
-                pStorage_device->dev_card.reg_CID.prod_name[1]	= UNSTUFF_BITS(resp,4, 88, 8);
-                pStorage_device->dev_card.reg_CID.prod_name[2]	= UNSTUFF_BITS(resp,4, 80, 8);
-                pStorage_device->dev_card.reg_CID.prod_name[3]	= UNSTUFF_BITS(resp,4, 72, 8);
-                pStorage_device->dev_card.reg_CID.prod_name[4]	= UNSTUFF_BITS(resp,4, 64, 8);
-                pStorage_device->dev_card.reg_CID.prod_name[5]	= UNSTUFF_BITS(resp,4, 56, 8);
-                pStorage_device->dev_card.reg_CID.serial	= UNSTUFF_BITS(resp,4, 16, 32);
-                pStorage_device->dev_card.reg_CID.month		= UNSTUFF_BITS(resp,4, 12, 4);
-                pStorage_device->dev_card.reg_CID.year		= UNSTUFF_BITS(resp,4, 8, 4) + 1997;
+			case 2: /* MMC v2.0 - v2.2 */
+			case 3: /* MMC v3.1 - v3.3 */
+			case 4: /* MMC v4 */
+				pStorage_device->dev_card.reg_CID.manfid	= UNSTUFF_BITS(resp,4, 120, 8);
+				pStorage_device->dev_card.reg_CID.oemid		= UNSTUFF_BITS(resp,4, 104, 16);
+				pStorage_device->dev_card.reg_CID.prod_name[0]	= UNSTUFF_BITS(resp,4, 96, 8);
+				pStorage_device->dev_card.reg_CID.prod_name[1]	= UNSTUFF_BITS(resp,4, 88, 8);
+				pStorage_device->dev_card.reg_CID.prod_name[2]	= UNSTUFF_BITS(resp,4, 80, 8);
+				pStorage_device->dev_card.reg_CID.prod_name[3]	= UNSTUFF_BITS(resp,4, 72, 8);
+				pStorage_device->dev_card.reg_CID.prod_name[4]	= UNSTUFF_BITS(resp,4, 64, 8);
+				pStorage_device->dev_card.reg_CID.prod_name[5]	= UNSTUFF_BITS(resp,4, 56, 8);
+				pStorage_device->dev_card.reg_CID.serial	= UNSTUFF_BITS(resp,4, 16, 32);
+				pStorage_device->dev_card.reg_CID.month		= UNSTUFF_BITS(resp,4, 12, 4);
+				pStorage_device->dev_card.reg_CID.year		= UNSTUFF_BITS(resp,4, 8, 4) + 1997;
 
-                DEBUG_PRINTF_E("MID(Manufacturer ID) = %d \n",pStorage_device->dev_card.reg_CID.manfid);
-                DEBUG_PRINTF_E("OID(OEM/Application ID) = %d \n",pStorage_device->dev_card.reg_CID.oemid);
-                DEBUG_PRINTF_E("PVM0(Product Name) = %c \n",pStorage_device->dev_card.reg_CID.prod_name[0]);
-                DEBUG_PRINTF_E("PVM1(Product Name) = %c \n",pStorage_device->dev_card.reg_CID.prod_name[1]);
-                DEBUG_PRINTF_E("PVM2(Product Name) = %c \n",pStorage_device->dev_card.reg_CID.prod_name[2]);
-                DEBUG_PRINTF_E("PVM3(Product Name) = %c \n",pStorage_device->dev_card.reg_CID.prod_name[3]);
-                DEBUG_PRINTF_E("PVM4(Product Name) = %c \n",pStorage_device->dev_card.reg_CID.prod_name[4]);
-                DEBUG_PRINTF_E("PVM5(Product Name) = %c \n",pStorage_device->dev_card.reg_CID.prod_name[5]);
-                DEBUG_PRINTF_E("PSN(Product serial number) = %d \n",pStorage_device->dev_card.reg_CID.serial);
-                DEBUG_PRINTF_E("MDT_Year(Manufacturing date) = %d \n",pStorage_device->dev_card.reg_CID.year );
-                DEBUG_PRINTF_E("MDT_Month(Manufacturing date) = %d \n",pStorage_device->dev_card.reg_CID.month);
-                break;
+				DEBUG_PRINTF_E("MID(Manufacturer ID) = %d \n",pStorage_device->dev_card.reg_CID.manfid);
+				DEBUG_PRINTF_E("OID(OEM/Application ID) = %d \n",pStorage_device->dev_card.reg_CID.oemid);
+				DEBUG_PRINTF_E("PVM0(Product Name) = %c \n",pStorage_device->dev_card.reg_CID.prod_name[0]);
+				DEBUG_PRINTF_E("PVM1(Product Name) = %c \n",pStorage_device->dev_card.reg_CID.prod_name[1]);
+				DEBUG_PRINTF_E("PVM2(Product Name) = %c \n",pStorage_device->dev_card.reg_CID.prod_name[2]);
+				DEBUG_PRINTF_E("PVM3(Product Name) = %c \n",pStorage_device->dev_card.reg_CID.prod_name[3]);
+				DEBUG_PRINTF_E("PVM4(Product Name) = %c \n",pStorage_device->dev_card.reg_CID.prod_name[4]);
+				DEBUG_PRINTF_E("PVM5(Product Name) = %c \n",pStorage_device->dev_card.reg_CID.prod_name[5]);
+				DEBUG_PRINTF_E("PSN(Product serial number) = %d \n",pStorage_device->dev_card.reg_CID.serial);
+				DEBUG_PRINTF_E("MDT_Year(Manufacturing date) = %d \n",pStorage_device->dev_card.reg_CID.year );
+				DEBUG_PRINTF_E("MDT_Month(Manufacturing date) = %d \n",pStorage_device->dev_card.reg_CID.month);
+				break;
 
-            default:
-                DEBUG_PRINTF("Card has unknown MMCA version = %d \n",pStorage_device->dev_card.reg_CSD.mmca_vsn);
-                break;
-        }
-    }
+			default:
+				DEBUG_PRINTF("Card has unknown MMCA version = %d \n",pStorage_device->dev_card.reg_CSD.mmca_vsn);
+				break;
+		}
+	}
 #endif
 }
 
@@ -1536,6 +1387,7 @@ int GetMMCExtCSD(struct STORAGE_DEVICE* pStorage_device)
 	//CMD8: Get EXT_CSD register
 	//ret = hwSdCmdSend(MMCCMD8, 0, RSP_TYPE_R1, rsp_buf);
 	SD_TRANS_SDPIOMODE(1); // pio
+
 	ret = hwSdCmdSend(CMD8, 0, RSP_TYPE_R1, NULL);
 	if (ret) {
 		goto FAIL_GET_MMC_EXT_CSD;
@@ -1545,7 +1397,6 @@ int GetMMCExtCSD(struct STORAGE_DEVICE* pStorage_device)
 	if (ret != ERR_SUCCESS) {
 		goto FAIL_GET_MMC_EXT_CSD;
 	}
-
 
 	pStorage_device->dev_card.ext_csd.rev = tmp_buf[EXT_CSD_REV];
 
@@ -1622,11 +1473,11 @@ int IdentifyStorage(void)
 	}
 
 	/*
-	prn_string("delay 2s before CMD1\n");
-	for (i= 0 ; i <10*2; i++) { // 2s
-		delay_1ms(100);
-	}
-	*/
+	   prn_string("delay 2s before CMD1\n");
+	   for (i= 0 ; i <10*2; i++) { // 2s
+	   delay_1ms(100);
+	   }
+	 */
 	CSTAMP(0xCAD00004); // Before CheckXXXOpCond
 
 	pstorage_device->what_dev = ERR_NEGATIVE_VALUE;
@@ -1752,17 +1603,8 @@ int IdentifyStorage(void)
 			SD_WT_CLK_DELAY_TIME_SET(1);
 #endif
 		}
-
-#ifdef PLATFORM_3502
-		if (get_card_number() == EMMC_SLOT_NUM) {
-			//SetChipCtrlClk(CARD_CLK,pstorage_device->dev_card.reg_CSD.max_dtr);
-			SetChipCtrlClk(CARD_CLK,5000000); //BootCode use 5MHz for safty
-		} else
-#endif
-		{
-			//SetChipCtrlClk(CARD012_CLK,pstorage_device->dev_card.reg_CSD.max_dtr);
-			SetChipCtrlClk(CARD012_CLK, 25000000); //BootCode use 5MHz for safty
-		}
+		//SetChipCtrlClk(CARD012_CLK,pstorage_device->dev_card.reg_CSD.max_dtr);
+		SetChipCtrlClk(CARD012_CLK, 25000000); //BootCode use 5MHz for safty
 	} else
 #endif
 	{ // SD Card
@@ -1869,9 +1711,6 @@ int ReadSectorByPolling(unsigned char* pRecBuf, unsigned int*  pRecLenInByte)
 	int ret=ERR_SUCCESS;
 	unsigned int bytes_count = 0;
 	unsigned int need_read_count;
-#ifdef PLATFORM_3502
-	unsigned int * pTmp_buf4 = (unsigned int*)pRecBuf;
-#endif
 	unsigned char* pTmp_buf = (unsigned char*)pRecBuf;
 	int i = 0;
 	int data_err = 0;
@@ -1881,94 +1720,57 @@ int ReadSectorByPolling(unsigned char* pRecBuf, unsigned int*  pRecLenInByte)
 
 	need_read_count = (*pRecLenInByte);
 
-#ifdef PLATFORM_3502
-	SD_CTRL_SET(0x08);	/* Trigger Receive one block data in PIO mode */
-
-	if (get_card_number() == EMMC_SLOT_NUM) {
-		while(need_read_count > 0) {
-			while((SD_STATUS0_GET() & 0x08) == 0x00) ;
-
-			*pTmp_buf4 = SD_PIO_RX_DATA_GET();
-			//printk("Francis PIO_RX=%08x\n",*pTmp_buf4);
-			++pTmp_buf4;
-			need_read_count -=4;
-			bytes_count +=4;
+	CSTAMP(0xCAD0DA01);
+	while(need_read_count > 0) {
+		if (SD_STATUS1_GET() & (1 << 13)) { // 13: new SM error/timeout
+			CSTAMP(0xCAD0DA02);
+			dbg();
+			break;
 		}
-	} else
-#endif
-	{
-		CSTAMP(0xCAD0DA01);
-		while(need_read_count > 0) {
-#ifndef PLATFORM_3502
-			if (SD_STATUS1_GET() & (1 << 13)) { // 13: new SM error/timeout
-				CSTAMP(0xCAD0DA02);
+
+		i = 0; //reset the counter for every bytes. otherwiese the counter will accumulate and a late data response card will exceed MAX_count
+		// Wait for Rx data buffer full
+		while ((SD_STATUS0_GET() & 0x08) == 0x00 && (i++ <= MAX_count)){
+			//#ifdef SD_VERBOSE
+			//The timeout is 100ms in spec, we use 300ms in iboot to guarantee meeting the spec.
+			//in xboot, this takes long time w/wo this print
+			if ((i % (MAX_count/300)) == ((MAX_count/300) - 1))
+				_delay_1ms(1);
+			//#endif
+			//check state_new, if error, break
+			if (SD_STATUS_NEW_ERR() || (i >= MAX_count)){
+				data_err = 1;
 				dbg();
 				break;
 			}
-#endif
-
-			i = 0; //reset the counter for every bytes. otherwiese the counter will accumulate and a late data response card will exceed MAX_count
-			// Wait for Rx data buffer full
-			while ((SD_STATUS0_GET() & 0x08) == 0x00 && (i++ <= MAX_count)){
-//#ifdef SD_VERBOSE
-				//The timeout is 100ms in spec, we use 300ms in iboot to guarantee meeting the spec.
-				//in xboot, this takes long time w/wo this print
-				if ((i % (MAX_count/300)) == ((MAX_count/300) - 1))
-					_delay_1ms(1);
-//#endif
-				//check state_new, if error, break
-#ifndef PLATFORM_3502
-					if (SD_STATUS_NEW_ERR() || (i >= MAX_count)){
-						data_err = 1;
-						dbg();
-						break;
-					}
-#endif
-			}
-
-#ifndef PLATFORM_3502
-			if(SD_STATUS_NEW_ERR() || (i >= MAX_count)){
-				dbg();
-				DEBUG_PRINTF_E("bytes_count:0x%x\n", bytes_count);
-				DEBUG_PRINTF_E("i = 0x%x, MAX_count = 0x%x\n", i, MAX_count);
-				DEBUG_PRINTF_E("read data timeout status1=0x%x\n", SD_STATUS1_GET());
-				DEBUG_PRINTF_E("config0 = 0x%x, config1=0x%x\n", SD_CONFIG0_GET(),SD_CONFIG_GET());
-				//goto FAIL_READ_SECTOR_POLLING;
-				break;
-			}
-#else
-			if (i >= MAX_count) {
-				dbg();
-				//goto FAIL_READ_SECTOR_POLLING;
-				break;
-			}
-#endif
-
-			if((SD_STATUS0_GET() & 0x08) == 0x00){
-				dbg();
-				DEBUG_PRINTF_E("pio buf not full\n");
-				goto FAIL_READ_SECTOR_POLLING;
-			}
-
-			CSTAMP(0xCAD0DA03);
-#ifdef PLATFORM_3502
-			*pTmp_buf = SD_PIO_RX_DATA_GET();
-			//printk("Francis PIO_RX=%02x\n",*pTmp_buf);
-			++pTmp_buf;
-			--need_read_count;
-			bytes_count ++;
-#else
-			// PIO mode rx4B_en=1
-			*(unsigned int *)pTmp_buf = SD_PIO_RX_DATA_GET();
-			pTmp_buf += 4;
-			need_read_count -= 4;
-			bytes_count += 4;
-
-			// RD suggests to check G119.20 sdstate_new
-			// bit14: finish/idle
-			// bit13: error/timeout
-#endif
 		}
+
+		if(SD_STATUS_NEW_ERR() || (i >= MAX_count)){
+			dbg();
+			DEBUG_PRINTF_E("bytes_count:0x%x\n", bytes_count);
+			DEBUG_PRINTF_E("i = 0x%x, MAX_count = 0x%x\n", i, MAX_count);
+			DEBUG_PRINTF_E("read data timeout status1=0x%x\n", SD_STATUS1_GET());
+			DEBUG_PRINTF_E("config0 = 0x%x, config1=0x%x\n", SD_CONFIG0_GET(),SD_CONFIG_GET());
+			//goto FAIL_READ_SECTOR_POLLING;
+			break;
+		}
+
+		if((SD_STATUS0_GET() & 0x08) == 0x00){
+			dbg();
+			DEBUG_PRINTF_E("pio buf not full\n");
+			goto FAIL_READ_SECTOR_POLLING;
+		}
+
+		CSTAMP(0xCAD0DA03);
+		// PIO mode rx4B_en=1
+		*(unsigned int *)pTmp_buf = SD_PIO_RX_DATA_GET();
+		pTmp_buf += 4;
+		need_read_count -= 4;
+		bytes_count += 4;
+
+		// RD suggests to check G119.20 sdstate_new
+		// bit14: finish/idle
+		// bit13: error/timeout
 	}
 
 	CSTAMP(0xCAD0DA04);
@@ -1979,51 +1781,19 @@ int ReadSectorByPolling(unsigned char* pRecBuf, unsigned int*  pRecLenInByte)
 	//prn_dump_buffer(pRecBuf, bytes_count);
 #endif
 
-
-	//check return to idle state
-	if (hwSdIdleWait() == SD_FAIL) {
-		CSTAMP(0xCAD0DA05);
-		prn_string("hwSdIdleWait err\n");
-		//goto FAIL_READ_SECTOR_POLLING;
-
-		//prn_sd_reg_dump();
-		//prn_string("stop to debug data\n");
-
-		// FIXME: this is a workaround to failing to detect CRC error bit
-		data_err = 1;
-	}
-
-
 	// Check for DATA CRC error
-#ifdef PLATFORM_3502
-	if (SD_CRC16_FLAG_GET() != 1 || data_err) { // 1: correct
-#else
 	if (data_err) {
-#endif
 		CSTAMP(0xCAD0EC2C);
+		DEBUG_PRINTF_E("config0 = 0x%x, config1=0x%x\n", SD_CONFIG0_GET(),SD_CONFIG_GET());
 
-#ifndef PLATFORM_3502
 		if(SD_DATA_CRC_ERROR() || SD_DATA_CRC7_ERROR())
-#else
-		if (SD_CRC16_FLAG_GET() != 1)
-#endif
 		{
 			prn_string("Data CRC err, resp:");
-#ifdef PLATFORM_3502
-			prn_byte(SD_RSP_BUF0_GET);
-			prn_byte(SD_RSP_BUF1_GET);
-			prn_byte(SD_RSP_BUF2_GET);
-			prn_byte(SD_RSP_BUF3_GET);
-			prn_byte(SD_RSP_BUF4_GET);
-			prn_byte(SD_RSP_BUF5_GET);
-#else
 			prn_dword0(SD_RSP_BUF0_3_GET);
 			prn_dword(SD_RSP_BUF4_5_GET);
-#endif
 			sdTryNextReadDelay(get_card_number());
 		}
 
-#ifndef PLATFORM_3502
 		if(SD_RSP_TIMEOUT_ERROR()){
 			prn_string("rsp timeout err\n");
 		}
@@ -2034,9 +1804,12 @@ int ReadSectorByPolling(unsigned char* pRecBuf, unsigned int*  pRecLenInByte)
 
 		if(SD_DATA_STB_TIMEOUT_ERROR()){
 			prn_string("Data STB err\n");
-
+#ifdef PLATFORM_8388
 			i = SD_CONFIG_GET();
 			i &= 0x3ff;
+#else
+			i = SDFQSEL_GET();
+#endif
 			i = i*2 + 1; 	//lower frequency
 			prn_string(" freq div:");
 			prn_dword(i);
@@ -2045,12 +1818,14 @@ int ReadSectorByPolling(unsigned char* pRecBuf, unsigned int*  pRecLenInByte)
 			prn_string("read bytes:");
 			prn_decimal(bytes_count);
 		}
-#endif
 		//prn_sd_reg_dump();
 		goto FAIL_READ_SECTOR_POLLING;
 	} else {
-		//prn_string("SD read ok\n");
-		//prn_sd_reg_dump();
+		if (hwSdIdleWait() == SD_FAIL) {
+			CSTAMP(0xCAD0DA05);
+			prn_string("hwSdIdleWait err\n");
+			goto FAIL_READ_SECTOR_POLLING;
+		}
 	}
 
 	CSTAMP(0xCAD0DA06);
@@ -2090,7 +1865,7 @@ int ReadSDMultipleSectorDma(unsigned int SectorIdx, unsigned int SectorNum,
 	}
 	sdTranStateWait();
 	if ((gStorage_dev.what_dev == WHAT_STORAGE_STANDARD_CAPACITY_SD) ||
-		(gStorage_dev.what_dev == WHAT_STORAGE_STANDARD_CAPACITY_MMC)) {
+			(gStorage_dev.what_dev == WHAT_STORAGE_STANDARD_CAPACITY_MMC)) {
 		// Standard Capacity SD: unit: byte
 		cmd_args |= (SectorIdx<<9); // = SectorNum*512
 	} else {
@@ -2103,7 +1878,11 @@ int ReadSDMultipleSectorDma(unsigned int SectorIdx, unsigned int SectorNum,
 	SD_TRANS_MODE_SET(2); // read
 	SD_TRANS_SDPIOMODE(0); // dma
 	SD_TRANS_SDRSPCHK_EN(1); // enable hw check rsp crc7
+#ifdef PLATFORM_8388
 	SD_CONFIG_SET(SD_CONFIG_GET() & 0xfffff7ff);	/* Set response type to 6 bytes*/
+#else
+	SDRSPTYPE_R2(0);
+#endif
 	SD_CMD_BUF0_SET( (unsigned char) (CMD18 + 0x40));
 	SD_CMD_BUF1_SET( (unsigned char) ((cmd_args >> 24) & 0x000000ff));
 	SD_CMD_BUF2_SET( (unsigned char) ((cmd_args >> 16) & 0x000000ff));
@@ -2113,10 +1892,20 @@ int ReadSDMultipleSectorDma(unsigned int SectorIdx, unsigned int SectorNum,
 
 	SD_BLOCK_SIZE_SET(BLOCK_LEN_BYTES_512 - 1);
 	/* Configure Group DMA Registers */
+#ifdef PLATFORM_8388
 	DMA_SRCDST_SET(0x12);
 	DMA_SIZE_SET(BLOCK_LEN_BYTES_512 - 1);
+#else
+	DMA_SRCDST_SET(DMA_FROM_DEVICE);
+#endif
+
 	SET_HW_DMA_BASE_ADDR(pRecBuff);
+#ifdef PLATFORM_8388
 	SD_INT_CONTROL_SET(SD_INT_CONTROL_GET() & (~0x11));
+#else
+	SD_CMP_EN(0);
+	SDIO_INT_EN(0);
+#endif
 	DMA_HW_EN(0);
 	SD_CTRL_SET(0x01);	/* Trigger TX command*/
 	/* Wait till host controller becomes idle or error/timeout occurs */
@@ -2137,7 +1926,7 @@ int ReadSDMultipleSectorDma(unsigned int SectorIdx, unsigned int SectorNum,
 	}
 
 #ifdef SD_VERBOSE
-		dbg();
+	dbg();
 #endif
 
 FAIL_MULITI_READ_SECTOR:
@@ -2167,7 +1956,6 @@ int ReadSDMultipleSector(unsigned int SectorIdx, unsigned int SectorNum,
 		unsigned char* pRecBuff)
 {
 	int ret_value = ERR_SUCCESS;
-	unsigned char rsp_buf[17];
 	int cmd_args = ARGS_STUFF_BITS;
 	unsigned int bytes_count = 0;
 	unsigned int sector_index = 0;
@@ -2179,7 +1967,7 @@ int ReadSDMultipleSector(unsigned int SectorIdx, unsigned int SectorNum,
 #endif
 
 	if ((gStorage_dev.what_dev == WHAT_STORAGE_STANDARD_CAPACITY_SD) ||
-		(gStorage_dev.what_dev == WHAT_STORAGE_STANDARD_CAPACITY_MMC)) {
+			(gStorage_dev.what_dev == WHAT_STORAGE_STANDARD_CAPACITY_MMC)) {
 		// Standard Capacity SD: unit: byte
 		cmd_args |= (SectorIdx<<9); // = SectorNum*512
 	} else {
@@ -2187,21 +1975,32 @@ int ReadSDMultipleSector(unsigned int SectorIdx, unsigned int SectorNum,
 		cmd_args |= SectorIdx;
 	}
 
-	bytes_count = BLOCK_LEN_BYTES_512;
+	SD_RST();
+	SD_TRANS_SDDUMMY(0);
+	SD_TRANS_SDAUTORSP(0);
+	SD_TRANS_MODE_SET(2); // read
 	SD_TRANS_SDPIOMODE(1); // pio
-	//CMD18: Read multi-blocks
-	ret_value = hwSdCmdSend(CMD18, cmd_args, RSP_TYPE_R1, rsp_buf);
+	SD_TRANS_SDRSPCHK_EN(1); // enable hw check rsp crc7
+#ifdef PLATFORM_8388
+	SD_CONFIG_SET(SD_CONFIG_GET() & 0xfffff7ff);	/* Set response type to 6 bytes*/
+#else
+	SDRSPTYPE_R2(0);
+#endif
+	SD_CMD_BUF0_SET( (unsigned char) (CMD18 + 0x40));
+	SD_CMD_BUF1_SET( (unsigned char) ((cmd_args >> 24) & 0x000000ff));
+	SD_CMD_BUF2_SET( (unsigned char) ((cmd_args >> 16) & 0x000000ff));
+	SD_CMD_BUF3_SET( (unsigned char) ((cmd_args >> 8) & 0x000000ff));
+	SD_CMD_BUF4_SET( (unsigned char) ((cmd_args) & 0x000000ff));
+	SD_PAGE_NUM_SET(SectorNum - 1);
+
+	SD_BLOCK_SIZE_SET(BLOCK_LEN_BYTES_512 - 1);
+	SD_CTRL_SET(0x01);	/* Trigger TX command */
+
+	bytes_count = BLOCK_LEN_BYTES_512 * SectorNum;
+	ret_value = ReadSectorByPolling(pRecBuff+(sector_index*bytes_count),&bytes_count);
 	if (ret_value != ERR_SUCCESS) {
 		dbg();
 		goto FAIL_MULITI_READ_SECTOR;
-	}
-
-	for(sector_index = 0; sector_index < SectorNum; sector_index++) {
-		ret_value = ReadSectorByPolling(pRecBuff+(sector_index*bytes_count),&bytes_count);
-		if (ret_value != ERR_SUCCESS) {
-			dbg();
-			goto FAIL_MULITI_READ_SECTOR;
-		}
 	}
 
 #ifdef SD_VERBOSE
@@ -2217,8 +2016,8 @@ FAIL_MULITI_READ_SECTOR:
 	}
 
 	StopCardTransmission(&gStorage_dev);
-//	if (ret_value != ERR_SUCCESS)
-//		sdTranStateWait();
+	//	if (ret_value != ERR_SUCCESS)
+	//		sdTranStateWait();
 
 	return ret_value;
 }

@@ -251,7 +251,7 @@ typedef struct
 
 ////////////////////////////////////////
 
-int usb_init(int port, int part);
+int usb_init(int port);
 int usb_readSector(u32 lba, u32 count, u32 *dest);
 
 

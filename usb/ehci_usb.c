@@ -203,7 +203,7 @@ void usb_power_init(int is_host)
 #endif
 }
 
-int usb_init(int port, int part)
+int usb_init(int port)
 {
 	UINT32 tmp1, tmp2;
 	unsigned int dev_dct_cnt = 0;
