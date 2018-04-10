@@ -201,4 +201,7 @@ SINT32 SPINANDReadBootBlock(u32 *xbuffer);
 void initSPINandFunptr(void);
 SINT32 ReadSPINANDSector_1K60(UINT32* ptrPyldData, UINT32 pageNo);
 
+UINT8 GetNANDPageCount_1K60(UINT32 pageSize);
+SINT32 SPINANDReadNANDPage_1K60(UINT8 which_cs, UINT32 pageNo, UINT32 * ptrPyldData, UINT32 *read_bytes);
+
 #endif

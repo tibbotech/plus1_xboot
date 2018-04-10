@@ -238,6 +238,10 @@
 #define PARTIAL_NAND_INIT
 #endif
 
+// If undefined, always use first uboot (uboot1)
+// If defined, use 2nd uboot (uboot2) if ok ; fallback to uboot1 otherwise
+#define HAVE_UBOOT2_IN_NAND
+
 /***********************
 * USB
 ***********************/

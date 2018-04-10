@@ -128,6 +128,28 @@ inline int get_current_spi_pinmux(void)
 #endif
 }
 
+__attribute__((unused))
+static void uhdr_dump(struct image_header *hdr)
+{
+	prn_string("magic=");
+	prn_dword(image_get_magic(hdr));
+	prn_string("hcrc =");
+	prn_dword(image_get_hcrc(hdr));
+	prn_string("time =");
+	prn_dword(image_get_time(hdr));
+	prn_string("size =");
+	prn_dword(image_get_size(hdr));
+	prn_string("load =");
+	prn_dword(image_get_load(hdr));
+	prn_string("entry=");
+	prn_dword(image_get_ep(hdr));
+	prn_string("dcrc =");
+	prn_dword(image_get_dcrc(hdr));
+	prn_string("name =");
+	prn_string(image_get_name(hdr));
+	prn_string("\n");
+}
+
 #ifdef CONFIG_HAVE_SPI_NOR
 
 // return image data size (exclude header)
@@ -177,12 +199,12 @@ static int nor_load_uhdr_image(const char *img_name, void *dst, void *src, int v
 	step = 256 * 1024;
 #endif
 
-        for (i = 0; i < len; i += step) {
-                prn_string(".");
-                memcpy32(dst + sizeof(*hdr) + i, src + sizeof(*hdr) + i,
-                        (len - i < step) ? (len - i + 3) / 4 : step / 4);
-        }
-        prn_string("\n");
+	for (i = 0; i < len; i += step) {
+		prn_string(".");
+		memcpy32(dst + sizeof(*hdr) + i, src + sizeof(*hdr) + i,
+				(len - i < step) ? (len - i + 3) / 4 : step / 4);
+	}
+	prn_string("\n");
 
 	// verify image data
 	if (verify && !image_check_dcrc(hdr)) {
@@ -749,16 +771,286 @@ static void emmc_boot(void)
 #endif /* CONFIG_HAVE_EMMC */
 
 #ifdef CONFIG_HAVE_NAND_COMMON
-static void nand_uboot(u32 type)
+
+/* bblk_read - Read boot block data
+ * dst           - destination address
+ * blk_off       - nand block offset
+ * read_length   - length to read
+ * max_blk_skip  - max bad blocks to skip
+ * blk_last_read - last nand block read
+ *
+ * Return 0 if ok
+ */
+static int bblk_read(int type, u8 *dst, u32 blk_off, u32 read_length,
+		     int max_blk_skip, u32 *blk_last_read)
 {
-	prn_string("\n{{nand_boot}}\n");
-	//FIXME
-	mon_shell();
-	exit_xboot("Run u-boot @", UBOOT_RUN_ADDR);
-}
+	u32 pg_off, length, got = 0;
+	int i, j, blks, blk_skip = 0;
+	int res;
+	u32 sect_sz, blk_use_sz;
+
+	/* prn_string("bblk_read blk="); prn_dword0(blk_off);
+	 * prn_string(" len="); prn_decimal(read_length); prn_string("\n");
+	 */
+
+	sect_sz = GetNANDPageCount_1K60(g_bootinfo.sys_nand.u16PyldLen) * 1024;
+	blk_use_sz = g_bootinfo.sys_nand.u16PageNoPerBlk * sect_sz;
+	blks = (read_length + blk_use_sz - 1) / blk_use_sz;
+
+	/* for each good block */
+	for (i = 0; i < blks; i++) {
+		if (blk_last_read) {
+			*blk_last_read = blk_skip + blk_off + i;
+		}
+
+		pg_off = (blk_skip + blk_off + i) * g_bootinfo.sys_nand.u16PageNoPerBlk;
+
+		/* for each page */
+		for (j = 0; j < g_bootinfo.sys_nand.u16PageNoPerBlk; j++) {
+#ifdef SKIP_BLOCK_WITH_BAD_BLOCK_MARK
+			if (j == 0 || j == 1) {
+				g_spareData[0] = 0xFF;
+			}
 #endif
 
-#ifdef CONFIG_HAVE_PARA_NAND 
+			/* read sect */
+#ifdef CONFIG_HAVE_SPI_NAND
+			if (type == SPINAND_BOOT) {
+				res = SPINANDReadNANDPage_1K60(0, pg_off + j, (u32 *)(dst + got), &length);
+			}
+#endif
+#ifdef CONFIG_HAVE_PARA_NAND
+			if (type == NAND_LARGE_BOOT) {
+				res = ReadNANDPage_1K60(NAND_CS0, pg_off + j, (u32 *)(dst + got), &length);
+			}
+#endif
+
+#ifdef SKIP_BLOCK_WITH_BAD_BLOCK_MARK
+			/*
+			 * Check bad block mark
+			 *
+			 * TODO: find bad block mark pos by id. Refer to nand_decode_bbm_options().
+			 */
+			if (j == 0 || j == 1) {
+				if (g_spareData[0] != 0xFF) {
+					prn_string("!! Skip bad block ");
+					prn_dword(blk_skip + blk_off + i);
+					if (j == 1) { /* Cancel page 0 data */
+						got -= sect_sz;
+					}
+
+					/* prn_string("pg_off="); prn_decimal(pg_off); prn_string("\n");
+					 * prn_dump_buffer(g_spareData, g_bootinfo.sys_nand.u16ReduntLen);
+					 */
+
+					if (++blk_skip > max_blk_skip) {
+						prn_string("too many bad blocks!\n");
+						return -1;
+					}
+					i--;
+					break;
+				}
+			}
+#endif
+
+			/* good block but read page failed? */
+			if (res) {
+				dbg();
+				prn_string("failed to read page #");
+				prn_dword(pg_off + j);
+				return -1;
+			}
+
+			got += length;
+			if (got >= read_length) {
+				/* dbg(); */
+				return 0; /* ok */
+			}
+		}
+	}
+
+	dbg();
+	return -1;
+}
+
+/* Search for image header */
+static int bblk_find_image(int type, const char *name, u8 *dst, u32 blk_off,
+			   u32 blk_cnt, u32 *found_blk)
+{
+	u32 i;
+	int res;
+	struct image_header *hdr = (struct image_header *)dst;
+
+	/* Block (blk_off + i) has image? */
+	for (i = 0; i < blk_cnt; i++) {
+
+		/* prn_string("bblk_find_image blk="); prn_decimal(blk_off + i); prn_string("\n"); */
+
+		res = bblk_read(type, dst, blk_off + i, 64, 50, NULL);
+		if (res < 0)
+			continue;
+
+		/* magic */
+		if (!image_check_magic(hdr)) {
+			/* prn_string("bad mgaic\n"); */
+			continue;
+		}
+
+		/* check name */
+		if (memcmp((const u8 *)image_get_name(hdr), (const u8 *)name, strlen(name)) != 0) {
+			prn_string("bad name\n");
+			continue;
+		}
+
+		/* header crc */
+		if (!image_check_hcrc(hdr)) {
+			prn_string("bad hcrc\n");
+			continue;
+		}
+
+		*found_blk = blk_off + i;
+		prn_string("found hdr at blk=");
+		prn_dword(*found_blk);
+		return 0;
+	}
+
+	return -1;
+}
+
+/**
+ * nand_load_uhdr_image
+ * img_name       - image name in uhdr
+ * dst            - destination address
+ * blk_off        - nand block offset number
+ * search_blk_cnt - max block count to search
+ * img_blk_end    - returned the last nand block number of the image
+ * only_load_hdr  - only load header
+ *
+ * Return image data size (> 0) if ok (exclude header)
+ */
+static int nand_load_uhdr_image(int type, const char *img_name, void *dst,
+		u32 blk_off, u32 search_blk_cnt, u32 *img_blk_end, int only_load_hdr)
+{
+	struct image_header *hdr = (struct image_header *)dst;
+	u32 len;
+	u32 real_blk_off = 0;
+	int res;
+
+	prn_string("nand load "); prn_string(img_name);
+	prn_string("@blk="); prn_dword(blk_off);
+
+	/* find image header */
+	res = bblk_find_image(type, img_name, (u8 *)hdr, blk_off, search_blk_cnt, &real_blk_off);
+	if (res) {
+		prn_string("image hdr not found\n");
+		return -1;
+	}
+
+	/* uhdr_dump(hdr); */
+
+	len = image_get_size(hdr);
+
+	if (only_load_hdr)
+		return len;
+
+	/* load image data */
+	prn_string("load data size=");
+	prn_decimal(len);
+	prn_string("\n");
+	res = bblk_read(type, (u8 *)hdr, real_blk_off, 64 + len, 100, img_blk_end);
+	if (res) {
+		prn_string("failed to load data\n");
+		return -1;
+	}
+
+	/* verify image data */
+	prn_string("verify img...");
+	if (!image_check_dcrc(hdr)) {
+		prn_string("corrupted img\n");
+		return -1;
+	}
+	prn_string("ok\n");
+
+	return len; /* ok */
+}
+
+static void nand_uboot(u32 type)
+{
+	u32 blk_start = g_bootinfo.app_blk_start;
+	u32 blk_end = 0;
+	struct image_header *hdr = (struct image_header *)UBOOT_LOAD_ADDR;
+	struct image_header hdr1;
+	int len;
+	u32 sect_sz = GetNANDPageCount_1K60(g_bootinfo.sys_nand.u16PyldLen) * 1024;
+	u32 blk_use_sz = g_bootinfo.sys_nand.u16PageNoPerBlk * sect_sz;
+
+	mon_shell();
+
+#ifdef CONFIG_STANDALONE_DRAMINIT
+	if (ReadBootBlockDraminit((type == SPINAND_BOOT), (u8 *)DRAMINIT_LOAD_ADDR) < 0) {
+		prn_string("Failed to load nand draminit\n");
+		return;
+	}
+#endif
+
+	if (run_draminit()) {
+		return;
+	}
+
+#ifndef HAVE_UBOOT2_IN_NAND
+	/* Load uboot1 from NAND */
+	len = nand_load_uhdr_image(type, "uboot", (void *)UBOOT_LOAD_ADDR,
+			blk_start, 10, &blk_end, 0);
+#else
+	/* uboot1 - facotry default uboot image
+	 * uboot2 - updated uboot image
+	 *
+	 * Logic:
+	 * 1) Load uboot1 header to guess uboot2 start block
+	 * 2) Load uboot2
+	 * 3) If uboot2 is not good, load uboot1
+	 */
+
+	memset((u8 *)&hdr1, 0, sizeof(hdr1));
+
+	/* 1) uboot1 hdr */
+	prn_string("Load uboot1 hdr\n");
+	len = nand_load_uhdr_image(type, "uboot", (void *)hdr, blk_start, 10,
+				&blk_end, 1);
+	if (len <= 0) {
+		prn_string("warn: not found uboot1\n");
+		++blk_start; /* search for uboot2 since next block */
+	} else {
+		memcpy((u8 *)&hdr1, (const u8 *)hdr, sizeof(struct image_header));
+
+		/* uboot2 follows uboot1
+		 * uboot2 start blk = (uboot1 start blk) + (num of blocks of uboot1) */
+		blk_start += (sizeof(struct image_header) + len + blk_use_sz - 1) / blk_use_sz;
+	}
+	/* 2) uboot2 (hdr + data) */
+	prn_string("Load uboot2\n");
+	len = nand_load_uhdr_image(type, "uboot", (void *)hdr, blk_start, 10, &blk_end, 0);
+	if (len > 0) {
+		prn_string("Use uboot2\n");
+	} else if (image_get_size(&hdr1) > 0) {
+		/* 3) uboot1 (fallback) hdr + data */
+		prn_string("Fallback to uboot1\n");
+		blk_start = g_bootinfo.app_blk_start;
+		len = nand_load_uhdr_image(type, "uboot", (void *)hdr, blk_start,
+				10, &blk_end, 0);
+	}
+#endif
+	if (len <= 0) {
+		prn_string("not found good uboot\n");
+		return;
+	}
+
+	exit_xboot("Run u-boot @", UBOOT_RUN_ADDR);
+}
+
+#endif
+
+#ifdef CONFIG_HAVE_PARA_NAND
 static void release_para_nand(void)
 {
 #ifdef PLATFORM_8388
@@ -870,14 +1162,14 @@ static void boot_flow(void)
 #endif
 				break;
 			case SPINAND_BOOT:
-#ifdef CONFIG_HAVE_SPI_NAND 
+#ifdef CONFIG_HAVE_SPI_NAND
 				spi_nand_boot(g_bootinfo.bootdev_pinx);
 #else
 				boot_not_support();
 #endif
 				break;
 			case NAND_LARGE_BOOT:
-#ifdef CONFIG_HAVE_PARA_NAND 
+#ifdef CONFIG_HAVE_PARA_NAND
 				para_nand_boot(g_bootinfo.bootdev_pinx);
 #else
 				boot_not_support();
