@@ -62,6 +62,15 @@ static void init_hw(void)
 	dbg();
 }
 
+static void exit_xboot(const char *msg, u32 addr)
+{
+	prn_decimal_ln(AV1_GetStc32());
+	if (msg) {
+		prn_string(msg); prn_dword(addr);
+	}
+	exit_bootROM(addr);
+}
+
 static int run_draminit(void)
 {
 	/* skip dram init on csim/zebu */
@@ -331,8 +340,7 @@ static void spi_nor_uboot(void)
 	if (g_bootinfo.bootcpu == 0 && memcmp((const u8 *)image_get_name(hdr), (const u8 *)"uboot_B", 7)) {
 		boot_next_in_another();
 	} else {
-		prn_string("Run u-boot @"); prn_dword(UBOOT_RUN_ADDR);
-		exit_bootROM(UBOOT_RUN_ADDR);
+		exit_xboot("Run u-boot @", UBOOT_RUN_ADDR);
 	}
 }
 
@@ -489,9 +497,7 @@ static void do_fat_boot(u32 type, u32 port)
 		return;
 	}
 
-	prn_string("Run u-boot @");
-	prn_dword(UBOOT_RUN_ADDR);
-	exit_bootROM(UBOOT_RUN_ADDR);
+	exit_xboot("Run u-boot @", UBOOT_RUN_ADDR);
 }
 #endif /* CONFIG_HAVE_FS_FAT */
 
@@ -738,9 +744,7 @@ static void emmc_boot(void)
 		return;
 	}
 
-	prn_string("Run u-boot @");
-	prn_dword(UBOOT_RUN_ADDR);
-	exit_bootROM(UBOOT_RUN_ADDR);
+	exit_xboot("Run u-boot @", UBOOT_RUN_ADDR);
 }
 #endif /* CONFIG_HAVE_EMMC */
 
@@ -750,6 +754,7 @@ static void nand_uboot(u32 type)
 	prn_string("\n{{nand_boot}}\n");
 	//FIXME
 	mon_shell();
+	exit_xboot("Run u-boot @", UBOOT_RUN_ADDR);
 }
 #endif
 
