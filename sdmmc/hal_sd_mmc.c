@@ -14,9 +14,9 @@
  *******************************************************************************/
 //#define SDEMMC_DBUG_ON // verbose
 #ifdef  SDEMMC_DBUG_ON
-#define DEBUG_PRINTF_E(fmt, args...)  		diag_printf(fmt, ##args)
-#define DEBUG_PRINTF_FUNLINE(fmt, args...) 	diag_printf(fmt, ##args)
-#define DEBUG_PRINTF(fmt, args...) 		diag_printf(fmt, ##args)
+#define DEBUG_PRINTF_E(fmt, args...)           diag_printf(fmt, ##args)
+#define DEBUG_PRINTF_FUNLINE(fmt, args...)     diag_printf(fmt, ##args)
+#define DEBUG_PRINTF(fmt, args...)             diag_printf(fmt, ##args)
 #else
 #define DEBUG_PRINTF_E(fmt, args...) 		do{}while(0)
 #define DEBUG_PRINTF_FUNLINE(fmt, args...) 	do{}while(0)
@@ -1384,10 +1384,11 @@ int GetMMCExtCSD(struct STORAGE_DEVICE* pStorage_device)
 		return SD_FAIL;
 	}
 
-	//CMD8: Get EXT_CSD register
-	//ret = hwSdCmdSend(MMCCMD8, 0, RSP_TYPE_R1, rsp_buf);
 	SD_TRANS_SDPIOMODE(1); // pio
+	SD_PAGE_NUM_SET(0);
+	SD_BLOCK_SIZE_SET(BLOCK_LEN_BYTES_512 - 1);
 
+	//CMD8: Get EXT_CSD register
 	ret = hwSdCmdSend(CMD8, 0, RSP_TYPE_R1, NULL);
 	if (ret) {
 		goto FAIL_GET_MMC_EXT_CSD;

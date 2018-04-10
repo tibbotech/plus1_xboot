@@ -313,11 +313,15 @@ unsigned int hwSdTxDummy(void)
  **************************************************************************/
 unsigned int hwSdIdleWait(void)
 {
-	register unsigned int i = 0;
-	unsigned int status;
+	unsigned int status, time0, time1;
 
-	// Wait until finish
-	while (i++ < 0xffff) {
+	/* Wait hw state machine become idle
+	 * rd says:it only need 5 clocks to become idle
+	 * anway set timeout to 10ms there
+	 */
+
+	time0 = AV1_GetStc32() / 90;
+	while (1) {
 		status = SD_STATUS1_GET();
 		if (status & (0x1 << 13)) { // error/timeout
 			prn_string("SDCTL error\n");
@@ -326,9 +330,15 @@ unsigned int hwSdIdleWait(void)
 		}
 		if (status & (0x1 << 14))   // finish/idle
 			return SD_SUCCESS;
+
+		time1 = AV1_GetStc32() / 90;
+		if ((time1 - time0) >= 10){
+			break;
+		}
 	}
 	prn_string("SDCTL wait timeout\n");
 	prn_sd_status();
+
 	return SD_FAIL;
 }
 
