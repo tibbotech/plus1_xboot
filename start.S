@@ -70,7 +70,6 @@ FUNC(exit_bootROM)
 	bx	r12
 ENDFUNC(exit_bootROM)
 
-#ifdef PLATFORM_I137
 /*
  * r0 : A RGST base
  * r1 : A G0.3 clk_cfg
@@ -78,7 +77,7 @@ ENDFUNC(exit_bootROM)
  */
 A_setup_iobus_start:
 	str	r1, [r0, #0xc]
-	/* delay before using ABIO */
+	/* delay before using ABIO (TODO) */
 	mov	r1, #0x10000
 1:
 	subs	r1, r1, #1
@@ -87,7 +86,8 @@ A_setup_iobus_start:
 A_setup_iobus_end:
 
 /* A : setup abio on A_SRAM */
-.macro A_setup_abio
+FUNC(A_setup_abio)
+	mov	r11, lr
 	ldr	r1, =(B_SRAM_BASE_A_VIEW - SRAM0_BASE) + A_setup_iobus_start
 	ldr	r2, =(B_SRAM_BASE_A_VIEW - SRAM0_BASE) + A_setup_iobus_end
 	ldr	r3, =A_WORK_MEM_BASE
@@ -98,14 +98,14 @@ iobus_cpy:
 	str	r0, [r3], #4
 	b	iobus_cpy
 iobus_start:
+	WORD_DSB
+	WORD_ISB
 	ldr	r0, =A_REG_BASE
-	//ldr	r1, =0x80718		@ 100M  (BogoMIPS: SDR=1.53 DDR=1.71)
-	ldr	r1, =0x40718		@ 200M  (BogoMIPS: SDR=2.06 DDR=2.18)
-	//ldr	r1, =0x20718		@ 400M  (BogoMIPS: SDR=2.45 DDR=NA)
+	ldr	r1, =ABIO_CFG
 	mov	lr, pc
 	ldr	pc, =A_WORK_MEM_BASE
-.endm
-#endif
+	bx	r11
+ENDFUNC(A_setup_abio)
 
 FUNC(boot_next_no_stack)
 #ifdef PLATFORM_I137
@@ -114,7 +114,7 @@ FUNC(boot_next_no_stack)
 	ldr	r0, =RF_GRP(18, 0)
 	ldr	r1, ='O'		@ print 'O'
 	str	r1, [r0]
-	A_setup_abio			@ A: speed up ABIO bus clock
+	bl	A_setup_abio		@ A: speed up ABIO bus clock
 	ldr	r0, =RF_GRP(18, 0)
 	ldr	r1, ='K'		@ print 'K'
 	str	r1, [r0]

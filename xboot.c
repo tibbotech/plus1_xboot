@@ -256,7 +256,9 @@ static void boot_next_set_addr(unsigned int addr)
 
 static void boot_next_in_another(void)
 {
-	prn_string("wake up another to run\n");
+	prn_string("wake up another\n");
+
+	prn_string("ABIO Up : "); prn_dword(ABIO_CFG);
 
 #ifdef PLATFORM_I137 /* B_SRAM address is 9e00_0000 from A view */
 	*(volatile unsigned int *)A_START_POS_B_VIEW = ((u32)&boot_next_no_stack) - 0x800000;
@@ -272,7 +274,18 @@ static void spi_nor_linux(void)
 	struct image_header *hdr;
 
 #ifdef CONFIG_USE_ZMEM
-	prn_string("[zmem] check dtb\n");
+#ifdef LOAD_SPLIT_INITRAMFS
+	prn_string("[zmem] chk initramfs\n");
+	hdr = (struct image_header *)INITRAMFS_LOAD_ADDR;
+	if (!image_check_magic(hdr)) {
+		prn_string("[zmem] no uhdr magic: "); prn_dword(image_get_magic(hdr));
+		mon_shell();
+	} else if (!image_check_hcrc(hdr)) {
+		prn_string("bad hcrc\n");
+		mon_shell();
+	}
+#endif
+	prn_string("[zmem] chk dtb\n");
 	hdr = (struct image_header *)DTB_LOAD_ADDR;
 	if (!image_check_magic(hdr)) {
 		prn_string("[zmem] no uhdr magic: "); prn_dword(image_get_magic(hdr));
@@ -281,7 +294,7 @@ static void spi_nor_linux(void)
 		prn_string("corrupted\n");
 		mon_shell();
 	}
-	prn_string("[zmem] check linux\n");
+	prn_string("[zmem] chk linux\n");
 	hdr = (struct image_header *)LINUX_LOAD_ADDR;
 	if (!image_check_magic(hdr)) {
 		prn_string("[zmem] no uhdr magic: "); prn_dword(image_get_magic(hdr));
@@ -294,6 +307,19 @@ static void spi_nor_linux(void)
 	int res;
 	int verify = 1;
 
+#ifdef LOAD_SPLIT_INITRAMFS
+#ifdef CONFIG_BOOT_ON_CSIM
+	verify = 0; /* big */
+#endif
+	res = nor_load_uhdr_image("initramfs", (void *)INITRAMFS_LOAD_ADDR,
+			(void *)(SPI_FLASH_BASE + SPI_INITRAMFS_OFFSET), verify);
+	if (res <= 0) {
+		prn_string("No initramfs!!!!!!!!!!!!!!!!!!!!!!!\n");
+		//return;
+	}
+#endif
+
+	verify = 1;
 	res = nor_load_uhdr_image("dtb", (void *)DTB_LOAD_ADDR,
 			(void *)(SPI_FLASH_BASE + SPI_DTB_OFFSET), verify);
 	if (res <= 0) {
@@ -336,7 +362,6 @@ static void spi_nor_uboot(void)
 	hdr = (struct image_header *)UBOOT_LOAD_ADDR;
 
 #ifdef CONFIG_USE_ZMEM
-
 	prn_string("[zmem] check uboot\n");
 	if (!image_check_magic(hdr)) {
 		prn_string("[zmem] no uhdr magic: "); prn_dword(image_get_magic(hdr));
@@ -1214,8 +1239,14 @@ void xboot_main(void)
 	prn_string("+++xBoot " __DATE__ " " __TIME__ "\n");
 	if ((cpu_main_id() & 0xfff0) == 0x9260)
 		prn_string("-- B --\n");
-	else
+	else {
 		prn_string("-- A --\n");
+#if defined(PLATFORM_I137) || defined(CONFIG_PLATFORM_Q628)
+		prn_string(">>>>> ABIO Up : "); prn_dword(ABIO_CFG);
+		extern void A_setup_abio(void);
+		A_setup_abio();
+#endif
+	}
 
 	/* init hw */
 	init_hw();
