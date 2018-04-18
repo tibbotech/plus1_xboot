@@ -98,6 +98,12 @@ static int run_draminit(void)
 	prn_string("Done draiminit\n");
 #endif
 
+
+#ifdef CONFIG_USE_ZMEM
+	/* don't corrupt zmem */
+	return 0;
+#endif
+
 	// put a brieft dram test
 	if (dram_test()) {
 		mon_shell();
