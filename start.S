@@ -73,15 +73,19 @@ ENDFUNC(exit_bootROM)
 /*
  * r0 : A RGST base
  * r1 : A G0.3 clk_cfg
+ * r2 : A STC counter address
  * lr : return address
  */
 A_setup_iobus_start:
 	str	r1, [r0, #0xc]
-	/* delay before using ABIO (TODO) */
-	mov	r1, #0x10000
+	/* delay 1ms before using ABIO */
+	ldr	r5, [r2]	@ time0
+	mov	r6, #90		@ 90 ticks = 1ms
+	add	r6, r6, r5	@ r6 = time0 + 1ms
 1:
-	subs	r1, r1, #1
-	bne	1b
+	ldr	r5, [r2]	@ r5 = now
+	cmp	r5, r6
+	blt	1b
 	bx	lr
 A_setup_iobus_end:
 
@@ -102,6 +106,12 @@ iobus_start:
 	WORD_ISB
 	ldr	r0, =A_REG_BASE
 	ldr	r1, =ABIO_CFG
+	/* setup A_STC for delay purpose */
+	ldr	r2, =A_RF_GRP(19, 0)
+	ldr	r3, =A_RF_GRP(19, 3)	@ A_STC divisor
+	ldr	r4, =(1 << 15 | 0x95)	@ A_STC 90K with extdiv=1
+	str	r4, [r3]
+	/* Jump to A_SRAM */
 	mov	lr, pc
 	ldr	pc, =A_WORK_MEM_BASE
 	bx	r11
