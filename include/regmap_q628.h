@@ -512,4 +512,57 @@ struct card_ctl_regs {
 /* SPI NAND */
 #define CONFIG_SP_SPINAND_BASE   ((volatile unsigned int *)RF_GRP(87, 0))
 
+/* BIO */
+struct bio_ctl_regs {
+	unsigned int ch0_addr; // 0x9c10_5000
+	unsigned int ch0_ctrl; // 0x9c10_5004
+	unsigned int ch1_addr; // 0x9c10_5008
+	unsigned int ch1_ctrl; // 0x9c10_500c
+	unsigned int ch2_addr; // 0x9c10_5010
+	unsigned int ch2_ctrl; // 0x9c10_5014
+	unsigned int ch3_addr; // 0x9c10_5018
+	unsigned int ch3_ctrl; // 0x9c10_501c
+	unsigned int ch4_addr; // 0x9c10_5020
+	unsigned int ch4_ctrl; // 0x9c10_5024
+	unsigned int ch5_addr; // 0x9c10_5028
+	unsigned int ch5_ctrl; // 0x9c10_502c
+	unsigned int io_ctrl ; // 0x9c10_5030
+	unsigned int io_tctl ; // 0x9c10_5034
+	unsigned int macro_c0; // 0x9c10_5038
+	unsigned int macro_c1; // 0x9c10_503c
+	unsigned int macro_c2; // 0x9c10_5040
+	unsigned int io_tpctl; // 0x9c10_5044
+	unsigned int io_rpctl; // 0x9c10_5048
+	unsigned int boot_ra ; // 0x9c10_504c
+	unsigned int io_tdat0; // 0x9c10_5050
+	unsigned int reserved[11];
+};
+#define BIO_CTL_REG ((volatile struct bio_ctl_regs *)0x9c105000)
+
+struct A_moon0_regs {
+	unsigned int stamp;            // 0.0
+	unsigned int ca7_cfg;          // 0.1
+	unsigned int ca7_sw_rst;       // 0.2
+	unsigned int clk_cfg;          // 0.3
+	unsigned int aud_dsp_clk_cfg;  // 0.4
+	unsigned int pfcnt_sensor_reg[2]; // 0.5
+	unsigned int ca7_standbywfi;   // 0.7
+	unsigned int rst_b_0;          // 0.8
+	unsigned int clk_en0;          // 0.9
+	unsigned int gclk_en0;         // 0.10
+	unsigned int pll_ctl[2];       // 0.11
+	unsigned int pad_reg;          // 0.13
+	unsigned int pad_ds_cfg0;      // 0.14
+	unsigned int sys_sleep_div;    // 0.15
+	unsigned int pfcnt_ctl;        // 0.16
+	unsigned int pfcnt_sts;        // 0.17
+	unsigned int ioctrl_cfg;       // 0.18
+	unsigned int memctl_cfg;       // 0.19
+	unsigned int ca7_ctl_cfg;      // 0.20
+	unsigned int pllio_ctl[2];     // 0.21
+	unsigned int aud_dsp_otp_reg[2]; // 0.23
+	unsigned int rsv[7];           // 0.25
+};
+#define A_MOON0_REG ((volatile struct A_moon0_regs *)A_RF_GRP(0, 0))
+
 #endif /* __INC_REGMAP_Q628_H */

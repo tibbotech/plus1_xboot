@@ -120,6 +120,11 @@
 #define PLLSYS                 (202500 * 1000)      /* 202.5MHz */
 #endif
 
+#if defined(PLATFORM_I137) || defined(CONFIG_PLATFORM_Q628)
+#define CLK_A_PLLCLK            2000000000      /* 2GHz */
+#define CLK_B_PLLSYS            202500000       /* 202.5MHz */
+#endif
+
 /**********************
  * Timer
  *********************/

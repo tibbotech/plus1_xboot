@@ -269,4 +269,25 @@ struct bio_ctl_regs {
 };
 #define BIO_CTL_REG ((volatile struct bio_ctl_regs *)0x9c105000)
 
+struct A_moon0_regs {
+        unsigned int ca7_cfg;          // 0.0
+        unsigned int rsv_1[2];         // 0.1
+        unsigned int clk_cfg;          // 0.3
+        unsigned int rsv_4[4];         // 0.4
+        unsigned int rst_b_0;          // 0.8
+        unsigned int clk_en0;          // 0.9
+        unsigned int gclk_en0;         // 0.10
+        unsigned int pll_ctl[2];       // 0.11
+        unsigned int rsv_13;           // 0.13
+        unsigned int pad_ds_cfg0;      // 0.14
+        unsigned int sys_sleep_div;    // 0.15
+        unsigned int pfcnt_ctl;        // 0.16
+        unsigned int pfcnt_sts;        // 0.17
+        unsigned int ioctrl_cfg;       // 0.18
+        unsigned int memctl_cfg;       // 0.19
+        unsigned int io_ctl_cfg;       // 0.20
+        unsigned int rsv_21[12];       // 0.21
+};
+#define A_MOON0_REG ((volatile struct A_moon0_regs *)A_RF_GRP(0, 0))
+
 #endif /* __INC_REGMAP_I137_H */

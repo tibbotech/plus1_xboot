@@ -32,10 +32,58 @@ __attribute__ ((section("bootinfo_sect")))       struct bootinfo     g_bootinfo;
 __attribute__ ((section("boothead_sect")))       u8                  g_boothead[GLOBAL_HEADER_SIZE];
 __attribute__ ((section("xboot_header_sect")))   u8                  g_xboot_buf[32];
 
+#if defined(PLATFORM_I137) || defined(CONFIG_PLATFORM_Q628)
+static void prn_clk_info(int is_A)
+{
+	unsigned int b_sysclk, io_ctrl;
+	unsigned int coreclk, ioclk, sysclk, clk_cfg;
+
+	prn_string("b_sysclk=");
+#if defined(PLATFORM_I137)
+	b_sysclk = CLK_B_PLLSYS >> ((MOON0_REG->clk_sel[1] >> 4) & 7);
+#else
+	b_sysclk = CLK_B_PLLSYS >> ((MOON2_REG->clk_sel0 >> 4) & 7);
+#endif
+	prn_decimal(b_sysclk / 1000000);
+
+	prn_string("M abio_ctrl=(");
+	io_ctrl = BIO_CTL_REG->io_ctrl;
+	prn_decimal((io_ctrl & 2) ? 16 : 8);
+	prn_string("bit,"); prn_string((io_ctrl & 1) ? "DDR)\n" : "SDR)\n");
+
+	if (is_A) {
+		clk_cfg = A_MOON0_REG->clk_cfg;
+		coreclk = CLK_A_PLLCLK / (1 + ((clk_cfg >> 10) & 1));
+		ioclk = CLK_A_PLLCLK / (20 + 5 * ((clk_cfg >> 4) & 7)) / ((clk_cfg >> 16) & 0xff) * 10;
+		sysclk = coreclk / (1 + ((clk_cfg >> 3) & 1));
+		prn_string("A: coreclk="); prn_decimal(coreclk / 1000000);
+		prn_string("M a_sysclk="); prn_decimal(sysclk / 1000000);
+		prn_string("M abio_bus="); prn_decimal(ioclk / 1000000);
+		prn_string("M\n");
+	}
+}
+#endif
+
 static void init_hw(void)
 {
 	int i;
+#if defined(PLATFORM_I137) || defined(CONFIG_PLATFORM_Q628)
+	int is_A = 0;
+#endif
+
 	dbg();
+
+	if ((cpu_main_id() & 0xfff0) == 0x9260)
+		prn_string("-- B --\n");
+	else {
+		prn_string("-- A --\n");
+#if defined(PLATFORM_I137) || defined(CONFIG_PLATFORM_Q628)
+		is_A = 1;
+		prn_string(">>>>> ABIO Up : "); prn_dword(ABIO_CFG);
+		extern void A_setup_abio(void);
+		A_setup_abio();
+#endif
+	}
 
 #ifdef CONFIG_PLATFORM_Q628
 	/* clken[all]  = enable */
@@ -57,6 +105,17 @@ static void init_hw(void)
 	/* reset[all] = clear */
 	for (i = 0; i < sizeof(MOON0_REG->reset) / 4; i++)
 		MOON0_REG->reset[i] = 0;
+#endif
+
+#if defined(PLATFORM_I137) || defined(CONFIG_PLATFORM_Q628)
+	prn_clk_info(is_A);
+#endif
+
+#ifdef CONFIG_PLATFORM_Q628
+	if (is_A) {
+		prn_string("release cores\n");
+		A_MOON0_REG->ca7_sw_rst = 0x1ffff;
+	}
 #endif
 
 	dbg();
@@ -266,6 +325,7 @@ static void boot_next_in_another(void)
 
 	prn_string("ABIO Up : "); prn_dword(ABIO_CFG);
 
+	/* Wake up another to run from boot_next_no_stack() */
 #ifdef PLATFORM_I137 /* B_SRAM address is 9e00_0000 from A view */
 	*(volatile unsigned int *)A_START_POS_B_VIEW = ((u32)&boot_next_no_stack) - 0x800000;
 #else
@@ -1243,16 +1303,6 @@ void xboot_main(void)
 
 	/* first msg */
 	prn_string("+++xBoot " __DATE__ " " __TIME__ "\n");
-	if ((cpu_main_id() & 0xfff0) == 0x9260)
-		prn_string("-- B --\n");
-	else {
-		prn_string("-- A --\n");
-#if defined(PLATFORM_I137) || defined(CONFIG_PLATFORM_Q628)
-		prn_string(">>>>> ABIO Up : "); prn_dword(ABIO_CFG);
-		extern void A_setup_abio(void);
-		A_setup_abio();
-#endif
-	}
 
 	/* init hw */
 	init_hw();
