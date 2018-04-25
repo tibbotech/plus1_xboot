@@ -319,7 +319,7 @@ static void boot_next_set_addr(unsigned int addr)
 	prn_string("boot next @"); prn_dword(*next);
 }
 
-static void boot_next_in_another(void)
+static void boot_next_in_A(void)
 {
 	prn_string("wake up another\n");
 
@@ -334,7 +334,61 @@ static void boot_next_in_another(void)
 	while (1);
 }
 
+/* Assume u-boot has been loaded */
+static void boot_uboot(void)
+{
+	int is_for_A = 0;
+	const struct image_header *hdr = (struct image_header *)UBOOT_LOAD_ADDR;
+
+	prn_string((const char *)image_get_name(hdr)); prn_string("\n");
+
+	boot_next_set_addr(UBOOT_RUN_ADDR);
+
+	is_for_A = memcmp((const u8 *)image_get_name(hdr), (const u8 *)"uboot_B", 7);
+
+	/* if B but image is for A, wake up A */
+	if (g_bootinfo.bootcpu == 0 && is_for_A) {
+		boot_next_in_A();
+	} else {
+		/* if A but image is for B, pause */
+		if (g_bootinfo.bootcpu == 1 && !is_for_A) {
+			prn_string("WARN: A can't run B's u-boot\n");
+			mon_shell();
+		}
+
+		exit_xboot("Run u-boot @", UBOOT_RUN_ADDR);
+	}
+}
+
 #ifdef CONFIG_LOAD_LINUX
+
+/* Assume dtb and uImage has been loaded */
+static void boot_linux(void)
+{
+	int is_for_A = 0;
+	const struct image_header *hdr = (struct image_header *)LINUX_LOAD_ADDR;
+
+	prn_string((const char *)image_get_name(hdr)); prn_string("\n");
+
+	boot_next_set_addr(LINUX_RUN_ADDR);
+
+	is_for_A = (*(u32 *)LINUX_RUN_ADDR != 0xe321f0d3); /* arm9 vmlinux.bin first word */
+
+	/* if B but image is for A, wake up A */
+	if (g_bootinfo.bootcpu == 0 && is_for_A) {
+		boot_next_in_A();
+	} else {
+		/* if A but image is for B, pause */
+		if (g_bootinfo.bootcpu == 1 && !is_for_A) {
+			prn_string("WARN: A can't run B's u-boot\n");
+			mon_shell();
+		}
+
+		prn_string("run linux@"); prn_dword(LINUX_RUN_ADDR);
+		boot_next_no_stack();
+	}
+}
+
 static void spi_nor_linux(void)
 {
 	struct image_header *hdr;
@@ -402,32 +456,19 @@ static void spi_nor_linux(void)
 		prn_string("No linux\n");
 		return;
 	}
-	hdr = (struct image_header *)LINUX_LOAD_ADDR;
 #endif
 
-	prn_string((const char *)image_get_name(hdr)); prn_string("\n");
-
-	boot_next_set_addr(LINUX_RUN_ADDR);
-
-	// if B (and vmlinux is not B's), wake up A
-	if (g_bootinfo.bootcpu == 0 && *(u32 *)LINUX_RUN_ADDR != 0xe321f0d3) { /* arm9 vmlinux.bin first word */
-		boot_next_in_another();
-	// directly run Linux
-	} else {
-		prn_string("run linux@"); prn_dword(LINUX_RUN_ADDR);
-		boot_next_no_stack();
-	}
+	boot_linux();
 }
 #endif
 
 static void spi_nor_uboot(void)
 {
 	int len = 0;
-	struct image_header *hdr;
-
-	hdr = (struct image_header *)UBOOT_LOAD_ADDR;
 
 #ifdef CONFIG_USE_ZMEM
+	struct image_header *hdr;
+	hdr = (struct image_header *)UBOOT_LOAD_ADDR;
 	prn_string("[zmem] check uboot\n");
 	if (!image_check_magic(hdr)) {
 		prn_string("[zmem] no uhdr magic: "); prn_dword(image_get_magic(hdr));
@@ -445,16 +486,7 @@ static void spi_nor_uboot(void)
 	}
 #endif
 
-	prn_string((const char *)image_get_name(hdr)); prn_string("\n");
-
-	boot_next_set_addr(UBOOT_RUN_ADDR);
-
-	/* if B and u-boot is A's, wake up A */
-	if (g_bootinfo.bootcpu == 0 && memcmp((const u8 *)image_get_name(hdr), (const u8 *)"uboot_B", 7)) {
-		boot_next_in_another();
-	} else {
-		exit_xboot("Run u-boot @", UBOOT_RUN_ADDR);
-	}
+	boot_uboot();
 }
 
 static void spi_nor_boot(int pin_x)
@@ -610,7 +642,7 @@ static void do_fat_boot(u32 type, u32 port)
 		return;
 	}
 
-	exit_xboot("Run u-boot @", UBOOT_RUN_ADDR);
+	boot_uboot();
 }
 #endif /* CONFIG_HAVE_FS_FAT */
 
@@ -857,7 +889,7 @@ static void emmc_boot(void)
 		return;
 	}
 
-	exit_xboot("Run u-boot @", UBOOT_RUN_ADDR);
+	boot_uboot();
 }
 #endif /* CONFIG_HAVE_EMMC */
 
@@ -1136,7 +1168,7 @@ static void nand_uboot(u32 type)
 		return;
 	}
 
-	exit_xboot("Run u-boot @", UBOOT_RUN_ADDR);
+	boot_uboot();
 }
 
 #endif
