@@ -87,29 +87,27 @@
 #if defined(PLATFORM_8388) || defined(PLATFORM_I137)
 #define HW_CFG_REG              RF_GRP(0, 28)
 #define HW_CFG_SHIFT            10
+#define HW_CFG_MASK             (0x1D << HW_CFG_SHIFT)
 #elif defined(PLATFORM_3502)
 #define HW_CFG_REG              RF_GRP(0, 28)
 #define HW_CFG_SHIFT            14
+#define HW_CFG_MASK             (0x1D << HW_CFG_SHIFT)
 #else
 #define HW_CFG_REG              RF_GRP(0, 31)
 #define HW_CFG_SHIFT            12
+#define HW_CFG_MASK             (0x1F << HW_CFG_SHIFT)
 #endif
-#define HW_CFG_MASK             (0x1D << HW_CFG_SHIFT)
 
 #define AUTO_SCAN               0x01
 #define AUTO_SCAN_ACHIP         0x15
 #define SPI_NOR_BOOT            0x11
 #define SPINAND_BOOT            0x09
-#define EMMC_BOOT               0x1D
-#define SDCARD_ISP              0x05
-#define UART_ISP                0x0D
-#define USB_ISP                 0x19
+#define EMMC_BOOT               0x1F
+#define EXT_BOOT                0x19
+#define SDCARD_ISP              0x07
+#define UART_ISP                0x0F
+#define USB_ISP                 0x17
 #define NAND_LARGE_BOOT         0xff // Q628: no PARA_NAND
-
-// New EXT_BOOT :
-//  bit=0: CPU boots from iBoot
-//  bit=1: CPU boots from NOR_iBoot (no romcode)
-#define HW_CFG_EXT_BOOT        (1 << (HW_CFG_SHIFT + 1)) /* IV_MX3 */
 
 /**********************
  * Clock
@@ -263,7 +261,7 @@
 #define CARD_CLK           (135*1000*1000)  /* SD0 */
 #define CARD012_CLK        (135*1000*1000)
 #else
-//FIXME: q628 SD0 SD1 source clock
+/* Q628 SD0 SD1 source clock */
 #define CARD_CLK           (PLLSYS)
 #define CARD012_CLK        (PLLSYS)
 #endif
@@ -281,7 +279,9 @@
 #define OTP_WHO_BOOT_REG	0x9e80fffc	/* Fake &OTP[WHO_BOOT] */
 #define OTP_WHO_BOOT_BIT	2
 #else
-/* FIXME: Q628 OTP[WHO_BOOT] */
-#define OTP_WHO_BOOT_REG	RF_GRP(4, 31)
+/* FIXME: Q628 OTP[WHO_BOOT] = G350.0 bit11 */
+//#define OTP_WHO_BOOT_REG	RF_GRP(350, 0)
+//#define OTP_WHO_BOOT_BIT	11
+#define OTP_WHO_BOOT_REG	RF_GRP(4, 31) // temp OTP
 #define OTP_WHO_BOOT_BIT	0
 #endif

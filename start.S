@@ -118,18 +118,18 @@ iobus_start:
 ENDFUNC(A_setup_abio)
 
 FUNC(boot_next_no_stack)
-#ifdef PLATFORM_I137
+	/* abio up */
+#if defined(PLATFORM_I137) || defined(CONFIG_PLATFORM_Q628)
 	set_Z_if_B r5
 	beq	skip_abio_up
-	ldr	r0, =RF_GRP(18, 0)
-	ldr	r1, ='O'		@ print 'O'
-	str	r1, [r0]
 	bl	A_setup_abio		@ A: speed up ABIO bus clock
-	ldr	r0, =RF_GRP(18, 0)
-	ldr	r1, ='K'		@ print 'K'
+	/* A release cores (B booting doesn't do this yet) */
+	ldr	r0, =A_RF_GRP(0, 2)
+	ldr	r1, =0x1ffff
 	str	r1, [r0]
 skip_abio_up:
 #endif
+
 	mov	r0, #0			@ 0
 	mov	r1, #0			@ mach id
 	ldr	r2, =DTB_RUN_ADDR	@ dtb

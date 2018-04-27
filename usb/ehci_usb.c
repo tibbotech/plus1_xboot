@@ -41,8 +41,11 @@ void uphy_init(void)
 	MOON1_REG->sft_cfg[14] = 0x87474002;
         MOON1_REG->sft_cfg[15] = 0x87474004;
 #else
-	MOON2_REG->uphy0_ctl[0] = RF_MASK_V(0xffff, 0x4002);
-	MOON2_REG->uphy0_ctl[1] = RF_MASK_V(0xffff, 0x8747);
+	/* Q628 uphy0_ctl uphy1_ctl */
+	MOON4_REG->uphy0_ctl[0] = RF_MASK_V(0xffff, 0x4002);
+	MOON4_REG->uphy0_ctl[1] = RF_MASK_V(0xffff, 0x8747);
+	MOON4_REG->uphy1_ctl[0] = RF_MASK_V(0xffff, 0x4004);
+	MOON4_REG->uphy1_ctl[1] = RF_MASK_V(0xffff, 0x8747);
 #endif
 
 	// 2. PLL power off/on twice
@@ -57,15 +60,16 @@ void uphy_init(void)
 	_delay_1ms(1);
 	MOON1_REG->sft_cfg[21] = 0;
 #else
-	MOON2_REG->uphy012_ctl = RF_MASK_V(0xffff, 0x8888);
+	/* Q628 uphy012_ctl */
+	MOON4_REG->uphy0_ctl[3] = RF_MASK_V(0xffff, 0x8888);
 	_delay_1ms(1);
-	MOON2_REG->uphy012_ctl = RF_MASK_V(0xffff, 0x8080);
+	MOON4_REG->uphy0_ctl[3] = RF_MASK_V(0xffff, 0x8080);
 	_delay_1ms(1);
-	MOON2_REG->uphy012_ctl = RF_MASK_V(0xffff, 0x8888);
+	MOON4_REG->uphy0_ctl[3] = RF_MASK_V(0xffff, 0x8888);
 	_delay_1ms(1);
-	MOON2_REG->uphy012_ctl = RF_MASK_V(0xffff, 0x8080);
+	MOON4_REG->uphy0_ctl[3] = RF_MASK_V(0xffff, 0x8080);
 	_delay_1ms(1);
-	MOON2_REG->uphy012_ctl = RF_MASK_V(0xffff, 0);
+	MOON4_REG->uphy0_ctl[3] = RF_MASK_V(0xffff, 0);
 #endif
 
 	// 3. reset UPHY0
@@ -73,9 +77,9 @@ void uphy_init(void)
 	MOON0_REG->reset[1] |= (3 << 13);
 	MOON0_REG->reset[1] &= ~(3 << 13);
 #else
-	MOON0_REG->reset[2] = RF_MASK_V_SET(1 << 13);
-	MOON0_REG->reset[2] = RF_MASK_V_CLR(1 << 13);
-	//FIXME: q628 UPHY1 reset
+	/* Q628 UPHY0_RESET UPHY1_RESET : 1->0 */
+	MOON0_REG->reset[2] = RF_MASK_V_SET(3 << 13);
+	MOON0_REG->reset[2] = RF_MASK_V_CLR(3 << 13);
 #endif
 	_delay_1ms(1);
 
@@ -90,9 +94,9 @@ void uphy_init(void)
 	MOON0_REG->reset[1] |= (3 << 10);
 	MOON0_REG->reset[1] &= ~(3 << 10);
 #else
-	MOON0_REG->reset[2] = RF_MASK_V_SET(1 << 10);
-	MOON0_REG->reset[2] = RF_MASK_V_CLR(1 << 10);
-	//FIXME: q628 USBC1 reset
+	/* Q628 USBC0_RESET USBC1_RESET : 1->0 */
+	MOON0_REG->reset[2] = RF_MASK_V_SET(3 << 10);
+	MOON0_REG->reset[2] = RF_MASK_V_CLR(3 << 10);
 #endif
 
 	CSTAMP(0xE5B0A000);
@@ -101,7 +105,9 @@ void uphy_init(void)
 #if defined(PLATFORM_8388) || defined(PLATFORM_I137)
 	MOON1_REG->sft_cfg[19] |= (1 << 6);
 #else
-	MOON2_REG->uphy0_ctl[2] = RF_MASK_V_SET(1 << 6);
+	/* Q628 uphy0_ctl_2 uphy1_ctl_2 */
+	MOON4_REG->uphy0_ctl[2] = RF_MASK_V_SET(1 << 6);
+	MOON4_REG->uphy1_ctl[2] = RF_MASK_V_SET(1 << 6);
 #endif
 
 	CSTAMP(0xE5B0A001);
@@ -124,8 +130,8 @@ void uphy_init(void)
         }
         UPHY1_RN_REG->cfg[7] = (UPHY1_RN_REG->cfg[7] & ~0x1F) | set;
 #else
-	//FIXME: q628 OTP[UPHY0_DISC] OTP[UPHY1_DISC]
-	val = 0;
+	/* Q628 OTP[UPHY0_DISC] OTP[UPHY1_DISC] */
+	val = HB_GP_REG->hb_otp_data6;
         set = val & 0x1F; // UPHY0 DISC
         if (!set) {
                 set = DEFAULT_UPHY_DISC;
@@ -165,12 +171,11 @@ void usb_power_init(int is_host)
 		MOON1_REG->sft_cfg[5] &= ~(1 << 2);
 	}
 #else
-	// USBC0_OTG_EN_SEL
-	//FIXME: q628 USBC1_OTG_EN_SEL
+	/* Q628 USBC0_OTG_EN_SEL USBC1_OTG_EN_SEL */
 	if (is_host) {
-		MOON1_REG->sft_cfg[17] = RF_MASK_V_SET(1 << 6);
+		MOON1_REG->sft_cfg[3] = RF_MASK_V_SET(3 << 2);
 	} else {
-		MOON1_REG->sft_cfg[17] = RF_MASK_V_CLR(1 << 6);
+		MOON1_REG->sft_cfg[3] = RF_MASK_V_CLR(3 << 2);
 	}
 #endif
 
@@ -193,12 +198,11 @@ void usb_power_init(int is_host)
 		MOON2_REG->sft_cfg[3] &= ~(3 << 5);
 	}
 #else
-	// USBC0_TYPE, USBC0_SEL
-	//FIXME: q628 USBC1_TYPE, USBC1_SEL
+	/* Q628 USBC0_TYPE, USBC0_SEL, USBC1_TYPE, USBC1_SEL */
 	if (is_host) {
-		MOON2_REG->usbc_ctl = RF_MASK_V_SET(3 << 5);
+		MOON4_REG->usbc_ctl = RF_MASK_V_SET((3 << 13) | (3 << 5));
 	} else {
-		MOON2_REG->usbc_ctl = RF_MASK_V_CLR(3 << 5);
+		MOON4_REG->usbc_ctl = RF_MASK_V_CLR((3 << 13) | (3 << 5));
 	}
 #endif
 }

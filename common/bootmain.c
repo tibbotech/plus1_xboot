@@ -28,8 +28,8 @@ static inline void set_spi_nor_pinmux(int pin_x)
 #if defined(PLATFORM_8388) || defined(PLATFORM_I137)
 	MOON1_REG->sft_cfg[1] = ((MOON1_REG->sft_cfg[1] & ~0x3) | pin_x);
 #else
-	//FIXME: Q628 SPI_NOR pinmux
-	//MOON1_REG->sft_cfg[1] = RF_MASK_V(0x3, pin_x);
+	// Q628 X1,SPI_NOR
+	MOON1_REG->sft_cfg[1] = RF_MASK_V(0xf, (pin_x << 2) | pin_x);
 #endif
 }
 
@@ -38,8 +38,8 @@ static inline void set_spi_nand_pinmux(int pin_x)
 #if defined(PLATFORM_8388) || defined(PLATFORM_I137)
         MOON1_REG->sft_cfg[1] = ((MOON1_REG->sft_cfg[1] & ~0xC) | ((pin_x) << 2));
 #else
-	//FIXME: Q628 SPI_NAND pinmux
-	//MOON1_REG->sft_cfg[1] = RF_MASK_V(0x3 << 2, pin_x << 2);
+	// Q628 X1,SPI_NAND
+	MOON1_REG->sft_cfg[4] = RF_MASK_V(1 << 4, pin_x << 4);
 #endif
 }
 
@@ -74,7 +74,8 @@ static inline void set_emmc_pinmux(int pin_x)
 	MOON1_REG->sft_cfg[4] = (MOON1_REG->sft_cfg[4] & ~(0x3 << 13)) | ((pin_x&0x3)<<13);
 	MOON1_REG->sft_cfg[4] = (MOON1_REG->sft_cfg[4] & ~(0x3 << 15)) | ((pin_x&0x3)<<15);
 #else
-	//FIXME: q628 sdcard1 pinmux (CARD0_HB_SEL, CARD0_SD_SEL)
+	// Q628 eMMC : X1,CARD0_SD
+	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 5, pin_x << 5);
 #endif
 }
 
@@ -87,7 +88,8 @@ static inline void set_sdcard1_pinmux(int pin_x)
 	// X1~X3,CARD0_SD must be off
 	MOON1_REG->sft_cfg[4] = (MOON1_REG->sft_cfg[4] & ~(0xf << 13));
 #else
-	//FIXME: q628 sdcard1 pinmux (CARD1_HB_SEL, CARD1_SD_SEL)
+	// Q628 SD_CARD : X1,CARD1_SD
+	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 6, pin_x << 6);
 #endif
 }
 
@@ -122,30 +124,40 @@ void SetBootDev(unsigned int bootdev, unsigned int pin_x, unsigned int dev_port)
 			break;	
 		case DEVICE_SPI_NOR:
 			g_bootinfo.gbootRom_boot_mode = SPI_NOR_BOOT;
+#if defined(PLATFORM_8388)
 			if (pin_x == 1)
 				set_spi_nand_pinmux(2);  /* conflict: SPI_NAND X1 */
+#endif
 			set_spi_nor_pinmux(pin_x);
 			break;
 		case DEVICE_SPI_NAND:
 			g_bootinfo.gbootRom_boot_mode = SPINAND_BOOT;
+#if defined(PLATFORM_8388)
 			if (pin_x == 1)
 				set_spi_nor_pinmux(2);   /* conflict: SPI_NOR X1 */
 			if (pin_x == 2)
 				set_para_nand_pinmux(0); /* conflict: PARA_NAND X1 */
-			set_spi_nand_pinmux(pin_x);
 			set_para_nand_padctl(0);         /* undo para nand padctl */
+#endif
+			set_spi_nand_pinmux(pin_x);
 			break;
 		case DEVICE_PARA_NAND:
 			g_bootinfo.gbootRom_boot_mode = NAND_LARGE_BOOT;
+#if defined(PLATFORM_8388)
 			if (pin_x == 1)
 				set_spi_nand_pinmux(0);  /* conflict: SPI_NAND X2 */
-			set_para_nand_pinmux(pin_x);
 			set_para_nand_padctl(1);
+#endif
+			set_para_nand_pinmux(pin_x);
 			break;
 #ifdef CONFIG_HAVE_EMMC
 		case DEVICE_EMMC:
 			g_bootinfo.gbootRom_boot_mode = EMMC_BOOT;
 			gDEV_SDCTRL_BASE_ADRS = (unsigned int)CARD0_CTL_REG; /* eMMC is on SD0 */
+#ifdef CONFIG_PLATFORM_Q628
+			if (pin_x == 1)
+				set_spi_nand_pinmux(0);
+#endif
 			set_emmc_pinmux(pin_x);
 			break;
 #endif

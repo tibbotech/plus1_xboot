@@ -111,9 +111,10 @@ void boot_reset(void)
 	/* enable watchdog reset */
 #if defined(PLATFORM_8388) || defined(PLATFORM_I137)
 	MOON1_REG->sft_cfg[10] |= ((1 << 10) | (1 << 1));
-#else
-	//FIXME: q628 MOON watchdog reset
-	//MOON2_REG->misc_ctl[0] = RF_MASK_V_SET((1 << 10) | (1 << 1));
+#elif defined(PLATFORM_3502)
+	MOON1_REG->sft_cfg[8] |= ((1 << 10) | (1 << 1));
+#elif defined(PLATFORM_Q628)
+	MOON4_REG->misc_ctl_0 = RF_MASK_V_SET((1 << 4) | (1 << 1));
 #endif
 
 	/* STC: watchdog control */

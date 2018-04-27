@@ -66,11 +66,11 @@ u32 AV1_GetStc32(void)
 void AV1_STC_init(void)
 {
 	/* Clear STC_AV1_RESET */
-#if defined(PLATFORM_8388) || defined(PLATFORM_I137)
+#if defined(PLATFORM_8388) || defined(PLATFORM_I137) || defined(PLATFORM_3502)
 	MOON0_REG->reset[0] &= ~(1 << 22);
-#else
-	// Q628 STC_AV1 : default is released
-	//MOON0_REG->reset[1] = RF_MASK_V_CLR(1 << 6);
+#elif defined(CONFIG_PLATFORM_Q628)
+	/* Q628 STC_AV1 : default is reset=0 */
+	MOON0_REG->reset[1] = RF_MASK_V_CLR(1 << 6);
 #endif
 
 	STC_hw_init(BOOT_TIME_STC);

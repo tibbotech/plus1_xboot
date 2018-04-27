@@ -42,7 +42,7 @@ static void prn_clk_info(int is_A)
 #if defined(PLATFORM_I137)
 	b_sysclk = CLK_B_PLLSYS >> ((MOON0_REG->clk_sel[1] >> 4) & 7);
 #else
-	b_sysclk = CLK_B_PLLSYS >> ((MOON2_REG->clk_sel0 >> 4) & 7);
+	b_sysclk = CLK_B_PLLSYS >> ((MOON4_REG->clk_sel0 >> 4) & 7);
 #endif
 	prn_decimal(b_sysclk / 1000000);
 
@@ -177,8 +177,8 @@ static inline void release_spi_ctrl(void)
 #if defined(PLATFORM_8388) || defined(PLATFORM_I137)
 	MOON0_REG->reset[0] &= ~(0x3 << 9);
 #else
-	//FIXME: q628
-	//MOON0_REG->reset[0] = RF_MASK_V_CLR(3 << 9);
+	/* Q628 SPI NOR */
+	MOON0_REG->reset[0] = RF_MASK_V_CLR(3 << 9); /* SPI_COMBO_RESET=0, SPIFL_RESET=0 */
 #endif
 }
 
@@ -188,8 +188,7 @@ inline int get_current_spi_pinmux(void)
 #if defined(PLATFORM_8388) || defined(PLATFORM_I137)
 	return (MOON1_REG->sft_cfg[1] & 0x3);
 #else
-	//FIXME: q628
-	return 1; //((MOON1_REG->sft_cfg[1] >> 5) & 0x3);
+	return (MOON1_REG->sft_cfg[1] & 0x3);
 #endif
 }
 
@@ -321,7 +320,7 @@ static void boot_next_set_addr(unsigned int addr)
 
 static void boot_next_in_A(void)
 {
-	prn_string("wake up another\n");
+	prn_string("wake up A\n");
 
 	prn_string("ABIO Up : "); prn_dword(ABIO_CFG);
 

@@ -5,9 +5,8 @@ struct moon0_regs {
 	unsigned int stamp;            // 0.0
 	unsigned int clken[10];        // 0.1
 	unsigned int gclken[10];       // 0.11
-	unsigned int reset[9];         // 0.21
-	unsigned int hw_cfg;           // 0.30
-	unsigned int sfg_cfg_func;     // 0.31
+	unsigned int reset[10];        // 0.21
+	unsigned int hw_cfg;           // 0.31
 };
 #define MOON0_REG ((volatile struct moon0_regs *)RF_GRP(0, 0))
 
@@ -17,27 +16,47 @@ struct moon1_regs {
 #define MOON1_REG ((volatile struct moon1_regs *)RF_GRP(1, 0))
 
 struct moon2_regs {
-	unsigned int usbc_ctl;         // 2.0
-	unsigned int pllsp_ctl[7];     // 2.1
-	unsigned int misc_ctl[2];      // 2.8
-	unsigned int dram_size_ctl;    // 2.10
-	unsigned int uphy0_ctl[3];;    // 2.11
-	unsigned int uphy0_sts;        // 2.14
-	unsigned int uphy012_ctl;      // 2.15
-	unsigned int plla_ctl[5];      // 2.16
-	unsigned int plldis_ctl[4];    // 2.21
-	unsigned int pllw_ctl;         // 2.25
-	unsigned int pllsys_cfg;       // 2.26
-	unsigned int clk_sel0;         // 2.27
-	unsigned int rsvd_28[4];       // 2.28
+	unsigned int sft_cfg[32];
 };
 #define MOON2_REG ((volatile struct moon2_regs *)RF_GRP(2, 0))
 
-struct pad_ctl_regs {
-        unsigned int pad_ctrl[25];
-        unsigned int gpio_first[7];    // 4.25
+struct moon3_regs {
+	unsigned int sft_cfg[32];
 };
-#define PAD_CTL_REG ((volatile struct pad_ctl_regs *)RF_GRP(4, 0))
+#define MOON3_REG ((volatile struct moon3_regs *)RF_GRP(3, 0))
+
+struct moon4_regs {
+	unsigned int pllsp_ctl[7];	// 4.0
+	unsigned int plla_ctl[5];	// 4.7
+	unsigned int plle_ctl;		// 4.12
+	unsigned int pllf_ctl;		// 4.13
+	unsigned int plltv_ctl[3];	// 4.14
+	unsigned int usbc_ctl;		// 4.17
+	unsigned int uphy0_ctl[4];	// 4.18
+	unsigned int uphy1_ctl[4];	// 4.22
+	unsigned int pllsys;		// 4.26
+	unsigned int clk_sel0;		// 4.27
+	unsigned int probe_sel;		// 4.28
+	unsigned int misc_ctl_0;	// 4.29
+	unsigned int uphy0_sts;		// 4.30
+	unsigned int otp_st;		// 4.31
+};
+#define MOON4_REG ((volatile struct moon4_regs *)RF_GRP(4, 0))
+
+struct moon5_regs {
+	unsigned int sft_cfg[32];
+};
+#define MOON5_REG ((volatile struct moon5_regs *)RF_GRP(5, 0))
+
+struct pad_ctl_regs {
+        unsigned int reserved[20];         // 101.0
+        unsigned int spi_flash_sftpad_ctl; // 101.20
+        unsigned int spi_nd_sftpad_ctl;    // 101.21
+        unsigned int reserved_21[4];       // 101.21
+        unsigned int gpio_first[4];        // 101.25
+        unsigned int reserved_29[3];       // 101.29
+};
+#define PAD_CTL_REG ((volatile struct pad_ctl_regs *)RF_GRP(101, 0))
 
 struct hb_gp_regs {
         unsigned int hb_otp_data0;
@@ -52,7 +71,7 @@ struct hb_gp_regs {
         unsigned int hb_otp_data;
         unsigned int g7_reserved[22];
 };
-#define HB_GP_REG ((volatile struct hb_gp_regs *)RF_GRP(350, 0)) //FIXME: q628
+#define HB_GP_REG ((volatile struct hb_gp_regs *)RF_GRP(350, 0))
 
 struct uart_regs {
         unsigned int dr;  /* data register */
