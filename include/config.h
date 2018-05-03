@@ -27,6 +27,8 @@
 #define PLATFORM_I137                   /* Build for I137 */
 #elif defined(CONFIG_PLATFORM_3502)
 #define PLATFORM_3502                   /* Build for 3502 */
+#elif defined(CONFIG_PLATFORM_Q628)
+#define PLATFORM_Q628                   /* Build for Q628 */
 #endif
 
 /* CSIM build: Enable Stamp. No UART. Less delay. */
