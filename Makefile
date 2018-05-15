@@ -17,7 +17,7 @@ LDFLAGS += -Wl,--gc-sections
 .PHONY: release debug
 
 # default target
-release debug: clean all
+release debug: all
 
 all: $(TARGET)
 	@# 32-byte xboot header
