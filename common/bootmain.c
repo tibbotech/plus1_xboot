@@ -39,7 +39,7 @@ static inline void set_spi_nand_pinmux(int pin_x)
         MOON1_REG->sft_cfg[1] = ((MOON1_REG->sft_cfg[1] & ~0xC) | ((pin_x) << 2));
 #else
 	// Q628 X1,SPI_NAND
-	MOON1_REG->sft_cfg[4] = RF_MASK_V(1 << 4, pin_x << 4);
+	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 4, pin_x << 4);
 #endif
 }
 
