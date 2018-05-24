@@ -72,7 +72,7 @@ void uphy_init(void)
 	MOON4_REG->uphy0_ctl[3] = RF_MASK_V(0xffff, 0);
 #endif
 
-	// 3. reset UPHY0
+	// 3. reset UPHY0/1
 #if defined(PLATFORM_8388) || defined(PLATFORM_I137)
 	MOON0_REG->reset[1] |= (3 << 13);
 	MOON0_REG->reset[1] &= ~(3 << 13);
@@ -85,9 +85,7 @@ void uphy_init(void)
 
 	// 4. UPHY 0 internal register modification
 	UPHY0_RN_REG->cfg[7] = 0x8b;
-#ifndef PLATFORM_I137
 	UPHY1_RN_REG->cfg[7] = 0x8b;
-#endif
 
 	// 5. USBC 0 reset
 #if defined(PLATFORM_8388) || defined(PLATFORM_I137)
@@ -101,13 +99,19 @@ void uphy_init(void)
 
 	CSTAMP(0xE5B0A000);
 
-	// uphy rx clk: invert (avoid 8388 uphy clock bug)
+	// Backup solution to workaround real IC USB clock issue
+	// (issue: hang on reading EHCI_USBSTS after EN_ASYNC_SCHEDULE)
 #if defined(PLATFORM_8388) || defined(PLATFORM_I137)
 	MOON1_REG->sft_cfg[19] |= (1 << 6);
 #else
-	/* Q628 uphy0_ctl_2 uphy1_ctl_2 */
-	MOON4_REG->uphy0_ctl[2] = RF_MASK_V_SET(1 << 6);
-	MOON4_REG->uphy1_ctl[2] = RF_MASK_V_SET(1 << 6);
+	if (HB_GP_REG->hb_otp_data2 & 0x1) { // G350.2 bit[0]
+		prn_string("uphy0 rx clk inv\n");
+		MOON4_REG->uphy0_ctl[2] = RF_MASK_V_SET(1 << 6);
+	}
+	if (HB_GP_REG->hb_otp_data2 & 0x2) { // G350.2 bit[1]
+		prn_string("uphy1 rx clk inv\n");
+		MOON4_REG->uphy1_ctl[2] = RF_MASK_V_SET(1 << 6);
+	}
 #endif
 
 	CSTAMP(0xE5B0A001);
@@ -200,8 +204,9 @@ void usb_power_init(int is_host)
 #else
 	/* Q628 USBC0_TYPE, USBC0_SEL, USBC1_TYPE, USBC1_SEL */
 	if (is_host) {
-		MOON4_REG->usbc_ctl = RF_MASK_V_SET((3 << 13) | (3 << 5));
+		MOON4_REG->usbc_ctl = RF_MASK_V_SET((7 << 12) | (7 << 4));
 	} else {
+		MOON4_REG->usbc_ctl = RF_MASK_V_SET((1 << 12) | (1 << 4));
 		MOON4_REG->usbc_ctl = RF_MASK_V_CLR((3 << 13) | (3 << 5));
 	}
 #endif
