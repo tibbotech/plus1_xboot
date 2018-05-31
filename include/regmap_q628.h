@@ -225,7 +225,7 @@ struct usbh_sys_regs {
 #define USBH0_SYS_REG ((volatile struct usbh_sys_regs *)AHB_GRP(2, 0, 0)) // 0x9c102000
 #define USBH1_SYS_REG ((volatile struct usbh_sys_regs *)AHB_GRP(3, 0, 0)) // 0x9c103000
 
-struct card_ctl_regs {
+struct emmc_ctl_regs {
 	/*g0.0*/
 	unsigned int mediatype:3;
 	unsigned int reserved0:1;
@@ -518,8 +518,117 @@ struct card_ctl_regs {
 	/* ms card related regs */	
 	unsigned int ms_regs[32];
 };
-#define CARD0_CTL_REG ((volatile struct card_control_reg *)RF_GRP(118, 0))
-#define CARD1_CTL_REG ((volatile struct card_control_reg *)RF_GRP(125, 0))
+#define CARD0_CTL_REG ((volatile int  *)RF_GRP(118, 0))
+#define CARD1_CTL_REG ((volatile int  *)RF_GRP(125, 0))
+
+/* sd card regs */
+struct card_ctl_regs {
+	unsigned int card_mediatype;     // 0
+	unsigned int reserved;           // 1
+	unsigned int card_cpu_page_cnt;  // 2
+	unsigned int card_ctl_page_cnt;  // 3
+	unsigned int sdram_sector0_sz;   // 4
+	unsigned int ring_buf_on;        // 5
+	unsigned int card_gclk_disable;  // 6
+	unsigned int sdram_sector1_addr; // 7
+	unsigned int sdram_sector1_sz;   // 8
+	unsigned int sdram_sector2_addr; // 9
+	unsigned int sdram_sector2_sz;   // 10
+	unsigned int sdram_sector3_addr; // 11
+	unsigned int sdram_sector3_sz;   // 12
+	unsigned int sdram_sector4_addr; // 13
+	unsigned int sdram_sector4_sz;   // 14
+	unsigned int sdram_sector5_addr; // 15
+	unsigned int sdram_sector5_sz;   // 16
+	unsigned int sdram_sector6_addr; // 17
+	unsigned int sdram_sector6_sz;   // 18
+	unsigned int sdram_sector7_addr; // 19
+	unsigned int sdram_sector7_sz;   // 20
+	unsigned int sdram_sector_cnt;   // 21
+	unsigned int reserved2[10];      // 22
+};
+
+struct card_sd_regs {
+	unsigned int reserved[11];       // 0
+	unsigned int sd_vol_ctrl;        // 11
+	unsigned int sd_int;             // 12
+	unsigned int sd_page_num;        // 13
+	unsigned int sd_config0;         // 14
+	unsigned int sdio_ctrl;          // 15
+	unsigned int sd_rst;             // 16
+	unsigned int sd_config;          // 17
+	unsigned int sd_ctrl;            // 18
+	unsigned int sd_status;          // 19
+	unsigned int sd_state;           // 20
+	unsigned int sd_blocksize;       // 21
+	unsigned int sd_hwdma_config;    // 22
+	unsigned int sd_timing_config0;  // 23
+	unsigned int sd_timing_config1;  // 24
+	unsigned int sd_piodatatx;       // 25
+	unsigned int sd_piodatarx;       // 26
+	unsigned int sd_cmdbuf[5];       // 27
+};
+#define CARD0_SD_REG ((volatile struct card_sd_regs *)RF_GRP(119, 0))
+
+struct card_sdms_regs {
+	unsigned int sd_rspbuf0_3;       // 0
+	unsigned int sd_rspbuf4_5;       // 1
+	unsigned int sd_crc16even[4];    // 2
+	unsigned int sd_crc7buf;         // 6
+	unsigned int sd_crc16buf0;       // 7
+	unsigned int sd_hw_state;        // 8
+	unsigned int sd_crc16buf1;       // 9
+	unsigned int sd_hw_cmd13_rca;    // 10
+	unsigned int sd_crc16buf2;       // 11
+	unsigned int sd_tx_dummy_num;    // 12
+	unsigned int sd_crc16buf3;       // 13
+	unsigned int sd_clk_dly;         // 14
+	unsigned int reserved15;         // 15
+	unsigned int ms_piodmarst;       // 16
+	unsigned int ms_cmd;             // 17
+	unsigned int reserved18;         // 18
+	unsigned int ms_hw_state;        // 19
+	unsigned int ms_modespeed;       // 20
+	unsigned int ms_timeout;         // 21
+	unsigned int ms_state;           // 22
+	unsigned int ms_status;          // 23
+	unsigned int ms_rddata[4];       // 24
+	unsigned int ms_crcbuf[2];       // 28
+	unsigned int ms_crc_error;       // 30
+	unsigned int ms_piordy;          // 31
+};
+#define CARD0_SDMS_REG ((volatile struct card_sdms_regs *)RF_GRP(120, 0))
+
+struct card_ms_regs {
+	unsigned int ms_wd_data[16];     // 0
+	unsigned int reserved16[16];     // 16
+};
+#define CARD0_MS_REG ((volatile struct card_ms_regs *)RF_GRP(121, 0))
+
+struct card_dma_regs {
+        unsigned int dma_data;             // 0
+        unsigned int dma_srcdst;           // 1
+        unsigned int dma_size;             // 2
+        unsigned int dma_hw_stop_rst;      // 3
+        unsigned int dma_ctrl;             // 4
+        unsigned int dma_base_addr[2];     // 5
+        unsigned int dma_hw_en;            // 7
+        unsigned int dma_hw_page_addr0[2]; // 8
+        unsigned int dma_hw_page_addr1[2]; // 10
+        unsigned int dma_hw_page_addr2[2]; // 12
+        unsigned int dma_hw_page_addr3[2]; // 14
+        unsigned int dma_hw_page_num[4];   // 16
+        unsigned int dma_hw_block_num;     // 20
+        unsigned int dma_start;            // 21
+        unsigned int dma_hw_page_cnt;      // 22
+        unsigned int dma_cmp;              // 23
+        unsigned int dma_int_en;           // 24
+        unsigned int reserved25;           // 25
+        unsigned int dma_hw_wait_num[2];   // 26
+        unsigned int dma_hw_delay_num;     // 28
+        unsigned int reserved29[3];        // 29
+};
+#
 
 
 /* NAND */

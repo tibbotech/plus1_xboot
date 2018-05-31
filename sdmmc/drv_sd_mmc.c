@@ -57,6 +57,7 @@ _Label_ReadSDSector_Again:
 		}
 		return ROM_FAIL;
 	}
+
 	return Ret;
 }
 

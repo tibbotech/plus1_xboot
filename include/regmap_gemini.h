@@ -302,6 +302,302 @@ struct card_dma_regs {
 };
 #define CARD0_DMA_REG ((volatile struct card_dma_regs *)RF_GRP(122, 0))
 
+/* just pust this structure here to avoid compile error */
+struct emmc_ctl_regs {
+	/*g0.0*/
+	unsigned int mediatype:3;
+	unsigned int reserved0:1;
+	unsigned int dmasrc:3;
+	unsigned int reserved1:1;
+	unsigned int dmadst:3;
+	unsigned int reserved2:21;
+
+	/*g0.1*/
+	unsigned int card_ctl_page_cnt:16;
+	unsigned int reserved3:16;
+
+	/* g0.2 */
+	unsigned int sdram_sector_0_size:16;
+	unsigned int reserved4:1;
+	/* g0.3 */
+	unsigned int dma_base_addr;
+	/* g0.4 */
+	union {
+		struct {
+			unsigned int reserved5:1;
+			unsigned int hw_dma_en:1;
+			unsigned int reserved6:1;
+			unsigned int hw_sd_hcsd_en:1;
+			unsigned int hw_sd_dma_type:2;
+			unsigned int hw_sd_cmd13_en:1;
+			unsigned int reserved7:1;
+			unsigned int stop_dma_flag:1;
+			unsigned int hw_dma_rst:1;
+			unsigned int dmaidle:1;
+			unsigned int dmastart:1;
+			unsigned int hw_block_num:2;
+			unsigned int reserved8:2;
+			unsigned int hw_cmd13_rca:16;
+		};
+		unsigned int hw_dma_ctl;
+	};
+	/* g0.5 */
+	union {
+		struct {
+			unsigned int reg_sd_ctl_free:1;				// 0
+			unsigned int reg_sd_free:1;					// 1
+			unsigned int reg_ms_ctl_free:1;				// 2
+			unsigned int reg_ms_free:1;					// 3
+			unsigned int reg_dma_fifo_free:1;			// 4
+			unsigned int reg_dma_ctl_free:1;			// 5
+			unsigned int reg_hwdma_page_free:1;			// 6
+			unsigned int reg_hw_dma_free:1;				// 7
+			unsigned int reg_sd_hwdma_free:1;			// 8
+			unsigned int reg_ms_hwdma_free:1;			// 9
+			unsigned int reg_dma_reg_free:1;			// 10
+			unsigned int reg_card_reg_free:1;			// 11
+			unsigned int reserved9:20;
+		};
+		unsigned int card_gclk_disable;
+	};
+
+	/* g0.6 ~ g0.19*/
+	struct {
+		unsigned int dram_sector_addr;
+		unsigned int sdram_sector_size:16;
+		unsigned int reserved10:16;
+	} dma_addr_info[7];
+
+	/* g0.20 */
+	union {
+		struct {
+			unsigned int dram_sector_cnt:3;				// 2:00 ro
+			unsigned int hw_block_cnt:2;				// 04:03 ro
+			unsigned int reserved11:11;					// 15:05 ro
+			unsigned int hw_page_cnt:16;				// 31:16 ro 
+		};
+		unsigned int sdram_sector_block_cnt;
+	};
+	/* g0.20 ~ g0.28 */
+	unsigned int dma_hw_page_addr[4];
+	unsigned int dma_hw_page_num[4];
+
+	/* g0.29 */
+	unsigned int hw_wait_num;
+
+	/* g0.30 */
+	unsigned int hw_delay_num:16;
+	unsigned int reserved12:16;
+
+	/* g0.31 */
+	union {
+		struct {
+			unsigned int incnt:11;
+			unsigned int outcnt:11;      
+			unsigned int dma_sm:3;
+			unsigned int reserved13:7;
+		};
+		unsigned int dma_debug;
+	};
+
+	/* g1.0 */
+	union {
+		struct {
+			unsigned int boot_ack_en:1;
+			unsigned int boot_ack_tmr:1;
+			unsigned int boot_data_tmr:1;
+			unsigned int fast_boot:1;
+			unsigned int boot_mode:1;
+			unsigned int bootack:3;
+			unsigned int reserved14:24;
+		};
+		unsigned int boot_ctl;	
+	};
+
+	/* g1.1 */
+	union {
+		struct {
+			unsigned int vol_tmr:2;
+			unsigned int sw_set_vol:1;
+			unsigned int hw_set_vol:1;
+			unsigned int vol_result:2;
+			unsigned int reserved15:26;	   
+		};
+		unsigned int sd_vol_ctrl;
+	};
+	/* g1.2 */
+	union {
+		struct {
+			unsigned int sd_cmp:1;   //1
+			unsigned int sd_cmp_clr:1;   //2
+			unsigned int sdio_int_en:1;  //3
+			unsigned int sdio_int:1; //4
+			unsigned int sdio_int_clr:1; //5
+			unsigned int detect_int_en:1;    //6
+			unsigned int detect_int:1;   //7
+			unsigned int detect_int_clr:1;   //8
+			unsigned int hwdmacmpen:1;   //9
+			unsigned int hw_dma_cmp:1;   //10
+			unsigned int hwdmacmpclr:1;  //11
+			unsigned int reserved16:20; //31:12			
+		};
+		unsigned int sd_int;
+	};
+
+	/* g1.3 */
+	unsigned int sd_page_num:16;
+	unsigned int reserved17:16;
+	/* g1.4 */
+	union {
+		struct {	
+			unsigned int sdpiomode:1;
+			unsigned int sdddrmode:1;
+			unsigned int sd_len_mode:1;
+			unsigned int first_dat_hcyc:1;
+			unsigned int sd_trans_mode:2;
+			unsigned int sdautorsp:1;
+			unsigned int sdcmddummy:1;
+			unsigned int sdrspchk_en:1;
+			unsigned int sdiomode:1;
+			unsigned int sdmmcmode:1;
+			unsigned int sddatawd:1;
+			unsigned int sdrsptmren:1;
+			unsigned int sdcrctmren:1;
+			unsigned int rx4_en:1;
+			unsigned int sdrsptype:1;
+			unsigned int detect_tmr:2;
+			unsigned int mmc8_en:1;
+			unsigned int selci:1;
+			unsigned int sdfqsel:12;
+		};
+		unsigned int sd_config0;
+	};
+
+	/* g1.5 */
+	union {
+		struct {
+			unsigned int rwc:1;
+			unsigned int s4mi:1;
+			unsigned int resu:1;
+			unsigned int sus_req:1;
+			unsigned int con_req:1;
+			unsigned int sus_data_flag:1;
+			unsigned int int_multi_trig:1;
+			unsigned int reserved18:25; 
+		};
+		unsigned int sdio_ctrl;
+	};
+
+	/* g1.6 */
+	union {
+		struct {
+			unsigned int sdrst:1;
+			unsigned int sdcrcrst:1;
+			unsigned int sdiorst:1;
+			unsigned int reserved19:29; 
+		};
+		unsigned int sd_rst;
+	};
+
+	/* g1.7 */
+	union {
+		struct {
+			unsigned int sdctrl0:1;
+			unsigned int sdctrl1:1;
+			unsigned int sdioctrl:1;
+			unsigned int emmcctrl:1;
+			unsigned int reserved20:28;	 
+		} ;
+		unsigned int sd_ctrl;
+	};
+	/* g1.8 */
+	union {
+		struct {
+			unsigned int sdstatus:19;
+			unsigned int reserved21:13;	 
+		};
+		unsigned int sd_status;
+	};
+	/* g1.9 */
+	union {
+		struct {
+			unsigned int sdstate:3;
+			unsigned int reserved22:1; 
+			unsigned int sdcrdcrc:3; 
+			unsigned int reserved23:1; 
+			unsigned int sdstate_new:7; 
+			unsigned int reserved24:17; 
+		};
+		unsigned int sd_state;
+	};
+
+	/* g1.10 */
+	union {
+		struct {
+			unsigned int hwsd_sm:10;	
+			unsigned int reserved25:22; 
+		}; 
+		unsigned int sd_hw_state;
+	};
+
+	/* g1.11 */
+	union {
+		struct {
+			unsigned int sddatalen:11;	
+			unsigned int reserved26:21; 
+		}; 
+		unsigned int sd_blocksize;
+	};
+	
+	/* g1.12 */
+	union {
+		struct {
+			unsigned int tx_dummy_num:9;
+			unsigned int sdcrctmr:11;
+			unsigned int sdrsptmr:11;
+			unsigned int sd_high_speed_en:1;
+		}; 
+		unsigned int sd_config1;
+	};
+
+	/* g1.13 */
+	union {
+		struct {
+			unsigned int sd_clk_dly_sel:3;
+			unsigned int reserved27:1;
+			unsigned int sd_wr_dly_sel:3;
+			unsigned int reserved28:1;    
+			unsigned int sd_rd_dly_sel:3;
+			unsigned int reserved29:21;
+		}; 
+		unsigned int sd_timing_config;
+	};
+
+	/* g1.14 */
+	unsigned int sd_rxdattmr:29; 
+	unsigned int reserved30:3;
+	
+	/* g1.15 */
+	unsigned int sd_piodatatx:16;
+	unsigned int reserved31:16;
+
+	/* g1.16 */
+	unsigned int sd_piodatarx;
+
+	/* g1.17 */
+	/* g1.18 */
+	unsigned char sd_cmdbuf[5];
+	unsigned char reserved32[3];
+	/* g1.19 - g1.20 */	
+	unsigned int sd_rspbuf0_3;
+	unsigned int sd_rspbuf4_5;
+	/*  unused sd control regs */
+	unsigned int reserved34[11];
+	/* ms card related regs */	
+	unsigned int ms_regs[32];
+};
+
+
 struct uphy_rn_regs {
        unsigned int cfg[22];
 };
