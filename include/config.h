@@ -89,16 +89,17 @@
 #if defined(PLATFORM_8388) || defined(PLATFORM_I137)
 #define HW_CFG_REG              RF_GRP(0, 28)
 #define HW_CFG_SHIFT            10
-#define HW_CFG_MASK             (0x1D << HW_CFG_SHIFT)
+#define HW_CFG_MASK_VAL         0x1D
 #elif defined(PLATFORM_3502)
 #define HW_CFG_REG              RF_GRP(0, 28)
 #define HW_CFG_SHIFT            14
-#define HW_CFG_MASK             (0x1D << HW_CFG_SHIFT)
+#define HW_CFG_MASK_VAL         0x1D
 #else
 #define HW_CFG_REG              RF_GRP(0, 31)
 #define HW_CFG_SHIFT            12
-#define HW_CFG_MASK             (0x1F << HW_CFG_SHIFT)
+#define HW_CFG_MASK_VAL         0x1F
 #endif
+#define HW_CFG_MASK             (HW_CFG_MASK_VAL << HW_CFG_SHIFT)
 
 #define AUTO_SCAN               0x01
 #define AUTO_SCAN_ACHIP         0x15
@@ -167,6 +168,7 @@
 #endif
 
 #define A_WORK_MEM_SIZE     (512 * 1024)
+#define A_WORK_MEM_END      (A_WORK_MEM_BASE + A_WORK_MEM_SIZE)
 
 /* RAM region : must match with boot.ldi */
 #ifdef PLATFORM_I137
@@ -193,7 +195,7 @@
 #define A_START_POS_A_VIEW       (SRAM0_BASE_A_VIEW + SRAM0_SIZE - 0xc) // 9e007ff4
 #define BOOT_ANOTHER_POS_A_VIEW  (SRAM0_BASE_A_VIEW + SRAM0_SIZE - 0x4) // 9e007ffc
 #else
-#define A_START_POS_B_VIEW        (SRAM0_END - 0xc)       // 9e809ff4
+#define A_START_POS_B_VIEW        (A_WORK_MEM_END - 0xc) // 9ea7fff4 - (core * 4)
 #define A_START_POS_A_VIEW        A_START_POS_B_VIEW
 #define BOOT_ANOTHER_POS_A_VIEW   BOOT_ANOTHER_POS
 #endif
