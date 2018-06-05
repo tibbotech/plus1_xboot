@@ -67,9 +67,7 @@ struct hb_gp_regs {
         unsigned int hb_otp_data5;
         unsigned int hb_otp_data6;
         unsigned int hb_otp_data7;
-        unsigned int hb_otp_ctl;
-        unsigned int hb_otp_data;
-        unsigned int g7_reserved[22];
+        unsigned int reserved_8[24];
 };
 #define HB_GP_REG ((volatile struct hb_gp_regs *)RF_GRP(350, 0))
 

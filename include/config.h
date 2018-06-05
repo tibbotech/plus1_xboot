@@ -190,14 +190,21 @@
 #define BOOT_ANOTHER_POS         (SRAM0_END - 0x4)       // 9e809ffc
 
 #ifdef PLATFORM_I137
+/* B can't access A sram */
 #define A_START_POS_B_VIEW       (SRAM0_END - 0xc)       // 9e809ff4
 #define SRAM0_BASE_A_VIEW        0x9e000000
 #define A_START_POS_A_VIEW       (SRAM0_BASE_A_VIEW + SRAM0_SIZE - 0xc) // 9e007ff4
 #define BOOT_ANOTHER_POS_A_VIEW  (SRAM0_BASE_A_VIEW + SRAM0_SIZE - 0x4) // 9e007ffc
-#else
+#elif defined(PLATFORM_Q628)
+/* B can access A sram */
 #define A_START_POS_B_VIEW        (A_WORK_MEM_END - 0xc) // 9ea7fff4 - (core * 4)
 #define A_START_POS_A_VIEW        A_START_POS_B_VIEW
 #define BOOT_ANOTHER_POS_A_VIEW   BOOT_ANOTHER_POS
+#else
+/* no A sram */
+#define A_START_POS_B_VIEW       (SRAM0_END - 0xc)       // 9e809ff4
+#define A_START_POS_A_VIEW       A_START_POS_B_VIEW
+#define BOOT_ANOTHER_POS_A_VIEW  BOOT_ANOTHER_POS
 #endif
 
 
@@ -283,9 +290,7 @@
 #define OTP_WHO_BOOT_REG	0x9e80fffc	/* Fake &OTP[WHO_BOOT] */
 #define OTP_WHO_BOOT_BIT	2
 #else
-/* FIXME: Q628 OTP[WHO_BOOT] = G350.0 bit11 */
-//#define OTP_WHO_BOOT_REG	RF_GRP(350, 0)
-//#define OTP_WHO_BOOT_BIT	11
-#define OTP_WHO_BOOT_REG	RF_GRP(4, 31) // temp OTP
+/* Q628 OTP[WHO_BOOT] = G350.0 bit10 = G4.31 bit0 */
+#define OTP_WHO_BOOT_REG	RF_GRP(4, 31)
 #define OTP_WHO_BOOT_BIT	0
 #endif

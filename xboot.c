@@ -182,16 +182,6 @@ static inline void release_spi_ctrl(void)
 #endif
 }
 
-/* Return 1 = SPI_X1, 2 = SPI_X2  */
-inline int get_current_spi_pinmux(void)
-{
-#if defined(PLATFORM_8388) || defined(PLATFORM_I137)
-	return (MOON1_REG->sft_cfg[1] & 0x3);
-#else
-	return (MOON1_REG->sft_cfg[1] & 0x3);
-#endif
-}
-
 __attribute__((unused))
 static void uhdr_dump(struct image_header *hdr)
 {
@@ -1204,13 +1194,6 @@ static void spi_nand_boot(int pin_x)
 	u32 ret;
 	prn_string("\n{{spi_nand_boot}}\n");
 	prn_decimal(pin_x); prn_string("\n");
-
-#ifdef PLATFORM_SPIBAREMETAL
-	if (get_current_spi_pinmux() == pin_x) {
-		prn_string("skip in-use pins\n");
-		return;
-	}
-#endif
 
 	dbg();
 	SetBootDev(DEVICE_SPI_NAND, pin_x, 0);

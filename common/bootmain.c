@@ -33,6 +33,16 @@ static inline void set_spi_nor_pinmux(int pin_x)
 #endif
 }
 
+/* Return 1 = X1,SPI_NOR, 2 = X2,SPI_NOR */
+int get_spi_nor_pinmux(void)
+{
+#if defined(PLATFORM_8388) || defined(PLATFORM_I137)
+        return (MOON1_REG->sft_cfg[1] & 0x3);
+#else
+        return (MOON1_REG->sft_cfg[1] & 0x3);
+#endif
+}
+
 static inline void set_spi_nand_pinmux(int pin_x)
 {
 #if defined(PLATFORM_8388) || defined(PLATFORM_I137)
@@ -139,6 +149,11 @@ void SetBootDev(unsigned int bootdev, unsigned int pin_x, unsigned int dev_port)
 				set_para_nand_pinmux(0); /* conflict: PARA_NAND X1 */
 			set_para_nand_padctl(0);         /* undo para nand padctl */
 #endif
+#ifdef PLATFORM_Q628
+			if (pin_x == 1 && get_spi_nor_pinmux() == 2) {
+				set_spi_nor_pinmux(0);   /* conflict: X2,SPI_NOR */
+			}
+#endif
 			set_spi_nand_pinmux(pin_x);
 			break;
 		case DEVICE_PARA_NAND:
@@ -154,9 +169,13 @@ void SetBootDev(unsigned int bootdev, unsigned int pin_x, unsigned int dev_port)
 		case DEVICE_EMMC:
 			g_bootinfo.gbootRom_boot_mode = EMMC_BOOT;
 			gDEV_SDCTRL_BASE_ADRS = (unsigned int)CARD0_CTL_REG; /* eMMC is on SD0 */
-#ifdef CONFIG_PLATFORM_Q628
-			if (pin_x == 1)
-				set_spi_nand_pinmux(0);
+#ifdef PLATFORM_Q628
+			if (pin_x == 1) {
+				set_spi_nand_pinmux(0);  /* conflict: X1,SPI_NAND */
+			}
+			if (pin_x == 1 && get_spi_nor_pinmux() == 2) {
+				set_spi_nor_pinmux(0);   /* conflict: X2,SPI_NOR */
+			}
 #endif
 			set_emmc_pinmux(pin_x);
 			break;
@@ -171,7 +190,6 @@ void SetBootDev(unsigned int bootdev, unsigned int pin_x, unsigned int dev_port)
 	}
 
 	CSTAMP(0xC0DE5556);
-	dbg();
 }
 
 /* return xboot size in header */

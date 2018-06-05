@@ -16,4 +16,7 @@ void SetBootDev(unsigned int bootdev, unsigned int pinx, unsigned int dev_port);
 int get_xboot_size(u8 *img);
 int verify_xboot_img(u8 *img);
 
+/* pinmux ops */
+int get_spi_nor_pinmux(void);
+
 #endif
