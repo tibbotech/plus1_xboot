@@ -89,6 +89,15 @@ A_setup_iobus_start:
 	bx	lr
 A_setup_iobus_end:
 
+#ifdef CONFIG_PLATFORM_Q628
+FUNC(A_raise_pll)
+	ldr	r11, =A_RF_GRP(0, 11)	@ A G0.11 pll_ctl0
+	ldr	r12, =A_PLL_CTL0_CFG
+	str	r12, [r11]
+	bx	lr
+ENDFUNC(A_raise_pll)
+#endif
+
 /* A : setup abio on A_SRAM */
 FUNC(A_setup_abio)
 	mov	r11, lr
@@ -122,6 +131,7 @@ FUNC(boot_next_no_stack)
 #if defined(PLATFORM_I137) || defined(CONFIG_PLATFORM_Q628)
 	set_Z_if_B r5
 	beq	skip_abio_up
+	bl	A_raise_pll		@ A: speed up core clock
 	bl	A_setup_abio		@ A: speed up ABIO bus clock
 	/* A release cores (B booting doesn't do this yet) */
 	ldr	r0, =A_RF_GRP(0, 2)

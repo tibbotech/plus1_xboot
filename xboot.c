@@ -36,7 +36,7 @@ __attribute__ ((section("xboot_header_sect")))   u8                  g_xboot_buf
 static void prn_clk_info(int is_A)
 {
 	unsigned int b_sysclk, io_ctrl;
-	unsigned int coreclk, ioclk, sysclk, clk_cfg;
+	unsigned int a_pllclk, coreclk, ioclk, sysclk, clk_cfg;
 
 	prn_string("b_sysclk=");
 #if defined(PLATFORM_I137)
@@ -53,8 +53,9 @@ static void prn_clk_info(int is_A)
 
 	if (is_A) {
 		clk_cfg = A_MOON0_REG->clk_cfg;
-		coreclk = CLK_A_PLLCLK / (1 + ((clk_cfg >> 10) & 1));
-		ioclk = CLK_A_PLLCLK / (20 + 5 * ((clk_cfg >> 4) & 7)) / ((clk_cfg >> 16) & 0xff) * 10;
+		a_pllclk = ((A_MOON0_REG->pll_ctl[0] >> 16) & 0xff) * (27 * 1000 * 1000);
+		coreclk = a_pllclk / (1 + ((clk_cfg >> 10) & 1));
+		ioclk = a_pllclk / (20 + 5 * ((clk_cfg >> 4) & 7)) / ((clk_cfg >> 16) & 0xff) * 10;
 		sysclk = coreclk / (1 + ((clk_cfg >> 3) & 1));
 		prn_string("A: coreclk="); prn_decimal(coreclk / 1000000);
 		prn_string("M a_sysclk="); prn_decimal(sysclk / 1000000);
@@ -77,6 +78,12 @@ static void init_hw(void)
 		prn_string("-- B --\n");
 	else {
 		prn_string("-- A --\n");
+#ifdef CONFIG_PLATFORM_Q628
+		prn_string(">>>>> APLL Up : "); prn_dword(A_PLL_CTL0_CFG);
+		/* raise ca7 clock */
+		extern void A_raise_pll(void);
+		A_raise_pll();
+#endif
 #if defined(PLATFORM_I137) || defined(CONFIG_PLATFORM_Q628)
 		is_A = 1;
 		prn_string(">>>>> ABIO Up : "); prn_dword(ABIO_CFG);
