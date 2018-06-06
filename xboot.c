@@ -53,7 +53,7 @@ static void prn_clk_info(int is_A)
 
 	if (is_A) {
 		clk_cfg = A_MOON0_REG->clk_cfg;
-		a_pllclk = ((A_MOON0_REG->pll_ctl[0] >> 16) & 0xff) * (27 * 1000 * 1000);
+		a_pllclk = (((A_MOON0_REG->pll_ctl[0] >> 16) & 0xff) + 1) * (27 * 1000 * 1000);
 		coreclk = a_pllclk / (1 + ((clk_cfg >> 10) & 1));
 		ioclk = a_pllclk / (20 + 5 * ((clk_cfg >> 4) & 7)) / ((clk_cfg >> 16) & 0xff) * 10;
 		sysclk = coreclk / (1 + ((clk_cfg >> 3) & 1));
