@@ -181,6 +181,36 @@ unsigned int hwSdBlockSizeGet()
 	return SD_BLOCK_SIZE_GET();
 }
 
+static int wait_response_buff_full(void)
+{
+	unsigned int value;
+	unsigned int time0 = AV1_GetStc32() / 90;  //ms
+	unsigned int time1 = 0;
+
+	while (1) {
+		value = SD_STATUS0_GET();
+
+		if ((value & 0x02) == 0x02) {
+			break;	/* Response buffers are full, break*/
+		} else if ((value & 0x40) == 0x40) {
+			prn_string("Rsp timeout (0)\n"); // No card!
+			prn_sd_status();
+			return SD_RSP_TIMEOUT;
+		} else if (SD_STATUS0_GET() & (1 << 9)) {
+				prn_sd_status();
+				return SD_CRC_ERROR;
+		} else {
+			time1 = AV1_GetStc32() / 90;
+			if ((time1 - time0) >= SD_MAX_RESPONSE_TIME){
+				prn_string("timeout!\n");
+				prn_sd_status();
+				return SD_FAIL;
+			}
+		}
+	}
+	return SD_SUCCESS;
+}
+
 
 /**************************************************************************
  *                                                                        *
@@ -207,31 +237,9 @@ unsigned int hwSdRxResponse(unsigned char * rspBuf, unsigned int rspType)
 	unsigned int status = SD_SUCCESS;
 	unsigned int rspNum;
 	unsigned int value;
-	unsigned int time0 = AV1_GetStc32() / 90;  //ms
-	unsigned int time1 = 0;
-
-	while (1) {
-		value = SD_STATUS0_GET();
-
-		if ((value & 0x02) == 0x02) {
-			break;	/* Response buffers are full, break*/
-		} else if ((value & 0x40) == 0x40) {
-			prn_string("Rsp timeout (0)\n"); // No card!
-			prn_sd_status();
-			return SD_RSP_TIMEOUT;
-		} else if (SD_STATUS0_GET() & (1 << 9)) {
-				prn_sd_status();
-				return SD_CRC_ERROR;
-		} else {
-			time1 = AV1_GetStc32() / 90;
-			if ((time1 - time0) >= SD_MAX_RESPONSE_TIME){
-				prn_string("timeout!\n");
-				prn_sd_status();
-				return SD_FAIL;
-			}
-		}
-	}
-
+	status = wait_response_buff_full();
+	if (status)
+		return status;
 	value = SD_RSP_BUF0_3_GET;
 	rspBuf[0] = (value >> 24) & 0xff;
 	rspBuf[1] = (value >> 16) & 0xff;
@@ -240,17 +248,18 @@ unsigned int hwSdRxResponse(unsigned char * rspBuf, unsigned int rspType)
 	CSTAMP(*((unsigned int *)rspBuf));
 	value = SD_RSP_BUF4_5_GET;
 	rspBuf[4] = (value >>  8) & 0xff;
-
+	rspBuf[5] = value		  & 0xff;
+	(void)rspNum;
 #ifdef SD_VERBOSE
 	// SD RSP print start
 	prn_string("SD RSP=");
-	for (rspNum = 0; rspNum < 5; rspNum++)
+	for (rspNum = 0; rspNum < 6; rspNum++)
 		prn_byte(rspBuf[rspNum]);
 #endif
 
 	if (rspType == RSP_TYPE_R2) {
 #ifdef PLATFORM_8388
-		for (rspNum = 5; rspNum < 16; rspNum++) {
+		for (rspNum = 6; rspNum < 17; rspNum++) {
 				while (1) {
 							value = SD_STATUS0_GET();
 							if ((value & 0x02) == 0x02) {
@@ -266,26 +275,43 @@ unsigned int hwSdRxResponse(unsigned char * rspBuf, unsigned int rspType)
 #endif
 			}
 #else
-		for (rspNum = 5; rspNum < 16; ) {
-			value = SD_RSP_BUF0_3_GET;
-			rspBuf[rspNum++] = (value >> 24) & 0xff;
-			rspBuf[rspNum++] = (value >> 16) & 0xff;
-			rspBuf[rspNum++] = (value >>  8) & 0xff;
-			rspBuf[rspNum++] = (value)       & 0xff;
-			value = SD_RSP_BUF4_5_GET;
-			rspBuf[rspNum++] = (value >>  8) & 0xff;
+		if (!IS_EMMC_SLOT()) {
+			status = wait_response_buff_full();
+			if (status)
+				return status;
 		}
+
+		value = SD_RSP_BUF0_3_GET;
+		rspBuf[6] = (value >> 24) & 0xff;
+		rspBuf[7] = (value >> 16) & 0xff;
+		rspBuf[8] = (value >>  8) & 0xff;
+		rspBuf[9] = (value)       & 0xff;
+		value = SD_RSP_BUF4_5_GET;
+		rspBuf[10] = (value >>  8) & 0xff;
+		rspBuf[11] = value		 & 0xff;
+
+		if (!IS_EMMC_SLOT()) {
+			status = wait_response_buff_full();
+			if (status)
+				return status;
+		}
+		value = SD_RSP_BUF0_3_GET;
+		rspBuf[12] = (value >> 24) & 0xff;
+		rspBuf[13] = (value >> 16) & 0xff;
+		rspBuf[14] = (value >>  8) & 0xff;
+		rspBuf[15] = (value)       & 0xff;
+		value = SD_RSP_BUF4_5_GET;
+		rspBuf[16] = (value >>  8) & 0xff;
 #ifdef SD_VERBOSE
-		for (rspNum = 5; rspNum < 16; rspNum++)
+		for (rspNum = 6; rspNum < 17; rspNum++)
 			prn_byte(rspBuf[rspNum]);
-#endif
 #endif
 	}
 #ifdef SD_VERBOSE
 	// SD RSP print end
 	prn_string("\n");
 #endif
-
+#endif
 	// Check RSP CRC7 error
 	if ((rspType == RSP_TYPE_R1) || (rspType == RSP_TYPE_R6) || rspType == RSP_TYPE_R7) {
 		if (SD_STATUS0_GET() & (1 << 9)) {
