@@ -42,15 +42,16 @@ int bch_s338_process(UINT8 *data, UINT8 *parity, int data_size, int codec_mode, 
 	NANDREG_W(BCH_S338_CFG, val);
 
 	// polling busy
-	while ((NANDREG_R(BCH_S338_INT_STATUS) & BCH_S338_INT) != BCH_S338_INT);
+	while((NANDREG_R(BCH_S338_INT_STATUS)&BCH_S338_BUSY)!=0);
+	
 
 	if (codec_mode == BCH_DECODE) {
 		if ((NANDREG_R(BCH_S338_REPORT_STATUS) & BCH_S338_DECODE_FAIL) == 0) {
-			unsigned int last_address;
-			unsigned int last_data;
-			unsigned int timeout_count;
+			//unsigned int last_address;
+			//unsigned int last_data;
+			//unsigned int timeout_count;
 
-#if 1
+#if 0
 			if (((rBCH_S338_REPORT_STATUS>>8) & 0x7ff) != 0) {
 				timeout_count = 0;
 				do {

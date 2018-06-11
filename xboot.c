@@ -1103,8 +1103,6 @@ static void nand_uboot(u32 type)
 	u32 sect_sz = GetNANDPageCount_1K60(g_bootinfo.sys_nand.u16PyldLen) * 1024;
 	u32 blk_use_sz = g_bootinfo.sys_nand.u16PageNoPerBlk * sect_sz;
 
-	mon_shell();
-
 #ifdef CONFIG_STANDALONE_DRAMINIT
 	if (ReadBootBlockDraminit((type == SPINAND_BOOT), (u8 *)DRAMINIT_LOAD_ADDR) < 0) {
 		prn_string("Failed to load nand draminit\n");
