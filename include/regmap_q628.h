@@ -637,6 +637,7 @@ struct card_dma_regs {
 
 /* SPI NAND */
 #define CONFIG_SP_SPINAND_BASE   ((volatile unsigned int *)RF_GRP(87, 0))
+#define SPI_NAND_DIRECT_MAP      0x9dff0000
 
 /* BIO */
 struct bio_ctl_regs {

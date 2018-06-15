@@ -457,19 +457,19 @@ void spi_nand_readcacheQuadIO_byMapping(struct sp_spinand_info *info, uint32_t a
 	if((ptr->PlaneSelectMode & 0x1)== 0){
 		if ((info->row & (0x40)) && (((info->id & 0xFF) == 0xC2)||((info->id & 0xFF) == 0x2C))) {
 			for (i = addr ; i < (addr + size) ; i += 4)
-				*(unsigned int *)pbuf++ = *(unsigned int *)(0x94001000 + i);
+				*(unsigned int *)pbuf++ = *(unsigned int *)(SPI_NAND_DIRECT_MAP + 0x1000 + i);
 		} else {
 			for (i = addr ; i < (addr + size) ; i += 4)
-				*(unsigned int *)pbuf++ = *(unsigned int *)(0x94000000 + i);
+				*(unsigned int *)pbuf++ = *(unsigned int *)(SPI_NAND_DIRECT_MAP + i);
 		}
 	}
 	else{
 		if ((info->row & pagemark) && ((ptr->PlaneSelectMode&0x2)==0x2)){
 			for (i = addr ; i < (addr + size) ; i += 4)
-				*(unsigned int *)pbuf++ = *(unsigned int *)(0x94000000 + i +colmark);
+				*(unsigned int *)pbuf++ = *(unsigned int *)(SPI_NAND_DIRECT_MAP + i +colmark);
 		}else{
 			for (i = addr ; i < (addr + size) ; i += 4)
-				*(unsigned int *)pbuf++ = *(unsigned int *)(0x94000000 + i);
+				*(unsigned int *)pbuf++ = *(unsigned int *)(SPI_NAND_DIRECT_MAP + i);
 		}
 	}
 

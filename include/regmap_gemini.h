@@ -656,5 +656,6 @@ struct usbh_sys_regs {
 
 /* SPI NAND */
 #define CONFIG_SP_SPINAND_BASE   ((volatile unsigned int *)RF_GRP(87, 0))
+#define SPI_NAND_DIRECT_MAP      0x94000000
 
 #endif /* __INC_REGMAP_GEMINI_H */
