@@ -19,7 +19,7 @@
 #define USE_DESCRIPTOR_MODE 0
 #define DEVICE_STS_AUTO_CHK 0
 #define USE_SP_BCH          1   // 1:Using BCH, 0:using Device internal ECC
-
+#define USB_SPDMA_AUTOBCH	1
 
 /**************************************************************************
  *                         D A T A   T Y P E S                            *
@@ -489,6 +489,62 @@ int SPINANDReadPage(UINT8 which_cs, UINT32 u32PhyAddr,UINT32 * PyldBuffer,UINT32
 	return ROM_SUCCESS;
 }
 
+int SPINANDDMAReadPage(UINT8 which_cs, UINT32 u32PhyAddr,UINT32 * PyldBuffer,UINT32 * DataBuffer,UINT32 u8RWMode)
+{
+	struct sp_spinand_info *info = &g_bootinfo.our_spinfc;
+	struct sp_spinand_regs *regs = info->regs;
+	int value = 0;
+
+	while (readl(&regs->spi_auto_cfg) & SPI_NAND_DMA_OWNER); 
+
+	value = SPI_NAND_CHIP_A|SPI_NAND_CLK_32DIV|SPI_NAND_CTRL_EN|(2);
+	writel(value, &regs->spi_ctrl);
+
+	writel(u32PhyAddr, &regs->spi_page_addr);
+
+	value = 0x08350095; // 4 bit data 8 dummy clock 1bit cmd  1bit addr
+	writel(u32PhyAddr, &regs->spi_cfg[1]);
+
+	value = readl(&regs->spi_cfg[0]);
+	value = value|0x400; // 1k data len
+	writel(value, &regs->spi_cfg[0]);
+
+	if ((u32PhyAddr & 0x40) && (((info->id & 0xFF) == 0xC2)||((info->id & 0xFF) == 0x2C)))		
+		value = 0x1000;
+	else
+		value = 0x0;
+	
+	writel(value, &regs->spi_col_addr);
+
+	value = (0x40<<4)|(0x1);
+	writel(value, &regs->spi_page_size);
+
+	writel((UINT32)PyldBuffer, &regs->mem_data_addr);
+	writel(((UINT32)PyldBuffer + 1024), &regs->mem_parity_addr);
+
+	BCHConfig(PyldBuffer, (UINT32 *)(((UINT32)PyldBuffer) + 1024), 1024, BCH_DECODE, g_pSysInfo->ecc_mode);
+	value =(0x80<<8)|(1<<6)|(0<<5)|(1<<4)|(0);	// 1k byte 32 byte align
+	writel(value, &regs->spi_bch);
+
+	//config ctrl info	
+	//set auto cfg
+	value = (0x1<<1);
+	writel(value, &regs->spi_intr_msk);
+	writel(value, &regs->spi_intr_sts);
+	value = (0x6b<<24)|(1<<20)|(1<18)|(1<<17);
+	writel(value, &regs->spi_auto_cfg);
+	while((readl(&regs->spi_intr_sts) & 0x2) == 0x0);
+
+	if(BCHCheckStatus(BCH_DECODE) != 0)
+	{
+		return ROM_FAIL;
+	}
+
+	return ROM_SUCCESS;
+}
+
+
+
 void initSPINandFunptr(void)
 {
 	SDev_t* pSDev = getSDev();
@@ -497,7 +553,11 @@ void initSPINandFunptr(void)
 	pSDev->DeviceID = DEVICE_SPI_NAND;
 
 	pSDev->predInitDriver    = (predInitDriver_t)initSPIDriver;
+#if USB_SPDMA_AUTOBCH	
+	pSDev->predReadWritePage = (predReadWritePage_t)SPINANDDMAReadPage;
+#else
 	pSDev->predReadWritePage = (predReadWritePage_t)SPINANDReadPage;
+#endif
 }
 
 SINT32 ReadSPINANDSector_1K60(UINT32 * ptrPyldData, UINT32 pageNo)
@@ -508,6 +568,9 @@ SINT32 ReadSPINANDSector_1K60(UINT32 * ptrPyldData, UINT32 pageNo)
 
 	g_pSysInfo->ecc_mode = BCH_S338_1K60_BITS_MODE;
 
+#if USB_SPDMA_AUTOBCH
+	ret = pSDev->predReadWritePage(0, pageNo, (UINT32 *)ptrPyldData, (UINT32 *)g_spareData, 0);
+#else
 	pSDev->predReadWritePage(0, pageNo, (UINT32 *)ptrPyldData, (UINT32 *)g_spareData, 0);
 
 	if (BCHProcess(ptrPyldData, (UINT32 *)(((UINT32)ptrPyldData) + 1024), 1024, BCH_DECODE, g_pSysInfo->ecc_mode) == ret_BCH_S338_FAIL) {
@@ -515,7 +578,7 @@ SINT32 ReadSPINANDSector_1K60(UINT32 * ptrPyldData, UINT32 pageNo)
 	} else {
 		ret = ROM_SUCCESS;
 	}
-	
+#endif
 	return ret;
 }
 
@@ -526,6 +589,11 @@ SINT32 SPINANDReadNANDPage_1K60(UINT8 which_cs, UINT32 pageNo, UINT32 * ptrPyldD
 
 	*read_bytes = 0;
 
+#if USB_SPDMA_AUTOBCH
+	ret = pSDev->predReadWritePage(which_cs, pageNo, (UINT32 *)ptrPyldData, (UINT32 *)g_spareData, 2);
+	if (ret != ROM_SUCCESS)
+		return ret;
+#else
 	ret = pSDev->predReadWritePage(which_cs, pageNo, (UINT32 *)ptrPyldData, (UINT32 *)g_spareData, 2);
 	if (ret != ROM_SUCCESS)
 		return ret;
@@ -534,6 +602,7 @@ SINT32 SPINANDReadNANDPage_1K60(UINT8 which_cs, UINT32 pageNo, UINT32 * ptrPyldD
 			GetNANDPageCount_1K60(g_pSysInfo->u16PyldLen) * 1024, BCH_DECODE, BCH_S338_1K60_BITS_MODE);
 	if (ret != ROM_SUCCESS)
 		return ret;
+#endif
 
 	*read_bytes = GetNANDPageCount_1K60(g_pSysInfo->u16PyldLen) * 1024;
 

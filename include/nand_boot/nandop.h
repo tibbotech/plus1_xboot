@@ -184,6 +184,8 @@ UINT8* Get_PyldData_Ptr(void);
 UINT8* Get_SpareData_Ptr(void);
 
 SINT32 BCHProcess(UINT32* PyldBuffer, UINT32* ReduntBuffer, UINT32 len, SINT32 op, SINT32 ecc_mode);
+SINT32 BCHConfig(UINT32* PyldBuffer, UINT32* ReduntBuffer, UINT32 len, SINT32 op, SINT32 ecc_mode);
+SINT32 BCHCheckStatus(int codec_mode);
 
 void SetNANDRandomizeFlag(SINT32 val);
 

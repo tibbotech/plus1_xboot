@@ -25,6 +25,7 @@
 #define SPI_NAND_CHIP_A	 	(1<<24)	
 #define SPI_NAND_AUTO_WEL	(1<<19)
 #define SPI_NAND_CLK_32DIV	(0x7<<16)
+#define SPI_NAND_DMA_OWNER	(0x1<<17)
 
 // spi_cust_cmd
 #define SPI_CUSTCMD_SHIFT          8

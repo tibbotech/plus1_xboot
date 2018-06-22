@@ -33,7 +33,7 @@ typedef enum
 	BCH_S338_OFF							=0xFF
 }BCH_MODE_ENUM;
 
-
+#define BCH_S338_RESET					1
 #define BCH_S338_START					1
 #define BCH_S338_ENC_DEC(x)				((x) << 4)
 #define BCH_S338_CORRECT_MODE(x)		((x) << 8)
