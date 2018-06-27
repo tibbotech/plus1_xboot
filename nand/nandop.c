@@ -324,6 +324,7 @@ UINT32 Load_Header_Profile(SINT32 type)
 					prn_string("BlockNum = "); prn_decimal(ptr->BlockNum); prn_string("\n");
 					prn_string("addrCycle = "); prn_decimal(ptr->addrCycle); prn_string("\n");
 					prn_string("BchType = "); prn_decimal(ptr->BchType); prn_string("\n");
+					prn_string("SpecialMode = "); prn_dword(ptr->PlaneSelectMode); prn_string("\n");
 					prn_string("xboot_copies = "); prn_dword(ptr->xboot_copies);
 					prn_string("xboot_pg_off = "); prn_dword(ptr->xboot_pg_off);
 					prn_string("xboot_pg_cnt = "); prn_dword(ptr->xboot_pg_cnt);

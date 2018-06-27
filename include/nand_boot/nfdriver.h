@@ -6,31 +6,17 @@
 
 #define BCH_ENCODE				0
 #define BCH_DECODE				1
-#define BCH_S338_CFG									(BCH_S338_BASE_ADDRESS + 0x00)
-#define BCH_S338_DATA_PTR							(BCH_S338_BASE_ADDRESS + 0x04)
-#define BCH_S338_PARITY_PTR						(BCH_S338_BASE_ADDRESS + 0x08)
-#define BCH_S338_INT_STATUS						(BCH_S338_BASE_ADDRESS + 0x0C)
-#define BCH_S338_SOFT_RESET						(BCH_S338_BASE_ADDRESS + 0x10)
-#define BCH_S338_INT_MASK							(BCH_S338_BASE_ADDRESS + 0x14)
-#define BCH_S338_REPORT_STATUS				(BCH_S338_BASE_ADDRESS + 0x18)
+
+#define BCH_S338_CFG					(BCH_S338_BASE_ADDRESS + 0x00)
+#define BCH_S338_DATA_PTR				(BCH_S338_BASE_ADDRESS + 0x04)
+#define BCH_S338_PARITY_PTR				(BCH_S338_BASE_ADDRESS + 0x08)
+#define BCH_S338_INT_STATUS				(BCH_S338_BASE_ADDRESS + 0x0C)
+#define BCH_S338_SOFT_RESET				(BCH_S338_BASE_ADDRESS + 0x10)
+#define BCH_S338_INT_MASK				(BCH_S338_BASE_ADDRESS + 0x14)
+#define BCH_S338_REPORT_STATUS			(BCH_S338_BASE_ADDRESS + 0x18)
 #define BCH_S338_SECTOR_ERR_REPORT		(BCH_S338_BASE_ADDRESS + 0x1C)
 #define BCH_S338_SECTOR_FAIL_REPORT		(BCH_S338_BASE_ADDRESS + 0x20)
-#define BCH_S338_LAST_ADDRESS_REG			(BCH_S338_BASE_ADDRESS + 0x24)
-#define BCH_S338_LAST_DATA_REG				(BCH_S338_BASE_ADDRESS + 0x28)
-#define BCH_S338_CONTROL_REG					(BCH_S338_BASE_ADDRESS + 0x2C)
-
-#define rBCH_S338_CFG					(*(volatile unsigned *) (BCH_S338_BASE_ADDRESS + 0x00))
-#define rBCH_S338_DATA_PTR				(*(volatile unsigned *) (BCH_S338_BASE_ADDRESS + 0x04))
-#define rBCH_S338_PARITY_PTR			(*(volatile unsigned *) (BCH_S338_BASE_ADDRESS + 0x08))
-#define rBCH_S338_INT_STATUS			(*(volatile unsigned *) (BCH_S338_BASE_ADDRESS + 0x0C))
-#define rBCH_S338_SOFT_RESET			(*(volatile unsigned *) (BCH_S338_BASE_ADDRESS + 0x10))
-#define rBCH_S338_INT_MASK				(*(volatile unsigned *) (BCH_S338_BASE_ADDRESS + 0x14))
-#define rBCH_S338_REPORT_STATUS			(*(volatile unsigned *) (BCH_S338_BASE_ADDRESS + 0x18))
-#define rBCH_S338_SECTOR_ERR_REPORT		(*(volatile unsigned *) (BCH_S338_BASE_ADDRESS + 0x1C))
-#define rBCH_S338_SECTOR_FAIL_REPORT	(*(volatile unsigned *) (BCH_S338_BASE_ADDRESS + 0x20))
-#define rBCH_S338_LAST_ADDRESS_REG	(*(volatile unsigned *) (BCH_S338_BASE_ADDRESS + 0x24))
-#define rBCH_S338_LAST_DATA_REG	(*(volatile unsigned *) (BCH_S338_BASE_ADDRESS + 0x28))
-#define rBCH_S338_CONTROL_REG	(*(volatile unsigned *) (BCH_S338_BASE_ADDRESS + 0x2c))
+#define BCH_S338_CONTROL_REG			(BCH_S338_BASE_ADDRESS + 0x2C)
 
 #define BCH_S338_ENCODE (0)
 #define BCH_S338_DECODE (1)
@@ -47,7 +33,7 @@ typedef enum
 	BCH_S338_OFF							=0xFF
 }BCH_MODE_ENUM;
 
-
+#define BCH_S338_RESET					1
 #define BCH_S338_START					1
 #define BCH_S338_ENC_DEC(x)				((x) << 4)
 #define BCH_S338_CORRECT_MODE(x)		((x) << 8)

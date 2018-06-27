@@ -19,7 +19,7 @@
 #define USE_DESCRIPTOR_MODE 0
 #define DEVICE_STS_AUTO_CHK 0
 #define USE_SP_BCH          1   // 1:Using BCH, 0:using Device internal ECC
-
+#define USB_SPDMA_AUTOBCH	1
 
 /**************************************************************************
  *                         D A T A   T Y P E S                            *
@@ -48,61 +48,65 @@ extern int verify_xboot_img(u8 *img);
 /*********************Basic function********************/
 
 /*******************************************************/
-
 /* check SPI NAND Device status by ctrl_status_registers, */
 void wait_spi_idle(struct sp_spinand_info *info)
 {
 	struct sp_spinand_regs *regs = info->regs;
 
-	while (readl(&regs->ctrl) & SPI_DEVICE_IDLE) {	/* --> ctrl bit-15, wait spi_ctrl idle */
+	while (readl(&regs->spi_ctrl) & SPI_DEVICE_IDLE) {	/* --> ctrl bit-31, wait spi_ctrl idle */
 		/* wait */;
 	}
-
 }
 
 int spi_nand_getfeatures(struct sp_spinand_info *info,uint32_t addr)
 {
 	struct sp_spinand_regs *regs = info->regs;
-
+	int value = 0;
+	
 	CSTAMP(0x5910FE00);
 	CSTAMP(addr);
 
-	// cfg-4 & cfg-6 RGST bus( for Data_64 port usage )
-	writel(CFG45_DefaultValue, &regs->cfg4);
-	writel(CFG67_DefaultValue, &regs->cfg6);
+	value = (SPI_NAND_CHIP_A)|(SPI_NAND_AUTO_WEL)|(SPI_NAND_CLK_32DIV)|(SPINAND_CMD_GETFEATURES<<8)|(SPI_NAND_CTRL_EN)|(SPINAND_CUSTCMD_1_DATA)|(SPINAND_CUSTCMD_1_ADDR);
+	writel(value ,&regs->spi_ctrl);
 
-	writel(addr, &regs->addr_low);
-	writel(addr >> 16, &regs->addr_high);
+	writel(addr ,&regs->spi_page_addr);
 
-	writel(0x0F85, &regs->cust_cmd);
+	value = SPINAND_CFG01_DEFAULT;
+	writel(value ,&regs->spi_cfg[1]);
+
+	value = SPINAND_AUTOCFG_CMDEN;
+	writel(value ,&regs->spi_auto_cfg);
+
 	wait_spi_idle(info);
 
 	CSTAMP(0x5910FE01);
 
-	return (readl(&regs->data_low) & 0xFF);
+	return (readl(&regs->spi_data) & 0xFF);
 
 }
 
 void spi_nand_setfeatures(struct sp_spinand_info *info,uint32_t addr, uint32_t data)
 {
 	struct sp_spinand_regs *regs = info->regs;
+	int value = 0;
 
 	CSTAMP(0x5910FE10);
 	CSTAMP(addr);
 
-	writel(CFG45_DefaultValue, &regs->cfg4);
-	writel(CFG67_DefaultValue, &regs->cfg6);
+	value = (SPI_NAND_CHIP_A)|(SPI_NAND_AUTO_WEL)|(SPI_NAND_CLK_32DIV)|(SPINAND_CMD_SETFEATURES<<8)|(SPI_NAND_CTRL_EN)|(SPINAND_CUSTCMD_1_DATA)|(SPI_NAND_WRITE_MDOE)|(SPINAND_CUSTCMD_1_ADDR);
+	writel(value ,&regs->spi_ctrl);
 
-	writel(addr, &regs->addr_low);
-	writel(addr >> 16, &regs->addr_high);
+	writel(addr ,&regs->spi_page_addr);
 
-	writel(data, &regs->data_low);
-	writel(data >> 16, &regs->data_high);
+	writel(data ,&regs->spi_data);
 
-	writel(0x1FA5, &regs->cust_cmd);
+	value = SPINAND_CFG01_DEFAULT1;
+	writel(value ,&regs->spi_cfg[1]);
+
+	value = SPINAND_AUTOCFG_CMDEN;
+	writel(value ,&regs->spi_auto_cfg);
 
 	wait_spi_idle(info);
-	//printf("set features done\n");
 
 	CSTAMP(0x5910FE11);
 }
@@ -111,36 +115,36 @@ void spi_nand_setfeatures(struct sp_spinand_info *info,uint32_t addr, uint32_t d
 static int sp_spinand_reset(struct sp_spinand_info *info)
 {
 	struct sp_spinand_regs *regs = info->regs;
-
+	int value = 0;
 	int ret = -1;
 
 
 	CSTAMP(0x59105201);
 
 	//initial
-	while (readl(&regs->ctrl) & SPI_DEVICE_IDLE) {
+	while (readl(&regs->spi_ctrl) & SPI_DEVICE_IDLE) {
 		/* wait */ ;
 	}
 
 	CSTAMP(0x59105202);
 
-	writel(0x211C, &regs->ctrl);
-
-	writel(readl(&regs->wait) | SPI_NAND_ENABLE,&regs->wait);
-
-	writel(1, &regs->cfg3);
-	writel(CFG45_DefaultValue, &regs->cfg4);
-	writel(CFG67_DefaultValue, &regs->cfg6);
-
 	/* ==== Flash reset ==== */
-	writel(0xFF80, &regs->cust_cmd);
+	value = (SPI_NAND_CHIP_A)|(SPI_NAND_CLK_32DIV)|(SPINAND_CMD_RESET<<8)|(SPI_NAND_CTRL_EN)|(SPI_NAND_WRITE_MDOE);
+	writel(value, &regs->spi_ctrl);
 
+	value = SPINAND_CFG01_DEFAULT3;
+	writel(value, &regs->spi_cfg[1]);	
+
+	value = SPINAND_AUTOCFG_CMDEN;
+	writel(value, &regs->spi_auto_cfg);
+
+	wait_spi_idle(info);
 	DelayUS(200); /* wait 200us */
 
 	CSTAMP(0x59105203);
 
 #if DEVICE_STS_AUTO_CHK
-	writel(0x0583, &regs->cust_cmd);
+	//writel(0x0583, &regs->cust_cmd);  // spi nand not include 0x05 cmd
 	wait_spi_idle(info);
 	ret = spi_nand_getfeatures(info, 0xc0);
 #else
@@ -163,24 +167,33 @@ static int sp_spinand_reset(struct sp_spinand_info *info)
 UINT16 spi_nand_readid(struct sp_spinand_info *info, uint32_t addr, uint8_t *data)
 {
 	struct sp_spinand_regs *regs = info->regs;
-
+	int value = 0;
 	CSTAMP(0x59105501);
 
-	writel(addr, &regs->addr_low);
-	writel(addr >> 16, &regs->addr_high);
-	writel(0x9F8D, &regs->cust_cmd);
+	writel(addr, &regs->spi_page_addr);
+	/*read 3 byte cycle same to 8388 */
+	value = SPI_NAND_CHIP_A|SPI_NAND_AUTO_WEL|(SPI_NAND_CLK_32DIV)|(SPINAND_CMD_READID<<8)|SPI_NAND_CTRL_EN|(SPINAND_CUSTCMD_3_DATA)|(SPINAND_CUSTCMD_1_ADDR);
+	writel(value, &regs->spi_ctrl);
+
+	value = SPINAND_CFG01_DEFAULT;
+	writel(value ,&regs->spi_cfg[1]);
+
+	value = SPINAND_AUTOCFG_CMDEN;
+	writel(value ,&regs->spi_auto_cfg);
+
 	wait_spi_idle(info);
 
 	CSTAMP(0x59105502);
 
-	data[0] = (readl(&regs->data_low) & 0xFF);
-	data[1] = (readl(&regs->data_low) >> 8);
-	data[2] = (readl(&regs->data_high) & 0xFF);
-	data[3] = (readl(&regs->data_high) >> 8);
+	value = readl(&regs->spi_data);
+
+	data[0] = (uint8_t)(value & 0xFF);
+	data[1] = (uint8_t)((value >> 8)& 0xFF);
+	data[2] = (uint8_t)((value >> 16)& 0xFF);
+	data[3] = (uint8_t)((value >> 24)& 0xFF);
 	data[4] = 0;
 
-	CSTAMP(((data[3] << 24) | (data[2] << 16) | \
-		(data[1] << 8) | data[0]));
+	CSTAMP(value);
 
 	return 4;
 }
@@ -248,6 +261,8 @@ int initSPIDriver(void)
 
 		if(g_pyldData[0] == 0xC2)	/* MXIC */
 			info->id = g_pyldData[0];
+		else if(g_pyldData[0] == 0x2C) /* MICRON */
+			info->id = g_pyldData[0];
 		else
 			info->id = 0xFF;	/* ESMT,tmp */
 		prn_string("SPI NAND found...");
@@ -265,16 +280,13 @@ int initSPIDriver(void)
 		return ROM_FAIL;
 	}
 
-	dbg();
-
 	CSTAMP(0x59100007);
 
 	//rd_memcpy((UINT32 *)g_pSysInfo->IdBuf, (UINT32 *)g_pyldData, MAX_ID_LEN);
 	rd_memcpy((UINT32 *)g_pSysInfo->IdBuf, (UINT32 *)g_pyldData, ((g_bootinfo.gNANDIDLength + 3) >> 2) << 2);
 
 #ifdef PARTIAL_NAND_INIT
-	dbg();
-        return ROM_SUCCESS; /* xboot */
+    return ROM_SUCCESS; /* xboot */
 #else
 	CSTAMP(0x59100009);
 
@@ -312,7 +324,8 @@ int initSPIDriver(void)
 void spi_nand_pageread2cache(struct sp_spinand_info *info, uint32_t addr)
 {
 	struct sp_spinand_regs *regs = info->regs;
-
+	int value = 0;
+#if 0
 	/* RGST bus */
 	writel(0x05, &regs->cfg4);
 	writel(0x05, &regs->cfg6);
@@ -339,13 +352,50 @@ void spi_nand_pageread2cache(struct sp_spinand_info *info, uint32_t addr)
                 }
 	} while (ret & 0x01);
 #endif
+#else
+#if USE_SP_BCH
+	spi_nand_setfeatures(info, 0xB0, 0x00); /* en-able QuadIO,ECC-off */
+#else
+	spi_nand_setfeatures(info, 0xB0, 0x10); /* en-able QuadIO,ECC-on */
+#endif
+
+	info->row = addr;
+
+	value = (SPI_NAND_CHIP_A)|(SPI_NAND_CLK_32DIV)|(SPINAND_CMD_PAGE2CACHE<<8)|(SPI_NAND_CTRL_EN)|(SPINAND_CUSTCMD_3_ADDR);
+	writel(value, &regs->spi_ctrl);
+
+	value = (1<<23)|(1<<19);
+	writel(value ,&regs->spi_cfg[0]);
+
+	value = SPINAND_CFG01_DEFAULT2;
+	writel(value ,&regs->spi_cfg[1]);
+
+	writel(addr, &regs->spi_page_addr);
+
+	value = (SPINAND_CMD_PAGE2CACHE<<24)|(SPINAND_AUTOCFG_CMDEN)|(SPINAND_AUTOCFG_RDCACHE)|(SPINAND_AUTOCFG_RDSTATUS);
+	writel(value ,&regs->spi_auto_cfg);
+
+	wait_spi_idle(info);
+#endif
 
 }
 
 void spi_nand_readcacheQuadIO_byMapping(struct sp_spinand_info *info, uint32_t addr, unsigned int size, uint32_t *pbuf)
 {
 	struct sp_spinand_regs *regs = info->regs;
+	int value = 0;
 	int i;
+	struct BootProfileHeader *ptr = (struct BootProfileHeader *)g_boothead;
+	int pagemark = 0;
+	int colmark = 0;
+
+	if((ptr->PlaneSelectMode & 0x1)== 0x1)
+	{
+		pagemark = (ptr->PlaneSelectMode>>2)&0xfff;
+		colmark = (ptr->PlaneSelectMode>>16)&0xffff;		
+	}
+	
+#if 0
 	unsigned int cfg1,cfg5,cfg7;
 
 	if (info->id == 0xC8) {	/* GD */
@@ -387,13 +437,40 @@ void spi_nand_readcacheQuadIO_byMapping(struct sp_spinand_info *info, uint32_t a
 	writel(cfg5, &regs->cfg5);
 	writel(cfg7, &regs->cfg7);
 	writel(cfg1, &regs->cfg1);
+#else
+	value = SPINAND_CFG02_DEFAULT;
+	writel(value, &regs->spi_cfg[2]);
 
-	if ((info->row & (0x40)) && ((info->id & 0xFF) == 0xC2)) {
-		for (i = addr ; i < (addr + size) ; i += 4)
-			*(unsigned int *)pbuf++ = *(unsigned int *)(0x94001000 + i);
-	} else {
-		for (i = addr ; i < (addr + size) ; i += 4)
-			*(unsigned int *)pbuf++ = *(unsigned int *)(0x94000000 + i);
+	value = (SPINAND_CMD_PAGEREAD <<24)|(SPINAND_AUTOCFG_RDCACHE)|(SPINAND_AUTOCFG_RDSTATUS);
+	writel(value, &regs->spi_auto_cfg);
+	
+	value = readl(&regs->spi_auto_cfg);
+
+	STC_REG->stc_15_0 = 0;
+	while((value>>24)!= 0x3)
+	{
+		if (STC_REG->stc_15_0 > (90 * 10)) {	/* 10ms timeout */
+			break;
+		}	
+	}
+#endif
+	if((ptr->PlaneSelectMode & 0x1)== 0){
+		if ((info->row & (0x40)) && (((info->id & 0xFF) == 0xC2)||((info->id & 0xFF) == 0x2C))) {
+			for (i = addr ; i < (addr + size) ; i += 4)
+				*(unsigned int *)pbuf++ = *(unsigned int *)(SPI_NAND_DIRECT_MAP + 0x1000 + i);
+		} else {
+			for (i = addr ; i < (addr + size) ; i += 4)
+				*(unsigned int *)pbuf++ = *(unsigned int *)(SPI_NAND_DIRECT_MAP + i);
+		}
+	}
+	else{
+		if ((info->row & pagemark) && ((ptr->PlaneSelectMode&0x2)==0x2)){
+			for (i = addr ; i < (addr + size) ; i += 4)
+				*(unsigned int *)pbuf++ = *(unsigned int *)(SPI_NAND_DIRECT_MAP + i +colmark);
+		}else{
+			for (i = addr ; i < (addr + size) ; i += 4)
+				*(unsigned int *)pbuf++ = *(unsigned int *)(SPI_NAND_DIRECT_MAP + i);
+		}
 	}
 
 	wait_spi_idle(info);
@@ -412,6 +489,62 @@ int SPINANDReadPage(UINT8 which_cs, UINT32 u32PhyAddr,UINT32 * PyldBuffer,UINT32
 	return ROM_SUCCESS;
 }
 
+int SPINANDDMAReadPage(UINT8 which_cs, UINT32 u32PhyAddr,UINT32 * PyldBuffer,UINT32 * DataBuffer,UINT32 u8RWMode)
+{
+	struct sp_spinand_info *info = &g_bootinfo.our_spinfc;
+	struct sp_spinand_regs *regs = info->regs;
+	int value = 0;
+
+	while (readl(&regs->spi_auto_cfg) & SPI_NAND_DMA_OWNER); 
+
+	value = SPI_NAND_CHIP_A|SPI_NAND_CLK_32DIV|SPI_NAND_CTRL_EN|(2);
+	writel(value, &regs->spi_ctrl);
+
+	writel(u32PhyAddr, &regs->spi_page_addr);
+
+	value = 0x08350095; // 4 bit data 8 dummy clock 1bit cmd  1bit addr
+	writel(u32PhyAddr, &regs->spi_cfg[1]);
+
+	value = readl(&regs->spi_cfg[0]);
+	value = value|0x400; // 1k data len
+	writel(value, &regs->spi_cfg[0]);
+
+	if ((u32PhyAddr & 0x40) && (((info->id & 0xFF) == 0xC2)||((info->id & 0xFF) == 0x2C)))		
+		value = 0x1000;
+	else
+		value = 0x0;
+	
+	writel(value, &regs->spi_col_addr);
+
+	value = (0x40<<4)|(0x1);
+	writel(value, &regs->spi_page_size);
+
+	writel((UINT32)PyldBuffer, &regs->mem_data_addr);
+	writel(((UINT32)PyldBuffer + 1024), &regs->mem_parity_addr);
+
+	BCHConfig(PyldBuffer, (UINT32 *)(((UINT32)PyldBuffer) + 1024), 1024, BCH_DECODE, g_pSysInfo->ecc_mode);
+	value =(0x80<<8)|(1<<6)|(0<<5)|(1<<4)|(0);	// 1k byte 32 byte align
+	writel(value, &regs->spi_bch);
+
+	//config ctrl info	
+	//set auto cfg
+	value = (0x1<<1);
+	writel(value, &regs->spi_intr_msk);
+	writel(value, &regs->spi_intr_sts);
+	value = (0x6b<<24)|(1<<20)|(1<18)|(1<<17);
+	writel(value, &regs->spi_auto_cfg);
+	while((readl(&regs->spi_intr_sts) & 0x2) == 0x0);
+
+	if(BCHCheckStatus(BCH_DECODE) != 0)
+	{
+		return ROM_FAIL;
+	}
+
+	return ROM_SUCCESS;
+}
+
+
+
 void initSPINandFunptr(void)
 {
 	SDev_t* pSDev = getSDev();
@@ -420,7 +553,11 @@ void initSPINandFunptr(void)
 	pSDev->DeviceID = DEVICE_SPI_NAND;
 
 	pSDev->predInitDriver    = (predInitDriver_t)initSPIDriver;
+#if USB_SPDMA_AUTOBCH	
+	pSDev->predReadWritePage = (predReadWritePage_t)SPINANDDMAReadPage;
+#else
 	pSDev->predReadWritePage = (predReadWritePage_t)SPINANDReadPage;
+#endif
 }
 
 SINT32 ReadSPINANDSector_1K60(UINT32 * ptrPyldData, UINT32 pageNo)
@@ -431,6 +568,9 @@ SINT32 ReadSPINANDSector_1K60(UINT32 * ptrPyldData, UINT32 pageNo)
 
 	g_pSysInfo->ecc_mode = BCH_S338_1K60_BITS_MODE;
 
+#if USB_SPDMA_AUTOBCH
+	ret = pSDev->predReadWritePage(0, pageNo, (UINT32 *)ptrPyldData, (UINT32 *)g_spareData, 0);
+#else
 	pSDev->predReadWritePage(0, pageNo, (UINT32 *)ptrPyldData, (UINT32 *)g_spareData, 0);
 
 	if (BCHProcess(ptrPyldData, (UINT32 *)(((UINT32)ptrPyldData) + 1024), 1024, BCH_DECODE, g_pSysInfo->ecc_mode) == ret_BCH_S338_FAIL) {
@@ -438,6 +578,7 @@ SINT32 ReadSPINANDSector_1K60(UINT32 * ptrPyldData, UINT32 pageNo)
 	} else {
 		ret = ROM_SUCCESS;
 	}
+#endif
 	return ret;
 }
 
@@ -448,6 +589,11 @@ SINT32 SPINANDReadNANDPage_1K60(UINT8 which_cs, UINT32 pageNo, UINT32 * ptrPyldD
 
 	*read_bytes = 0;
 
+#if USB_SPDMA_AUTOBCH
+	ret = pSDev->predReadWritePage(which_cs, pageNo, (UINT32 *)ptrPyldData, (UINT32 *)g_spareData, 2);
+	if (ret != ROM_SUCCESS)
+		return ret;
+#else
 	ret = pSDev->predReadWritePage(which_cs, pageNo, (UINT32 *)ptrPyldData, (UINT32 *)g_spareData, 2);
 	if (ret != ROM_SUCCESS)
 		return ret;
@@ -456,6 +602,7 @@ SINT32 SPINANDReadNANDPage_1K60(UINT8 which_cs, UINT32 pageNo, UINT32 * ptrPyldD
 			GetNANDPageCount_1K60(g_pSysInfo->u16PyldLen) * 1024, BCH_DECODE, BCH_S338_1K60_BITS_MODE);
 	if (ret != ROM_SUCCESS)
 		return ret;
+#endif
 
 	*read_bytes = GetNANDPageCount_1K60(g_pSysInfo->u16PyldLen) * 1024;
 

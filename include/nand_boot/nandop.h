@@ -108,7 +108,7 @@ struct BootProfileHeader
 	UINT32    PageSize;       // NAND Page size
 	UINT32    ACWriteTiming;  // not used now
 	UINT32    ACReadTiming;   // not used now
-	UINT32    reserved44;
+	UINT32    PlaneSelectMode;// special odd blocks read mode (bit 0: special sw flow en. bit 1 read mode en. bit 2~bit 5 plane select bit addr) 
 
 	// 48
 	UINT32    xboot_copies;   // Number of Xboot copies. Copies are consecutive.
@@ -184,6 +184,8 @@ UINT8* Get_PyldData_Ptr(void);
 UINT8* Get_SpareData_Ptr(void);
 
 SINT32 BCHProcess(UINT32* PyldBuffer, UINT32* ReduntBuffer, UINT32 len, SINT32 op, SINT32 ecc_mode);
+SINT32 BCHConfig(UINT32* PyldBuffer, UINT32* ReduntBuffer, UINT32 len, SINT32 op, SINT32 ecc_mode);
+SINT32 BCHCheckStatus(int codec_mode);
 
 void SetNANDRandomizeFlag(SINT32 val);
 

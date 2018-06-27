@@ -260,20 +260,20 @@ unsigned int hwSdRxResponse(unsigned char * rspBuf, unsigned int rspType)
 	if (rspType == RSP_TYPE_R2) {
 #ifdef PLATFORM_8388
 		for (rspNum = 6; rspNum < 17; rspNum++) {
-				while (1) {
-							value = SD_STATUS0_GET();
-							if ((value & 0x02) == 0x02) {
-									break;	/* Wait until response buffer full*/
-							} else if ((value & 0x40) == 0x40) {
-									EPRINTK("Rsp timeout (1)...\n");
-									return SD_RSP_TIMEOUT;
-							}
-					}
-					rspBuf[rspNum] = (SD_RSP_BUF4_5_GET & 0xff);
-#ifdef SD_VERBOSE
-					prn_byte(rspBuf[rspNum]); // conti. SD RSP print
-#endif
+			while (1) {
+				value = SD_STATUS0_GET();
+				if ((value & 0x02) == 0x02) {
+					break;	/* Wait until response buffer full*/
+				} else if ((value & 0x40) == 0x40) {
+					EPRINTK("Rsp timeout (1)...\n");
+					return SD_RSP_TIMEOUT;
+				}
 			}
+			rspBuf[rspNum] = (SD_RSP_BUF4_5_GET & 0xff);
+#ifdef SD_VERBOSE
+			prn_byte(rspBuf[rspNum]); // conti. SD RSP print
+#endif
+		}
 #else
 		if (!IS_EMMC_SLOT()) {
 			status = wait_response_buff_full();
@@ -306,12 +306,12 @@ unsigned int hwSdRxResponse(unsigned char * rspBuf, unsigned int rspType)
 		for (rspNum = 6; rspNum < 17; rspNum++)
 			prn_byte(rspBuf[rspNum]);
 #endif
-	}
 #ifdef SD_VERBOSE
 	// SD RSP print end
 	prn_string("\n");
 #endif
 #endif
+	}
 	// Check RSP CRC7 error
 	if ((rspType == RSP_TYPE_R1) || (rspType == RSP_TYPE_R6) || rspType == RSP_TYPE_R7) {
 		if (SD_STATUS0_GET() & (1 << 9)) {

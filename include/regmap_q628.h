@@ -632,11 +632,12 @@ struct card_dma_regs {
 
 
 /* NAND */
-#define NAND_S330_BASE           0x9C100000
+#define NAND_S330_BASE           0x9C002B80
 #define BCH_S338_BASE_ADDRESS    0x9C101000
 
 /* SPI NAND */
 #define CONFIG_SP_SPINAND_BASE   ((volatile unsigned int *)RF_GRP(87, 0))
+#define SPI_NAND_DIRECT_MAP      0x9dff0000
 
 /* BIO */
 struct bio_ctl_regs {
