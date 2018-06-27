@@ -315,6 +315,32 @@ static void boot_next_set_addr(unsigned int addr)
 	prn_string("boot next @"); prn_dword(*next);
 }
 
+#define IPC_A2B		(0x9c008100) // G258
+#define IPC_B2A		(0x9c008180) // G259
+#define CA7_READY	(0xca700001)
+
+static void ipc_b2a_test(void)
+{
+	volatile unsigned int *a2b = (volatile unsigned int *)IPC_A2B;
+	volatile unsigned int *b2a = (volatile unsigned int *)IPC_B2A;
+
+	prn_string("IPC test:\nwait A ready...\n");
+	while (a2b[31] != CA7_READY);
+
+	prn_string("test B2A...\n");
+	// direct (mbox)
+	b2a[24] = 0x12345678;
+	b2a[25] = 0x5a5a5a5a;
+	b2a[26] = 0xa5a5a5a5;
+	b2a[27] = 0xdeadc0de;
+	b2a[28] = 0x01010101;
+	b2a[29] = 0x19730611;
+	b2a[30] = 0x87654321;
+	b2a[31] = 0x00000000;
+	// rpc
+	b2a[0] = 1;
+}
+
 static void boot_next_in_A(void)
 {
 	prn_string("wake up A\n");
@@ -327,6 +353,7 @@ static void boot_next_in_A(void)
 #else
 	*(volatile unsigned int *)A_START_POS_B_VIEW = (u32)&boot_next_no_stack;
 #endif
+	ipc_b2a_test();
 	while (1);
 }
 
