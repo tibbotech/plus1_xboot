@@ -503,7 +503,7 @@ int SPINANDDMAReadPage(UINT8 which_cs, UINT32 u32PhyAddr,UINT32 * PyldBuffer,UIN
 	writel(u32PhyAddr, &regs->spi_page_addr);
 
 	value = 0x08350095; // 4 bit data 8 dummy clock 1bit cmd  1bit addr
-	writel(u32PhyAddr, &regs->spi_cfg[1]);
+	writel(value, &regs->spi_cfg[1]);
 
 	value = readl(&regs->spi_cfg[0]);
 	value = value|0x400; // 1k data len
