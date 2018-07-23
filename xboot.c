@@ -345,6 +345,9 @@ static void boot_next_in_A(void)
 {
 	prn_string("wake up A\n");
 
+#ifdef CONFIG_PLATFORM_Q628
+	prn_string("APLL Up : "); prn_dword(A_PLL_CTL0_CFG);
+#endif
 	prn_string("ABIO Up : "); prn_dword(ABIO_CFG);
 
 	/* Wake up another to run from boot_next_no_stack() */
