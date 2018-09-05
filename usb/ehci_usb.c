@@ -102,7 +102,14 @@ void uphy_init(void)
 	// Backup solution to workaround real IC USB clock issue
 	// (issue: hang on reading EHCI_USBSTS after EN_ASYNC_SCHEDULE)
 #if defined(PLATFORM_8388) || defined(PLATFORM_I137)
-	MOON1_REG->sft_cfg[19] |= (1 << 6);
+	if (HB_GP_REG->hb_otp_data2 & 0x1) { // G350.2 bit[0]
+		prn_string("uphy0 rx clk inv\n");
+		MOON1_REG->sft_cfg[19] |= (1 << 6);
+	}
+	if (HB_GP_REG->hb_otp_data2 & 0x2) { // G350.2 bit[1]
+		prn_string("uphy1 rx clk inv\n");
+		MOON1_REG->sft_cfg[19] |= (1 << 14);
+	}
 #else
 	if (HB_GP_REG->hb_otp_data2 & 0x1) { // G350.2 bit[0]
 		prn_string("uphy0 rx clk inv\n");
