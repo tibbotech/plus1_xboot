@@ -101,7 +101,7 @@ void uphy_init(void)
 
 	// Backup solution to workaround real IC USB clock issue
 	// (issue: hang on reading EHCI_USBSTS after EN_ASYNC_SCHEDULE)
-#if defined(PLATFORM_8388) || defined(PLATFORM_I137)
+#if defined(PLATFORM_8388)
 	if (HB_GP_REG->hb_otp_data2 & 0x1) { // G350.2 bit[0]
 		prn_string("uphy0 rx clk inv\n");
 		MOON1_REG->sft_cfg[19] |= (1 << 6);
@@ -110,6 +110,8 @@ void uphy_init(void)
 		prn_string("uphy1 rx clk inv\n");
 		MOON1_REG->sft_cfg[19] |= (1 << 14);
 	}
+#elif defined(PLATFORM_I137)
+	MOON1_REG->sft_cfg[19] |= (1 << 6);
 #else
 	if (HB_GP_REG->hb_otp_data2 & 0x1) { // G350.2 bit[0]
 		prn_string("uphy0 rx clk inv\n");
@@ -140,6 +142,8 @@ void uphy_init(void)
                 set += 2;
         }
         UPHY1_RN_REG->cfg[7] = (UPHY1_RN_REG->cfg[7] & ~0x1F) | set;
+#elif defined(PLATFORM_I137)
+	UPHY0_RN_REG->cfg[7] = (UPHY0_RN_REG->cfg[7] & ~0x1F) | DEFAULT_UPHY_DISC;
 #else
 	/* Q628 OTP[UPHY0_DISC] OTP[UPHY1_DISC] */
 	val = HB_GP_REG->hb_otp_data6;
@@ -150,7 +154,6 @@ void uphy_init(void)
                 set += 2;
         }
         UPHY0_RN_REG->cfg[7] = (UPHY0_RN_REG->cfg[7] & ~0x1F) | set;
-#ifndef PLATFORM_I137
         set = (val >> 5) & 0x1F; // UPHY1 DISC
         if (!set) {
                 set = DEFAULT_UPHY_DISC;
@@ -158,7 +161,6 @@ void uphy_init(void)
                 set += 2;
         }
         UPHY1_RN_REG->cfg[7] = (UPHY1_RN_REG->cfg[7] & ~0x1F) | set;
-#endif
 #endif
 
 	CSTAMP(0xE5B0A002);

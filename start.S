@@ -131,7 +131,9 @@ FUNC(boot_next_no_stack)
 #if defined(PLATFORM_I137) || defined(CONFIG_PLATFORM_Q628)
 	set_Z_if_B r5
 	beq	skip_abio_up
+#ifdef CONFIG_PLATFORM_Q628
 	bl	A_raise_pll		@ A: speed up core clock
+#endif
 	bl	A_setup_abio		@ A: speed up ABIO bus clock
 	/* A release cores (B booting doesn't do this yet) */
 	ldr	r0, =A_RF_GRP(0, 2)
