@@ -134,6 +134,33 @@ iobus_start:
 	bx	r11
 ENDFUNC(A_setup_abio)
 
+#ifdef CONFIG_PLATFORM_Q628
+/* A release cores 2, 3 */
+FUNC(A_release_cores)
+	ldr	r2, =A_RF_GRP(0, 2)
+#ifndef CONFIG_BOOT_ON_ZEBU
+	/* reset     : ca7_ctl_cfg=1    , ca7_sw_rst=0x0667f
+	 * power on  :             3->2 ,            0x1e67f -> 0x1ffff
+	 * power off :             3->1 ,            0x0667f
+	 */
+	ldr	r0, =A_RF_GRP(0, 20)
+	mov	r1, #0x3
+	str	r1, [r0]
+	WORD_DSB
+	mov	r1, #0x2
+	str	r1, [r0]
+	WORD_DSB
+	ldr	r1, =0x1e67f	@ CORE_2~3 : poweron reset=0
+	str	r1, [r2]
+	WORD_DSB
+#endif
+	ldr	r1, =0x1ffff	@ CORE_2~3 : poweron reset=1, primary reset=1, debug reset=1
+	str	r1, [r2]
+	WORD_DSB
+	bx	lr
+ENDFUNC(A_release_cores)
+#endif
+
 FUNC(boot_next_no_stack)
 	/* abio up */
 #if defined(PLATFORM_I137) || defined(CONFIG_PLATFORM_Q628)
@@ -143,10 +170,7 @@ FUNC(boot_next_no_stack)
 	bl	A_raise_pll		@ A: speed up core clock
 #endif
 	bl	A_setup_abio		@ A: speed up ABIO bus clock
-	/* A release cores (B booting doesn't do this yet) */
-	ldr	r0, =A_RF_GRP(0, 2)
-	ldr	r1, =0x1ffff
-	str	r1, [r0]
+	bl	A_release_cores
 skip_abio_up:
 #endif
 

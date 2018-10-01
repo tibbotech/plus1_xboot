@@ -66,6 +66,15 @@ static void prn_clk_info(int is_A)
 }
 #endif
 
+static void prn_A_setup(void)
+{
+#ifdef CONFIG_PLATFORM_Q628
+	prn_string("A_G0.11(pll): "); prn_dword(A_PLL_CTL0_CFG);
+	prn_string("A_G0.3(abio): "); prn_dword(ABIO_CFG);
+	prn_string("A_G0.18(ioctrl): "); prn_dword(ABIO_IOCTRL_CFG);
+#endif
+}
+
 static void init_hw(void)
 {
 	int i;
@@ -80,15 +89,13 @@ static void init_hw(void)
 	else {
 		is_A = 1;
 		prn_string("-- A --\n");
+		prn_A_setup();
 #ifdef CONFIG_PLATFORM_Q628
-		prn_string("APLL Up : "); prn_dword(A_PLL_CTL0_CFG);
 		/* raise ca7 clock */
 		extern void A_raise_pll(void);
 		A_raise_pll();
 #endif
 #if defined(PLATFORM_I137) || defined(CONFIG_PLATFORM_Q628)
-		prn_string("A_G0.18 : "); prn_dword(ABIO_IOCTRL_CFG);
-		prn_string("ABIO Up : "); prn_dword(ABIO_CFG);
 		extern void A_setup_abio(void);
 		A_setup_abio();
 #endif
@@ -123,7 +130,8 @@ static void init_hw(void)
 #ifdef CONFIG_PLATFORM_Q628
 	if (is_A) {
 		prn_string("release cores\n");
-		A_MOON0_REG->ca7_sw_rst = 0x1ffff;
+		extern void A_release_cores(void);
+		A_release_cores();
 	}
 #endif
 
@@ -347,11 +355,7 @@ static void boot_next_in_A(void)
 {
 	prn_string("wake up A\n");
 
-#ifdef CONFIG_PLATFORM_Q628
-	prn_string("APLL Up : "); prn_dword(A_PLL_CTL0_CFG);
-	prn_string("A_G0.18 : "); prn_dword(ABIO_IOCTRL_CFG);
-#endif
-	prn_string("ABIO Up : "); prn_dword(ABIO_CFG);
+	prn_A_setup();
 
 	/* Wake up another to run from boot_next_no_stack() */
 #ifdef PLATFORM_I137 /* B_SRAM address is 9e00_0000 from A view */
