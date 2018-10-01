@@ -74,9 +74,14 @@ ENDFUNC(exit_bootROM)
  * r0 : A RGST base
  * r1 : A G0.3 clk_cfg
  * r2 : A STC counter address
+ * r3 : A G0.18 ioctrl_cfg
  * lr : return address
  */
 A_setup_iobus_start:
+	/* ASCI io delay */
+#if defined(CONFIG_PLATFORM_Q628) && !defined(CONFIG_BOOT_ON_ZEBU)
+	str	r3, [r0, #0x48]
+#endif
 	str	r1, [r0, #0xc]
 	/* delay 1ms before using ABIO */
 	ldr	r5, [r2]	@ time0
@@ -120,6 +125,9 @@ iobus_start:
 	ldr	r3, =A_RF_GRP(19, 3)	@ A_STC divisor
 	ldr	r4, =(1 << 15 | 0x95)	@ A_STC 90K with extdiv=1
 	str	r4, [r3]
+#if defined(CONFIG_PLATFORM_Q628) && !defined(CONFIG_BOOT_ON_ZEBU)
+	ldr	r3, =ABIO_IOCTRL_CFG
+#endif
 	/* Jump to A_SRAM */
 	mov	lr, pc
 	ldr	pc, =A_WORK_MEM_BASE

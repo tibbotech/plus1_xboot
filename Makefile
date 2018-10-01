@@ -75,6 +75,9 @@ CSOURCES += common/diag.c
 #ifeq ($(CONFIG_HAVE_MON_SHELL), y)
 #CSOURCES += common/regRW.c
 #endif
+ifeq ($(MON), 1)
+CFLAGS += -DMON=1
+endif
 
 # Common
 CSOURCES += common/common.c common/bootmain.c common/stc.c
