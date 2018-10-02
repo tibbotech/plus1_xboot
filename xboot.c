@@ -32,6 +32,18 @@ __attribute__ ((section("bootinfo_sect")))       struct bootinfo     g_bootinfo;
 __attribute__ ((section("boothead_sect")))       u8                  g_boothead[GLOBAL_HEADER_SIZE];
 __attribute__ ((section("xboot_header_sect")))   u8                  g_xboot_buf[32];
 
+#ifdef CONFIG_PLATFORM_Q628
+static int b_pll_get_rate(void)
+{
+	unsigned int reg = MOON4_REG->pllsys;    /* G4.26 */
+	unsigned int reg2 = MOON4_REG->clk_sel0; /* G4.27 */
+
+	if ((reg >> 9) & 1) /* bypass? */
+		return 27000000;
+	return (((reg & 0xf) + 1) * 13500000) >> ((reg2 >> 4) & 0xf);
+}
+#endif
+
 #if defined(PLATFORM_I137) || defined(CONFIG_PLATFORM_Q628)
 static void prn_clk_info(int is_A)
 {
@@ -42,10 +54,9 @@ static void prn_clk_info(int is_A)
 #if defined(PLATFORM_I137)
 	b_sysclk = CLK_B_PLLSYS >> ((MOON0_REG->clk_sel[1] >> 4) & 7);
 #else
-	b_sysclk = CLK_B_PLLSYS >> ((MOON4_REG->clk_sel0 >> 4) & 7);
+	b_sysclk = b_pll_get_rate();
 #endif
 	prn_decimal(b_sysclk / 1000000);
-
 	prn_string("M abio_ctrl=(");
 	io_ctrl = BIO_CTL_REG->io_ctrl;
 	prn_decimal((io_ctrl & 2) ? 16 : 8);
