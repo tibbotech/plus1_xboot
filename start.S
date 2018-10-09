@@ -96,15 +96,16 @@ A_setup_iobus_end:
 
 #ifdef CONFIG_PLATFORM_Q628
 FUNC(A_raise_pll)
-	ldr	r11, =A_RF_GRP(0, 11)	@ A G0.11 pll_ctl0
-	ldr	r12, =A_PLL_CTL0_CFG
-	str	r12, [r11]
+	ldr	r0, =A_RF_GRP(0, 11)	@ A G0.11 pll_ctl0
+	ldr	r1, =A_PLL_CTL0_CFG
+	str	r1, [r0]
 	bx	lr
 ENDFUNC(A_raise_pll)
 #endif
 
 /* A : setup abio on A_SRAM */
 FUNC(A_setup_abio)
+	push	{ r4, r5, r6, r11 } /* corrupt */
 	mov	r11, lr
 	ldr	r1, =(B_SRAM_BASE_A_VIEW - SRAM0_BASE) + A_setup_iobus_start
 	ldr	r2, =(B_SRAM_BASE_A_VIEW - SRAM0_BASE) + A_setup_iobus_end
@@ -131,7 +132,9 @@ iobus_start:
 	/* Jump to A_SRAM */
 	mov	lr, pc
 	ldr	pc, =A_WORK_MEM_BASE
-	bx	r11
+	mov	lr, r11
+	pop	{ r4, r5, r6, r11 }
+	bx	lr
 ENDFUNC(A_setup_abio)
 
 #ifdef CONFIG_PLATFORM_Q628
