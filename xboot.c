@@ -89,11 +89,15 @@ static void prn_A_setup(void)
 static void init_hw(void)
 {
 	int i;
-#if defined(PLATFORM_I137) || defined(CONFIG_PLATFORM_Q628)
-	int is_A = 0;
-#endif
+	__attribute__((unused)) int is_A = 0;
 
 	dbg();
+
+#if 0 /* experiment : slower b_sysclk  */
+	//MOON4_REG->pllsys = RF_MASK_V(0xf, 0xe); /* 202.5 (default) */
+	//MOON4_REG->pllsys = RF_MASK_V(0xf, 0xd); /* 189 */
+	MOON4_REG->pllsys = RF_MASK_V(0xf, 0x7); /* 108 */
+#endif
 
 	if ((cpu_main_id() & 0xfff0) == 0x9260)
 		prn_string("-- B --\n");
