@@ -64,7 +64,6 @@ int memcmp(const UINT8 *s1, const UINT8 *s2, int n)
 #ifndef CONFIG_HAVE_ARCH_FASTMEM
 void *memset(UINT8 *s1, int c, int n)
 {
-	return memset(s1, c, n);
 	UINT8 *s1_end = s1 + n;
 
 	while (s1 != s1_end)
