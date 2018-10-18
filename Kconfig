@@ -106,7 +106,22 @@ config HAVE_ARCH_FASTMEM
         bool "Use memset/memcpy fast assembly code"
         default y
 
+menu "Power saving"
+	config PARTIAL_CLKEN
+		bool "Enable partial clocks to save power (heuristics)"
+		depends on PLATFORM_Q628
+		default n
+
+	config DISABLE_CORE2_3
+		bool "Disable A's core 2, 3"
+		depends on PLATFORM_Q628
+		default n
+		help
+			Don't power on A's core 2, 3.
+endmenu
+
 menu "Experiments"
+
 	config LOAD_LINUX
 		bool "Load and run Linux"
 		default n
