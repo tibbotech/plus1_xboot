@@ -74,6 +74,7 @@
 #define ABIO_CFG ABIO_200M
 #else
 #define ABIO_CFG ABIO_400M
+//#define A_PLL_CTL0_CFG      0x2c5109  /* default: pllclk=1215M, corelck= 607.5M */
 #define A_PLL_CTL0_CFG      0x445149    /* pllclk=1863M, corelck= 931.5M */
 #endif
 

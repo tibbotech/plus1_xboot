@@ -48,7 +48,7 @@ static int b_pll_get_rate(void)
 static void prn_clk_info(int is_A)
 {
 	unsigned int b_sysclk, io_ctrl;
-	unsigned int a_pllclk, coreclk, ioclk, sysclk, clk_cfg;
+	unsigned int a_pllclk, coreclk, ioclk, sysclk, clk_cfg, a_pllioclk;
 
 	prn_string("B: b_sysclk=");
 #if defined(PLATFORM_I137)
@@ -66,11 +66,13 @@ static void prn_clk_info(int is_A)
 		clk_cfg = A_MOON0_REG->clk_cfg;
 		a_pllclk = (((A_MOON0_REG->pll_ctl[0] >> 16) & 0xff) + 1) * (27 * 1000 * 1000);
 		coreclk = a_pllclk / (1 + ((clk_cfg >> 10) & 1));
-		ioclk = a_pllclk / (20 + 5 * ((clk_cfg >> 4) & 7)) / ((clk_cfg >> 16) & 0xff) * 10;
 		sysclk = coreclk / (1 + ((clk_cfg >> 3) & 1));
+		a_pllioclk = (((A_MOON0_REG->pllio_ctl[0] >> 16) & 0xff) + 1) * (27 * 1000 * 1000);
+		ioclk = a_pllioclk / (20 + 5 * ((clk_cfg >> 4) & 7)) / ((clk_cfg >> 16) & 0xff) * 10;
 		prn_string("A: a_pllc="); prn_decimal(a_pllclk / 1000000);
-		prn_string("M coreclk="); prn_decimal(coreclk / 1000000);
+		prn_string("M core="); prn_decimal(coreclk / 1000000);
 		prn_string("M a_sysclk="); prn_decimal(sysclk / 1000000);
+		prn_string("M a_pllio="); prn_decimal(a_pllioclk / 1000000);
 		prn_string("M abio_bus="); prn_decimal(ioclk / 1000000);
 		prn_string("M\n");
 	}
