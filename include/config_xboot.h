@@ -34,6 +34,7 @@
 // u-boot
 #define UBOOT_LOAD_ADDR      0x200000
 #define UBOOT_RUN_ADDR       0x200040
+#define UBOOT_MAX_LEN        0x200000
 
 // DTB
 #define DTB_LOAD_ADDR        (0x300000 - 0x40)          /* dtb */

@@ -698,7 +698,7 @@ static void do_fat_boot(u32 type, u32 port)
 	run_draminit();
 
 	/* load u-boot from usb */
-	if (fat_load_uhdr_image(&g_finfo, "uboot", (void *)UBOOT_LOAD_ADDR, ISP_IMG_OFF_UBOOT, 0x00200000) <= 0) {
+	if (fat_load_uhdr_image(&g_finfo, "uboot", (void *)UBOOT_LOAD_ADDR, ISP_IMG_OFF_UBOOT, UBOOT_MAX_LEN) <= 0) {
 		prn_string("failed to load uboot\n");
 		return;
 	}
@@ -809,8 +809,6 @@ static int emmc_load_uhdr_image(const char *img_name, u8 *dst, u32 loaded,
 	}
 
 	len = image_get_size(hdr);
-	if (len <= 0 || (sizeof(*hdr) + len) > size_limit)
-		return -1;
 
 	if (only_load_hdr)
 		return len;
@@ -880,7 +878,7 @@ static void emmc_boot(void)
 {
 	gpt_header *gpt_hdr;
 	gpt_entry *gpt_part;
-	u32 blk_start1;
+	u32 blk_start1 = -1, blk_start2 = -1;
 	int res, len = 0;
 	int i;
 
@@ -933,18 +931,64 @@ static void emmc_boot(void)
 	}
 	gpt_part = (gpt_entry *)g_boothead;
 
-	/* look for uboot at GPT part 1 or 2 */
-	for (i = 0; i < 2; i++) {
+	/* Look for uboot from GPT parts :
+	 * part1 : xboot  / uboot1
+	 * part2 : uboot1 / uboot2
+	 * part3 : uboot2
+	 * part4 : any
+	 */
+#ifndef HAVE_UBOOT2_IN_EMMC
+	for (i = 0; i < 4; i++) {
 		blk_start1 = (u32) gpt_part[i].starting_lba;
 		prn_string("part"); prn_decimal(1 + i);
 		prn_string(" LBA="); prn_dword(blk_start1);
 
 		len = emmc_load_uhdr_image("uboot", (void *)UBOOT_LOAD_ADDR, 0,
-				blk_start1, 0, 0x200000, MMC_USER_AREA);
+				blk_start1, 0, UBOOT_MAX_LEN, MMC_USER_AREA);
 		if (len > 0)
 			break;
 	}
-
+#else
+	/* uboot1 - facotry default uboot image
+	 * uboot2 - updated uboot image
+	 * Logic:
+	 * 1) Load uboot1 (header only)
+	 * 2) Load uboot2
+	 * 3) If uboot2 is not good, load uboot1
+	 */
+	for (i = 0; i < 4; i++) {
+		if (blk_start1 == -1) {
+			/* look for uboot1 */
+			blk_start1 = (u32) gpt_part[i].starting_lba;
+			prn_string("part"); prn_decimal(1 + i);
+			prn_string(" LBA="); prn_dword(blk_start1);
+			len = emmc_load_uhdr_image("uboot", (void *)UBOOT_LOAD_ADDR, 0,
+					blk_start1, 1, 0x200, MMC_USER_AREA);
+			if (len > 0)
+				prn_string("uboot1 hdr good\n");
+			else
+				blk_start1 = -1;
+		} else {
+			/* look for uboot2 */
+			blk_start2 = (u32) gpt_part[i].starting_lba;
+			prn_string("part"); prn_decimal(1 + i);
+			prn_string(" LBA="); prn_dword(blk_start2);
+			len = emmc_load_uhdr_image("uboot", (void *)UBOOT_LOAD_ADDR, 0,
+					blk_start2, 0, UBOOT_MAX_LEN, MMC_USER_AREA);
+			if (len > 0) {
+				prn_string("uboot2 good\n");
+				break; /* good uboot2 */
+			}
+			blk_start2 = -1;
+		}
+	}
+	/* fallback to uboot1 if no uboot2 */
+	if ((blk_start2 == -1) && (blk_start1 != -1)) {
+		prn_string("use uboot1\n");
+		len = emmc_load_uhdr_image("uboot", (void *)UBOOT_LOAD_ADDR, 0,
+					   blk_start1, 0, UBOOT_MAX_LEN, MMC_USER_AREA);
+	}
+#endif
 	if (len <= 0) {
 		prn_string("bad uboot\n");
 		return;
@@ -1296,6 +1340,8 @@ static void boot_flow(void)
 	 * g_bootinfo.gbootRom_boot_mode = SDCARD_ISP; g_bootinfo.bootdev = DEVICE_SD0; g_bootinfo.bootdev_pinx = 1;
 	 * prn_string("force boot mode="); prn_dword(g_bootinfo.gbootRom_boot_mode);
 	 */
+	 g_bootinfo.gbootRom_boot_mode = EMMC_BOOT;
+	 prn_string("force boot mode="); prn_dword(g_bootinfo.gbootRom_boot_mode);
 
 	prn_string("mode=");
 	prn_dword(g_bootinfo.gbootRom_boot_mode);
