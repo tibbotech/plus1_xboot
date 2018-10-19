@@ -1340,8 +1340,6 @@ static void boot_flow(void)
 	 * g_bootinfo.gbootRom_boot_mode = SDCARD_ISP; g_bootinfo.bootdev = DEVICE_SD0; g_bootinfo.bootdev_pinx = 1;
 	 * prn_string("force boot mode="); prn_dword(g_bootinfo.gbootRom_boot_mode);
 	 */
-	 g_bootinfo.gbootRom_boot_mode = EMMC_BOOT;
-	 prn_string("force boot mode="); prn_dword(g_bootinfo.gbootRom_boot_mode);
 
 	prn_string("mode=");
 	prn_dword(g_bootinfo.gbootRom_boot_mode);
