@@ -61,16 +61,22 @@ void uphy_init(void)
 	MOON1_REG->sft_cfg[21] = 0;
 #else
 	/* Q628 uphy012_ctl */
-	MOON4_REG->uphy0_ctl[3] = RF_MASK_V(0xffff, 0x8888);
+	MOON4_REG->uphy0_ctl[3] = RF_MASK_V(0xffff, 0x88);
+	MOON4_REG->uphy1_ctl[3] = RF_MASK_V(0xffff, 0x88);
 	_delay_1ms(1);
-	MOON4_REG->uphy0_ctl[3] = RF_MASK_V(0xffff, 0x8080);
+	MOON4_REG->uphy0_ctl[3] = RF_MASK_V(0xffff, 0x80);
+	MOON4_REG->uphy1_ctl[3] = RF_MASK_V(0xffff, 0x80);
 	_delay_1ms(1);
-	MOON4_REG->uphy0_ctl[3] = RF_MASK_V(0xffff, 0x8888);
+	MOON4_REG->uphy0_ctl[3] = RF_MASK_V(0xffff, 0x88);
+	MOON4_REG->uphy1_ctl[3] = RF_MASK_V(0xffff, 0x88);
 	_delay_1ms(1);
-	MOON4_REG->uphy0_ctl[3] = RF_MASK_V(0xffff, 0x8080);
+	MOON4_REG->uphy0_ctl[3] = RF_MASK_V(0xffff, 0x80);
+	MOON4_REG->uphy1_ctl[3] = RF_MASK_V(0xffff, 0x80);
 	_delay_1ms(1);
 	MOON4_REG->uphy0_ctl[3] = RF_MASK_V(0xffff, 0);
+	MOON4_REG->uphy1_ctl[3] = RF_MASK_V(0xffff, 0);
 #endif
+	_delay_1ms(1);
 
 	// 3. reset UPHY0/1
 #if defined(PLATFORM_8388) || defined(PLATFORM_I137)
