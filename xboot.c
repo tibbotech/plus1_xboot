@@ -121,9 +121,9 @@ static void init_hw(void)
 #ifdef CONFIG_PLATFORM_Q628
 #ifdef CONFIG_PARTIAL_CLKEN
 	prn_string("partial clken\n");
-	/* power saving, provided by yuwen */
+	/* power saving, provided by yuwen + CARD_CTL4 */
 	const int ps_clken[] = {
-		0x67ef, 0xffff, 0xff03, 0xfff0, 0x0000, /* G0.1~5  */
+		0x67ef, 0xffff, 0xff03, 0xfff0, 0x0004, /* G0.1~5  */
 		0x0000, 0x8000, 0xffff, 0x0040, 0x0004, /* G0.6~10 */
 	};
 	for (i = 0; i < sizeof(MOON0_REG->clken) / 4; i++)
