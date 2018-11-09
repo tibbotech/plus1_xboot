@@ -72,9 +72,9 @@ CSOURCES += xboot.c
 CSOURCES += common/diag.c
 
 # MON shell
-#ifeq ($(CONFIG_HAVE_MON_SHELL), y)
-#CSOURCES += common/regRW.c
-#endif
+ifeq ($(CONFIG_DEBUG_WITH_2ND_UART), y)
+CSOURCES += romshare/regRW.c
+endif
 ifeq ($(MON), 1)
 CFLAGS += -DMON=1
 endif

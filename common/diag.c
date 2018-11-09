@@ -2,25 +2,25 @@
 #include <config.h>
 #include <types.h>
 
-#define UART_put_byte(x) uart0_putc(x)
+#define UART_put_byte(x) dbg_uart_putc(x)
 
-static void uart0_wait(void)
+static void uart_wait(void)
 {
         unsigned int lsr = 0;
 
         while (!lsr) {
-                lsr = UART0_REG->lsr;
+                lsr = DBG_UART_REG->lsr;
                 lsr &= 1;
         }
 }
 
-void uart0_putc(unsigned char c)
+void dbg_uart_putc(unsigned char c)
 {
 	if (g_bootinfo.mp_flag) {
 		return;
 	}
-        uart0_wait();
-        UART0_REG->dr = c;
+        uart_wait();
+        DBG_UART_REG->dr = c;
 }
 
 void _dbg_info(char *file, u32 line)
@@ -140,7 +140,7 @@ void prn_dump_buffer(unsigned char *buf, int len)
 	prn_string("\n");
 }
 
-#if defined(HAVE_PRINTF) && !defined(XBOOT_BUILD)
+#if defined(HAVE_PRINTF) && (!defined(XBOOT_BUILD) || defined(CONFIG_DEBUG_WITH_2ND_UART))
 
 #include <stdarg.h>
 

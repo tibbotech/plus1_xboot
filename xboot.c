@@ -353,6 +353,8 @@ static void boot_next_set_addr(unsigned int addr)
 	prn_string("boot next @"); prn_dword(*next);
 }
 
+//#define IPC_B2A_TEST
+#ifdef IPC_B2A_TEST
 #define IPC_A2B		(0x9c008100) // G258
 #define IPC_B2A		(0x9c008180) // G259
 #define CA7_READY	(0xca700001)
@@ -378,6 +380,7 @@ static void ipc_b2a_test(void)
 	// rpc
 	b2a[0] = 1;
 }
+#endif
 
 static void boot_next_in_A(void)
 {
@@ -391,7 +394,24 @@ static void boot_next_in_A(void)
 #else
 	*(volatile unsigned int *)A_START_POS_B_VIEW = (u32)&boot_next_no_stack;
 #endif
+
+	/* Drop to shell if having 2nd uart debug port */
+#ifdef CONFIG_DEBUG_WITH_2ND_UART
+	mon_shell();
+#endif
+
+#ifdef IPC_B2A_TEST
 	ipc_b2a_test();
+#endif
+
+	/* B halt */
+#ifdef CONFIG_PLATFORM_Q628
+	prn_string("B wfi\n");
+	while (1) {
+		cpu_wfi();
+	}
+#endif
+
 	while (1);
 }
 
@@ -1408,6 +1428,20 @@ static void boot_flow(void)
 	}
 }
 
+static void init_uart(void)
+{
+#ifdef CONFIG_DEBUG_WITH_2ND_UART
+#ifdef CONFIG_PLATFORM_Q628
+	/* uart1 pinmux : x1,UA0_TX, X2,UA1_RX */
+	MOON3_REG->sft_cfg[14] = RF_MASK_V((0x7f << 0), (1 << 0));
+	MOON3_REG->sft_cfg[14] = RF_MASK_V((0x7f << 8), (2 << 8));
+	MOON0_REG->reset[1] = RF_MASK_V_CLR(1 << 9); /* release UA1 */
+	UART1_REG->div_l = UART_BAUD_DIV_L(BAUDRATE, UART_SRC_CLK);
+	UART1_REG->div_h = UART_BAUD_DIV_H(BAUDRATE, UART_SRC_CLK);
+#endif
+#endif
+}
+
 static inline void init_cdata(void)
 {
 	char *src = (char *)&__etext;
@@ -1426,6 +1460,8 @@ void xboot_main(void)
 
 	/* Is MP chip? Silent UART */
 	//g_bootinfo.mp_flag = read_mp_bit();
+
+	init_uart();
 
 	prn_decimal_ln(AV1_GetStc32());
 

@@ -45,7 +45,7 @@ void exit_bootROM(u32 addr);
 void do_boot_flow(u32 mode);
 void boot_reset(void);
 
-#ifndef XBOOT_BUILD
+#if !defined(XBOOT_BUILD) || defined(CONFIG_DEBUG_WITH_2ND_UART)
 void mon_shell(void);
 void diag_printf(const char *fmt, ...);
 #else

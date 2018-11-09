@@ -3,5 +3,6 @@
 
 unsigned int cpu_main_id(void);
 void cpu_invalidate_icache_all(void);
+void cpu_wfi(void);
 
 #endif

@@ -88,6 +88,11 @@ config HAVE_MON_SHELL
 	bool "MON Shell"
 	default y
 
+config DEBUG_WITH_2ND_UART
+	bool "Use 2nd UART as debug port"
+	default n
+	depends on HAVE_MON_SHELL
+
 config STANDALONE_DRAMINIT
 	bool "Use standalone draminit bin (depricated)"
 	default n
@@ -121,7 +126,6 @@ menu "Power saving"
 endmenu
 
 menu "Experiments"
-
 	config LOAD_LINUX
 		bool "Load and run Linux"
 		default n

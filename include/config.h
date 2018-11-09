@@ -240,6 +240,12 @@
 
 #define HAVE_PRINTF
 
+#ifdef CONFIG_DEBUG_WITH_2ND_UART
+#define DBG_UART_REG       UART1_REG
+#else
+#define DBG_UART_REG       UART0_REG
+#endif
+
 /***********************
  * NAND
 ***********************/
