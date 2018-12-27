@@ -166,12 +166,26 @@ static void init_hw(void)
 	dbg();
 }
 
+static void fixup_boot_compatible(void)
+{
+	prn_string("put bootinfo\n");
+
+	/* bootinfo address is changed in new iBoot ROM v1.02.
+	 * Have a copy in old address so that u-boot can use it.
+	 */
+#define OLD_BOOTINFO_ADDR 0x9e809400
+	memcpy((u8 *)OLD_BOOTINFO_ADDR, &g_bootinfo, sizeof(struct bootinfo));
+}
+
 static void exit_xboot(const char *msg, u32 addr)
 {
+	fixup_boot_compatible();
+
 	prn_decimal_ln(AV1_GetStc32());
 	if (msg) {
 		prn_string(msg); prn_dword(addr);
 	}
+
 	exit_bootROM(addr);
 }
 
@@ -382,8 +396,17 @@ static void ipc_b2a_test(void)
 }
 #endif
 
+static void halt(void)
+{
+	while (1) {
+		cpu_wfi();
+	}
+}
+
 static void boot_next_in_A(void)
 {
+	fixup_boot_compatible();
+
 	prn_string("wake up A\n");
 
 	prn_A_setup();
@@ -407,9 +430,7 @@ static void boot_next_in_A(void)
 	/* B halt */
 #ifdef CONFIG_PLATFORM_Q628
 	prn_string("B wfi\n");
-	while (1) {
-		cpu_wfi();
-	}
+	halt();
 #endif
 
 	while (1);
@@ -1351,6 +1372,8 @@ void boot_not_support(void)
  */
 static void boot_flow(void)
 {
+	int retry = 10;
+
 	/* Force romcode boot mode for xBoot testings :
 	 * g_bootinfo.gbootRom_boot_mode = USB_ISP; g_bootinfo.bootdev = DEVICE_USB_ISP; g_bootinfo.bootdev_port = 1;
 	 * g_bootinfo.gbootRom_boot_mode = EMMC_BOOT;
@@ -1365,7 +1388,7 @@ static void boot_flow(void)
 	prn_dword(g_bootinfo.gbootRom_boot_mode);
 
 	/* coverity[no_escape] */
-	while (1) {
+	while (retry-- > 0) {
 		/* Read boot mode */
 		switch (g_bootinfo.gbootRom_boot_mode) {
 			case UART_ISP:
@@ -1426,6 +1449,9 @@ static void boot_flow(void)
 				boot_not_support();
 		}
 	}
+
+	prn_string("halt");
+	halt();
 }
 
 static void init_uart(void)

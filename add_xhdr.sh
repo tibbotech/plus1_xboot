@@ -2,6 +2,8 @@
 
 # $1: val
 # $2: 1=no reverse
+# $3: 1=have secure boot signature
+
 function gen_bin_tmp
 {
 	#echo $1
@@ -10,15 +12,17 @@ function gen_bin_tmp
 	else
 		printf "0: %.8x" $1 | sed -E 's/0: (..)(..)(..)(..)/0: \4\3\2\1/' | xxd -r -g0 >tmp
 	fi
+	#hexdump -C tmp
 }
 
-if [ $# != 2 ];then
+if [ $# != 3 ];then
 	echo "Error: $0 missed arguments"
 	exit 1
 fi
 
 input=$1
 output=$2
+img_flag=$3
 
 sz=`stat -c%s $1`
 finalsz=$((64 + sz))
@@ -54,7 +58,13 @@ gen_bin_tmp $val 0
 dd if=tmp of=$output conv=notrunc bs=1 count=4 seek=12 2>/dev/null
 
 ##############
-# 16-byte reserved
+# 4-byte img_flag
+val=$img_flag
+gen_bin_tmp $val 0
+dd if=tmp of=$output conv=notrunc bs=1 count=4 seek=16 2>/dev/null
+
+##############
+# 12-byte reserved
 
 ##############
 # bin content

@@ -20,8 +20,17 @@ LDFLAGS += -Wl,--gc-sections
 release debug: all
 
 all: $(TARGET)
+ifeq ($(CONFIG_SECURE_BOOT_SIGN), y)
+	@# 64-byte signature
+	@-rm -f $(BIN)/$(TARGET).sig
+	@bash ./gen_signature.sh $(BIN)/$(TARGET).bin $(BIN)/$(TARGET).sig
+	@echo "Append signature for secure boot"
+	@cat  $(BIN)/$(TARGET).sig >> $(BIN)/$(TARGET).bin
+	@bash ./add_xhdr.sh $(BIN)/$(TARGET).bin $(BIN)/$(TARGET).img 1
+else
 	@# 32-byte xboot header
-	@bash ./add_header.sh $(BIN)/$(TARGET).bin $(BIN)/$(TARGET).img
+	@bash ./add_xhdr.sh $(BIN)/$(TARGET).bin $(BIN)/$(TARGET).img 0
+endif
 
 ifeq ($(CONFIG_STANDALONE_DRAMINIT), y)
 	@# print draminit.img size
@@ -152,7 +161,8 @@ sinclude .depend
 clean:
 	@rm -rf .depend $(LD_GEN) $(OBJS) *.o >/dev/null
 	@if [ -d $(BIN) ];then \
-		cd $(BIN) && rm -rf $(TARGET) $(TARGET).bin $(TARGET).map $(TARGET).dis $(TARGET).img $(TARGET).img.orig >/dev/null ;\
+		cd $(BIN) && rm -rf $(TARGET) $(TARGET).bin $(TARGET).map $(TARGET).dis \
+			$(TARGET).img $(TARGET).img.orig $(TARGET).sig >/dev/null ;\
 	 fi;
 	@echo "$@: done"
 
@@ -171,7 +181,7 @@ prepare: auto_config build_draminit
 AUTOCONFH=tools/auto_config_h
 MCONF=tools/mconf
 
-config_list=$(subst configs/,,$(shell find configs/ -maxdepth 1 -mindepth 1 -type f))
+config_list=$(subst configs/,,$(shell find configs/ -maxdepth 1 -mindepth 1 -type f|sort))
 $(config_list):
 	@if [ ! -f configs/$@ ];then \
 		echo "Not found config file for $@" ; \
@@ -182,7 +192,7 @@ $(config_list):
 	@cp configs/$@ .config
 
 list:
-	@echo "$(config_list)"
+	@echo "$(config_list)" | sed 's/ /\n/g'
 
 auto_config: chkconfig
 	@echo "  [KCFG] $@.h"

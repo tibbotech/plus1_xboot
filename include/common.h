@@ -45,6 +45,9 @@ void exit_bootROM(u32 addr);
 void do_boot_flow(u32 mode);
 void boot_reset(void);
 
+// Due to SRAM layout changed in IC revisions,
+// old xboot can't use romshare functions which use SRAM.
+
 #if !defined(XBOOT_BUILD) || defined(CONFIG_DEBUG_WITH_2ND_UART)
 void mon_shell(void);
 void diag_printf(const char *fmt, ...);
@@ -119,6 +122,8 @@ union storage_buf {
 	//u8 g_storage_buf[STORAGE_BUF_SIZE];
 };
 
+#define SB_FLAG_ENABLE    1
+
 struct bootinfo {
 	u32     bootrom_ver;         // iboot version
 	u32     hw_bootmode;         // hw boot mode (latched: auto, nand, usb_isp, sd_isp, etc)
@@ -130,6 +135,7 @@ struct bootinfo {
 	u32     mp_flag;             // mp machine flag
 	u32     bootcpu;             // 0: B, 1: A
 	u32     in_xboot;            // 0=in iboot, 1=in xboot
+	u32     sb_flag;             // secure boot flag, bit0=1(secure boot)
 
 	/*
 	 * ROM code puts all C code global variables here so that :

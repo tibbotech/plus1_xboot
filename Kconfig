@@ -11,6 +11,14 @@ choice
                 bool "3502"
 endchoice
 
+config PLATFORM_IC_REV
+	int "IC revision number"
+	range 1 2
+	default 1
+	help
+	  IC revision number. First IC is 1.
+	  A new IC revision may have a different SRAM layout.
+
 config XIP_SPIBAREMETAL
 	bool "iBoot is XIP on SPI NOR (SPI Baremetal Boot)"
 	default n
@@ -130,3 +138,11 @@ menu "Experiments"
 		bool "Load and run Linux"
 		default n
 endmenu
+
+config SECURE_BOOT_SIGN
+	bool "Sign image to enable Secure Boot"
+	default n
+	help
+	  Sign xboot image and append generated signature to it.
+	  If IC OTP secure boot bit is enabled, ROM code only boots
+	  signed xboot image.

@@ -1,0 +1,5 @@
+mconf:
+	We do not modify its source. Find source in any linux kernel scripts/kconfig/.
+
+sign_ed25519:
+	Find its source in boot/iboot/secure/ed25519/apps/.

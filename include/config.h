@@ -169,17 +169,22 @@
 #define A_WORK_MEM_SIZE     (512 * 1024)
 #define A_WORK_MEM_END      (A_WORK_MEM_BASE + A_WORK_MEM_SIZE)
 
-/* RAM region : must match with boot.ldi */
-#ifdef PLATFORM_I137
-#define XBOOT_BUF_SIZE      (20 * 1024)
-#else
+/* SRAM layout: must match with boot.ldi */
+#if defined(PLATFORM_Q628) && (CONFIG_PLATFORM_IC_REV < 2)
 #define XBOOT_BUF_SIZE      (28 * 1024)
-#endif
 #define STORAGE_BUF_SIZE    (9 * 1024)
 #define BOOTINFO_SIZE       (512)
 #define GLOBAL_HEADER_SIZE  (512)
 #define CDATA_SIZE          (512)
 #define STACK_SIZE          (1472) /* 1.5K - 64 */
+#else /* new SRAM layout */
+#define XBOOT_BUF_SIZE      (27 * 1024)
+#define STORAGE_BUF_SIZE    (9 * 1024)
+#define BOOTINFO_SIZE       (384)
+#define GLOBAL_HEADER_SIZE  (512)
+#define CDATA_SIZE          (128)
+#define STACK_SIZE          (3008) /* 3K - 64 */
+#endif
 
 /**********************
  * CPU boot address

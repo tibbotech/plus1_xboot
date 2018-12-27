@@ -3,12 +3,15 @@
 
 #define XBOOT_HDR_MAGIC   0x54554258      // XBUT (X=58h)
 
+#define XB_SECURE_BOOT    0x00000001
+
 struct xboot_hdr {
-        u32 magic;
-        u32 version;
-        u32 length;       // exclude header
-        u32 checksum;     // exclude header
-        u32 reserved[4];
+	u32 magic;
+	u32 version;
+	u32 length;       // exclude header
+	u32 checksum;     // exclude header
+	u32 img_flag;
+	u32 reserved[3];
 };
 
 void SetBootDev(unsigned int bootdev, unsigned int pinx, unsigned int dev_port);

@@ -20,24 +20,24 @@ MEMORY
 
 	romshare        : ORIGIN = ROM_BASE + 0x0400  , LENGTH = 4K
 
-
-#ifdef PLATFORM_I137
-	/* SRAM = 32K */
-	xboot_buf       : ORIGIN = 0x9e800000, LENGTH = XBOOT_BUF_SIZE      /*    20K @ 0        */
-	storage_buf     : ORIGIN = 0x9e805000, LENGTH = STORAGE_BUF_SIZE    /*     9K @ 20K      */
-	bootinfo        : ORIGIN = 0x9e807400, LENGTH = BOOTINFO_SIZE       /*    512 @ 29K      */
-	boothead        : ORIGIN = 0x9e807600, LENGTH = GLOBAL_HEADER_SIZE  /*    512 @ 29K+512  */
-	cdata           : ORIGIN = 0x9e807800, LENGTH = CDATA_SIZE          /*    512 @ 30K      */
-	stack           : ORIGIN = 0x9e807a00, LENGTH = STACK_SIZE          /*   1472 @ 30K+512  */
-	bootcompat      : ORIGIN = 0x9e807fc0, LENGTH = 64                  /*     64 @ 32K-64   */
-#else
-	/* SRAM >= 40K */
+#if defined(PLATFORM_Q628) && (CONFIG_PLATFORM_IC_REV < 2)
+	/* SRAM layout for Q628 1st revision */
 	xboot_buf       : ORIGIN = XBOOT_ADDR, LENGTH = XBOOT_BUF_SIZE      /*    28K @ 0        */
 	storage_buf     : ORIGIN = 0x9e807000, LENGTH = STORAGE_BUF_SIZE    /*     9K @ 28K      */
 	bootinfo        : ORIGIN = 0x9e809400, LENGTH = BOOTINFO_SIZE       /*    512 @ 37K      */
 	boothead        : ORIGIN = 0x9e809600, LENGTH = GLOBAL_HEADER_SIZE  /*    512 @ 37K+512  */
 	cdata           : ORIGIN = 0x9e809800, LENGTH = CDATA_SIZE          /*    512 @ 38K      */
 	stack           : ORIGIN = 0x9e809a00, LENGTH = STACK_SIZE          /*   1472 @ 38K+512  */
+	bootcompat      : ORIGIN = 0x9e809fc0, LENGTH = 64                  /*     64 @ 40K-64   */
+#else
+	/* new SRAM layout */
+	xboot_buf       : ORIGIN = XBOOT_ADDR, LENGTH = XBOOT_BUF_SIZE      /*    27K @ 0        */
+	boothead        : ORIGIN = 0x9e806c00, LENGTH = GLOBAL_HEADER_SIZE  /*    512 @ 27K      */
+	bootinfo        : ORIGIN = 0x9e806e00, LENGTH = BOOTINFO_SIZE       /*    384 @ 27K+768  */
+	cdata           : ORIGIN = 0x9e806f80, LENGTH = CDATA_SIZE          /*    128 @ 27K+512  */
+	/* storage_buf is part of ed25519_verify()'s stack (need 4K) */
+	storage_buf     : ORIGIN = 0x9e807000, LENGTH = STORAGE_BUF_SIZE    /*     9K @ 28K      */
+	stack           : ORIGIN = 0x9e809400, LENGTH = STACK_SIZE          /*  3K-64 @ 37K      */
 	bootcompat      : ORIGIN = 0x9e809fc0, LENGTH = 64                  /*     64 @ 40K-64   */
 #endif
 }
