@@ -1493,6 +1493,9 @@ void xboot_main(void)
 
 	/* first msg */
 	prn_string("+++xBoot " __DATE__ " " __TIME__ "\n");
+#if defined(CONFIG_PLATFORM_Q628) && (CONFIG_PLATFORM_IC_REV < 2)
+	prn_string("NOTICE: this xboot works with ROM_CODE v1.0\n");
+#endif
 
 	/* init hw */
 	init_hw();
