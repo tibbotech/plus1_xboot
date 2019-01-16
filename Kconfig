@@ -48,6 +48,10 @@ config HAVE_USB_DISK
 	default y
 	select HAVE_FS_FAT
 
+config HAVE_OTP
+	bool "OTP driver"
+	default y
+	
 config HAVE_MMC
 	bool "MMC common"
 	default n
@@ -65,7 +69,7 @@ config HAVE_EMMC
 	bool "eMMC driver"
 	default y
 	select HAVE_MMC
-
+	
 config HAVE_NAND_COMMON
 	bool "NAND common"
 	default n

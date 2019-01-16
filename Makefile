@@ -128,6 +128,11 @@ ifeq ($(CONFIG_HAVE_MMC), y)
 CSOURCES += sdmmc/drv_sd_mmc.c  sdmmc/hal_sd_mmc.c sdmmc/hw_sd.c
 endif
 
+# OTP
+ifeq ($(CONFIG_HAVE_OTP), y)
+CSOURCES += otp/sp_otp.c
+endif
+
 CSOURCES += draminit/dram_test.c
 
 OBJS = $(ASOURCES:.S=.o) $(CSOURCES:.c=.o)
