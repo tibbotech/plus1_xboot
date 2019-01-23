@@ -116,6 +116,10 @@ static void init_hw(void)
 		extern void A_setup_abio(void);
 		A_setup_abio();
 #endif
+#ifdef CONFIG_PLATFORM_Q628
+		extern void A_bus_fixup(void);
+		A_bus_fixup();
+#endif
 	}
 
 #ifdef CONFIG_PLATFORM_Q628

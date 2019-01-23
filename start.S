@@ -162,6 +162,16 @@ FUNC(A_release_cores)
 	WORD_DSB
 	bx	lr
 ENDFUNC(A_release_cores)
+
+FUNC(A_bus_fixup)
+	/* NOC fixup (provided by Twofish) */
+	ldr	r0, =0x9c1a3f60
+	mov	r1, #0x20
+	str	r1, [r0]
+	str	r1, [r0, #8]
+	WORD_DSB
+	bx	lr
+ENDFUNC(A_bus_fixup)
 #endif
 
 FUNC(boot_next_no_stack)
@@ -174,6 +184,7 @@ FUNC(boot_next_no_stack)
 #endif
 	bl	A_setup_abio		@ A: speed up ABIO bus clock
 	bl	A_release_cores
+	bl	A_bus_fixup
 skip_abio_up:
 #endif
 
