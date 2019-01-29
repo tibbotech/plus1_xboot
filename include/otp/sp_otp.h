@@ -4,10 +4,9 @@
 #include <regmap.h>
 #include <types.h>
 
-#define OTPRX2_BASE_ADR       0x9C002800
-#define HB_GPIO2              0x9C0027A0
-#define OTPRX_BASE_ADR        0x9C00AF80
-#define HB_GPIO               0x9C00AF00
+#define OTPRX2_BASE_ADR           0x9C002800
+#define OTPRX_BASE_ADR            0x9C00AF80
+#define HB_GPIO                   0x9C00AF00
 
 /* OTP register map */
 #define OTP_PROGRAM_CONTROL       0x0C
@@ -50,7 +49,10 @@
 #define OTP_READ_ADDRESS          0x50
 #define RD_OTP_ADDRESS            0x1F
 
-struct otprx2_sunplus {
+
+#define OTP_WAIT_MICRO_SECONDS    100
+
+struct otprx_sunplus {
 	u32 sw_trim;
 	u32 set_key;
 	u32 otp_rsv;
@@ -79,27 +81,15 @@ struct sunplus_otp_priv {
     struct otprx2_sunplus *regs;
 };
 
-struct hbgpio2_sunplus {
-	u32 hb_gpio_rgst_bus32_1;
-	u32 hb_gpio_rgst_bus32_2;
-	u32 hb_gpio_rgst_bus32_3;
-	u32 hb_gpio_rgst_bus32_4;
-	u32 hb_gpio_rgst_bus32_5;
-	u32 hb_gpio_rgst_bus32_6;
-	u32 hb_gpio_rgst_bus32_7;
-	u32 hb_gpio_rgst_bus32_8;
-	u32 hb_gpio_rgst_bus32_9;
-	u32 hb_gpio_rgst_bus32_10;
-	u32 hb_gpio_rgst_bus32_11;
-	u32 hb_gpio_rgst_bus32_12;
-	u32 hb_gpio_rgst_bus32_13;
+struct hbgpio_sunplus {
+	u32 hb_gpio_rgst_bus32[13];
 };
 
-struct sunplus_hbgpio2 {
-    struct hbgpio2_sunplus *otp_data;
+struct sunplus_hbgpio {
+    struct hbgpio_sunplus *otp_data;
 };
 
-static int sunplus_otprx_read(int addr, char *value);
-static int sunplus_otprx_write(int addr, char value);
+int sunplus_otprx_read(int addr, char *value);
+int sunplus_otprx_write(int addr, char value);
 
 #endif  //_SP_OTP

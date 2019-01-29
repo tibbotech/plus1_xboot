@@ -50,7 +50,7 @@ config HAVE_USB_DISK
 
 config HAVE_OTP
 	bool "OTP driver"
-	default y
+	default n
 	
 config HAVE_MMC
 	bool "MMC common"
