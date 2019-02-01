@@ -131,6 +131,7 @@ endif
 # OTP
 ifeq ($(CONFIG_HAVE_OTP), y)
 CSOURCES += otp/sp_otp.c
+CSOURCES += otp/mon_rw_otp.c
 endif
 
 CSOURCES += draminit/dram_test.c

@@ -23,6 +23,9 @@
  *  usb_isp
  *  sdcard_isp
  */
+#ifdef CONFIG_HAVE_OTP
+extern void mon_rw_otp(void);
+#endif
 
 extern void *__etext, *__data, *__edata;
 extern void *__except_stack_top;
@@ -1506,6 +1509,10 @@ void xboot_main(void)
 
 #ifdef MON
 	mon_shell();
+#endif
+
+#ifdef CONFIG_HAVE_OTP
+	mon_rw_otp();
 #endif
 
 	/* start boot flow */
