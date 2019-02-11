@@ -177,11 +177,19 @@ static void fixup_boot_compatible(void)
 {
 	prn_string("put bootinfo\n");
 
-	/* bootinfo address is changed in new iBoot ROM v1.02.
-	 * Have a copy in old address so that u-boot can use it.
+	/* bootinfo and bhdr SRAM addresses are changed in new iBoot ROM v1.02.
+	 * Have a copy in old addresses so that u-boot can use it.
+	 * Though these addresses are in new 3K-64 stack. 2K-64 stack is sufficient near
+	 * exit_xboot.
 	 */
-#define OLD_BOOTINFO_ADDR 0x9e809400
-	memcpy((u8 *)OLD_BOOTINFO_ADDR, &g_bootinfo, sizeof(struct bootinfo));
+#define ROM_V100_BOOTINFO_ADDR	0x9e809400
+#define ROM_V100_BHDR_ADDR	0x9e809600
+	memcpy((u8 *)ROM_V100_BOOTINFO_ADDR, &g_bootinfo, sizeof(struct bootinfo));
+
+	if ((g_bootinfo.gbootRom_boot_mode == SPINAND_BOOT) ||
+	    (g_bootinfo.gbootRom_boot_mode == NAND_LARGE_BOOT)) {
+		memcpy((u8 *)ROM_V100_BHDR_ADDR, &g_boothead, GLOBAL_HEADER_SIZE);
+	}
 }
 
 static void exit_xboot(const char *msg, u32 addr)
