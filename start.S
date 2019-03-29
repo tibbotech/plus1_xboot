@@ -183,7 +183,9 @@ FUNC(boot_next_no_stack)
 	bl	A_raise_pll		@ A: speed up core clock
 #endif
 	bl	A_setup_abio		@ A: speed up ABIO bus clock
+#if defined(CONFIG_PLATFORM_Q628) && !defined(CONFIG_DISABLE_CORE2_3)
 	bl	A_release_cores
+#endif
 	bl	A_bus_fixup
 skip_abio_up:
 #endif

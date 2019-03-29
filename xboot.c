@@ -162,7 +162,7 @@ static void init_hw(void)
 	prn_clk_info(is_A);
 #endif
 
-#if defined(CONFIG_PLATFORM_Q628) && !defined(CONFIG_A_DISABLE_CORE2_3)
+#if defined(CONFIG_PLATFORM_Q628) && !defined(CONFIG_DISABLE_CORE2_3)
 	if (is_A) {
 		prn_string("release cores\n");
 		extern void A_release_cores(void);
