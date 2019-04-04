@@ -1,208 +1,197 @@
 /*
- * (C) Copyright 2015
  * Sunplus Technology
- * Mason Yang <mason.yang@sunplus.com>
- *
  * SPDX-License-Identifier:     GPL-2.0+
  */
 
 #ifndef __SP_SPINAND_H
 #define __SP_SPINAND_H
 
-
-//#ifndef BIT(x)
-#define BIT(x)	(1<<x)
-//#endif
-
-// ctrl
-#define SPI_DEVICE_IDLE  (1<<31)
-
-
-// wait
-#define SPI_NAND_ENABLE  (1<<11)
-
-//spi_nand_ctrl
-#define SPI_NAND_CHIP_A	 	(1<<24)	
-#define SPI_NAND_AUTO_WEL	(1<<19)
-#define SPI_NAND_CLK_32DIV	(0x7<<16)
-#define SPI_NAND_DMA_OWNER	(0x1<<17)
-
-// spi_cust_cmd
-#define SPI_CUSTCMD_SHIFT          8
-#define SPI_CUSTCMD_FN_SHIFT       7 
-#define SPI_CUSTCMD_RW_SHIFT       2 
-#define CUSTCMD_BYTECNT_DATA_SHIFT 4
-#define CUSTCMD_BYTECNT_ADDR_SHIFT 0
-
-#define SPI_NAND_CTRL_EN       	(1<<SPI_CUSTCMD_FN_SHIFT)
-#define SPI_NAND_READ_MDOE      (0<<SPI_CUSTCMD_RW_SHIFT) 
-#define SPI_NAND_WRITE_MDOE     (1<<SPI_CUSTCMD_RW_SHIFT)
-
-#define SPINAND_CUSTCMD_NO_DATA	(0<<CUSTCMD_BYTECNT_DATA_SHIFT)
-#define SPINAND_CUSTCMD_1_DATA	(1<<CUSTCMD_BYTECNT_DATA_SHIFT)
-#define SPINAND_CUSTCMD_2_DATA	(2<<CUSTCMD_BYTECNT_DATA_SHIFT)
-#define SPINAND_CUSTCMD_3_DATA	(3<<CUSTCMD_BYTECNT_DATA_SHIFT)
-#define SPINAND_CUSTCMD_4_DATA	(4<<CUSTCMD_BYTECNT_DATA_SHIFT)
-
-#define SPINAND_CUSTCMD_NO_ADDR	(0<<CUSTCMD_BYTECNT_ADDR_SHIFT)
-#define SPINAND_CUSTCMD_1_ADDR	(1<<CUSTCMD_BYTECNT_ADDR_SHIFT)
-#define SPINAND_CUSTCMD_2_ADDR	(2<<CUSTCMD_BYTECNT_ADDR_SHIFT)
-#define SPINAND_CUSTCMD_3_ADDR	(3<<CUSTCMD_BYTECNT_ADDR_SHIFT)
-
-
-// CMD list
-#define SPINAND_CMD_RESET		  0xff	
-#define SPINAND_CMD_READID		  0x9f	
-#define SPINAND_CMD_GETFEATURES   0x0F
-#define SPINAND_CMD_SETFEATURES   0x1F
-#define SPINAND_CMD_BLKERASE      0xD8
-#define SPINAND_CMD_PAGE2CACHE    0x13
-#define SPINAND_CMD_PAGEREAD	  0x3
-#define SPINAND_CMD_RDCACHEQUADIO 0xEB
-
-#define SPINAND_CMD_PROLOADx4     0x32
-#define SPINAND_CMD_PROEXECUTE    0x10
-
-//AUTOCFG
-#define SPINAND_AUTOCFG_CMDEN		(1<<21)	
-#define SPINAND_AUTOCFG_RDCACHE		(1<<20)
-#define SPINAND_AUTOCFG_RDSTATUS	(1<<18)
-
-
-//CFG01 & CFG02 default value;
-#define SPINAND_CFG01_DEFAULT	  0x150085	//CMD 1bit DQ0 output, ADDR 1bit DQ0 output, DATA 1bit DQ1 INTPUT
-											//cmd 1bit mode, addr 1bit mode, data 1 bit.
-
-#define SPINAND_CFG01_DEFAULT1	  0x150015	//CMD 1bit DQ0 output, ADDR 1bit DQ0 output, DATA 1bit DQ0 OUTPUT
-											//cmd 1bit mode, addr 1bit mode, data 1 bit.
-
-#define SPINAND_CFG01_DEFAULT2	  0x50005   //CMD 1bit DQ0 output, ADDR 1bit DQ0 output,
-											//cmd 1bit mode, addr 1bit mode, 
-											
-#define SPINAND_CFG01_DEFAULT3	  0x10001   //CMD 1bit DQ0 output,
-											//cmd 1bit mode, 
-
-#define SPINAND_CFG02_DEFAULT	  0x8150085 //CMD 1bit DQ0 output, ADDR 1bit DQ0 output, DATA 1bit DQ1 INTPUT, 
-											//cmd 1bit mode, addr 1bit mode, data 1 bit. 8 dummy cycle
-
-
-// =============================
-#define CSR_EN			BIT(0)
-#define CSR_MODE_PIO	BIT(1)
-#define CSR_MODE_DESC	0
-#define CSR_MODE_PIO1	(BIT(1))
-#define CSR_MODE_PIO2	(BIT(1) | BIT(2))
-#define CSR_BURST4		0
-#define CSR_BURST8		BIT(3)
-#define CSR_DESC_FETCH	BIT(4)
-#define CSR_NAND_EDO	BIT(5)
-#define CSR_DUMMY_RD	BIT(6)
-#define CSR_RESET		BIT(8)
-#define EDO_TYPE01		BIT(9) // Mason for 8388
-#define EDO_TYPE10		BIT(10)
-#define EDO_TYPE11		(BIT(9) | BIT(10))
-
-#define ACTR_CLE(t)		(((t) >> 1) & 0xf)
-#define ACTR_ALE(t)		(((t) & 0xf) << 4)
-#define ACTR_ACT(t)		(((t) & 0xf) << 8)
-#define ACTR_REC(t)		(((t) & 0xf) << 12)
-#define ACTR_WAIT(t)	(((t) & 0xff) << 16)
-#define ACTR_RDST(t)	(((t) & 0xff) << 24)
-
-#define PIOCR0_CS(n)		(1 << ((n) & 3))
-#define PIOCR0_CS_MASK		0x0f
-#define PIOCR0_CLE			BIT(4)
-#define PIOCR0_ALE			BIT(5)
-#define PIOCR0_WE			BIT(6)
-#define PIOCR0_RE			BIT(7)
-#define PIOCR0_OE			BIT(8)
-#define PIOCR0_WP			BIT(9)
-#define PIOCR1_WR(n)		((n) & 0xff)
-#define PIOCR2_RD(n)		((n) & 0xff)
-#define PIOCR3_CMD(n)		((n) & 0xff)
-#define PIOCR4_ADDR_RAW(n)	(n)
-#define PIOCR5_ADDR_COL(n)	((n) & 0xffff)
-#define PIOCR5_ADDR_CYC(n)	((((n) - 1) & 7) << 16)
-#define PIOCR6_DMA_ADDR(n)	(n)
-#define PIOCR7_DMA_SIZE(n)	(((n) - 1) & 0xffff)
-#define PIOCR7_DMA_RD		0
-#define PIOCR7_DMA_WR		BIT(16)
-
-#define ISR_DESC_DONE		BIT(0)
-#define ISR_DESC_END		BIT(1)
-#define ISR_DESC_ERR		BIT(2)
-#define ISR_DESC_INV		BIT(3)
-#define ISR_DESC_INVCMD		BIT(4)
-#define ISR_DESC			0x2 //0x1f
-#define ISR_BUS_BUSY		BIT(5)
-#define ISR_FL_ERROR		BIT(6)  /* NAND flash reports error */
-#define ISR_HW_BUSY			BIT(7)  /* NAND controller busy */
-#define ISR_CMD				BIT(8)  /* CMD complete (PIO MODE2) */
-#define ISR_ADDR			BIT(9)  /* ADDR complete (PIO MODE2) */
-#define ISR_WR				BIT(10) /* Write complete (PIO MODE2) */
-#define ISR_RD				BIT(11) /* Read complete (PIO MODE2) */
-#define ISR_RB0				BIT(12)
-#define ISR_RB1				BIT(13)
-#define ISR_RB2				BIT(14)
-#define ISR_RB3				BIT(15)
-#define ISR_DESC_ADDR(x)	(((x) >> 16) & 0xffff)
-
-#define RBTR_WB(t)			((t) & 0xff)
-#define RBTR_IRQ_INVDESC	BIT(8)
+/*
+ *  spi nand functional related configs
+ */
+#define CONFIG_SPINAND_TIMEOUT    100    /* unit: ms */
+#define CONFIG_DEFAULT_TRSMODE    SPINAND_TRS_DMA
+#define CONFIG_READ_BITMODE       SPINAND_1BIT_MODE
+#define CONFIG_SPINAND_CLK_DIV    1      /* 0~7 are allowed */
+#define CONFIG_READ_TIMING_SEL    2      /* 0~7 are allowed */
 
 /*
- * Descriptor Mode
-*/
-#if 0
-struct sp_spinand_desc {
-	uint32_t cmd1:8;
-	uint32_t cmd0:8;
-	uint32_t ctrl:8;
-	uint32_t mfs:4;
-	uint32_t cmd:4; /* i.e. SP_NAND_CMD_XXX */
+ *  spi nand vendor ids
+ */
+#define VID_GD      0xC8
+#define VID_WINBOND 0xEF
+#define VID_TOSHIBA 0x98
+#define VID_PHISON  0x6B
+#define VID_ETRON   0xD5
+#define VID_MXIC    0xC2
+#define VID_ESMT    0xC8
+#define VID_ISSI    0xC8
+#define VID_MICRON  0x2C
 
-	uint32_t oob_ssz:16; /* oob sector size */
-	uint32_t buf_ssz:16; /* data sector size */
+/*
+ *  SPINAND_CMD_*  are spi nand cmds.
+ */
+#define SPINAND_CMD_RESET            (0xff)
+#define SPINAND_CMD_READID           (0x9f)
+#define SPINAND_CMD_GETFEATURES      (0x0f)
+#define SPINAND_CMD_SETFEATURES      (0x1f)
+#define SPINAND_CMD_BLKERASE         (0xd8)
+#define SPINAND_CMD_PAGE2CACHE       (0x13)
+#define SPINAND_CMD_PAGEREAD         (0x03)
+#define SPINAND_CMD_PAGEREAD_X2      (0x3b)
+#define SPINAND_CMD_PAGEREAD_X4      (0x6b)
+#define SPINAND_CMD_PAGEREAD_DUAL    (0xbb)
+#define SPINAND_CMD_PAGEREAD_QUAD    (0xeb)
+#define SPINAND_CMD_WRITEENABLE      (0x06)
+#define SPINAND_CMD_WRITEDISABLE     (0x04)
+#define SPINAND_CMD_PROGLOAD         (0x02)
+#define SPINAND_CMD_PROGLOAD_X4      (0x32)
+#define SPINAND_CMD_PROGEXEC         (0x10)
 
-	uint32_t isr:16;
-	uint32_t ier:16;
+/*
+ *  macros for spi_ctrl register
+ */
+#define SPINAND_BUSY_MASK            (1<<31)
+#define SPINAND_AUTOMODE_EN          (1<<28)
+#define SPINAND_AUTOCMD_EN           (1<<27)
+#define SPINAND_SEL_CHIP_B           (1<<25)
+#define SPINAND_SEL_CHIP_A           (1<<24)
+#define SPINAND_AUTOWEL_EN           (1<<19)
+#define SPINAND_SCK_DIV(x)           (((x)&0x07)<<16)
+#define SPINAND_USR_CMD(x)           (((x)&0xff)<<8)
+#define SPINAND_CTRL_EN              (1<<7)
+#define SPINAND_USRCMD_DATASZ(x)     (((x)&0x07)<<4)   //0~3 are allowed
+#define SPINAND_READ_MODE            (0<<2)            //read from device
+#define SPINAND_WRITE_MODE           (1<<2)            //write to device
+#define SPINAND_USRCMD_ADDRSZ(x)     (((x)&0x07)<<0)   //0~3 are allowed
 
-	uint32_t addr4:8;
-	uint32_t addr5:8;
-	uint32_t sect_nr:7; /* sector number */
-	uint32_t type:1;
-	uint32_t addr_len:3;
-	uint32_t ff_check:1;
-	uint32_t oob_en:1;
-	uint32_t cs_ctrl:1;
-	uint32_t end:1;
-	uint32_t owner:1;
+/*
+ *  macros for spi_timing register
+ */
+#define SPINAND_CS_SH_CYC(x)         (((x)&0x3f)<<22)
+#define SPINAND_CD_DISACTIVE_CYC(x)  (((x)&0x3f)<<16)
+#define SPINAND_READ_TIMING(x)       (((x)&0x07)<<1)  //0~7 are allowed
+#define SPINAND_WRITE_TIMING(x)      (((x)&0x01))     //0~1 are allowed
 
-	uint32_t addr0:8;
-	uint32_t addr1:8;
-	uint32_t addr2:8;
-	uint32_t addr3:8;
+/*
+ *  macros for spi_status register
+ */
+#define SPINAND_STATUS_MASK          (0xff)
 
-	uint32_t buf_dma:32;
+/*
+ *  macros for spi_auto_cfg register
+ */
+#define SPINAND_USR_READCACHE_CMD(x) (((x)&0xff)<<24)
+#define SPINAND_CONTINUE_MODE_EN     (1<<23)//enable winbon read continue mode
+#define SPINAND_USR_CMD_TRIGGER      (1<<21)
+#define SPINAND_USR_READCACHE_EN     (1<<20)
+#define SPINAND_CHECK_OIP_EN         (1<<19)
+#define SPINAND_AUTO_RDSR_EN         (1<<18)
+#define SPINAND_DMA_OWNER_MASK       (1<<17)
+#define SPINAND_DMA_TRIGGER          (1<<17)
+#define SPINAND_DUMMY_OUT            (1<<16) //SPI_DQ is ouput in dummy cycles
+#define SPINAND_USR_PRGMLOAD_CMD(x)  (((x)&0xff)<<8)
+#define SPINAND_AUTOWEL_BF_PRGMEXEC  (1<<2)
+#define SPINAND_AUTOWEL_BF_PRGMLOAD  (1<<1)
+#define SPINAND_USR_PRGMLOAD_EN      (1<<0)
 
-	uint32_t oob_dma:32;
+/*
+ *  macros for spi_cfg0 register
+ */
+#define SPINAND_LITTLE_ENDIAN        (1<<23)
+#define SPINAND_DATA64_EN            (1<<20)
+#define SPINAND_TRS_MODE             (1<<19)
+#define SPINAND_SCL_IDLE_LOW         (1<<17)
+#define SPINAND_DATA_LEN(x)          (((x)&0xffff)<<0)
 
-	uint32_t desc_sz:14;  /* descriptor size */
-	uint32_t rand_en:1;   /* enable scrambler/randomizer */
-	uint32_t ac_timing_select:1;
-	uint32_t rsvd:16;
-} __attribute__ ((__packed__));
-#endif
+/*
+ *  macros for spi_cfg1, spi_cfg2 register
+ *  spi_cfg1 is used in pio(including auto mode) and dma mode.
+ *  spi_cfg2 is used in memory access mode.
+ */
+#define SPINAND_DUMMY_CYCLES(x)      (((x)&0x3f)<<24)
+/*
+ *  bit mode selector:
+ *     0 - no need tranfer
+ *     1 - 1 bit mode
+ *     2 - 2 bit mode
+ *     3 - 4 bit mode
+ */
+#define SPINAND_DATA_BITMODE(x)      (((x)&0x03)<<20)
+#define SPINAND_ADDR_BITMODE(x)      (((x)&0x03)<<18)
+#define SPINAND_CMD_BITMODE(x)       (((x)&0x03)<<16)
+/*
+ *  cmd/addr/dataout DQ selector:
+ *     0 - disabled
+ *     1 - select DQ0
+ *     2 - select DQ0,DQ1
+ *     3 - select DQ0,DQ1,DQ2,DQ3
+ */
+#define SPINAND_DATAOUT_DQ(x)        (((x)&0x03)<<4)
+#define SPINAND_ADDR_DQ(x)           (((x)&0x03)<<2)
+#define SPINAND_CMD_DQ(x)            (((x)&0x03)<<0)
+/*
+ *  datain DQ selsector:
+ *     0 - disabled
+ *     1 - select DQ0
+ *     2 - select DQ1
+ */
+#define SPINAND_DATAIN_DQ(x)         (((x)&0x03)<<6)
 
-#define SP_NAND_CMD_READ	0x1
-#define SP_NAND_CMD_WRITE	0x2  /* page write */
-#define SP_NAND_CMD_ERASE	0x3  /* block erase */
-#define SP_NAND_CMD_RDST	0x4  /* read status */
-#define SP_NAND_CMD_SUPER	0xd  /* super manual */
-#define SP_NAND_CMD_CACHE_RD 0xe /* cache read */
-//extern const struct nand_flash_dev sp_nand_ids[];
+/*
+ *  macros for spi_bch register
+ */
+#define SPINAND_BCH_DATA_LEN(x)      (((x)&0xff)<<8)
+#define SPINAND_BCH_1K_MODE          (1<<6)
+#define SPINAND_BCH_512B_MODE        (0<<6)
+#define SPINAND_BCH_ALIGN_32B        (0<<5)
+#define SPINAND_BCH_ALIGN_16B        (1<<5)
+#define SPINAND_BCH_AUTO_EN          (1<<4)
+#define SPINAND_BCH_BLOCKS(x)        (((x)&0x0f)<<0) //0~15 means 1~16 blocks
 
-/* Q628 spi nand driver */
+/*
+ *  macros for spi_intr_msk,spi_intr_sts register
+ */
+#define SPINAND_PIO_DONE_MASK        (1<<2)
+#define SPINAND_DMA_DONE_MASK        (1<<1)
+#define SPINAND_BUF_FULL_MASK        (1<<0)
+
+/*
+ *  macros for spi_page_size register
+ */
+#define SPINAND_DEV_ECC_EN           (1<<15)
+#define SPINAND_SPARE_SIZE(x)        (((x)&0x7ff)<<4)  //0~2047 are allowed.
+#define SPINAND_PAGE_SIZE(x)         (((x)&0x07)<<0)   //0~7 means 1~8KB
+
+enum SPINAND_TRSMODE {
+	SPINAND_TRS_PIO,
+	SPINAND_TRS_PIO_AUTO,
+	SPINAND_TRS_DMA,
+	SPINAND_TRS_DMA_AUTOBCH,
+	SPINAND_TRS_MAX,
+};
+
+enum SPINAND_IO_MODE {
+	SPINAND_1BIT_MODE,
+	SPINAND_2BIT_MODE,
+	SPINAND_4BIT_MODE,
+	SPINAND_DUAL_MODE,
+	SPINAND_QUAD_MODE,
+};
+
+/*block erase status */
+#define ERASE_STATUS            0x04
+
+/*protect status */
+#define PROTECT_STATUS          0x38
+
+/*
+ *  spi nand device feature address
+ */
+#define DEVICE_PROTECTION_ADDR  0xA0
+#define DEVICE_FEATURE_ADDR     0xB0
+#define DEVICE_STATUS_ADDR      0xC0
+
 struct sp_spinand_regs {
 	unsigned int spi_ctrl;       // 87.0
 	unsigned int spi_timing;     // 87.1
@@ -224,24 +213,13 @@ struct sp_spinand_regs {
 	unsigned int spi_page_size;  // 87.19
 };
 
-
 struct sp_spinand_info {
 	struct sp_spinand_regs *regs;
-	/*
-	   struct {
-	   uint32_t idx;
-	   uint32_t size;
-	   void *virt;
-	   dma_addr_t phys;
-	   } buff;
-	 */
-
-	//      int cmd; /* current command code */
-	//      int cac; /* col address cycles */
-	//      int rac; /* row address cycles */
-	//      int cs;
-	int id;  // Vendor ID for 6B/EB Winbond or GigaDevice
-	int row; // row address for pagewrite
+	u32 plane_sel_mode;
+	u32 page_size;
+	u32 oob_size;
+	u32 spi_clk_div;
 };
 
 #endif /* __SP_SPINAND_H */
+

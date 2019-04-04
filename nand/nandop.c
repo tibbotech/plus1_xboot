@@ -45,7 +45,9 @@ void MainInitBufferAddr_nand(void)
 	g_bootinfo.software_protect_byte[4]=0;//2;
 	g_bootinfo.software_protect_byte[5]=2;//9;
 
+	#ifndef PARTIAL_NAND_INIT
 	rd_memset((UINT8*)g_boothead, 0, sizeof(struct BootProfileHeader));
+	#endif
 }
 
 SDev_t* getSDev(void)
