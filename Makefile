@@ -14,6 +14,12 @@ LDFLAGS  = -L $(shell dirname `$(CROSS)gcc -print-libgcc-file-name`) -lgcc
 #LDFLAGS += -Wl,--gc-sections,--print-gc-sections
 LDFLAGS += -Wl,--gc-sections
 
+ifeq ($(CONFIG_PLATFORM_IC_REV),2)
+XBOOT_MAX := $$((26 * 1024))
+else
+XBOOT_MAX := $$((28 * 1024))
+endif
+
 .PHONY: release debug
 
 # default target
@@ -45,7 +51,11 @@ else
 endif
 	@# print xboot size
 	@sz=`du -sb bin/$(TARGET).img | cut -f1` ; \
-	    printf "xboot.img size = %d (hex %x)\n" $$sz $$sz
+	 printf "xboot.img size = %d (hex %x)\n" $$sz $$sz ; \
+	 if [ $$sz -gt $(XBOOT_MAX) ];then \
+		echo "xboot size limit is $(XBOOT_MAX). Please reduce its size.\n" ; \
+		exit 1; \
+	 fi
 
 ###################
 # draminit
