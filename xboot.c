@@ -8,9 +8,16 @@
 #include <cpu/arm.h>
 #include <image.h>
 #include <misc.h>
+#include <otp/sp_otp.h>
+
 #ifdef CONFIG_HAVE_EMMC
 #include <sdmmc_boot/drv_sd_mmc.h>    /* initDriver_SD */
 #include <part_efi.h>
+#endif
+
+#ifdef CONFIG_SECURE_BOOT_SIGN
+#define VERIFY_SIGN_MAGIC_DATA	(0x7369676E)
+#define SIGN_DATA_SIZE	(64+8)// 64:sign data  8:flag data
 #endif
 
 /*
@@ -34,6 +41,102 @@ __attribute__ ((section("storage_buf_sect")))    union storage_buf   g_io_buf;
 __attribute__ ((section("bootinfo_sect")))       struct bootinfo     g_bootinfo;
 __attribute__ ((section("boothead_sect")))       u8                  g_boothead[GLOBAL_HEADER_SIZE];
 __attribute__ ((section("xboot_header_sect")))   u8                  g_xboot_buf[32];
+
+#ifdef CONFIG_SECURE_BOOT_SIGN
+u8 *data=NULL, *sig=NULL;
+u8 in_pub[32] = {0};
+unsigned int data_size=0;
+
+static void load_otp_pub_key(void)
+{
+	int i;
+	for (i = 0; i < 32; i++) {
+		sunplus_otprx_read(i+64,(char *)&in_pub[i]);
+	}
+	prn_string("OTP pub-key:\n");
+	prn_dump_buffer(in_pub, 32);
+}
+
+int verify_uboot_signature(const struct image_header  *hdr)
+{
+	int sig_size = 64;
+	int sig_flag_size = 8;
+	int ret = -1;
+	int mmu = 1;
+	int imgsize = 0;
+	u8 sig_flag[8] = {0};
+	
+	/* Load public key */
+	if (g_bootinfo.sb_flag & SB_FLAG_ENABLE) {
+		prn_string("* Secure *\n");
+	}
+
+	imgsize = image_get_size(hdr);
+
+	/* load signature from image end */
+	if (imgsize < sig_size) {
+		prn_string("too small img\n");
+		goto out;
+	}
+	prn_string("Verify signature...(xboot-->uboot)\n");
+
+	if (!g_bootinfo.bootcpu) {
+		/* If B boots, need A to enable mmu */
+		if ((HB_GP_REG->hb_otp_data0 >> 11) & 0x1) {
+			prn_string("(B only)");
+			mmu = 0;
+		} else {
+			prn_string("(AB)");
+		}
+	}
+
+	data = ((u8 *)hdr);
+	data_size = imgsize  + sizeof(struct image_header);//- sig_size-sig_flag_size;
+	sig = data + data_size+sig_flag_size;
+	
+	sig_flag[0]=*(u8 *)(data+data_size); // get sign flag data
+	sig_flag[1]=*(u8 *)((data+data_size)+1);
+	sig_flag[2]=*(u8 *)((data+data_size)+2);
+	sig_flag[3]=*(u8 *)((data+data_size)+3);
+	u32 sig_magic_data = (sig_flag[0]<<24)|(sig_flag[1]<<16)|(sig_flag[2]<<8)|(sig_flag[3]);
+	prn_string("sig_magic_data=");prn_dword0(sig_magic_data);
+	if(sig_magic_data != VERIFY_SIGN_MAGIC_DATA)
+	{
+		prn_string("\n imgdata no secure flag \n");
+		goto out;
+	}
+	
+	load_otp_pub_key();
+
+	/* verify signature */
+	int  (*fptr)(const unsigned char *signature, const unsigned char *message, size_t message_len, const unsigned char *public_key);;
+	fptr = (int (*)(const unsigned char *, const unsigned char *, size_t , const unsigned char *))SECURE_VERIFY_FUN_ADDR;
+
+	if (mmu) {
+		/* enable mmu and dcache */
+		fill_mmu_page_table();
+		enable_mmu();
+	}
+	ret = !fptr(sig, data, data_size, in_pub);
+	if (ret) {
+		prn_string("\nverify FAIL !!!!!!\t signature:\n");
+		prn_dump_buffer(sig, sig_size);
+	} else {
+		prn_string("\nverify OK  !!!!!!\n");
+	}
+	/* disable dcache */
+	if (mmu) {
+		disable_mmu();
+	}
+out:
+	/* Not Secure Chip => still allow booting */
+	if ((ret != 0) && (!(g_bootinfo.sb_flag & SB_FLAG_ENABLE))) {
+		prn_string("\n ******OTP Secure Boot is OFF ******\n");
+		return 0;
+	}
+	return ret;
+}
+#endif
 
 #ifdef CONFIG_PLATFORM_Q628
 static int b_pll_get_rate(void)
@@ -317,7 +420,12 @@ static int nor_load_uhdr_image(const char *img_name, void *dst, void *src, int v
 	}
 
 	// load image data
+	
+#ifdef CONFIG_SECURE_BOOT_SIGN
+	len = image_get_size(hdr)+ SIGN_DATA_SIZE;
+#else
 	len = image_get_size(hdr);
+#endif
 	prn_string("load data size="); prn_decimal(len); prn_string("\n");
 
 	/* copy chunk size */
@@ -456,7 +564,15 @@ static void boot_uboot(void)
 {
 	int is_for_A = 0;
 	const struct image_header *hdr = (struct image_header *)UBOOT_LOAD_ADDR;
-
+#ifdef CONFIG_SECURE_BOOT_SIGN
+	prn_string(" start verify in xboot!!!!!\n");
+	int ret = verify_uboot_signature(hdr);
+	if(ret)
+	{
+		prn_string(" verify  fail !!!!!\\n");
+		halt();
+	}
+#endif
 	prn_string((const char *)image_get_name(hdr)); prn_string("\n");
 
 	boot_next_set_addr(UBOOT_RUN_ADDR);
@@ -685,8 +801,11 @@ static int fat_load_uhdr_image(fat_info *finfo, const char *img_name, void *dst,
 		prn_decimal(len + 64);
 		return -1;
 	}
-
+#ifdef CONFIG_SECURE_BOOT_SIGN
+	ret = fat_read_file(0, finfo, buf, img_offs + 64, len + SIGN_DATA_SIZE, dst + 64);
+#else
 	ret = fat_read_file(0, finfo, buf, img_offs + 64, len, dst + 64);
+#endif
 	if (ret == FAIL) {
 		prn_string("load body failed\n");
 		return -1;
@@ -877,7 +996,11 @@ static int emmc_load_uhdr_image(const char *img_name, u8 *dst, u32 loaded,
 	}
 
 	// load remaining
+#ifdef CONFIG_SECURE_BOOT_SIGN
+	res = sizeof(*hdr) + len + SIGN_DATA_SIZE - loaded;
+#else
 	res = sizeof(*hdr) + len - loaded;
+#endif
 	if (res > 0) {
 		blks = (res + EMMC_BLOCK_SZ - 1) / EMMC_BLOCK_SZ;
 		res = emmc_read(dst + loaded, blk_off, blks);
@@ -1241,7 +1364,11 @@ static int nand_load_uhdr_image(int type, const char *img_name, void *dst,
 	prn_string("load data size=");
 	prn_decimal(len);
 	prn_string("\n");
-	res = bblk_read(type, (u8 *)hdr, real_blk_off, 64 + len, 100, img_blk_end);
+#ifdef CONFIG_SECURE_BOOT_SIGN
+	res = bblk_read(type, (u8 *)hdr, real_blk_off, 64 + SIGN_DATA_SIZE + len, 100, img_blk_end);
+#else
+	res = bblk_read(type, (u8 *)hdr, real_blk_off, 64 + SIGN_DATA_SIZE + len, 100, img_blk_end);
+#endif
 	if (res) {
 		prn_string("failed to load data\n");
 		return -1;

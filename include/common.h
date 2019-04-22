@@ -64,6 +64,11 @@ void *memset(u8 *s1, int c, int n);
 #define memset         rom_memset
 #endif
 
+#ifdef CONFIG_SECURE_BOOT_SIGN
+void fill_mmu_page_table(void);
+void enable_mmu(void);
+void disable_mmu(void);
+#endif
 /* rom share : APIs for external callers */
 #define rom_printf     (*(rom_printf_t)(p_romvsr->printf))
 #define rom_shell      (*(rom_shell_t)(p_romvsr->shell))

@@ -112,6 +112,17 @@
 #define USB_ISP                 0x17
 #define NAND_LARGE_BOOT         0xff // Q628: no PARA_NAND
 
+/************************************
+ * Secure boot  xboot-->uboot
+ ************************************/
+#ifdef CONFIG_SECURE_BOOT_SIGN
+#ifdef PLATFORM_SPIBAREMETAL
+#define SECURE_VERIFY_FUN_ADDR	(0x98008001) // function defined in iboot.c
+#else
+#define SECURE_VERIFY_FUN_ADDR	(0xFFFF8001)// // function defined in iboot.c
+#endif
+#endif
+
 /**********************
  * Clock
  *********************/

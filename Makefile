@@ -26,18 +26,9 @@ endif
 release debug: all
 
 all: $(TARGET)
-ifeq ($(CONFIG_SECURE_BOOT_SIGN), y)
-	@# 64-byte signature
-	@-rm -f $(BIN)/$(TARGET).sig
-	@bash ./gen_signature.sh $(BIN)/$(TARGET).bin $(BIN)/$(TARGET).sig
-	@echo "Append signature for secure boot"
-	@cat  $(BIN)/$(TARGET).sig >> $(BIN)/$(TARGET).bin
-	@bash ./add_xhdr.sh $(BIN)/$(TARGET).bin $(BIN)/$(TARGET).img 1
-else
 	@# 32-byte xboot header
 	@bash ./add_xhdr.sh $(BIN)/$(TARGET).bin $(BIN)/$(TARGET).img 0
-endif
-
+	
 ifeq ($(CONFIG_STANDALONE_DRAMINIT), y)
 	@# print draminit.img size
 	@sz=`du -sb $(DRAMINIT_IMG) | cut -f1` ; \
@@ -83,7 +74,10 @@ build_draminit:
 	@echo ""
 
 # Boot up
-ASOURCES_V5 := start.S
+ASOURCES_V5 := start.S 
+ifeq ($(CONFIG_SECURE_BOOT_SIGN), y)
+ASOURCES_V5 += cpu/mmu_ops.S
+endif
 #ASOURCES_V7 := v7_start.S
 ASOURCES = $(ASOURCES_V5) $(ASOURCES_V7)
 CSOURCES += xboot.c
