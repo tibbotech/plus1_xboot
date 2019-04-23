@@ -1367,7 +1367,7 @@ static int nand_load_uhdr_image(int type, const char *img_name, void *dst,
 #ifdef CONFIG_SECURE_BOOT_SIGN
 	res = bblk_read(type, (u8 *)hdr, real_blk_off, 64 + SIGN_DATA_SIZE + len, 100, img_blk_end);
 #else
-	res = bblk_read(type, (u8 *)hdr, real_blk_off, 64 + SIGN_DATA_SIZE + len, 100, img_blk_end);
+	res = bblk_read(type, (u8 *)hdr, real_blk_off, 64 + len, 100, img_blk_end);
 #endif
 	if (res) {
 		prn_string("failed to load data\n");
