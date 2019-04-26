@@ -150,3 +150,6 @@ config SECURE_BOOT_SIGN
 	  Sign xboot image and append generated signature to it.
 	  If IC OTP secure boot bit is enabled, ROM code only boots
 	  signed xboot image.
+config FT_ROM_TEST
+	bool "Ft_Rom_Dram_Test"
+	default y

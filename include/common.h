@@ -19,7 +19,7 @@
  * timer
  */
 void delay_1ms(UINT32 period);
-
+void _delay_1ms(UINT32 period);
 /*
  * uart print
  */

@@ -9,7 +9,9 @@
 #include <image.h>
 #include <misc.h>
 #include <otp/sp_otp.h>
-
+#ifdef CONFIG_FT_ROM_TEST
+#include <gpio_drv.h>
+#endif
 #ifdef CONFIG_HAVE_EMMC
 #include <sdmmc_boot/drv_sd_mmc.h>    /* initDriver_SD */
 #include <part_efi.h>
@@ -41,6 +43,22 @@ __attribute__ ((section("storage_buf_sect")))    union storage_buf   g_io_buf;
 __attribute__ ((section("bootinfo_sect")))       struct bootinfo     g_bootinfo;
 __attribute__ ((section("boothead_sect")))       u8                  g_boothead[GLOBAL_HEADER_SIZE];
 __attribute__ ((section("xboot_header_sect")))   u8                  g_xboot_buf[32];
+
+#ifdef CONFIG_FT_ROM_TEST
+static void FT_Rom_Test_End(char gpioData)
+{
+	u32 gpio = 34;
+	int i = 0;
+	GPIO_F_SET(gpio,1);
+	GPIO_M_SET(gpio,1);
+	GPIO_E_SET(gpio,1);
+	for(i = 7;i >= 0;i--)
+	{
+		GPIO_O_SET(gpio,(gpioData>>i)&0x01);
+		_delay_1ms(2);
+	}
+}
+#endif
 
 #ifdef CONFIG_SECURE_BOOT_SIGN
 u8 *data=NULL, *sig=NULL;
@@ -345,6 +363,9 @@ static int run_draminit(void)
 		mon_shell();
 		return -1;
 	}
+#ifdef CONFIG_FT_ROM_TEST
+	FT_Rom_Test_End(0xFF);
+#endif	
 	return 0;
 }
 

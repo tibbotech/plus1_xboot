@@ -28,7 +28,7 @@
 
 // dram_test
 #define DRAM_TEST_BEGIN      0x800000
-#define DRAM_TEST_LEN        1024
+#define DRAM_TEST_LEN        1024*64
 #define DRAM_TEST_END        (DRAM_TEST_BEGIN + DRAM_TEST_LEN)
 
 // u-boot

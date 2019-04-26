@@ -127,6 +127,10 @@ ifeq ($(CONFIG_HAVE_USB_DISK), y)
 CSOURCES += usb/ehci_usb.c
 endif
 
+ifeq ($(CONFIG_FT_ROM_TEST), y)
+CSOURCES += gpio/gpio_drv.c
+endif
+
 # MMC
 ifeq ($(CONFIG_HAVE_MMC), y)
 CSOURCES += sdmmc/drv_sd_mmc.c  sdmmc/hal_sd_mmc.c sdmmc/hw_sd.c
