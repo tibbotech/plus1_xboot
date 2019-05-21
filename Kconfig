@@ -14,7 +14,7 @@ endchoice
 config PLATFORM_IC_REV
 	int "IC revision number"
 	range 1 2
-	default 1
+	default 2
 	help
 	  IC revision number. First IC is 1.
 	  A new IC revision may have a different SRAM layout.

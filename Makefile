@@ -1,7 +1,12 @@
 sinclude .config
 
-# Toolchain path
-CROSS   := ../../build/tools/armv5-eabi--glibc--stable/bin/armv5-glibc-linux-
+# Toolchain path v5
+ifneq ($(CROSS),)
+CC = $(CROSS)gcc
+CPP = $(CROSS)cpp
+OBJCOPY = $(CROSS)objcopy
+OBJDUMP = $(CROSS)objdump
+endif
 
 BIN     := bin
 TARGET  := xboot
@@ -10,7 +15,7 @@ CFLAGS  += -ffunction-sections -fdata-sections
 CFLAGS  += -mthumb -mthumb-interwork
 LD_SRC   = boot.ldi
 LD_GEN   = boot.ld
-LDFLAGS  = -L $(shell dirname `$(CROSS)gcc -print-libgcc-file-name`) -lgcc
+LDFLAGS  = -L $(shell dirname `$(CC) -print-libgcc-file-name`) -lgcc
 #LDFLAGS += -Wl,--gc-sections,--print-gc-sections
 LDFLAGS += -Wl,--gc-sections
 
@@ -150,23 +155,23 @@ $(OBJS): prepare
 
 $(TARGET): $(OBJS)
 	@echo ">>>>> Link $@"
-	@$(CROSS)cpp -P $(CFLAGS) $(LD_SRC) $(LD_GEN)
-	$(CROSS)gcc $(CFLAGS) $(OBJS) $(DRAMINIT_OBJ) -T $(LD_GEN) $(LDFLAGS) -o $(BIN)/$(TARGET) -Wl,-Map,$(BIN)/$(TARGET).map
-	@$(CROSS)objcopy -O binary -S $(BIN)/$(TARGET) $(BIN)/$(TARGET).bin
-	@$(CROSS)objdump -d -S $(BIN)/$(TARGET) > $(BIN)/$(TARGET).dis
+	@$(CPP) -P $(CFLAGS) $(LD_SRC) $(LD_GEN)
+	$(CC) $(CFLAGS) $(OBJS) $(DRAMINIT_OBJ) -T $(LD_GEN) $(LDFLAGS) -o $(BIN)/$(TARGET) -Wl,-Map,$(BIN)/$(TARGET).map
+	@$(OBJCOPY) -O binary -S $(BIN)/$(TARGET) $(BIN)/$(TARGET).bin
+	@$(OBJDUMP) -d -S $(BIN)/$(TARGET) > $(BIN)/$(TARGET).dis
 
 %.o: %.S
-	$(CROSS)gcc $(CFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 %.o: %.c
-	$(CROSS)gcc $(CFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 
 #################
 # dependency
 .depend: $(ASOURCES) $(CSOURCES)
 	@rm -f .depend >/dev/null
-	@$(CROSS)gcc $(CFLAGS) -MM $^ >> ./.depend
+	@$(CC) $(CFLAGS) -MM $^ >> ./.depend
 sinclude .depend
 
 #################
