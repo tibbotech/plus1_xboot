@@ -22,6 +22,8 @@
 #define SIGN_DATA_SIZE	(64+8)// 64:sign data  8:flag data
 #endif
 
+
+#define DRAM_CHECK_BEFORE_OTP	
 /*
  * TOC
  * ---------------------
@@ -507,7 +509,11 @@ static int nor_draminit(void)
 
 	cpu_invalidate_icache_all();
 #endif
+#ifndef DRAM_CHECK_BEFORE_OTP
 	return run_draminit();
+#else
+	return 0;
+#endif
 }
 
 static void boot_next_set_addr(unsigned int addr)
@@ -897,7 +903,11 @@ static void do_fat_boot(u32 type, u32 port)
 		memcpy32((u32 *) DRAMINIT_LOAD_ADDR, (u32 *) buf, (64 + len + 3) / 4);
 #endif
 
-	run_draminit();
+#ifndef DRAM_CHECK_BEFORE_OTP
+		if (run_draminit()) {
+			return;
+		}
+#endif
 
 	/* load u-boot from usb */
 	if (fat_load_uhdr_image(&g_finfo, "uboot", (void *)UBOOT_LOAD_ADDR, ISP_IMG_OFF_UBOOT, UBOOT_MAX_LEN) <= 0) {
@@ -1100,9 +1110,11 @@ static void emmc_boot(void)
 	}
 #endif
 
-	if (run_draminit()) {
-		return;
-	}
+#ifndef DRAM_CHECK_BEFORE_OTP
+		if (run_draminit()) {
+			return;
+		}
+#endif
 
 	if (initDriver_SD(EMMC_SLOT_NUM)) {
 		prn_string("init fail\n");
@@ -1429,9 +1441,11 @@ static void nand_uboot(u32 type)
 	}
 #endif
 
+#ifndef DRAM_CHECK_BEFORE_OTP
 	if (run_draminit()) {
 		return;
 	}
+#endif
 
 #ifndef HAVE_UBOOT2_IN_NAND
 	/* Load uboot1 from NAND */
@@ -1671,6 +1685,12 @@ void xboot_main(void)
 
 #ifdef MON
 	mon_shell();
+#endif
+
+#ifdef DRAM_CHECK_BEFORE_OTP
+	if (run_draminit()) {
+		return;
+	}
 #endif
 
 #ifdef CONFIG_HAVE_OTP
