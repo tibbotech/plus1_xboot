@@ -1659,6 +1659,36 @@ static inline void init_cdata(void)
 		*dst++ = *src++;
 	}
 }
+#define PENTAGRAM_OTP_ADDR	(0x9C000000 + (350<<7))
+
+int dram_get_size(void)
+{
+	volatile unsigned int *ptr;
+	ptr = (volatile unsigned int *)(PENTAGRAM_OTP_ADDR + (7 << 2));//G[350.7]
+	int dramsize_Flag = ((*ptr)>>16)&0x03;
+	diag_printf("######## G[350.7] = 0x%x #########\n",((*ptr)>>16));
+	int dramsize;
+	switch(dramsize_Flag)
+	{
+		case 0x00:
+			dramsize = 64<<20;
+			break;
+		case 0x01:
+			dramsize = 128<<20;
+			break;
+		case 0x02:
+			dramsize = 256<<20;
+			break;
+		case 0x03:
+			dramsize = 512<<20;
+			break;
+		default:
+			dramsize = 512<<20;
+	}
+	diag_printf("####### dram size is %dM ########\n",dramsize>>20);
+	return dramsize;
+}
+
 
 void xboot_main(void)
 {
@@ -1686,7 +1716,7 @@ void xboot_main(void)
 #ifdef MON
 	mon_shell();
 #endif
-
+	dram_get_size();
 #ifdef DRAM_CHECK_BEFORE_OTP
 	if (run_draminit()) {
 		return;
