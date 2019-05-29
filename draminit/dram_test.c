@@ -9,11 +9,12 @@
 
 //#define DRAM_TEST_VERBOSE
 
-int dram_test(void)
+
+int do_dram_test(unsigned int *beg,unsigned int *end)
 {
 	volatile unsigned int *addr;
-	unsigned int *beg  = (unsigned int *)DRAM_TEST_BEGIN;
-	unsigned int *end  = (unsigned int *)DRAM_TEST_END;
+	//unsigned int *beg  = (unsigned int *)DRAM_TEST_BEGIN;
+	//unsigned int *end  = (unsigned int *)DRAM_TEST_END;
 	unsigned int val, expect;
 	int flip;
 	int bad = 0;
@@ -118,3 +119,56 @@ out:
 	CSTAMP(0x8388FFFF);
 	return bad;
 }
+
+int dram_test(void)
+{
+	int ret = 0;
+	unsigned int *beg  = (unsigned int *)DRAM_FIRST_TEST_BEGIN;
+	unsigned int *end  = (unsigned int *)DRAM_FIRST_TEST_END;
+	ret = do_dram_test(beg,end);
+	if(ret)
+	{
+		prn_string("!! DRAM TEST FAILED from!!\n");
+		prn_dword0((unsigned int)beg);
+		prn_string(" - ");
+		prn_dword((unsigned int)end);
+		return ret;
+	}
+
+	volatile unsigned int *ptr;
+	ptr = (volatile unsigned int *)(PENTAGRAM_OTP_ADDR + (7 << 2));//G[350.7]
+	int dramsize_Flag = ((*ptr)>>16)&0x03; // 000:512Mb 001:1Gb 010:2Gb 011:4Gb
+	
+	if(dramsize_Flag == 0)
+	{
+		beg  = (unsigned int *)DRAM_SECOND_TEST_512M_BEGIN;
+		end  = (unsigned int *)DRAM_SECOND_TEST_512M_END;
+	}
+	else if(dramsize_Flag == 1)
+	{
+		beg  = (unsigned int *)DRAM_SECOND_TEST_1G_BEGIN;
+		end  = (unsigned int *)DRAM_SECOND_TEST_1G_END;
+	}
+	else if(dramsize_Flag == 2)
+	{
+		beg  = (unsigned int *)DRAM_SECOND_TEST_2G_BEGIN;
+		end  = (unsigned int *)DRAM_SECOND_TEST_2G_END;
+	}
+	else if(dramsize_Flag == 3)
+	{
+		beg  = (unsigned int *)DRAM_SECOND_TEST_4G_BEGIN;
+		end  = (unsigned int *)DRAM_SECOND_TEST_4G_END;
+	}
+	
+	ret = do_dram_test(beg,end);
+	if(ret)
+	{
+		prn_string("!! DRAM TEST FAILED from!!\n");
+		prn_dword0((unsigned int)beg);
+		prn_string(" - ");
+		prn_dword((unsigned int)end);
+		return ret;
+	}
+	return ret;
+}
+

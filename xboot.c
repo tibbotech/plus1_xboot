@@ -349,13 +349,8 @@ static int run_draminit(void)
 #ifdef PLATFORM_3502
 	g_bootinfo.mp_flag = 1;		/* mask prints */
 #endif
-	int size = dram_init();
-	if(size == 1)
-		diag_printf("\n  >>>>>> dram size is 1G  <<<<<< \n\n",size);
-	else if(size == 3)
-		diag_printf("\n  >>>>>>  dram size is 4G  <<<<<<\n\n",size);
-	else
-		diag_printf("\n  >>>>>> dram size is other  <<<<<<\n\n",size);
+	dram_init();
+
 	g_bootinfo.mp_flag = save_val;	/* restore prints */
 	prn_string("Done draiminit\n");
 #endif
@@ -1659,7 +1654,6 @@ static inline void init_cdata(void)
 		*dst++ = *src++;
 	}
 }
-#define PENTAGRAM_OTP_ADDR	(0x9C000000 + (350<<7))
 
 int dram_get_size(void)
 {
