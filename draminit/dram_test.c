@@ -123,8 +123,10 @@ out:
 int dram_test(void)
 {
 	int ret = 0;
+	
+	/******* test dram start ****************/
 	unsigned int *beg  = (unsigned int *)DRAM_FIRST_TEST_BEGIN;
-	unsigned int *end  = (unsigned int *)DRAM_FIRST_TEST_END;
+	unsigned int *end  = (unsigned int *)(DRAM_FIRST_TEST_BEGIN+DRAM_TEST_LEN);
 	ret = do_dram_test(beg,end);
 	if(ret)
 	{
@@ -134,31 +136,16 @@ int dram_test(void)
 		prn_dword((unsigned int)end);
 		return ret;
 	}
+	
+	/******* test dram end ****************/
+	unsigned int test_addr[]={DRAM_SECOND_TEST_512M_BEGIN,DRAM_SECOND_TEST_1G_BEGIN,DRAM_SECOND_TEST_2G_BEGIN,DRAM_SECOND_TEST_4G_BEGIN};
 
 	volatile unsigned int *ptr;
 	ptr = (volatile unsigned int *)(PENTAGRAM_OTP_ADDR + (7 << 2));//G[350.7]
 	int dramsize_Flag = ((*ptr)>>16)&0x03; // 000:512Mb 001:1Gb 010:2Gb 011:4Gb
-	
-	if(dramsize_Flag == 0)
-	{
-		beg  = (unsigned int *)DRAM_SECOND_TEST_512M_BEGIN;
-		end  = (unsigned int *)DRAM_SECOND_TEST_512M_END;
-	}
-	else if(dramsize_Flag == 1)
-	{
-		beg  = (unsigned int *)DRAM_SECOND_TEST_1G_BEGIN;
-		end  = (unsigned int *)DRAM_SECOND_TEST_1G_END;
-	}
-	else if(dramsize_Flag == 2)
-	{
-		beg  = (unsigned int *)DRAM_SECOND_TEST_2G_BEGIN;
-		end  = (unsigned int *)DRAM_SECOND_TEST_2G_END;
-	}
-	else if(dramsize_Flag == 3)
-	{
-		beg  = (unsigned int *)DRAM_SECOND_TEST_4G_BEGIN;
-		end  = (unsigned int *)DRAM_SECOND_TEST_4G_END;
-	}
+
+	beg  = (unsigned int *)(test_addr[dramsize_Flag]);
+	end  = (unsigned int *)(test_addr[dramsize_Flag]+DRAM_TEST_LEN);
 	
 	ret = do_dram_test(beg,end);
 	if(ret)
@@ -167,7 +154,6 @@ int dram_test(void)
 		prn_dword0((unsigned int)beg);
 		prn_string(" - ");
 		prn_dword((unsigned int)end);
-		return ret;
 	}
 	return ret;
 }
