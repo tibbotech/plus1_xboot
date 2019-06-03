@@ -13,11 +13,13 @@ TARGET  := xboot
 CFLAGS   = -Os -march=armv5te -Wall -g -nostdlib -fno-builtin -Iinclude
 CFLAGS  += -ffunction-sections -fdata-sections
 CFLAGS  += -mthumb -mthumb-interwork
+CFLAGS += -static
 LD_SRC   = boot.ldi
 LD_GEN   = boot.ld
 LDFLAGS  = -L $(shell dirname `$(CC) -print-libgcc-file-name`) -lgcc
 #LDFLAGS += -Wl,--gc-sections,--print-gc-sections
 LDFLAGS += -Wl,--gc-sections
+LDFLAGS +=  -Wl,--build-id=none
 
 ifeq ($(CONFIG_PLATFORM_IC_REV),2)
 XBOOT_MAX := $$((26 * 1024))
@@ -151,7 +153,7 @@ $(OBJS): prepare
 
 $(TARGET): $(OBJS)
 	@echo ">>>>> Link $@"
-	@$(CPP) -P $(CFLAGS) $(LD_SRC) $(LD_GEN)
+	@$(CPP) -P $(CFLAGS) -x c $(LD_SRC) -o $(LD_GEN)
 	$(CC) $(CFLAGS) $(OBJS) $(DRAMINIT_OBJ) -T $(LD_GEN) $(LDFLAGS) -o $(BIN)/$(TARGET) -Wl,-Map,$(BIN)/$(TARGET).map
 	@$(OBJCOPY) -O binary -S $(BIN)/$(TARGET) $(BIN)/$(TARGET).bin
 	@$(OBJDUMP) -d -S $(BIN)/$(TARGET) > $(BIN)/$(TARGET).dis
