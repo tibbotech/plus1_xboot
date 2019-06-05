@@ -10,6 +10,50 @@
 //#define DRAM_TEST_VERBOSE
 
 
+#define DRAM_CHECK_CYCLING //if write/read addr is large than dram size,will write/read cyclically,so need to check it
+
+
+#ifdef DRAM_CHECK_CYCLING
+#define COMPARE_LEN	0x10
+
+int do_dram_check_cycling(int dramsize_type)
+{
+	unsigned int check_addr[]={0x100000,0x4100000,0x8100000,0x10100000};//offset 1M at start of(512M 1G 2G 4G)
+	int i=0,j=0;
+	volatile unsigned int *addr;
+	int len = sizeof(check_addr)/sizeof(check_addr[0]);
+	//write date in special address
+	for(j=0;j<=dramsize_type && j<len;j++)
+	{
+		unsigned int *beg = (unsigned int *)check_addr[j];//avoid conflict with dram_test
+		unsigned int *end = beg+COMPARE_LEN;
+		prn_dword((unsigned int)beg);
+		for (i=0,addr = (end - 1); addr >= beg && addr < end; addr--,i++)
+		{
+			*addr = (unsigned int)addr;
+		}
+	}
+	//read and compare with the write data
+	for(j=0;j<=dramsize_type && j<len;j++)
+	{
+		unsigned int *beg = (unsigned int *)check_addr[j];
+		unsigned int *end = beg+COMPARE_LEN;
+		for (i=0,addr = (end - 1); addr >= beg && addr < end; addr--,i++)
+		{
+			if (*addr != (unsigned int)addr)
+			{
+				prn_string("dram size is not match,OTP set is ");prn_decimal(dramsize_type);
+				prn_string("\nval_write=");prn_dword((unsigned int)*addr);
+				prn_string("val_read=");prn_dword((unsigned int)addr);
+				return -1;
+			}
+		}
+	}
+	return 0;
+}
+
+#endif
+
 int do_dram_test(unsigned int *beg,unsigned int *end)
 {
 	volatile unsigned int *addr;
@@ -18,7 +62,7 @@ int do_dram_test(unsigned int *beg,unsigned int *end)
 	unsigned int val, expect;
 	int flip;
 	int bad = 0;
-
+	
 	CSTAMP(0x83880000);
 	CSTAMP(0x8388000F);
 	CSTAMP(0x838800F0);
@@ -61,6 +105,7 @@ int do_dram_test(unsigned int *beg,unsigned int *end)
 
 			// Write addr = addr
 			*addr = (unsigned int) expect;
+
 		}
 
 #ifdef DRAM_TEST_VERBOSE
@@ -113,7 +158,10 @@ out:
 #endif
 
 	if (bad) {
-		prn_string("!! DRAM TEST FAILED !!\n");
+		prn_string("!! DRAM TEST FAILED from!!\n");
+		prn_dword0((unsigned int)beg);
+		prn_string(" - ");
+		prn_dword((unsigned int)end);
 	}
 
 	CSTAMP(0x8388FFFF);
@@ -123,37 +171,32 @@ out:
 int dram_test(void)
 {
 	int ret = 0;
-	
+	unsigned int test_addr[]={DRAM_SECOND_TEST_512M_BEGIN,DRAM_SECOND_TEST_1G_BEGIN,DRAM_SECOND_TEST_2G_BEGIN,DRAM_SECOND_TEST_4G_BEGIN};
+	volatile unsigned int *ptr;
+	ptr = (volatile unsigned int *)(PENTAGRAM_OTP_ADDR + (7 << 2));//G[350.7]
+	int dramsize_type = ((*ptr)>>16)&0x03; // 000:512Mb 001:1Gb 010:2Gb 011:4Gb
+
 	/******* test dram start ****************/
 	unsigned int *beg  = (unsigned int *)DRAM_FIRST_TEST_BEGIN;
 	unsigned int *end  = (unsigned int *)(DRAM_FIRST_TEST_BEGIN+DRAM_TEST_LEN);
-	ret = do_dram_test(beg,end);
-	if(ret)
+	if(do_dram_test(beg,end))
 	{
-		prn_string("!! DRAM TEST FAILED from!!\n");
-		prn_dword0((unsigned int)beg);
-		prn_string(" - ");
-		prn_dword((unsigned int)end);
-		return ret;
+		return 1;
 	}
-	
-	/******* test dram end ****************/
-	unsigned int test_addr[]={DRAM_SECOND_TEST_512M_BEGIN,DRAM_SECOND_TEST_1G_BEGIN,DRAM_SECOND_TEST_2G_BEGIN,DRAM_SECOND_TEST_4G_BEGIN};
-
-	volatile unsigned int *ptr;
-	ptr = (volatile unsigned int *)(PENTAGRAM_OTP_ADDR + (7 << 2));//G[350.7]
-	int dramsize_Flag = ((*ptr)>>16)&0x03; // 000:512Mb 001:1Gb 010:2Gb 011:4Gb
-
-	beg  = (unsigned int *)(test_addr[dramsize_Flag]);
-	end  = (unsigned int *)(test_addr[dramsize_Flag]+DRAM_TEST_LEN);
-	
-	ret = do_dram_test(beg,end);
-	if(ret)
+#ifdef DRAM_CHECK_CYCLING
+	/******* check write/read is cycling or not in specific address  ****************/
+	if(do_dram_check_cycling(dramsize_type))
 	{
-		prn_string("!! DRAM TEST FAILED from!!\n");
-		prn_dword0((unsigned int)beg);
-		prn_string(" - ");
-		prn_dword((unsigned int)end);
+		return -1;
+	}
+#endif
+
+	/******* test dram end ****************/
+	beg  = (unsigned int *)(test_addr[dramsize_type]);
+	end  = (unsigned int *)(test_addr[dramsize_type]+DRAM_TEST_LEN);
+	if(do_dram_test(beg,end))
+	{
+		return -1;
 	}
 	return ret;
 }
