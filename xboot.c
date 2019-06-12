@@ -66,9 +66,10 @@ int verify_uboot_signature(const struct image_header  *hdr)
 	int imgsize = 0;
 	u8 sig_flag[8] = {0};
 	
-	/* Load public key */
-	if (g_bootinfo.sb_flag & SB_FLAG_ENABLE) {
-		prn_string("* Secure *\n");
+	/* Not Secure Chip => return ok */
+	if ((!(g_bootinfo.sb_flag & SB_FLAG_ENABLE))) {
+		prn_string("\n ******OTP Secure Boot is OFF ,return success******\n");
+		return 0;
 	}
 
 	imgsize = image_get_size(hdr);
@@ -129,11 +130,6 @@ int verify_uboot_signature(const struct image_header  *hdr)
 		disable_mmu();
 	}
 out:
-	/* Not Secure Chip => still allow booting */
-	if ((ret != 0) && (!(g_bootinfo.sb_flag & SB_FLAG_ENABLE))) {
-		prn_string("\n ******OTP Secure Boot is OFF ******\n");
-		return 0;
-	}
 	return ret;
 }
 #endif
