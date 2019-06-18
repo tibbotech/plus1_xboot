@@ -480,6 +480,7 @@ static int nor_draminit(void)
 #endif
 	return run_draminit();
 }
+#endif /* CONFIG_HAVE_SPI_NOR */
 
 static void boot_next_set_addr(unsigned int addr)
 {
@@ -591,6 +592,7 @@ static void boot_uboot(void)
 	}
 }
 
+#ifdef CONFIG_HAVE_SPI_NOR
 #ifdef CONFIG_LOAD_LINUX
 
 /* Assume dtb and uImage has been loaded */
