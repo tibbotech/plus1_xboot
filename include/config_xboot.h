@@ -69,7 +69,7 @@
 #define ABIO_200M  0x040718
 #define ABIO_400M  0x020718
 
-#define ABIO_IOCTRL_CFG     0x00f1e005  /* asic A_G0.18 io delay (xhdu, POSTSIM_ON) */
+#define ABIO_IOCTRL_CFG     0x00f1e004 //for cpio timing (xhdu)  /* asic A_G0.18 io delay (xhdu, POSTSIM_ON) */
 
 #ifdef CONFIG_PLATFORM_I137
 #define ABIO_CFG ABIO_200M
