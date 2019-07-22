@@ -8,7 +8,7 @@
 #define FAT32_U 		0x20202032
 #define FAT32_L 		0x33544146
 #define FAT_FDB_SIZE 		32
-#define FAT_FILES 		1
+#define FAT_FILES 		2
 #define FAT_MAXSECTSIZE 	(16 * 1024)
 #define FAT_FILENAMELEN 	11
 //#define SECTORSIZE 		512

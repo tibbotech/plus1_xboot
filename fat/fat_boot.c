@@ -9,9 +9,9 @@
  * FAT32 and short file name only
  ********************************************************************************/
 
-static const unsigned char FILENAMES[1][12] =
+static const unsigned char FILENAMES[FAT_FILES][12] =
 {
-	"ISPBOOOTBIN",
+	"ISPBOOOTBIN","U-BOOT  IMG",
 };
 
 static u32 search_files(fat_info *info, u8 *buffer, u8 type);
@@ -204,6 +204,7 @@ u32 fat_boot(u32 type, u32 port, fat_info *info, u8 *buffer)
 	}
 
 	memcpy(g_bootinfo.fat_fileName[0], (u8 *)FILENAMES[0], 12);
+	memcpy(g_bootinfo.fat_fileName[1], (u8 *)FILENAMES[1], 12);
 	CSTAMP(0xFAB00001);
 
 	/*
@@ -310,7 +311,8 @@ static u32 search_files(fat_info *info, u8 *buffer, u8 type)
 	u32 fdbOffset;
 	u32 currentSect;
 	fdb_info *fdb;
-
+	u32 filecount = (type == SDCARD_ISP)?FAT_FILES:1;
+	
 	dbg_info();
 	count = 0;
 	nextClus = info->rootClus;
@@ -326,14 +328,14 @@ static u32 search_files(fat_info *info, u8 *buffer, u8 type)
 			info->read_sector(currentSect, 1, (u32 *)buffer);
 			while (fdbOffset < info->bytePerSect) {
 				fdb = (fdb_info*)(&buffer[fdbOffset]);
-				for (i = 0; i < FAT_FILES; i++) {
+				for (i = 0; i < filecount; i++) {
 					if (memcmp((u8 *)fdb->name, (u8 *)g_bootinfo.fat_fileName[i], FAT_FILENAMELEN) == 0) {
 						info->fileInfo[i].size = fdb->fileSize;
 						info->fileInfo[i].cluster = (fdb->clusterH << 16) + fdb->clusterL;
 						info->fileInfo[i].sectPos = info->clust0Sect +
 							((info->fileInfo[i].cluster - info->rootClus) * info->sectPerClus);
 						count++;
-						if (count == FAT_FILES) {
+						if (count == filecount) {
 							dbg_info();
 							/* 
 							// only one return type

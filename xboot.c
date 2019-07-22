@@ -767,10 +767,12 @@ static int fat_load_uhdr_image(fat_info *finfo, const char *img_name, void *dst,
 	if ((u32)dst & 0x7ff) {
 		prn_string("WARN: unaligned dst "); prn_dword((u32)dst);
 	}
+	/* ISPBOOOT.BIN file index is 0,uboot.img is 1*/
+	int fileindex = (g_bootinfo.gbootRom_boot_mode==SDCARD_ISP)?1:0;
 
 	/* read header first */
 	len = 64;
-	ret = fat_read_file(0, finfo, buf, img_offs, len, dst);
+	ret = fat_read_file(fileindex, finfo, buf, img_offs, len, dst);
 	if (ret == FAIL) {
 		prn_string("load hdr failed\n");
 		return -1;
@@ -802,9 +804,9 @@ static int fat_load_uhdr_image(fat_info *finfo, const char *img_name, void *dst,
 		return -1;
 	}
 #ifdef CONFIG_SECURE_BOOT_SIGN
-	ret = fat_read_file(0, finfo, buf, img_offs + 64, len + SIGN_DATA_SIZE, dst + 64);
+	ret = fat_read_file(fileindex, finfo, buf, img_offs + 64, len + SIGN_DATA_SIZE, dst + 64);
 #else
-	ret = fat_read_file(0, finfo, buf, img_offs + 64, len, dst + 64);
+	ret = fat_read_file(fileindex, finfo, buf, img_offs + 64, len, dst + 64);
 #endif
 	if (ret == FAIL) {
 		prn_string("load body failed\n");
@@ -873,7 +875,7 @@ static void do_fat_boot(u32 type, u32 port)
 	run_draminit();
 
 	/* load u-boot from usb */
-	if (fat_load_uhdr_image(&g_finfo, "uboot", (void *)UBOOT_LOAD_ADDR, ISP_IMG_OFF_UBOOT, UBOOT_MAX_LEN) <= 0) {
+	if (fat_load_uhdr_image(&g_finfo, "uboot", (void *)UBOOT_LOAD_ADDR, ((type==SDCARD_ISP)?0:ISP_IMG_OFF_UBOOT), UBOOT_MAX_LEN) <= 0) {
 		prn_string("failed to load uboot\n");
 		return;
 	}
