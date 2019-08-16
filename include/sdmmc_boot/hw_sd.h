@@ -191,6 +191,9 @@ enum SD_HANDLE_STATE {
 #define sdmmcmode(adrs)					(TO_EMMC_REG(adrs)->sdmmcmode)
 #define sdrsptype(adrs)					(TO_EMMC_REG(adrs)->sdrsptype)
 
+#define DMA_SRCDST_MASK				0x7
+#define DMA_SRC(x)						dmasrc(gDEV_SDCTRL_BASE_ADRS)		= (x) & DMA_SRCDST_MASK
+#define DMA_DST(x)						dmadst(gDEV_SDCTRL_BASE_ADRS)			= (x) & DMA_SRCDST_MASK
 #define SDIO_INT_EN(x)					sdio_int_en(gDEV_SDCTRL_BASE_ADRS)		= !!(x)
 #define SD_CMP_EN(x)					sd_cmp(gDEV_SDCTRL_BASE_ADRS)			= !!(x)
 #define RX4_EN(x)						rx4_en(gDEV_SDCTRL_BASE_ADRS)			= !!(x)
@@ -704,11 +707,11 @@ enum SD_HANDLE_STATE {
 	do { \
 		if (IS_EMMC_SLOT()) { \
 			if ((x) ==  DMA_TO_DEVICE) { \
-				dmasrc(Q628_MEMORY); \
-				dmadst(MMC_FLASH); \
-			} else { \
-				dmasrc(Q628_MEMORY); \
-				dmadst(MMC_FLASH); \
+				DMA_SRC(Q628_MEMORY); \
+				DMA_DST(MMC_FLASH); \
+			} else { \			
+				DMA_SRC(MMC_FLASH); \
+				DMA_DST(Q628_MEMORY); \
 			} \
 		} \
 		else { \

@@ -1916,7 +1916,7 @@ int ReadSDMultipleSectorDma(unsigned int SectorIdx, unsigned int SectorNum,
 	else {
 		SD_INT_CONTROL_SET(SD_INT_CONTROL_GET() & (~0x11));
 	}
-
+	prn_string("eMMC DMA mode\n");
 	DMA_HW_EN(0);
 	SD_CTRL_SET(0x01);	/* Trigger TX command*/
 	/* Wait till host controller becomes idle or error/timeout occurs */
