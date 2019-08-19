@@ -187,13 +187,16 @@ void InitChipCtrl(void)
 	// ----- Set Initial clock 200KHz (ok:400KHz) -----
 	if (get_card_number() == EMMC_SLOT_NUM) {
 		hwSdInit(SD_MODE);
-		hwSdConfig(SD_1BIT_MODE, MMC_MODE);
 		SetChipCtrlClk(CARD012_CLK, 200000);
 	} else {
 		hwSdInit(SD_MODE);
-		hwSdConfig(SD_1BIT_MODE, SD_MODE);
 		SetChipCtrlClk(CARD012_CLK,200000);
 	}
+	/* set `sdmmcmode', as it will sample data at falling edge
+	 * of SD bus clock if `sdmmcmode' is not set when
+	 * `sd_high_speed_en' is not set, which is not compliant
+	 * with SD specification */
+	hwSdConfig(SD_1BIT_MODE, MMC_MODE);
 
 	/*----- Set block size -----*/
 	SetChipCtrlBlkLen(BLOCK_LEN_BYTES_512);
