@@ -175,7 +175,7 @@ struct bootinfo {
 	int mmc_active_part;
 
 	/* fat */
-	unsigned char fat_fileName[FAT_FILES][12];
+	unsigned char fat_fileName[1][12];
 };
 
 /*

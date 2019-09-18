@@ -8,7 +8,7 @@
 #define FAT32_U 		0x20202032
 #define FAT32_L 		0x33544146
 #define FAT_FDB_SIZE 		32
-#define FAT_FILES 		2
+#define FAT_FILES 		4
 #define FAT_MAXSECTSIZE 	(16 * 1024)
 #define FAT_FILENAMELEN 	11
 //#define SECTORSIZE 		512
@@ -68,6 +68,8 @@ typedef struct {
 //u32 search_files(u32 files, fat_info *info, u8 *buffer, u8 fat_type);
 u32 fat_boot(u32 type, u32 port, fat_info *info, u8 *buffer);
 u32 fat_read_file(u32 idx, fat_info *info, u8 *buffer, u32 offset, u32 length, u8 *dest);
+u8 fat_sdcard_check_boot_mode(fat_info *info);
+
 //int str_cmp(const char *s1, const char *s2, u32 n);
 
 #endif /* _FAT_INC_ */

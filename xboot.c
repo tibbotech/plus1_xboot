@@ -748,11 +748,11 @@ static void spi_nor_boot(int pin_x)
 }
 #endif /* CONFIG_HAVE_SPI_NOR */
 
-#ifdef CONFIG_HAVE_FS_FAT
 
+#ifdef CONFIG_HAVE_FS_FAT
 /* return image data size (exclude header) */
 static int fat_load_uhdr_image(fat_info *finfo, const char *img_name, void *dst,
-	u32 img_offs, int max_img_sz)
+	u32 img_offs, int max_img_sz,int type)
 {
 	struct image_header *hdr = dst;
 	int len;
@@ -767,9 +767,11 @@ static int fat_load_uhdr_image(fat_info *finfo, const char *img_name, void *dst,
 	if ((u32)dst & 0x7ff) {
 		prn_string("WARN: unaligned dst "); prn_dword((u32)dst);
 	}
+	
 	/* ISPBOOOT.BIN file index is 0,uboot.img is 1*/
-	int fileindex = (g_bootinfo.gbootRom_boot_mode==SDCARD_ISP)?1:0;
-
+	int fileindex = (type==SDCARD_ISP)?1:0;
+	prn_string("fileindex:");
+	prn_decimal_ln(fileindex);
 	/* read header first */
 	len = 64;
 	ret = fat_read_file(fileindex, finfo, buf, img_offs, len, dst);
@@ -874,8 +876,21 @@ static void do_fat_boot(u32 type, u32 port)
 
 	run_draminit();
 
+	if(type==SDCARD_ISP)
+	{
+		if(fat_sdcard_check_boot_mode(&g_finfo)==FALSE)
+		{
+			prn_string(" sdcard do isp mode !!!!!\n");
+			type = USB_ISP;// check isp mode or boot mode by check whether get 4 files.if isp mode,do the usb isp flow;
+		}
+		else
+		{
+			prn_string(" sdcard do boot mode !!!!!\n");
+		}
+	}
+
 	/* load u-boot from usb */
-	if (fat_load_uhdr_image(&g_finfo, "uboot", (void *)UBOOT_LOAD_ADDR, ((type==SDCARD_ISP)?0:ISP_IMG_OFF_UBOOT), UBOOT_MAX_LEN) <= 0) {
+	if (fat_load_uhdr_image(&g_finfo, "uboot", (void *)UBOOT_LOAD_ADDR, ((type==SDCARD_ISP)?0:ISP_IMG_OFF_UBOOT), UBOOT_MAX_LEN,type) <= 0) {
 		prn_string("failed to load uboot\n");
 		return;
 	}
@@ -1634,7 +1649,6 @@ void xboot_main(void)
 	init_uart();
 
 	prn_decimal_ln(AV1_GetStc32());
-
 	/* first msg */
 	prn_string("+++xBoot " __DATE__ " " __TIME__ "\n");
 #if defined(CONFIG_PLATFORM_Q628) && (CONFIG_PLATFORM_IC_REV < 2)
