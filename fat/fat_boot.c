@@ -376,10 +376,10 @@ static u32 search_files(fat_info *info, u8 *buffer, u8 type)
 
 u8 fat_sdcard_check_boot_mode(fat_info *info)
 {
-	prn_string(" ISPBOOOT.BIN size:\n");prn_decimal_ln(info->fileInfo[0].size);
 	if(info->fileInfo[0].size >= 0x400000) 
 	{
 		//ISPBOOOT.BIN only have xboot and uboot,smaller than 2M,if larger than 4M,do isp mode.
+		dbg_info();
 		return FALSE;
 	}
 	return g_find_all_files;
