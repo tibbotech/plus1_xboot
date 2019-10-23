@@ -44,6 +44,7 @@ void *memset32(u32 *s1, u32 val, int n);
 void exit_bootROM(u32 addr);
 void do_boot_flow(u32 mode);
 void boot_reset(void);
+void boot_other_hart(u32 addr);
 
 // Due to SRAM layout changed in IC revisions,
 // old xboot can't use romshare functions which use SRAM.
@@ -176,6 +177,10 @@ struct bootinfo {
 
 	/* fat */
 	unsigned char fat_fileName[1][12];
+#ifdef CONFIG_ARCH_RISCV
+	volatile  u32     hart_jump_addr;
+#endif
+
 };
 
 /*

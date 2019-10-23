@@ -1,5 +1,20 @@
 sinclude .config
 
+ifeq ($(CONFIG_ARCH_ARM), y)
+ARCH := arm
+else ifeq ($(CONFIG_ARCH_RISCV), y)
+ARCH := riscv
+endif
+
+
+ifeq ($(ARCH),arm)
+export PATH := ../../crossgcc/armv5-eabi--glibc--stable/bin/:$(PATH)
+CROSS   := armv5-glibc-linux-
+else
+export PATH := ../../crossgcc/riscv64-sifive-linux-gnu/bin/:$(PATH)
+CROSS   := riscv64-linux-
+endif
+
 # Toolchain path v5
 ifneq ($(CROSS),)
 CC = $(CROSS)gcc
@@ -10,16 +25,25 @@ endif
 
 BIN     := bin
 TARGET  := xboot
-CFLAGS   = -Os -march=armv5te -Wall -g -nostdlib -fno-builtin -Iinclude
+CFLAGS   = -Os -Wall -g -nostdlib -fno-builtin -Iinclude -Iarch/$(ARCH)/include
 CFLAGS  += -ffunction-sections -fdata-sections
-CFLAGS  += -mthumb -mthumb-interwork
-CFLAGS += -static
+CFLAGS  += -static
 LD_SRC   = boot.ldi
 LD_GEN   = boot.ld
-LDFLAGS  = -L $(shell dirname `$(CC) -print-libgcc-file-name`) -lgcc
-#LDFLAGS += -Wl,--gc-sections,--print-gc-sections
+LD_ARCH_SRC   = arch/$(ARCH)/boot.ldi
+#LDFLAGS  = -L $(shell dirname `$(CC) -print-libgcc-file-name`) -lgcc
+LDFLAGS += -Wl,--gc-sections,--print-gc-sections
 LDFLAGS += -Wl,--gc-sections
 LDFLAGS +=  -Wl,--build-id=none
+
+
+ifeq ($(ARCH),arm)
+CFLAGS  += -mthumb -mthumb-interwork -march=armv5te
+else
+CFLAGS	+= -march=rv64gc -mabi=lp64d -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -mcmodel=medany
+endif
+
+
 
 ifeq ($(CONFIG_PLATFORM_IC_REV),2)
 XBOOT_MAX := $$((26 * 1024))
@@ -33,6 +57,7 @@ endif
 release debug: all
 
 all: $(TARGET)
+	
 	@# 32-byte xboot header
 	@bash ./add_xhdr.sh $(BIN)/$(TARGET).bin $(BIN)/$(TARGET).img 0
 	
@@ -81,12 +106,15 @@ build_draminit:
 	@echo ""
 
 # Boot up
-ASOURCES_V5 := start.S 
+ASOURCES_START := arch/$(ARCH)/start.S 
+
 ifeq ($(CONFIG_SECURE_BOOT_SIGN), y)
-ASOURCES_V5 += cpu/mmu_ops.S
+ifeq ($(ARCH),arm)
+ASOURCES_V5 := arch/$(ARCH)/cpu/mmu_ops.S
+endif
 endif
 #ASOURCES_V7 := v7_start.S
-ASOURCES = $(ASOURCES_V5) $(ASOURCES_V7)
+ASOURCES = $(ASOURCES_V5) $(ASOURCES_V7) $(ASOURCES_START)
 CSOURCES += xboot.c
 
 CSOURCES += common/diag.c
@@ -104,39 +132,41 @@ CSOURCES += common/common.c common/bootmain.c common/stc.c
 CSOURCES += common/string.c lib/image.c
 
 # ARM code
-CSOURCES += cpu/cpu.c lib/eabi_compat.c
+CSOURCES += arch/$(ARCH)/cpu/cpu.c arch/$(ARCH)/cpu/interrupt.c lib/eabi_compat.c
+ifeq ($(ARCH),arm)
 space :=
 space +=
-cpu/cpu.o: CFLAGS:=$(subst -mthumb$(space),,$(CFLAGS))
+arch/$(ARCH)/cpu/cpu.o: CFLAGS:=$(subst -mthumb$(space),,$(CFLAGS))
+endif
 
 # Generic Boot Device
 ifeq ($(CONFIG_HAVE_NAND_COMMON), y)
-CSOURCES += nand/nandop.c nand/bch.c
+CSOURCES += drivers/nand/nandop.c drivers/nand/bch.c
 endif
 
 # Parallel NAND
 ifeq ($(CONFIG_HAVE_PARA_NAND), y)
-CSOURCES += nand/nfdriver.c
+CSOURCES += drivers/nand/nfdriver.c
 endif
 
 # SPI NAND
 ifeq ($(CONFIG_HAVE_SPI_NAND), y)
-CSOURCES += nand/spi_nand.c
+CSOURCES += drivers/nand/spi_nand.c
 endif
 
 # FAT
 ifeq ($(CONFIG_HAVE_FS_FAT),y)
-CSOURCES += fat/fat_boot.c
+CSOURCES += drivers/fat/fat_boot.c
 endif
 
 # USB
 ifeq ($(CONFIG_HAVE_USB_DISK), y)
-CSOURCES += usb/ehci_usb.c
+CSOURCES += drivers/usb/ehci_usb.c
 endif
 
 # MMC
 ifeq ($(CONFIG_HAVE_MMC), y)
-CSOURCES += sdmmc/drv_sd_mmc.c  sdmmc/hal_sd_mmc.c sdmmc/hw_sd.c
+CSOURCES += drivers/sdmmc/drv_sd_mmc.c  drivers/sdmmc/hal_sd_mmc.c drivers/sdmmc/hw_sd.c
 endif
 
 # OTP
@@ -176,7 +206,7 @@ sinclude .depend
 # clean
 .PHONY:clean
 clean:
-	@rm -rf .depend $(LD_GEN) $(OBJS) *.o >/dev/null
+	@rm -rf .depend $(LD_GEN) $(OBJS) *.o *.d>/dev/null
 	@if [ -d $(BIN) ];then \
 		cd $(BIN) && rm -rf $(TARGET) $(TARGET).bin $(TARGET).map $(TARGET).dis \
 			$(TARGET).img $(TARGET).img.orig $(TARGET).sig >/dev/null ;\
@@ -194,7 +224,7 @@ distclean: clean
 .PHONY: prepare
 prepare: auto_config build_draminit
 	@mkdir -p $(BIN)
-
+	@cp -f $(LD_ARCH_SRC) ./
 AUTOCONFH=tools/auto_config_h
 MCONF=tools/mconf
 

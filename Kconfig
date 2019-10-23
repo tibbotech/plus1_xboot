@@ -1,4 +1,12 @@
 choice
+        prompt "Architecture select"
+        default ARCH_ARM
+config ARCH_ARM
+		bool "ARM architecture"
+config ARCH_RISCV
+		bool "RISCV architecture"
+endchoice
+choice
         prompt "Platform"
         default PLATFORM_Q628
         config PLATFORM_Q628
@@ -9,6 +17,8 @@ choice
                 bool "I137"
         config PLATFORM_3502
                 bool "3502"
+config PLATFORM_I143
+		bool "I143"
 endchoice
 
 config PLATFORM_IC_REV

@@ -1,7 +1,6 @@
 #include <types.h>
 #include <config.h>
 #include <common.h>
-#include <cpu/cpu.h>
 
 //#define OTP_WR_DEBUG_OPEN
 

@@ -149,7 +149,7 @@ void SetBootDev(unsigned int bootdev, unsigned int pin_x, unsigned int dev_port)
 				set_para_nand_pinmux(0); /* conflict: PARA_NAND X1 */
 			set_para_nand_padctl(0);         /* undo para nand padctl */
 #endif
-#ifdef PLATFORM_Q628
+#if defined(PLATFORM_Q628)|| defined(PLATFORM_I143)
 			if (pin_x == 1 && get_spi_nor_pinmux() == 2) {
 				set_spi_nor_pinmux(0);   /* conflict: X2,SPI_NOR */
 			}
@@ -169,7 +169,7 @@ void SetBootDev(unsigned int bootdev, unsigned int pin_x, unsigned int dev_port)
 		case DEVICE_EMMC:
 			g_bootinfo.gbootRom_boot_mode = EMMC_BOOT;
 			gDEV_SDCTRL_BASE_ADRS = (unsigned int)CARD0_CTL_REG; /* eMMC is on SD0 */
-#ifdef PLATFORM_Q628
+#if defined(PLATFORM_Q628)|| defined(PLATFORM_I143)
 			if (pin_x == 1) {
 				set_spi_nand_pinmux(0);  /* conflict: X1,SPI_NAND */
 			}

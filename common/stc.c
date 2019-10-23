@@ -68,7 +68,7 @@ void AV1_STC_init(void)
 	/* Clear STC_AV1_RESET */
 #if defined(PLATFORM_8388) || defined(PLATFORM_I137) || defined(PLATFORM_3502)
 	MOON0_REG->reset[0] &= ~(1 << 22);
-#elif defined(CONFIG_PLATFORM_Q628)
+#elif defined(PLATFORM_Q628) || defined(PLATFORM_I143)
 	/* Q628 STC_AV1 : default is reset=0 */
 	MOON0_REG->reset[1] = RF_MASK_V_CLR(1 << 6);
 #endif

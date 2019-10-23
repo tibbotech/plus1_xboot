@@ -29,6 +29,9 @@
 #define PLATFORM_3502                   /* Build for 3502 */
 #elif defined(CONFIG_PLATFORM_Q628)
 #define PLATFORM_Q628                   /* Build for Q628 */
+#elif defined(CONFIG_PLATFORM_I143)
+#define PLATFORM_I143                   /* Build for Q628 */
+
 #endif
 
 /* CSIM build: Enable Stamp. No UART. Less delay. */
@@ -151,7 +154,7 @@
 /**********************
  * SPI
  *********************/
-#define SPI_FLASH_BASE      0x98000000
+#define SPI_FLASH_BASE      0xf8000000//0x98000000
 #define SPI_IBOOT_OFFSET    ( 0 * 1024)
 #define SPI_XBOOT_OFFSET    (64 * 1024) 
 
@@ -166,7 +169,11 @@
 #define SRAM0_SIZE          (40 * 1024)
 #endif
 
-#define SRAM0_BASE          0x9e800000
+#ifdef PLATFORM_I143
+#define SRAM0_BASE          0xFE800000
+#else
+#define SRAM0_BASE          0x9E800000
+#endif
 #define SRAM0_END           (SRAM0_BASE + SRAM0_SIZE)
 
 #ifdef PLATFORM_I137
@@ -191,7 +198,12 @@
 #else /* new SRAM layout */
 #define XBOOT_BUF_SIZE      (27 * 1024)
 #define STORAGE_BUF_SIZE    (9 * 1024)
+#ifdef CONFIG_ARCH_RISCV
+#define BOOTINFO_SIZE       (400)
+#else
 #define BOOTINFO_SIZE       (384)
+#endif
+
 #define GLOBAL_HEADER_SIZE  (512)
 #define CDATA_SIZE          (128)
 #define STACK_SIZE          (3008) /* 3K - 64 */
