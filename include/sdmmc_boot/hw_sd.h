@@ -709,7 +709,7 @@ enum SD_HANDLE_STATE {
 			if ((x) ==  DMA_TO_DEVICE) { \
 				DMA_SRC(Q628_MEMORY); \
 				DMA_DST(MMC_FLASH); \
-			} else { \			
+			} else { \
 				DMA_SRC(MMC_FLASH); \
 				DMA_DST(Q628_MEMORY); \
 			} \
