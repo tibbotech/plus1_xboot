@@ -23,7 +23,7 @@ MEMORY
 	/* new SRAM layout */
 	xboot_buf       : ORIGIN = XBOOT_ADDR, LENGTH = XBOOT_BUF_SIZE      /*    27K @ 0        */
 	boothead        : ORIGIN = 0xFe806c00, LENGTH = GLOBAL_HEADER_SIZE  /*    512 @ 27K      */
-	bootinfo        : ORIGIN = 0xFe806e00, LENGTH = BOOTINFO_SIZE       /*    384 @ 27K+768  */
+	bootinfo        : ORIGIN = 0xFe806e00, LENGTH = BOOTINFO_SIZE+16       /*    384 @ 27K+768  */
 	cdata           : ORIGIN = 0xFe806f90, LENGTH = CDATA_SIZE          /*    128 @ 27K+512  */
 	/* storage_buf is part of ed25519_verify()'s stack (need 4K) */
 	storage_buf     : ORIGIN = 0xFe807010, LENGTH = STORAGE_BUF_SIZE    /*     9K @ 28K      */
@@ -63,7 +63,9 @@ SECTIONS
 
 	.bootinfo (NOLOAD):
 	{
+		__boot_info_beg = .;
 		*(bootinfo_sect)
+		__boot_info_tmp_value = __boot_info_beg + BOOTINFO_SIZE ;
 	} > bootinfo
 
 	.boothead (NOLOAD):

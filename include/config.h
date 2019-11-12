@@ -47,7 +47,11 @@
 
 /* zmem support */
 #ifdef CONFIG_USE_ZMEM
+#ifdef PLATFORM_I143
+#define ZMEM_XBOOT_ADDR    0xA00F0000
+#else
 #define ZMEM_XBOOT_ADDR    0x1000
+#endif
 #endif
 
 /***********************
@@ -120,9 +124,18 @@
  ************************************/
 #ifdef CONFIG_SECURE_BOOT_SIGN
 #ifdef PLATFORM_SPIBAREMETAL
-#define SECURE_VERIFY_FUN_ADDR	(0x98008001) // function defined in iboot.c
+#if defined(PLATFORM_I143) 
+#define SECURE_VERIFY_FUN_ADDR	(0xF8000000)
 #else
-#define SECURE_VERIFY_FUN_ADDR	(0xFFFF8001)// // function defined in iboot.c
+#define SECURE_VERIFY_FUN_ADDR	(0x98008001) // function defined in iboot.c
+#endif
+#else
+#if defined(PLATFORM_I143) 
+#define SECURE_VERIFY_FUN_ADDR	(0xFE009800)
+#else
+#define SECURE_VERIFY_FUN_ADDR	(0xFFFF8001) // function defined in iboot.c
+#endif
+
 #endif
 #endif
 
@@ -154,7 +167,11 @@
 /**********************
  * SPI
  *********************/
-#define SPI_FLASH_BASE      0xf8000000//0x98000000
+#ifdef PLATFORM_I143
+#define SPI_FLASH_BASE      0xF8000000
+#else
+#define SPI_FLASH_BASE      0x98000000
+#endif
 #define SPI_IBOOT_OFFSET    ( 0 * 1024)
 #define SPI_XBOOT_OFFSET    (64 * 1024) 
 
@@ -198,11 +215,8 @@
 #else /* new SRAM layout */
 #define XBOOT_BUF_SIZE      (27 * 1024)
 #define STORAGE_BUF_SIZE    (9 * 1024)
-#ifdef CONFIG_ARCH_RISCV
-#define BOOTINFO_SIZE       (400)
-#else
 #define BOOTINFO_SIZE       (384)
-#endif
+
 
 #define GLOBAL_HEADER_SIZE  (512)
 #define CDATA_SIZE          (128)

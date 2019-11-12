@@ -6,14 +6,15 @@ else ifeq ($(CONFIG_ARCH_RISCV), y)
 ARCH := riscv
 endif
 
-
+# Toolchain path
 ifeq ($(ARCH),arm)
 export PATH := ../../crossgcc/armv5-eabi--glibc--stable/bin/:$(PATH)
 CROSS   := armv5-glibc-linux-
 else
 export PATH := ../../crossgcc/riscv64-sifive-linux-gnu/bin/:$(PATH)
-CROSS   := riscv64-linux-
+CROSS   := riscv64-sifive-linux-gnu-
 endif
+
 
 # Toolchain path v5
 ifneq ($(CROSS),)
@@ -31,16 +32,16 @@ CFLAGS  += -static
 LD_SRC   = boot.ldi
 LD_GEN   = boot.ld
 LD_ARCH_SRC   = arch/$(ARCH)/boot.ldi
-#LDFLAGS  = -L $(shell dirname `$(CC) -print-libgcc-file-name`) -lgcc
-LDFLAGS += -Wl,--gc-sections,--print-gc-sections
+LDFLAGS  = -L $(shell dirname `$(CC) -print-libgcc-file-name`) -lgcc
+#LDFLAGS += -Wl,--gc-sections,--print-gc-sections
 LDFLAGS += -Wl,--gc-sections
 LDFLAGS +=  -Wl,--build-id=none
 
 
 ifeq ($(ARCH),arm)
-CFLAGS  += -mthumb -mthumb-interwork -march=armv5te
+CFLAGS  += -march=armv5te -mthumb -mthumb-interwork 
 else
-CFLAGS	+= -march=rv64gc -mabi=lp64d -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -mcmodel=medany
+CFLAGS	+= -march=rv64gc -mabi=lp64d -mcmodel=medany  -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast 
 endif
 
 
@@ -56,10 +57,10 @@ endif
 # default target
 release debug: all
 
-all: $(TARGET)
-	
+all: $(TARGET)  	
 	@# 32-byte xboot header
 	@bash ./add_xhdr.sh $(BIN)/$(TARGET).bin $(BIN)/$(TARGET).img 0
+
 	
 ifeq ($(CONFIG_STANDALONE_DRAMINIT), y)
 	@# print draminit.img size
@@ -79,7 +80,13 @@ endif
 		echo "xboot size limit is $(XBOOT_MAX). Please reduce its size.\n" ; \
 		exit 1; \
 	 fi
-
+	 
+ifeq ($(CONFIG_LOAD_LINUX), y)
+	@echo ">>>>>>>>>>> Build opensbi"
+	@$(MAKE) -C ../OpenSBI distclean && $(MAKE) -C ../OpenSBI FW_PAYLOAD_TYPE=kernel CROSS_COMPILE=$(CROSS)
+	@cd ../../ipack;./add_uhdr.sh uboot_u54mc_kernel ../boot/OpenSBI/out/fw_payload.bin ./bin/OpenSBI_Kernel.img riscv 0xA0100000 0xA0100000 	
+	@echo ">>>>>>>>>>> Build opensbi  end"
+endif
 ###################
 # draminit
 
@@ -88,7 +95,9 @@ ifeq ($(CONFIG_STANDALONE_DRAMINIT), y)
 DRAMINIT_IMG := ../draminit/bin/draminit.img
 else
 # Otherwise, link xboot with plf_dram.o
-DRAMINIT_OBJ := ../draminit/plf_dram.o
+ifneq ($(CONFIG_USE_ZMEM),y)
+#####################################DRAMINIT_OBJ := ../draminit/plf_dram.o
+endif
 # Use prebuilt obj if provided
 CONFIG_PREBUILT_DRAMINIT_OBJ := $(shell echo $(CONFIG_PREBUILT_DRAMINIT_OBJ))
 ifneq ($(CONFIG_PREBUILT_DRAMINIT_OBJ),)
@@ -101,9 +110,11 @@ debug: DRAMINIT_TARGET:=debug
 
 build_draminit:
 	@echo ">>>>>>>>>>> Build draminit"
-	make -C ../draminit $(DRAMINIT_TARGET) CROSS=$(CROSS)
+	##################################make -C ../draminit $(DRAMINIT_TARGET) CROSS=$(CROSS)
 	@echo ">>>>>>>>>>> Build draminit (done)"
 	@echo ""
+
+	
 
 # Boot up
 ASOURCES_START := arch/$(ARCH)/start.S 
@@ -141,32 +152,32 @@ endif
 
 # Generic Boot Device
 ifeq ($(CONFIG_HAVE_NAND_COMMON), y)
-CSOURCES += drivers/nand/nandop.c drivers/nand/bch.c
+CSOURCES += nand/nandop.c nand/bch.c
 endif
 
 # Parallel NAND
 ifeq ($(CONFIG_HAVE_PARA_NAND), y)
-CSOURCES += drivers/nand/nfdriver.c
+CSOURCES += nand/nfdriver.c
 endif
 
 # SPI NAND
 ifeq ($(CONFIG_HAVE_SPI_NAND), y)
-CSOURCES += drivers/nand/spi_nand.c
+CSOURCES += nand/spi_nand.c
 endif
 
 # FAT
 ifeq ($(CONFIG_HAVE_FS_FAT),y)
-CSOURCES += drivers/fat/fat_boot.c
+CSOURCES += fat/fat_boot.c
 endif
 
 # USB
 ifeq ($(CONFIG_HAVE_USB_DISK), y)
-CSOURCES += drivers/usb/ehci_usb.c
+CSOURCES += usb/ehci_usb.c
 endif
 
 # MMC
 ifeq ($(CONFIG_HAVE_MMC), y)
-CSOURCES += drivers/sdmmc/drv_sd_mmc.c  drivers/sdmmc/hal_sd_mmc.c drivers/sdmmc/hw_sd.c
+CSOURCES += sdmmc/drv_sd_mmc.c  sdmmc/hal_sd_mmc.c sdmmc/hw_sd.c
 endif
 
 # OTP
@@ -224,7 +235,8 @@ distclean: clean
 .PHONY: prepare
 prepare: auto_config build_draminit
 	@mkdir -p $(BIN)
-	@cp -f $(LD_ARCH_SRC) ./
+	@rm -rf  $(LD_SRC)
+	@ln -s $(LD_ARCH_SRC)  $(LD_SRC)
 AUTOCONFH=tools/auto_config_h
 MCONF=tools/mconf
 

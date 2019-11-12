@@ -156,6 +156,7 @@ endmenu
 config SECURE_BOOT_SIGN
 	bool "Sign image to enable Secure Boot"
 	default n
+	select HAVE_OTP
 	help
 	  Sign xboot image and append generated signature to it.
 	  If IC OTP secure boot bit is enabled, ROM code only boots

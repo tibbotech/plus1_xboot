@@ -16,8 +16,8 @@
 #define SPI_DTB_OFFSET        0x020000   // 128K
 #define SPI_UBOOT_OFFSET      0x040000   // 256K
 #define SPI_INITRAMFS_OFFSET  0x400000   // 4M
-#define SPI_LINUX_OFFSET      0x200000//2M riscv test	///  0x600000   // 6M
-
+#define SPI_LINUX_OFFSET      0x600000   // 6M
+#define SPI_FREERTOS_OFFSET   0x200000   // 2M
 //
 // Load & Run Address
 //
@@ -32,23 +32,24 @@
 #define DRAM_TEST_END        (DRAM_TEST_BEGIN + DRAM_TEST_LEN)
 
 #ifdef PLATFORM_I143
+
+#define OPENSBI_RUN_ADDR	0xA01D0000
+
+// freertos
+#define FREERTOS_RUN_ADDR      0xA0000040
+#define FREERTOS_LOAD_ADDR       0xA0000000
 // u-boot
-#define UBOOT_LOAD_ADDR      0xa0000000
-#define UBOOT_RUN_ADDR       (UBOOT_LOAD_ADDR+0X40)
-#define UBOOT_MAX_LEN        0x200000
+#define UBOOT_RUN_ADDR      0xA0100000
+#define UBOOT_LOAD_ADDR       (0xA0100000-0X40)
+#define UBOOT_MAX_LEN        0x400000
 
 // DTB
-#define DTB_LOAD_ADDR        0xA0100000          /* dtb */
+#define DTB_LOAD_ADDR        0xA01F0000          /* dtb */
 #define DTB_RUN_ADDR         (DTB_LOAD_ADDR+0X40)     /* skip header */
 
 // Linux
-#define LINUX_RUN_ADDR       0xA1000000                   /* vmlinux */
+#define LINUX_RUN_ADDR       0xA0200000                   /* vmlinux */
 #define LINUX_LOAD_ADDR      (LINUX_RUN_ADDR - 0x40)    /* - header */
-
-//bbl for riscv
-#define BBL_LOAD_ADDR      0xA0000000
-#define BBL_RUN_ADDR       (BBL_LOAD_ADDR+0X40)
-#define BBL_MAX_LEN        0x0F0000
 
 // initramfs
 #define INITRAMFS_RUN_ADDR   0xA2100000                   /* cpio */
@@ -60,8 +61,8 @@
 #define UBOOT_MAX_LEN        0x200000
 
 // DTB
-#define DTB_LOAD_ADDR        (0xa0100040 - 0x40)          /* dtb */
-#define DTB_RUN_ADDR         0xa0100040                   /* skip header */
+#define DTB_LOAD_ADDR        (0x300000 - 0x40)          /* dtb */
+#define DTB_RUN_ADDR         0x300000                   /* skip header */
 
 // Linux
 #define LINUX_RUN_ADDR       0x308000//0x308000                   /* vmlinux */

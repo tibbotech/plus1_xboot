@@ -1,7 +1,9 @@
 #include <types.h>
 #include <config.h>
 #include <common.h>
+#ifdef CONFIG_ARCH_ARM
 #include <cpu/cpu.h>
+#endif
 
 #define CMDLINE "XB> "
 
@@ -133,14 +135,16 @@ void mon_shell(void)
 				}
 			}
 			break;
+#ifdef CONFIG_ARCH_ARM
 		case 'S':
 			/* armv7 sev */
-#ifdef __thumb__
+		#ifdef __thumb__
 			asm volatile (".short 0xbf40");
-#else
+		#else
 			asm volatile (".word 0xe320f004");
-#endif
+		#endif
 			break;
+#endif			
 		case 'g':
 		case 'l':
 			if (get_word_ex(" G=", 0, &group)) {
@@ -185,7 +189,9 @@ void mon_shell(void)
 			prn_string("\n1:usb, 2:sdcard, 3:nor, 4:spinand, 5:paranand, 6:emmc, 7:uart, 8:auto\n");
 			if (get_word_ex("choice=", 0, &value)) {
 				if (--value < sizeof(bootmenu) / sizeof(bootmenu[0])) {
+					#ifdef CONFIG_ARCH_ARM
 					cpu_invalidate_icache_all();
+					#endif
 					do_boot_flow(bootmenu[value]);
 				}
 			}
