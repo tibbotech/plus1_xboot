@@ -1630,6 +1630,17 @@ static inline void init_cdata(void)
 	}
 }
 
+static u32 read_mp_bit(void)
+{
+	char data;
+	u32  mp_bit;
+
+	sunplus_otprx_read(1, &data);
+	mp_bit = (data >> 4) & 0x1;
+
+	return mp_bit;
+}
+
 void xboot_main(void)
 {
 	/* Initialize global data */
@@ -1638,7 +1649,7 @@ void xboot_main(void)
 	g_bootinfo.in_xboot = 1;
 
 	/* Is MP chip? Silent UART */
-	//g_bootinfo.mp_flag = read_mp_bit();
+	g_bootinfo.mp_flag = read_mp_bit();
 
 	init_uart();
 
