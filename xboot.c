@@ -62,13 +62,12 @@ int verify_uboot_signature(const struct image_header  *hdr)
 	int sig_flag_size = 8;
 	int ret = -1,mmu = 1;
 	int imgsize = 0,data_size;
-	u8 sig_flag[8],in_pub[32];
-	
+	u8 	in_pub[32];
 	u8 *data=NULL, *sig=NULL;
 	
 	/* Not Secure Chip => return ok */
 	if ((!(g_bootinfo.sb_flag & SB_FLAG_ENABLE))) {
-		prn_string("\n ******OTP Secure Boot is OFF ,return success******\n");
+		prn_string("\n ******OTP Secure Boot is OFF******\n");
 		return 0;
 	}
 
@@ -95,11 +94,7 @@ int verify_uboot_signature(const struct image_header  *hdr)
 	data_size = imgsize  + sizeof(struct image_header);//- sig_size-sig_flag_size;
 	sig = data + data_size+sig_flag_size;
 	
-	sig_flag[0]=*(u8 *)(data+data_size); // get sign flag data
-	sig_flag[1]=*(u8 *)((data+data_size)+1);
-	sig_flag[2]=*(u8 *)((data+data_size)+2);
-	sig_flag[3]=*(u8 *)((data+data_size)+3);
-	u32 sig_magic_data = (sig_flag[0]<<24)|(sig_flag[1]<<16)|(sig_flag[2]<<8)|(sig_flag[3]);
+	u32 sig_magic_data = *(u32 *)(data+data_size);// get sign flag data
 	prn_string("sig_magic_data=");prn_dword0(sig_magic_data);
 	if(sig_magic_data != VERIFY_SIGN_MAGIC_DATA)
 	{
@@ -674,6 +669,7 @@ static void spi_nor_linux(void)
 		prn_string("bad hcrc\n");
 		mon_shell();
 	}
+
 #else
 	int res;
 	int verify = 1;
@@ -710,7 +706,7 @@ static void spi_nor_linux(void)
 			return;
 		}
 #endif
-		// loader Opensbi,boot kernel by opensbi
+		// loader Opensbi,boot kernel by opensbi,opensbi is in uboot.img
 		res = nor_load_uhdr_image("uboot", (void *)UBOOT_LOAD_ADDR,
 				(void *)(SPI_FLASH_BASE + SPI_UBOOT_OFFSET), verify);
 		if (res <= 0) {
@@ -753,14 +749,12 @@ static void spi_nor_uboot(void)
 		prn_string("No dtb\n");
 		return;
 	}
-	#if 0
 	len = nor_load_uhdr_image("freertos", (void *)FREERTOS_LOAD_ADDR,
 			(void *)(SPI_FLASH_BASE + SPI_FREERTOS_OFFSET), 1);
 	if (len <= 0) {
 		prn_string("No freertos\n");
 		return;
 	}
-	#endif
 #endif	
 
 	len = nor_load_uhdr_image("uboot", (void *)UBOOT_LOAD_ADDR,
@@ -785,12 +779,11 @@ static void spi_nor_boot(int pin_x)
 #endif
 #endif
 
-#if 0
 	if (nor_draminit()) {
 		dbg();
 		return;
 	}
-#endif
+
 	// spi linux
 #ifdef CONFIG_LOAD_LINUX
 	spi_nor_linux();
@@ -1682,6 +1675,16 @@ static inline void init_cdata(void)
 	}
 }
 
+static u32 read_mp_bit(void)
+{
+	char data;
+	u32  mp_bit;
+
+	sunplus_otprx_read(1, &data);
+	mp_bit = (data >> 4) & 0x1;
+
+	return mp_bit;
+}
 void xboot_main(void)
 {
 	/* Initialize global data */
@@ -1689,7 +1692,7 @@ void xboot_main(void)
 	g_bootinfo.in_xboot = 1;
 
 	/* Is MP chip? Silent UART */
-	//g_bootinfo.mp_flag = read_mp_bit();
+	g_bootinfo.mp_flag = read_mp_bit();
 
 	init_uart();
 
@@ -1709,7 +1712,7 @@ void xboot_main(void)
 #endif
 
 #ifdef CONFIG_HAVE_OTP
-//	mon_rw_otp();
+	//mon_rw_otp();
 #endif
 
 	/* start boot flow */

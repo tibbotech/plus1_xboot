@@ -7,14 +7,6 @@ ARCH := riscv
 endif
 
 # Toolchain path
-ifeq ($(ARCH),arm)
-export PATH := ../../crossgcc/armv5-eabi--glibc--stable/bin/:$(PATH)
-CROSS   := armv5-glibc-linux-
-else
-export PATH := ../../crossgcc/riscv64-sifive-linux-gnu/bin/:$(PATH)
-CROSS   := riscv64-sifive-linux-gnu-
-endif
-
 
 # Toolchain path v5
 ifneq ($(CROSS),)
@@ -26,12 +18,11 @@ endif
 
 BIN     := bin
 TARGET  := xboot
-CFLAGS   = -Os -Wall -g -nostdlib -fno-builtin -Iinclude -Iarch/$(ARCH)/include
+CFLAGS   = -Os -Wall -g -nostdlib -fno-builtin -Iinclude -Iarch/$(ARCH)/include -I.
 CFLAGS  += -ffunction-sections -fdata-sections
 CFLAGS  += -static
-LD_SRC   = boot.ldi
 LD_GEN   = boot.ld
-LD_ARCH_SRC   = arch/$(ARCH)/boot.ldi
+LD_SRC   = arch/$(ARCH)/boot.ldi
 LDFLAGS  = -L $(shell dirname `$(CC) -print-libgcc-file-name`) -lgcc
 #LDFLAGS += -Wl,--gc-sections,--print-gc-sections
 LDFLAGS += -Wl,--gc-sections
@@ -82,10 +73,12 @@ endif
 	 fi
 	 
 ifeq ($(CONFIG_LOAD_LINUX), y)
+ifeq ($(ARCH),riscv)	
 	@echo ">>>>>>>>>>> Build opensbi"
-	@$(MAKE) -C ../OpenSBI distclean && $(MAKE) -C ../OpenSBI FW_PAYLOAD_TYPE=kernel CROSS_COMPILE=$(CROSS)
-	@cd ../../ipack;./add_uhdr.sh uboot_u54mc_kernel ../boot/OpenSBI/out/fw_payload.bin ./bin/OpenSBI_Kernel.img riscv 0xA0100000 0xA0100000 	
+	@$(MAKE) -C ../opensbi distclean && $(MAKE) -C ../opensbi FW_PAYLOAD_TYPE=kernel CROSS_COMPILE=$(CROSS)
+	@cd ../../ipack;./add_uhdr.sh uboot_i143_kernel ../boot/opensbi/out/fw_payload.bin ./bin/OpenSBI_Kernel.img riscv 0xA0100000 0xA0100000 	
 	@echo ">>>>>>>>>>> Build opensbi  end"
+endif	
 endif
 ###################
 # draminit
@@ -95,9 +88,7 @@ ifeq ($(CONFIG_STANDALONE_DRAMINIT), y)
 DRAMINIT_IMG := ../draminit/bin/draminit.img
 else
 # Otherwise, link xboot with plf_dram.o
-ifneq ($(CONFIG_USE_ZMEM),y)
-#####################################DRAMINIT_OBJ := ../draminit/plf_dram.o
-endif
+DRAMINIT_OBJ := ../draminit/plf_dram.o
 # Use prebuilt obj if provided
 CONFIG_PREBUILT_DRAMINIT_OBJ := $(shell echo $(CONFIG_PREBUILT_DRAMINIT_OBJ))
 ifneq ($(CONFIG_PREBUILT_DRAMINIT_OBJ),)
@@ -110,7 +101,9 @@ debug: DRAMINIT_TARGET:=debug
 
 build_draminit:
 	@echo ">>>>>>>>>>> Build draminit"
-	##################################make -C ../draminit $(DRAMINIT_TARGET) CROSS=$(CROSS)
+ifeq ($(ARCH),arm)
+	make -C ../draminit $(DRAMINIT_TARGET) ARCH=$(ARCH) CROSS=$(CROSS)
+endif
 	@echo ">>>>>>>>>>> Build draminit (done)"
 	@echo ""
 
@@ -195,7 +188,11 @@ $(OBJS): prepare
 $(TARGET): $(OBJS)
 	@echo ">>>>> Link $@"
 	@$(CPP) -P $(CFLAGS) -x c $(LD_SRC) -o $(LD_GEN)
+ifeq ($(ARCH),arm)
 	$(CC) $(CFLAGS) $(OBJS) $(DRAMINIT_OBJ) -T $(LD_GEN) $(LDFLAGS) -o $(BIN)/$(TARGET) -Wl,-Map,$(BIN)/$(TARGET).map
+else
+	$(CC) $(CFLAGS) $(OBJS) -T $(LD_GEN) $(LDFLAGS) -o $(BIN)/$(TARGET) -Wl,-Map,$(BIN)/$(TARGET).map
+endif
 	@$(OBJCOPY) -O binary -S $(BIN)/$(TARGET) $(BIN)/$(TARGET).bin
 	@$(OBJDUMP) -d -S $(BIN)/$(TARGET) > $(BIN)/$(TARGET).dis
 
@@ -234,9 +231,9 @@ distclean: clean
 # configurations
 .PHONY: prepare
 prepare: auto_config build_draminit
+	echo "$(shell dirname `$(CC) -print-libgcc-file-name`) "
 	@mkdir -p $(BIN)
-	@rm -rf  $(LD_SRC)
-	@ln -s $(LD_ARCH_SRC)  $(LD_SRC)
+
 AUTOCONFH=tools/auto_config_h
 MCONF=tools/mconf
 

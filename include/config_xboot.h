@@ -15,9 +15,9 @@
 // SPI NOR
 #define SPI_DTB_OFFSET        0x020000   // 128K
 #define SPI_UBOOT_OFFSET      0x040000   // 256K
-#define SPI_INITRAMFS_OFFSET  0x400000   // 4M
+#define SPI_INITRAMFS_OFFSET  0x200000   // 2M
 #define SPI_LINUX_OFFSET      0x600000   // 6M
-#define SPI_FREERTOS_OFFSET   0x200000   // 2M
+#define SPI_FREERTOS_OFFSET   0x180000   // 1.5M
 //
 // Load & Run Address
 //
@@ -44,15 +44,15 @@
 #define UBOOT_MAX_LEN        0x400000
 
 // DTB
-#define DTB_LOAD_ADDR        0xA01F0000          /* dtb */
-#define DTB_RUN_ADDR         (DTB_LOAD_ADDR+0X40)     /* skip header */
+#define DTB_RUN_ADDR        0xA01F0000          /* dtb */
+#define DTB_LOAD_ADDR         (DTB_RUN_ADDR-0X40)     /* skip header */
 
 // Linux
 #define LINUX_RUN_ADDR       0xA0200000                   /* vmlinux */
 #define LINUX_LOAD_ADDR      (LINUX_RUN_ADDR - 0x40)    /* - header */
 
 // initramfs
-#define INITRAMFS_RUN_ADDR   0xA2100000                   /* cpio */
+#define INITRAMFS_RUN_ADDR   0xA2000000                   /* cpio */
 #define INITRAMFS_LOAD_ADDR  (INITRAMFS_RUN_ADDR - 0x40)
 #else
 // u-boot
@@ -82,6 +82,7 @@
 // mkimage Type
 // mkimage -T standalone --> uhdr with CRC32
 // mkimage -T quickboot  --> uhdr with SUM32
+
 #define USE_QKBOOT_IMG  // consistent with draminit and uboot image
 
 /* ISP image offset */
