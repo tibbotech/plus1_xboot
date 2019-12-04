@@ -10,9 +10,10 @@ endif
 
 BIN     := bin
 TARGET  := xboot
-CFLAGS   = -Os -march=armv5te -Wall -g -nostdlib -fno-builtin -Iinclude
-CFLAGS  += -ffunction-sections -fdata-sections
-CFLAGS  += -mthumb -mthumb-interwork
+CFLAGS  = -Os -march=armv5te -Wall -g -nostdlib -fno-builtin -Iinclude
+CFLAGS += -ffunction-sections -fdata-sections
+CFLAGS += -mthumb -mthumb-interwork
+CFLAGS += -fno-pie -fno-PIE
 CFLAGS += -static
 LD_SRC   = boot.ldi
 LD_GEN   = boot.ld
