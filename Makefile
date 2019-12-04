@@ -13,7 +13,8 @@ TARGET  := xboot
 CFLAGS  = -Os -march=armv5te -Wall -g -nostdlib -fno-builtin -Iinclude
 CFLAGS += -ffunction-sections -fdata-sections
 CFLAGS += -mthumb -mthumb-interwork
-CFLAGS += -fno-pie -fno-PIE
+CFLAGS += -fno-pie -fno-PIE -fno-pic -fno-PIC
+CFLAGS += -fno-partial-inlining -fno-jump-tables
 CFLAGS += -static
 LD_SRC   = boot.ldi
 LD_GEN   = boot.ld
