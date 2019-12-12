@@ -34,7 +34,7 @@ endif
 # default target
 release debug: all
 
-all: $(TARGET)
+all:  $(TARGET)
 	@# 32-byte xboot header
 	@bash ./add_xhdr.sh $(BIN)/$(TARGET).bin $(BIN)/$(TARGET).img 0
 	
@@ -49,6 +49,9 @@ ifeq ($(CONFIG_STANDALONE_DRAMINIT), y)
 else
 	@echo "Linked with $(DRAMINIT_OBJ)"
 endif
+	@$(MAKE) size_check
+
+size_check:
 	@# print xboot size
 	@sz=`du -sb bin/$(TARGET).img | cut -f1` ; \
 	 printf "xboot.img size = %d (hex %x)\n" $$sz $$sz ; \
@@ -159,7 +162,6 @@ $(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) $(DRAMINIT_OBJ) -T $(LD_GEN) $(LDFLAGS) -o $(BIN)/$(TARGET) -Wl,-Map,$(BIN)/$(TARGET).map
 	@$(OBJCOPY) -O binary -S $(BIN)/$(TARGET) $(BIN)/$(TARGET).bin
 	@$(OBJDUMP) -d -S $(BIN)/$(TARGET) > $(BIN)/$(TARGET).dis
-
 %.o: %.S
 	$(CC) $(CFLAGS) -c -o $@ $<
 

@@ -43,11 +43,8 @@ __attribute__ ((section("boothead_sect")))       u8                  g_boothead[
 __attribute__ ((section("xboot_header_sect")))   u8                  g_xboot_buf[32];
 
 #ifdef CONFIG_SECURE_BOOT_SIGN
-u8 *data=NULL, *sig=NULL;
-u8 in_pub[32] = {0};
-unsigned int data_size=0;
 
-static void load_otp_pub_key(void)
+static void load_otp_pub_key(u8 in_pub[])
 {
 	int i;
 	for (i = 0; i < 32; i++) {
@@ -65,7 +62,9 @@ int verify_uboot_signature(const struct image_header  *hdr)
 	int mmu = 1;
 	int imgsize = 0;
 	u8 sig_flag[8] = {0};
-	
+	u8 *data=NULL, *sig=NULL;
+	u8 in_pub[32];
+	unsigned int data_size=0;
 	/* Not Secure Chip => return ok */
 	if ((!(g_bootinfo.sb_flag & SB_FLAG_ENABLE))) {
 		prn_string("\n ******OTP Secure Boot is OFF ,return success******\n");
@@ -107,7 +106,7 @@ int verify_uboot_signature(const struct image_header  *hdr)
 		goto out;
 	}
 	
-	load_otp_pub_key();
+	load_otp_pub_key(in_pub);
 
 	/* verify signature */
 	int  (*fptr)(const unsigned char *signature, const unsigned char *message, size_t message_len, const unsigned char *public_key);;
