@@ -64,7 +64,7 @@ void hwSdInit(unsigned int mmcMode)
 	// Bit14: sdmmcmode  - 0: sd mode, 1: mmc mode
 	// Bit13: sdcrctmren - crc timer enable
 	// Bit12: sdrsptmren - rsp timer enable
-	if (IS_EMMC_SLOT()) {
+	if (IS_EMMC_SLOT() || IS_SDCARD_SLOT()) {
 		RX4_EN(1);
 		SDRSPTMREN(1);
 		SDCRCTMREN(1);
@@ -99,7 +99,7 @@ void hwSdInit(unsigned int mmcMode)
  **************************************************************************/
 void hwSdBusWidthSet(unsigned char sdBusWidth)
 {
-	if (IS_EMMC_SLOT()) {
+	if (IS_EMMC_SLOT() || IS_SDCARD_SLOT()) {
 		SDDATAWD((sdBusWidth==BUS_WIDTH_4BIT) ? 1 : 0);
 	}
 	else {
@@ -119,7 +119,7 @@ void hwSdBusWidthSet(unsigned char sdBusWidth)
 
 void hwSdFreqSet(unsigned int sdFreq)
 {
-	if (IS_EMMC_SLOT()) {
+	if (IS_EMMC_SLOT() || IS_SDCARD_SLOT()) {
 		SDFQSEL(sdFreq & MMC_FREQ_DIV_MASK);
 	}
 	else {
@@ -155,7 +155,7 @@ void hwSdFreqSet(unsigned int sdFreq)
 //void hwSdConfig(unsigned int sdFreq, unsigned int sdBusWidth, unsigned int mmcMode)
 void hwSdConfig(unsigned int sdBusWidth, unsigned int mmcMode)
 {
-	if (IS_EMMC_SLOT()) {
+	if (IS_EMMC_SLOT() || IS_SDCARD_SLOT()) {
 		SDDATAWD(sdBusWidth);
 		SDMMCMODE(mmcMode);
 		SDRSPTMREN(1);
@@ -274,8 +274,9 @@ unsigned int hwSdRxResponse(unsigned char * rspBuf, unsigned int rspType)
 			prn_byte(rspBuf[rspNum]); // conti. SD RSP print
 #endif
 		}
+	}
 #else
-		if (!IS_EMMC_SLOT()) {
+		if (!(IS_EMMC_SLOT() || IS_SDCARD_SLOT())) {
 			status = wait_response_buff_full();
 			if (status)
 				return status;
@@ -290,7 +291,7 @@ unsigned int hwSdRxResponse(unsigned char * rspBuf, unsigned int rspType)
 		rspBuf[10] = (value >>  8) & 0xff;
 		rspBuf[11] = value		 & 0xff;
 
-		if (!IS_EMMC_SLOT()) {
+		if (!(IS_EMMC_SLOT() || IS_SDCARD_SLOT())) {
 			status = wait_response_buff_full();
 			if (status)
 				return status;
@@ -306,12 +307,12 @@ unsigned int hwSdRxResponse(unsigned char * rspBuf, unsigned int rspType)
 		for (rspNum = 6; rspNum < 17; rspNum++)
 			prn_byte(rspBuf[rspNum]);
 #endif
+	}
 #ifdef SD_VERBOSE
 	// SD RSP print end
 	prn_string("\n");
 #endif
 #endif
-	}
 	// Check RSP CRC7 error
 	if ((rspType == RSP_TYPE_R1) || (rspType == RSP_TYPE_R6) || rspType == RSP_TYPE_R7) {
 		if (SD_STATUS0_GET() & (1 << 9)) {
@@ -544,7 +545,7 @@ unsigned int hwSdCmdSend(unsigned int cmd, unsigned int arg,
 
 	// Set RSP type
 	if (rspType != RSP_TYPE_R2) {
-		if (IS_EMMC_SLOT()) {
+		if (IS_EMMC_SLOT() || IS_SDCARD_SLOT()) {
 			SDRSPTYPE_R2(0);
 		}
 		else {
@@ -556,7 +557,7 @@ unsigned int hwSdCmdSend(unsigned int cmd, unsigned int arg,
 #endif
 		}
 	} else {
-		if (IS_EMMC_SLOT()) {
+		if (IS_EMMC_SLOT() || IS_SDCARD_SLOT()) {
 			SDRSPTYPE_R2(1);
 		}
 		else {

@@ -1808,7 +1808,7 @@ int ReadSectorByPolling(unsigned char* pRecBuf, unsigned int*  pRecLenInByte)
 
 		if(SD_DATA_STB_TIMEOUT_ERROR()){
 			prn_string("Data STB err\n");
-			if (IS_EMMC_SLOT()) {
+			if (IS_EMMC_SLOT() || IS_SDCARD_SLOT()) {
 				i = SDFQSEL_GET();
 			}
 			else {
@@ -1884,7 +1884,7 @@ int ReadSDMultipleSectorDma(unsigned int SectorIdx, unsigned int SectorNum,
 	SD_TRANS_MODE_SET(2); // read
 	SD_TRANS_SDPIOMODE(0); // dma
 	SD_TRANS_SDRSPCHK_EN(1); // enable hw check rsp crc7
-	if (IS_EMMC_SLOT()) {
+	if (IS_EMMC_SLOT() || IS_SDCARD_SLOT()) {
 		SDRSPTYPE_R2(0);
 	}
 	else {
@@ -1903,7 +1903,7 @@ int ReadSDMultipleSectorDma(unsigned int SectorIdx, unsigned int SectorNum,
 
 	SD_BLOCK_SIZE_SET(BLOCK_LEN_BYTES_512 - 1);
 	/* Configure Group DMA Registers */
-	if (IS_EMMC_SLOT()) {
+	if (IS_EMMC_SLOT() || IS_SDCARD_SLOT()) {
 		DMA_SRCDST_SET(DMA_FROM_DEVICE);
 	}
 	else {
@@ -1912,7 +1912,7 @@ int ReadSDMultipleSectorDma(unsigned int SectorIdx, unsigned int SectorNum,
 	}
 
 	SET_HW_DMA_BASE_ADDR(pRecBuff);
-	if (IS_EMMC_SLOT()) {
+	if (IS_EMMC_SLOT() || IS_SDCARD_SLOT()) {
 		SD_CMP_EN(0);
 		SDIO_INT_EN(0);
 	}
@@ -1995,7 +1995,7 @@ int ReadSDMultipleSector(unsigned int SectorIdx, unsigned int SectorNum,
 	SD_TRANS_MODE_SET(2); // read
 	SD_TRANS_SDPIOMODE(1); // pio
 	SD_TRANS_SDRSPCHK_EN(1); // enable hw check rsp crc7
-	if (IS_EMMC_SLOT()) {
+	if (IS_EMMC_SLOT() || IS_SDCARD_SLOT()) {
 		SDRSPTYPE_R2(0);
 	}
 	else {

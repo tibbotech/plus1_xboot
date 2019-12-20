@@ -10,7 +10,7 @@
 #elif defined(PLATFORM_3502)
 #include <regmap_3502.h>
 #else
-#include <regmap_q628.h>
+#include <regmap_i143.h>
 #endif
 
 #endif /* __INC_REGMAP_H */
