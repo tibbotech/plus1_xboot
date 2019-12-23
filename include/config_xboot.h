@@ -33,7 +33,7 @@
 #define DRAMINIT_RUN_ADDR    (DRAMINIT_LOAD_ADDR + 0x40)  /* skip header */
 
 // dram_test
-#define DRAM_TEST_BEGIN      0x800000
+#define DRAM_TEST_BEGIN      0xA0800000
 #define DRAM_TEST_LEN        1024
 #define DRAM_TEST_END        (DRAM_TEST_BEGIN + DRAM_TEST_LEN)
 

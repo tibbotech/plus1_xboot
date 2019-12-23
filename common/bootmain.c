@@ -85,7 +85,7 @@ static inline void set_emmc_pinmux(int pin_x)
 	MOON1_REG->sft_cfg[4] = (MOON1_REG->sft_cfg[4] & ~(0x3 << 15)) | ((pin_x&0x3)<<15);
 #else
 	// Q628 eMMC : X1,CARD0_SD
-	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 5, pin_x << 5);
+	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 2, pin_x << 2);
 #endif
 }
 
