@@ -1224,6 +1224,21 @@ static void emmc_boot(void)
 					   blk_start1, 0, UBOOT_MAX_LEN, MMC_USER_AREA);
 	}
 #endif
+
+#ifdef CONFIG_ARCH_RISCV  
+	for (i = 0; i < 4; i++) {
+		blk_start2 = (u32) gpt_part[i].starting_lba;
+		prn_string("part"); prn_decimal(1 + i);
+		prn_string(" LBA="); prn_dword(blk_start1);
+		len = emmc_load_uhdr_image("freertos", (void *)FREERTOS_LOAD_ADDR, 0,
+				blk_start2, 0, UBOOT_MAX_LEN, MMC_USER_AREA);
+		if (len > 0)
+			break;
+	}	
+#endif	
+
+
+
 	if (len <= 0) {
 		prn_string("bad uboot\n");
 		return;
