@@ -83,9 +83,11 @@ static inline void set_emmc_pinmux(int pin_x)
 #ifdef PLATFORM_8388
 	MOON1_REG->sft_cfg[4] = (MOON1_REG->sft_cfg[4] & ~(0x3 << 13)) | ((pin_x&0x3)<<13);
 	MOON1_REG->sft_cfg[4] = (MOON1_REG->sft_cfg[4] & ~(0x3 << 15)) | ((pin_x&0x3)<<15);
+#elif defined(PLATFORM_I143)
+	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 2, pin_x << 2);
 #else
 	// Q628 eMMC : X1,CARD0_SD
-	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 2, pin_x << 2);
+	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 5, pin_x << 5);
 #endif
 }
 
@@ -97,6 +99,8 @@ static inline void set_sdcard1_pinmux(int pin_x)
 	MOON1_REG->sft_cfg[4] = (MOON1_REG->sft_cfg[4] & ~(0x3 << 25)) | ((pin_x&0x3)<<25);
 	// X1~X3,CARD0_SD must be off
 	MOON1_REG->sft_cfg[4] = (MOON1_REG->sft_cfg[4] & ~(0xf << 13));
+#elif defined(PLATFORM_I143)
+	MOON1_REG->sft_cfg[4] = RF_MASK_V(1 << 0, pin_x << 0);
 #else
 	// Q628 SD_CARD : X1,CARD1_SD
 	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 6, pin_x << 6);

@@ -108,6 +108,24 @@
 #endif
 #define HW_CFG_MASK             (HW_CFG_MASK_VAL << HW_CFG_SHIFT)
 
+
+
+
+#ifdef PLATFORM_I143
+#define AUTO_SCAN               0x01
+#define EMMC_BOOT               0x05
+#define SPI_NOR_BOOT            0x07  	
+#define EXT_U54_BOOT            0x09
+#define EXT_CA7_BOOT            0x1F
+#define INT_CA7_BOOT            0x17
+#define SDCARD_ISP              0x11
+#define UART_ISP                0x13
+#define USB_ISP                 0x15
+#define SPINAND_BOOT            0xfe  // not use ,for code compile
+#define NAND_LARGE_BOOT         0xfd  // not use ,for code compile
+#define EXT_BOOT                0xfc  // not use ,for code compile
+#define AUTO_SCAN_ACHIP         0x1F  //for arm ca7,match in start.S ,equal to EXT_CA7_BOOT
+#else 
 #define AUTO_SCAN               0x01
 #define AUTO_SCAN_ACHIP         0x15
 #define SPI_NOR_BOOT            0x11
@@ -118,6 +136,8 @@
 #define UART_ISP                0x0F
 #define USB_ISP                 0x17
 #define NAND_LARGE_BOOT         0xff // Q628: no PARA_NAND
+#endif
+
 
 /************************************
  * Secure boot  xboot-->uboot
@@ -125,13 +145,13 @@
 #ifdef CONFIG_SECURE_BOOT_SIGN
 #ifdef PLATFORM_SPIBAREMETAL
 #if defined(PLATFORM_I143) 
-#define SECURE_VERIFY_FUN_ADDR	(0xF8000000)
+#define SECURE_VERIFY_FUN_ADDR	(0xF8008000)
 #else
 #define SECURE_VERIFY_FUN_ADDR	(0x98008001) // function defined in iboot.c
 #endif
 #else
 #if defined(PLATFORM_I143) 
-#define SECURE_VERIFY_FUN_ADDR	(0xFE009800)
+#define SECURE_VERIFY_FUN_ADDR	(0xFE008000)
 #else
 #define SECURE_VERIFY_FUN_ADDR	(0xFFFF8001) // function defined in iboot.c
 #endif
@@ -196,6 +216,9 @@
 #ifdef PLATFORM_I137
 #define B_SRAM_BASE_A_VIEW  0x9e000000
 #define A_WORK_MEM_BASE     0x9e800000
+#elif defined(PLATFORM_I143) 
+#define B_SRAM_BASE_A_VIEW  0xFE800000
+#define A_WORK_MEM_BASE     0x9ea00000
 #else
 #define B_SRAM_BASE_A_VIEW  0x9e800000
 #define A_WORK_MEM_BASE     0x9ea00000
@@ -236,7 +259,7 @@
 #define SRAM0_BASE_A_VIEW        0x9e000000
 #define A_START_POS_A_VIEW       (SRAM0_BASE_A_VIEW + SRAM0_SIZE - 0xc) // 9e007ff4
 #define BOOT_ANOTHER_POS_A_VIEW  (SRAM0_BASE_A_VIEW + SRAM0_SIZE - 0x4) // 9e007ffc
-#elif defined(PLATFORM_Q628)
+#elif defined(PLATFORM_Q628) || defined(PLATFORM_I143) 
 /* B can access A sram */
 #define A_START_POS_B_VIEW        (A_WORK_MEM_END - 0xc) // 9ea7fff4 - (core * 4)
 #define A_START_POS_A_VIEW        A_START_POS_B_VIEW

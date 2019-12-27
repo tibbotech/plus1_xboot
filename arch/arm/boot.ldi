@@ -4,9 +4,9 @@ OUTPUT_ARCH(arm)
 ENTRY(_start)
 
 #ifdef PLATFORM_SPIBAREMETAL
-#define ROM_BASE 0x98000000 /* spi baremetal boot */
+#define ROM_BASE SPI_FLASH_BASE /* spi baremetal boot */
 #else
-#define ROM_BASE 0xffff0000 /* ROM code */
+#define ROM_BASE BOOT_ROM_BASE /* ROM code */
 #endif
 
 #ifdef CONFIG_USE_ZMEM
@@ -32,13 +32,13 @@ MEMORY
 #else
 	/* new SRAM layout */
 	xboot_buf       : ORIGIN = XBOOT_ADDR, LENGTH = XBOOT_BUF_SIZE      /*    27K @ 0        */
-	boothead        : ORIGIN = 0x9e806c00, LENGTH = GLOBAL_HEADER_SIZE  /*    512 @ 27K      */
-	bootinfo        : ORIGIN = 0x9e806e00, LENGTH = BOOTINFO_SIZE       /*    384 @ 27K+768  */
-	cdata           : ORIGIN = 0x9e806f80, LENGTH = CDATA_SIZE          /*    128 @ 27K+512  */
+	boothead        : ORIGIN = SRAM0_BASE+0x6c00, LENGTH = GLOBAL_HEADER_SIZE  /*    512 @ 27K      */
+	bootinfo        : ORIGIN = SRAM0_BASE+0x6e00, LENGTH = BOOTINFO_SIZE       /*    384 @ 27K+768  */
+	cdata           : ORIGIN = SRAM0_BASE+0x6f80, LENGTH = CDATA_SIZE          /*    128 @ 27K+512  */
 	/* storage_buf is part of ed25519_verify()'s stack (need 4K) */
-	storage_buf     : ORIGIN = 0x9e807000, LENGTH = STORAGE_BUF_SIZE    /*     9K @ 28K      */
-	stack           : ORIGIN = 0x9e809400, LENGTH = STACK_SIZE          /*  3K-64 @ 37K      */
-	bootcompat      : ORIGIN = 0x9e809fc0, LENGTH = 64                  /*     64 @ 40K-64   */
+	storage_buf     : ORIGIN = SRAM0_BASE+0x7000, LENGTH = STORAGE_BUF_SIZE    /*     9K @ 28K      */
+	stack           : ORIGIN = SRAM0_BASE+0x9400, LENGTH = STACK_SIZE          /*  3K-64 @ 37K      */
+	bootcompat      : ORIGIN = SRAM0_BASE+0x9fc0, LENGTH = 64                  /*     64 @ 40K-64   */
 #endif
 }
 

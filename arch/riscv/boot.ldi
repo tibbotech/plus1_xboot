@@ -4,7 +4,7 @@ OUTPUT_ARCH( "riscv" )
 ENTRY(start)
 
 #ifdef PLATFORM_SPIBAREMETAL
-#define ROM_BASE 0xF8000000 /* spi baremetal boot */
+#define ROM_BASE SPI_FLASH_BASE /* spi baremetal boot */
 #else
 #define ROM_BASE 0xFE000000 /* ROM code */
 #endif
@@ -22,13 +22,13 @@ MEMORY
 
 	/* new SRAM layout */
 	xboot_buf       : ORIGIN = XBOOT_ADDR, LENGTH = XBOOT_BUF_SIZE      /*    27K @ 0        */
-	boothead        : ORIGIN = 0xFe806c00, LENGTH = GLOBAL_HEADER_SIZE  /*    512 @ 27K      */
-	bootinfo        : ORIGIN = 0xFe806e00, LENGTH = BOOTINFO_SIZE+16       /*    384 @ 27K+768  */
-	cdata           : ORIGIN = 0xFe806f90, LENGTH = CDATA_SIZE          /*    128 @ 27K+512  */
+	boothead        : ORIGIN = SRAM0_BASE+0x6c00, LENGTH = GLOBAL_HEADER_SIZE  /*    512 @ 27K      */
+	bootinfo        : ORIGIN = SRAM0_BASE+0x6e00, LENGTH = BOOTINFO_SIZE+16       /*    384 @ 27K+768  */
+	cdata           : ORIGIN = SRAM0_BASE+0x6f90, LENGTH = CDATA_SIZE          /*    128 @ 27K+512  */
 	/* storage_buf is part of ed25519_verify()'s stack (need 4K) */
-	storage_buf     : ORIGIN = 0xFe807010, LENGTH = STORAGE_BUF_SIZE    /*     9K @ 28K      */
-	stack           : ORIGIN = 0xFe809410, LENGTH = STACK_SIZE          /*  3K-64 @ 37K      */
-	bootcompat      : ORIGIN = 0xFe809fd0, LENGTH = 48                  /*     64 @ 40K-64   */
+	storage_buf     : ORIGIN = SRAM0_BASE+0x7010, LENGTH = STORAGE_BUF_SIZE    /*     9K @ 28K      */
+	stack           : ORIGIN = SRAM0_BASE+0x9410, LENGTH = STACK_SIZE          /*  3K-64 @ 37K      */
+	bootcompat      : ORIGIN = SRAM0_BASE+0x9fd0, LENGTH = 48                  /*     64 @ 40K-64   */
 
 }
 

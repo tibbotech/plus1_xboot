@@ -567,6 +567,9 @@ static void boot_next_in_A(void)
 	while (1);
 }
 #endif
+
+
+
 /* Assume u-boot has been loaded */
 static void boot_uboot(void)
 {
@@ -583,7 +586,18 @@ static void boot_uboot(void)
 #endif
 
 #ifdef CONFIG_ARCH_RISCV
-	exit_bootROM(OPENSBI_RUN_ADDR);
+	u32 reg;
+	reg = *(volatile unsigned int *)HW_CFG_REG; /* = MOON0_REG->hw_cfg */
+	prn_string("hw_cfg="); prn_dword(reg);
+	reg = (reg & HW_CFG_MASK) >> HW_CFG_SHIFT;
+	if(reg == INT_CA7_BOOT)
+	{
+		//boot_next_in_A();
+	}
+	else{
+		exit_bootROM(OPENSBI_RUN_ADDR);	
+	}
+
 #else
 	prn_string((const char *)image_get_name(hdr)); prn_string("\n");
 	boot_next_set_addr(UBOOT_RUN_ADDR);
@@ -1670,7 +1684,7 @@ static void boot_flow(void)
 static void init_uart(void)
 {
 #ifdef CONFIG_DEBUG_WITH_2ND_UART
-#if defined(PLATFORM_Q628)|| defined(PLATFORM_I143)
+#ifdef PLATFORM_Q628
 	/* uart1 pinmux : x1,UA0_TX, X2,UA1_RX */
 	MOON3_REG->sft_cfg[14] = RF_MASK_V((0x7f << 0), (1 << 0));
 	MOON3_REG->sft_cfg[14] = RF_MASK_V((0x7f << 8), (2 << 8));
@@ -1678,6 +1692,19 @@ static void init_uart(void)
 	UART1_REG->div_l = UART_BAUD_DIV_L(BAUDRATE, UART_SRC_CLK);
 	UART1_REG->div_h = UART_BAUD_DIV_H(BAUDRATE, UART_SRC_CLK);
 #endif
+#elif defined(PLATFORM_I143)
+	MOON1_REG->sft_cfg[1] = RF_MASK_V_SET(1 << 12);
+	MOON0_REG->reset[1] = RF_MASK_V_CLR(1 << 9);	/* reset of UA1 */
+	MOON0_REG->reset[1] = RF_MASK_V_CLR(1 << 15);	/* reset of UADMA */
+	MOON0_REG->reset[1] = RF_MASK_V_CLR(1 << 13);	/* reset of BUF_UA */
+
+	UART1_REG->div_l = UART_BAUD_DIV_L(BAUDRATE, UART_SRC_CLK);	/* baud rate */
+	UART1_REG->div_h = UART_BAUD_DIV_H(BAUDRATE, UART_SRC_CLK);
+	UART1_REG->dr = 'U';
+	UART1_REG->dr = 'A';
+	UART1_REG->dr = 'R';
+	UART1_REG->dr = 'T';
+	UART1_REG->dr = '1';
 #endif
 }
 
