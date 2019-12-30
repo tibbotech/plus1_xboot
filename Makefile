@@ -76,7 +76,7 @@ ifeq ($(CONFIG_LOAD_LINUX), y)
 ifeq ($(ARCH),riscv)	
 	@echo ">>>>>>>>>>> Build opensbi"
 	@$(MAKE) -C ../opensbi distclean && $(MAKE) -C ../opensbi FW_PAYLOAD_TYPE=kernel CROSS_COMPILE=$(CROSS)
-	@cd ../../ipack;./add_uhdr.sh uboot_i143_kernel ../boot/opensbi/out/fw_payload.bin ./bin/OpenSBI_Kernel.img riscv 0xA0100000 0xA0100000 	
+	@cd ../../ipack;./add_uhdr.sh uboot_i143_kernel ../boot/opensbi/out/fw_payload.bin ../boot/xboot/bin/OpenSBI_Kernel.img riscv 0xA0200000 0xA0200000
 	@echo ">>>>>>>>>>> Build opensbi  end"
 endif	
 endif
@@ -195,6 +195,12 @@ else
 endif
 	@$(OBJCOPY) -O binary -S $(BIN)/$(TARGET) $(BIN)/$(TARGET).bin
 	@$(OBJDUMP) -d -S $(BIN)/$(TARGET) > $(BIN)/$(TARGET).dis
+ifeq ($(CONFIG_LOAD_LINUX), )
+	@if [ -f bin/OpenSBI_Kernel.img ]; then\
+		echo "####delete the opensbi_kernel file #######" ;\
+		rm -f bin/OpenSBI_Kernel.img ;\
+	fi
+endif
 
 %.o: %.S
 	$(CC) $(CFLAGS) -c -o $@ $<
