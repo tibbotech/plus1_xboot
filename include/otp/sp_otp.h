@@ -9,14 +9,14 @@
  * at offset 0 from the base.
  *
  */
-#define QAC628_OTP_NUM_BANKS		   8
-#define QAC628_OTP_WORDS_PER_BANK	   4
-#define QAC628_OTP_WORD_SIZE		   sizeof(u32)
-#define QAC628_OTP_SIZE		           (QAC628_OTP_NUM_BANKS * \
-					            QAC628_OTP_WORDS_PER_BANK * \
-					            QAC628_OTP_WORD_SIZE)
-#define QAC628_OTP_BIT_ADDR_OF_BANK    (8 * QAC628_OTP_WORD_SIZE * \
-	                            QAC628_OTP_WORDS_PER_BANK)	                            
+#define QAC628_OTP_NUM_BANKS            8
+#define QAC628_OTP_WORDS_PER_BANK       4
+#define QAC628_OTP_WORD_SIZE            sizeof(u32)
+#define QAC628_OTP_SIZE                 (QAC628_OTP_NUM_BANKS * \
+					QAC628_OTP_WORDS_PER_BANK * \
+					QAC628_OTP_WORD_SIZE)
+#define QAC628_OTP_BIT_ADDR_OF_BANK     (8 * QAC628_OTP_WORD_SIZE * \
+					QAC628_OTP_WORDS_PER_BANK)
 
 #define OTPRX2_BASE_ADR                 0x9C002800
 #define OTPRX_BASE_ADR                  0x9C00AF80
@@ -93,7 +93,7 @@ struct otprx_sunplus {
 };
 
 struct sunplus_otp_priv {
-    struct otprx2_sunplus *regs;
+	struct otprx2_sunplus *regs;
 };
 
 struct hbgpio_sunplus {
@@ -101,7 +101,7 @@ struct hbgpio_sunplus {
 };
 
 struct sunplus_hbgpio {
-    struct hbgpio_sunplus *otp_data;
+	struct hbgpio_sunplus *otp_data;
 };
 
 int sunplus_otprx_read(int addr, char *value);
