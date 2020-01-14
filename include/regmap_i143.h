@@ -184,28 +184,28 @@ struct uphy_rn_regs {
 
 /* usb host */
 struct ehci_regs {
-	unsigned int ehci_len_rev;
-	unsigned int ehci_sparams;
-	unsigned int ehci_cparams;
-	unsigned int ehci_portroute;
-	unsigned int g143_reserved_0[4];
-	unsigned int ehci_usbcmd;
-	unsigned int ehci_usbsts;
-	unsigned int ehci_usbintr;
-	unsigned int ehci_frameidx;
-	unsigned int ehci_ctrl_ds_segment;
-	unsigned int ehci_prd_listbase;
-	unsigned int ehci_async_listaddr;
-	unsigned int g143_reserved_1[9];
-	unsigned int ehci_config;
-	unsigned int ehci_portsc;
+	u32 ehci_len_rev;
+	u32 ehci_sparams;
+	u32 ehci_cparams;
+	u32 ehci_portroute;
+	u32 g143_reserved_0[4];
+	u32 ehci_usbcmd;
+	u32 ehci_usbsts;
+	u32 ehci_usbintr;
+	u32 ehci_frameidx;
+	u32 ehci_ctrl_ds_segment;
+	u32 ehci_prd_listbase;
+	u32 ehci_async_listaddr;
+	u32 g143_reserved_1[9];
+	u32 ehci_config;
+	u32 ehci_portsc;
 	/*
-	unsigned int g143_reserved_2[1];
-	unsigned int ehci_version_ctrl;
-	unsigned int ehci_general_ctrl;
-	unsigned int ehci_usb_debug;
-	unsigned int ehci_sys_debug;
-	unsigned int ehci_sleep_cnt;
+	u32 g143_reserved_2[1];
+	u32 ehci_version_ctrl;
+	u32 ehci_general_ctrl;
+	u32 ehci_usb_debug;
+	u32 ehci_sys_debug;
+	u32 ehci_sleep_cnt;
 	*/
 };
 #define EHCI0_REG ((volatile struct ehci_regs *)AHB_GRP(2, 2, 0)) // 0x9c102100

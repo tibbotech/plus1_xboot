@@ -192,9 +192,9 @@ void usb_power_init(int is_host)
 #else
 	/* Q628 USBC0_OTG_EN_SEL USBC1_OTG_EN_SEL */
 	if (is_host) {
-		MOON1_REG->sft_cfg[3] = RF_MASK_V_SET(3 << 2);
+		MOON1_REG->sft_cfg[3] = RF_MASK_V_SET(3 << 12);
 	} else {
-		MOON1_REG->sft_cfg[3] = RF_MASK_V_CLR(3 << 2);
+		MOON1_REG->sft_cfg[3] = RF_MASK_V_CLR(3 << 12);
 	}
 #endif
 
@@ -361,7 +361,7 @@ tryagain:
 	pUSB_DevDesc pDev = (pUSB_DevDesc)(USB_dataBuf);
 
 	//EHCI_ASYNC_LISTADDR = CACHE_TO_BUS(&EHCI_QH);
-	EHCI_ASYNC_LISTADDR = (UINT32)(&EHCI_QH);
+	EHCI_ASYNC_LISTADDR = (u32)(&EHCI_QH);
 
 	// Init QH
 	//EHCI_QH.hw_next = (1<<1)|CACHE_TO_BUS(&EHCI_QH);
@@ -576,7 +576,7 @@ int usb_readSector(u32 lba, u32 count, u32 *dest)
 
 UINT32 USB_transfer(UINT32 wLen, BYTE *buffer)
 {
-	UINT32 temp;
+	u32 temp;
 	UINT32 usb_err;
 	UINT32 timeout;
 
