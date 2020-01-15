@@ -40,6 +40,9 @@ void uphy_init(void)
 #if defined(PLATFORM_8388) || defined(PLATFORM_I137)
 	MOON1_REG->sft_cfg[14] = 0x87474002;
         MOON1_REG->sft_cfg[15] = 0x87474004;
+#elif defined(PLATFORM_I143)
+	UPHY0_RN_REG->gctrl[0] = 0x87474002;
+	UPHY1_RN_REG->gctrl[0] = 0x87474004;
 #else
 	/* Q628 uphy0_ctl uphy1_ctl */
 	MOON4_REG->uphy0_ctl[0] = RF_MASK_V(0xffff, 0x4002);
@@ -59,6 +62,21 @@ void uphy_init(void)
 	MOON1_REG->sft_cfg[21] = 0x8080;
 	_delay_1ms(1);
 	MOON1_REG->sft_cfg[21] = 0;
+#elif defined(PLATFORM_I143)
+	UPHY0_RN_REG->gctrl[2] = 0x88;
+	UPHY1_RN_REG->gctrl[2] = 0x88;
+	_delay_1ms(1);
+	UPHY0_RN_REG->gctrl[2] = 0x80;
+	UPHY1_RN_REG->gctrl[2] = 0x80;
+	_delay_1ms(1);
+	UPHY0_RN_REG->gctrl[2] = 0x88;
+	UPHY1_RN_REG->gctrl[2] = 0x88;
+	_delay_1ms(1);
+	UPHY0_RN_REG->gctrl[2] = 0x80;
+	UPHY1_RN_REG->gctrl[2] = 0x80;
+	_delay_1ms(1);
+	UPHY0_RN_REG->gctrl[2] = 0x0;
+	UPHY1_RN_REG->gctrl[2] = 0x0;
 #else
 	/* Q628 uphy012_ctl */
 	MOON4_REG->uphy0_ctl[3] = RF_MASK_V(0xffff, 0x88);
@@ -83,7 +101,7 @@ void uphy_init(void)
 	MOON0_REG->reset[1] |= (3 << 13);
 	MOON0_REG->reset[1] &= ~(3 << 13);
 #else
-	/* Q628 UPHY0_RESET UPHY1_RESET : 1->0 */
+	/* Q628/I143 UPHY0_RESET UPHY1_RESET : 1->0 */
 	MOON0_REG->reset[2] = RF_MASK_V_SET(3 << 13);
 	MOON0_REG->reset[2] = RF_MASK_V_CLR(3 << 13);
 #endif
@@ -98,7 +116,7 @@ void uphy_init(void)
 	MOON0_REG->reset[1] |= (3 << 10);
 	MOON0_REG->reset[1] &= ~(3 << 10);
 #else
-	/* Q628 USBC0_RESET USBC1_RESET : 1->0 */
+	/* Q628/I143 USBC0_RESET USBC1_RESET : 1->0 */
 	MOON0_REG->reset[2] = RF_MASK_V_SET(3 << 10);
 	MOON0_REG->reset[2] = RF_MASK_V_CLR(3 << 10);
 #endif
@@ -118,6 +136,15 @@ void uphy_init(void)
 	}
 #elif defined(PLATFORM_I137)
 	MOON1_REG->sft_cfg[19] |= (1 << 6);
+#elif defined(PLATFORM_I143)
+	if (HB_GP_REG->hb_otp_data2 & 0x1) { // G350.2 bit[0]
+		prn_string("uphy0 rx clk inv\n");
+		UPHY0_RN_REG->gctrl[1] |= 0x40;
+	}
+	if (HB_GP_REG->hb_otp_data2 & 0x2) { // G350.2 bit[1]
+		prn_string("uphy1 rx clk inv\n");
+		UPHY1_RN_REG->gctrl[1] |= 0x40;
+	}
 #else
 	if (HB_GP_REG->hb_otp_data2 & 0x1) { // G350.2 bit[0]
 		prn_string("uphy0 rx clk inv\n");
@@ -151,7 +178,7 @@ void uphy_init(void)
 #elif defined(PLATFORM_I137)
 	UPHY0_RN_REG->cfg[7] = (UPHY0_RN_REG->cfg[7] & ~0x1F) | DEFAULT_UPHY_DISC;
 #else
-	/* Q628 OTP[UPHY0_DISC] OTP[UPHY1_DISC] */
+	/* Q628/I143 OTP[UPHY0_DISC] OTP[UPHY1_DISC] */
 	val = HB_GP_REG->hb_otp_data6;
         set = val & 0x1F; // UPHY0 DISC
         if (!set) {
@@ -189,12 +216,19 @@ void usb_power_init(int is_host)
 	} else {
 		MOON1_REG->sft_cfg[5] &= ~(1 << 2);
 	}
-#else
-	/* Q628 USBC0_OTG_EN_SEL USBC1_OTG_EN_SEL */
+#elif defined(PLATFORM_I143)
+	/* I143 USBC0_OTG_EN_SEL USBC1_OTG_EN_SEL */
 	if (is_host) {
 		MOON1_REG->sft_cfg[3] = RF_MASK_V_SET(3 << 12);
 	} else {
 		MOON1_REG->sft_cfg[3] = RF_MASK_V_CLR(3 << 12);
+	}
+#else
+	/* Q628 USBC0_OTG_EN_SEL USBC1_OTG_EN_SEL */
+	if (is_host) {
+		MOON1_REG->sft_cfg[3] = RF_MASK_V_SET(3 << 2);
+	} else {
+		MOON1_REG->sft_cfg[3] = RF_MASK_V_CLR(3 << 2);
 	}
 #endif
 
@@ -215,6 +249,14 @@ void usb_power_init(int is_host)
 		MOON2_REG->sft_cfg[3] |= (3 << 5);
 	} else {
 		MOON2_REG->sft_cfg[3] &= ~(3 << 5);
+	}
+#elif defined(PLATFORM_I143)
+	/* I143 USBC0_TYPE, USBC0_SEL, USBC1_TYPE, USBC1_SEL */
+	if (is_host) {
+		MOON5_REG->sft_cfg[17] = RF_MASK_V_SET((7 << 12) | (7 << 4));
+	} else {
+		MOON5_REG->sft_cfg[17] = RF_MASK_V_SET((1 << 12) | (1 << 4));
+		MOON5_REG->sft_cfg[17] = RF_MASK_V_CLR((3 << 13) | (3 << 5));
 	}
 #else
 	/* Q628 USBC0_TYPE, USBC0_SEL, USBC1_TYPE, USBC1_SEL */

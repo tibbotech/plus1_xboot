@@ -177,7 +177,9 @@ struct spi_ctrl_regs {
 #define SPI_CTRL_REG ((volatile struct spi_ctrl_regs *)RF_GRP(22, 0))
 
 struct uphy_rn_regs {
-       unsigned int cfg[22];
+	u32 cfg[28];			// 150.0
+	u32 gctrl[3];			// 150.28
+	u32 gsts;			// 150.31
 };
 #define UPHY0_RN_REG ((volatile struct uphy_rn_regs *)RF_GRP(149, 0))
 #define UPHY1_RN_REG ((volatile struct uphy_rn_regs *)RF_GRP(150, 0))
