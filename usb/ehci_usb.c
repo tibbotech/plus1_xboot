@@ -74,8 +74,8 @@ void uphy_init(void)
 	_delay_1ms(1);
 
 	// 6. HW workaround
-	UPHY0_RN_REG->cfg[11] |= 0x0f;
-	UPHY1_RN_REG->cfg[11] |= 0x0f;
+	UPHY0_RN_REG->cfg[19] |= 0x0f;
+	UPHY1_RN_REG->cfg[19] |= 0x0f;
 
 	// 7. USB DISC (disconnect voltage)
 	UPHY0_RN_REG->cfg[7] = 0x8b;
