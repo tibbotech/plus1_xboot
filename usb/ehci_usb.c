@@ -247,9 +247,9 @@ void usb_power_init(int is_host)
 #elif defined(PLATFORM_I143)
 	/* I143 USBC0_OTG_EN_SEL USBC1_OTG_EN_SEL */
 	if (is_host) {
-		MOON1_REG->sft_cfg[3] = RF_MASK_V_SET(3 << 12);
+		MOON1_REG->sft_cfg[2] = RF_MASK_V_SET(3 << 12);
 	} else {
-		MOON1_REG->sft_cfg[3] = RF_MASK_V_CLR(3 << 12);
+		MOON1_REG->sft_cfg[2] = RF_MASK_V_CLR(3 << 12);
 	}
 #else
 	/* Q628 USBC0_OTG_EN_SEL USBC1_OTG_EN_SEL */
