@@ -40,6 +40,12 @@ static inline char *image_get_name(const image_header_t *hdr)
         return (char *)hdr->ih_name;
 }
 
+static inline uint8_t image_get_arch(const image_header_t *hdr)
+{
+        return ((uint8_t)hdr->ih_arch);
+}
+
+
 static inline ulong image_get_data(const image_header_t *hdr)
 {
         return ((ulong)hdr + image_get_header_size());

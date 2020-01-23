@@ -1,0 +1,32 @@
+#include "include/config.h"
+OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
+OUTPUT_ARCH(arm)
+ENTRY(_start)
+
+#ifdef CONFIG_USE_ZMEM
+#define XBOOT_ADDR    0x200F0000
+#else
+#define XBOOT_ADDR    0x7E800000
+#endif
+
+MEMORY
+{
+	public          : ORIGIN = XBOOT_ADDR+0x6820           , LENGTH = 1K
+}
+
+SECTIONS
+{
+	/* ROM */
+	.public :
+	{
+		__rom_base = .;
+		KEEP(arch/riscv/arm_ca7/start_c_p.o (.text));
+	} > public
+
+	.text :
+	{
+		*(.rodata*)
+		*(.text*)
+	} > public
+
+}

@@ -35,14 +35,22 @@ else
 CFLAGS	+= -march=rv64gc -mabi=lp64d -mcmodel=medany  -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast 
 endif
 
-
+ifeq ($(CONFIG_I143_C_P), y)
+CROSS_ARM   := ../../crossgcc/armv5-eabi--glibc--stable/bin/armv5-glibc-linux-
+CFLAGS_C_P   = -Os -Wall -g -nostdlib -fno-builtin -Iinclude -Iarch/arm/include -I. -ffunction-sections -fdata-sections -march=armv5te
+LDFLAGS_C_P  = -L $(shell dirname `$(CROSS_ARM)gcc -print-libgcc-file-name`) -lgcc -Wl,--gc-sections,--print-gc-sections
+TARGET_C_P	 = xboot_C_P
+START_C_P_PATH = arch/riscv/arm_ca7
+endif
 
 ifeq ($(CONFIG_PLATFORM_IC_REV),2)
 XBOOT_MAX := $$((26 * 1024))
 else
 XBOOT_MAX := $$((28 * 1024))
 endif
-
+ifeq ($(ARCH),riscv)
+XBOOT_MAX = $$((27 * 1024))
+endif
 .PHONY: release debug
 
 # default target
@@ -185,7 +193,7 @@ OBJS = $(ASOURCES:.S=.o) $(CSOURCES:.c=.o)
 
 $(OBJS): prepare
 
-$(TARGET): $(OBJS)
+$(TARGET): $(OBJS) I143_C_P
 	@echo ">>>>> Link $@"
 	@$(CPP) -P $(CFLAGS) -x c $(LD_SRC) -o $(LD_GEN)
 ifeq ($(ARCH),arm)
@@ -195,6 +203,11 @@ else
 endif
 	@$(OBJCOPY) -O binary -S $(BIN)/$(TARGET) $(BIN)/$(TARGET).bin
 	@$(OBJDUMP) -d -S $(BIN)/$(TARGET) > $(BIN)/$(TARGET).dis
+ifeq ($(CONFIG_I143_C_P), y)
+	@dd if=$(BIN)/$(TARGET_C_P).bin of=$(BIN)/$(TARGET).bin bs=1k seek=26 conv=notrunc 2>/dev/null
+endif
+
+	
 ifeq ($(CONFIG_LOAD_LINUX), )
 	@if [ -f bin/OpenSBI_Kernel.img ]; then\
 		echo "####delete the opensbi_kernel file #######" ;\
@@ -208,7 +221,15 @@ endif
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-
+I143_C_P: 
+ifeq ($(CONFIG_I143_C_P), y)	
+	@echo "build arm ca7 !!!"
+	@$(CROSS_ARM)gcc $(CFLAGS_C_P) -c -o $(START_C_P_PATH)/start_c_p.o $(START_C_P_PATH)/start_c_p.S
+	@$(CROSS_ARM)cpp -P $(CFLAGS_C_P) $(START_C_P_PATH)/boot_c_p.ldi boot_c_p.ld
+	@$(CROSS_ARM)gcc $(CFLAGS_C_P) $(START_C_P_PATH)/start_c_p.o -T boot_c_p.ld $(LDFLAGS_C_P) -o $(BIN)/$(TARGET_C_P) -Wl,-Map,$(BIN)/$(TARGET_C_P).map
+	@$(CROSS_ARM)objcopy -O binary -S $(BIN)/$(TARGET_C_P) $(BIN)/$(TARGET_C_P).bin	
+	@$(CROSS_ARM)objdump -d -S $(BIN)/$(TARGET_C_P) > $(BIN)/$(TARGET_C_P).dis
+endif
 #################
 # dependency
 .depend: $(ASOURCES) $(CSOURCES)

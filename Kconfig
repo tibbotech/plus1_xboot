@@ -161,3 +161,9 @@ config SECURE_BOOT_SIGN
 	  Sign xboot image and append generated signature to it.
 	  If IC OTP secure boot bit is enabled, ROM code only boots
 	  signed xboot image.
+config I143_C_P
+	bool "I143_C_P"
+	default y
+	depends on ARCH_RISCV && XIP_SPIBAREMETAL=n
+	help 
+		I143_C_P for 143+CA7,CA7 place in xboot.bin from 26K  to 27k

@@ -183,14 +183,13 @@ static void prn_clk_info(int is_A)
 }
 #endif
 
-static void prn_A_setup(void)
+static void boot_next_set_addr(unsigned int addr)
 {
-#ifdef PLATFORM_Q628
-	prn_string("A_G0.11(pll): "); prn_dword(A_PLL_CTL0_CFG);
-	prn_string("A_G0.3(abio): "); prn_dword(ABIO_CFG);
-	prn_string("A_G0.18(ioctrl): "); prn_dword(ABIO_IOCTRL_CFG);
-#endif
+	volatile unsigned int *next = (volatile unsigned int *)BOOT_ANOTHER_POS;
+	*next = addr;
+	prn_string("boot next @"); prn_dword(*next);
 }
+
 
 int arm_AChip_setup(void)
 {
@@ -221,24 +220,6 @@ int arm_AChip_setup(void)
 	return is_A;
 }
 
-static void fixup_boot_compatible(void)
-{
-	prn_string("put bootinfo\n");
-
-	/* bootinfo and bhdr SRAM addresses are changed in new iBoot ROM v1.02.
-	 * Have a copy in old addresses so that u-boot can use it.
-	 * Though these addresses are in new 3K-64 stack. 2K-64 stack is sufficient near
-	 * exit_xboot.
-	 */	 
-#define ROM_V100_BOOTINFO_ADDR	0x9e809400
-#define ROM_V100_BHDR_ADDR	0x9e809600
-	memcpy((u8 *)ROM_V100_BOOTINFO_ADDR, (UINT8 *)&g_bootinfo, sizeof(struct bootinfo));
-
-	if ((g_bootinfo.gbootRom_boot_mode == SPINAND_BOOT) ||
-	    (g_bootinfo.gbootRom_boot_mode == NAND_LARGE_BOOT)) {
-		memcpy((u8 *)ROM_V100_BHDR_ADDR, (UINT8 *)&g_boothead, GLOBAL_HEADER_SIZE);
-	}
-}
 
 static void exit_xboot(const char *msg, u32 addr)
 {
@@ -496,14 +477,6 @@ static int nor_draminit(void)
 }
 #endif /* CONFIG_HAVE_SPI_NOR */
 
-#ifdef CONFIG_ARCH_ARM
-static void boot_next_set_addr(unsigned int addr)
-{
-	volatile unsigned int *next = (volatile unsigned int *)BOOT_ANOTHER_POS;
-	*next = addr;
-	prn_string("boot next @"); prn_dword(*next);
-}
-
 //#define IPC_B2A_TEST
 #ifdef IPC_B2A_TEST
 #define IPC_A2B		(0x9c008100) // G258
@@ -533,6 +506,36 @@ static void ipc_b2a_test(void)
 }
 #endif
 
+
+static void fixup_boot_compatible(void)
+{
+	prn_string("put bootinfo\n");
+
+	/* bootinfo and bhdr SRAM addresses are changed in new iBoot ROM v1.02.
+	 * Have a copy in old addresses so that u-boot can use it.
+	 * Though these addresses are in new 3K-64 stack. 2K-64 stack is sufficient near
+	 * exit_xboot.
+	 */	 
+	#define ROM_V100_BOOTINFO_ADDR	(SRAM0_BASE+0x9400)//0x9e809400
+	#define ROM_V100_BHDR_ADDR	(SRAM0_BASE+0x9600) //0x9e809600
+	memcpy((u8 *)ROM_V100_BOOTINFO_ADDR, (UINT8 *)&g_bootinfo, sizeof(struct bootinfo));
+
+	if ((g_bootinfo.gbootRom_boot_mode == SPINAND_BOOT) ||
+	    (g_bootinfo.gbootRom_boot_mode == NAND_LARGE_BOOT)) {
+		memcpy((u8 *)ROM_V100_BHDR_ADDR, (UINT8 *)&g_boothead, GLOBAL_HEADER_SIZE);
+	}
+}
+
+
+static void prn_A_setup(void)
+{
+#if defined(PLATFORM_Q628)|| defined(PLATFORM_I143)
+	prn_string("A_G0.11(pll): "); prn_dword(A_PLL_CTL0_CFG);
+	prn_string("A_G0.3(abio): "); prn_dword(ABIO_CFG);
+	prn_string("A_G0.18(ioctrl): "); prn_dword(ABIO_IOCTRL_CFG);
+#endif
+}
+
 static void boot_next_in_A(void)
 {
 	fixup_boot_compatible();
@@ -545,6 +548,9 @@ static void boot_next_in_A(void)
 	/* Wake up another to run from boot_next_no_stack() */
 #ifdef PLATFORM_I137 /* B_SRAM address is 9e00_0000 from A view */
 	*(volatile unsigned int *)A_START_POS_B_VIEW = ((u32)&boot_next_no_stack) - 0x800000;
+#elif defined(PLATFORM_I143)
+	prn_dword(CA7_START_ADDR);
+	*(volatile unsigned int *)A_START_POS_B_VIEW = CA7_START_ADDR;
 #else 
 	*(volatile unsigned int *)A_START_POS_B_VIEW = (u32)&boot_next_no_stack;
 #endif
@@ -559,16 +565,13 @@ static void boot_next_in_A(void)
 #endif
 
 	/* B halt */
-#ifdef PLATFORM_Q628
+#if defined(PLATFORM_Q628)|| defined(PLATFORM_I143)
 	prn_string("B wfi\n");
 	halt();
 #endif
 
 	while (1);
 }
-#endif
-
-
 
 /* Assume u-boot has been loaded */
 static void boot_uboot(void)
@@ -592,7 +595,14 @@ static void boot_uboot(void)
 	reg = (reg & HW_CFG_MASK) >> HW_CFG_SHIFT;
 	if(reg == INT_CA7_BOOT)
 	{
-		//boot_next_in_A();
+		prn_string("C+P mode,CA7(ARM) do uboot ");
+		//boot_next_set_addr(UBOOT_RUN_ADDR);
+		if(image_get_arch(hdr) == 0x1A)
+		{
+			prn_string("WARN: CA7 can't run riscv u-boot\n");
+			while(1);
+		}
+		boot_next_in_A();
 	}
 	else{
 		exit_bootROM(OPENSBI_RUN_ADDR);	

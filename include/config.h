@@ -213,6 +213,15 @@
 #endif
 #define SRAM0_END           (SRAM0_BASE + SRAM0_SIZE)
 
+
+#ifdef PLATFORM_I143
+#ifdef CONFIG_USE_ZMEM
+#define CA7_START_ADDR    (0x200F0000+0x6800+0x20) //ca7 code is offset 26k 
+#else
+#define CA7_START_ADDR    (0x7E800000+0x6800+0x20)
+#endif
+#endif
+
 #ifdef PLATFORM_I137
 #define B_SRAM_BASE_A_VIEW  0x9e000000
 #define A_WORK_MEM_BASE     0x9e800000
@@ -262,6 +271,11 @@
 #elif defined(PLATFORM_Q628) || defined(PLATFORM_I143) 
 /* B can access A sram */
 #define A_START_POS_B_VIEW        (A_WORK_MEM_END - 0xc) // 9ea7fff4 - (core * 4)
+#define A_START_POS_A_VIEW        A_START_POS_B_VIEW
+#define BOOT_ANOTHER_POS_A_VIEW   BOOT_ANOTHER_POS
+#elif defined(PLATFORM_I143) 
+/* B can access A sram */
+#define A_START_POS_B_VIEW        0x6ea7fff4 // 6ea7fff4 - (core * 4)
 #define A_START_POS_A_VIEW        A_START_POS_B_VIEW
 #define BOOT_ANOTHER_POS_A_VIEW   BOOT_ANOTHER_POS
 #else

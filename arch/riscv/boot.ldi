@@ -23,12 +23,12 @@ MEMORY
 	/* new SRAM layout */
 	xboot_buf       : ORIGIN = XBOOT_ADDR, LENGTH = XBOOT_BUF_SIZE      /*    27K @ 0        */
 	boothead        : ORIGIN = SRAM0_BASE+0x6c00, LENGTH = GLOBAL_HEADER_SIZE  /*    512 @ 27K      */
-	bootinfo        : ORIGIN = SRAM0_BASE+0x6e00, LENGTH = BOOTINFO_SIZE+16       /*    384 @ 27K+768  */
+	bootinfo        : ORIGIN = SRAM0_BASE+0x6e00, LENGTH = BOOTINFO_SIZE       /*    384 @ 27K+768  */
 	cdata           : ORIGIN = SRAM0_BASE+0x6f90, LENGTH = CDATA_SIZE          /*    128 @ 27K+512  */
 	/* storage_buf is part of ed25519_verify()'s stack (need 4K) */
-	storage_buf     : ORIGIN = SRAM0_BASE+0x7010, LENGTH = STORAGE_BUF_SIZE    /*     9K @ 28K      */
-	stack           : ORIGIN = SRAM0_BASE+0x9410, LENGTH = STACK_SIZE          /*  3K-64 @ 37K      */
-	bootcompat      : ORIGIN = SRAM0_BASE+0x9fd0, LENGTH = 48                  /*     64 @ 40K-64   */
+	storage_buf     : ORIGIN = SRAM0_BASE+0x7000, LENGTH = STORAGE_BUF_SIZE    /*     9K @ 28K      */
+	stack           : ORIGIN = SRAM0_BASE+0x9400, LENGTH = STACK_SIZE          /*  3K-64 @ 37K      */
+	bootcompat      : ORIGIN = SRAM0_BASE+0x9fc0, LENGTH = 64                  /*     64 @ 40K-64   */
 
 }
 
@@ -89,14 +89,17 @@ SECTIONS
 		*(.sbss.*)
 		*(.gnu.linkonce.b.*)
 		*(COMMON)
-		. = ALIGN(8);
 		__bss_end__ = .;
 	} > cdata
 
 	.stack :
 	{
 		__stack_base = .;
-		. = ALIGN(8);
 		__stack_top = __stack_base + STACK_SIZE;
 	} > stack
+
+	.bootcompat :
+	{
+		__boot_info_tmp_value = . ;
+	} > bootcompat
 }
