@@ -81,7 +81,7 @@ debug: DRAMINIT_TARGET:=debug
 
 build_draminit:
 	@echo ">>>>>>>>>>> Build draminit"
-	make -C ../draminit $(DRAMINIT_TARGET) CROSS=$(CROSS)
+	make -C ../draminit $(DRAMINIT_TARGET) CROSS=$(CROSS) MKIMAGE=$(MKIMAGE)
 	@echo ">>>>>>>>>>> Build draminit (done)"
 	@echo ""
 
