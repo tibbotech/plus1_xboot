@@ -199,7 +199,7 @@ distclean: clean
 prepare: auto_config build_draminit
 	@mkdir -p $(BIN)
 
-AUTOCONFH=tools/auto_config_h
+AUTOCONFH=tools/auto_config/auto_config_h
 MCONF=tools/mconf
 
 config_list=$(subst configs/,,$(shell find configs/ -maxdepth 1 -mindepth 1 -type f|sort))
@@ -217,6 +217,7 @@ list:
 
 auto_config: chkconfig
 	@echo "  [KCFG] $@.h"
+	@$(MAKE) -C tools/auto_config
 	$(AUTOCONFH) .config include/$@.h
 
 chkconfig:
