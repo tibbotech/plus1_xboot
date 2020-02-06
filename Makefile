@@ -217,7 +217,6 @@ list:
 
 auto_config: chkconfig
 	@echo "  [KCFG] $@.h"
-	@$(MAKE) -C tools/auto_config
 	$(AUTOCONFH) .config include/$@.h
 
 chkconfig:
