@@ -260,6 +260,7 @@
  *********************/
 #define CPU_WAIT_INIT_VAL        0xffffffff
 #define B_START_POS              (SRAM0_END - 0x8)       // 9e809ff8
+
 #define BOOT_ANOTHER_POS         (SRAM0_END - 0x4)       // 9e809ffc
 
 #ifdef PLATFORM_I137
@@ -268,13 +269,14 @@
 #define SRAM0_BASE_A_VIEW        0x9e000000
 #define A_START_POS_A_VIEW       (SRAM0_BASE_A_VIEW + SRAM0_SIZE - 0xc) // 9e007ff4
 #define BOOT_ANOTHER_POS_A_VIEW  (SRAM0_BASE_A_VIEW + SRAM0_SIZE - 0x4) // 9e007ffc
-#elif defined(PLATFORM_Q628) || defined(PLATFORM_I143) 
+#elif defined(PLATFORM_Q628) 
 /* B can access A sram */
 #define A_START_POS_B_VIEW        (A_WORK_MEM_END - 0xc) // 9ea7fff4 - (core * 4)
 #define A_START_POS_A_VIEW        A_START_POS_B_VIEW
 #define BOOT_ANOTHER_POS_A_VIEW   BOOT_ANOTHER_POS
 #elif defined(PLATFORM_I143) 
 /* B can access A sram */
+#define A_BOOT_POS_A_VIEW         0x9e809ffc       // remap to BOOT_ANOTHER_POS
 #define A_START_POS_B_VIEW        0x6ea7fff4 // 6ea7fff4 - (core * 4)
 #define A_START_POS_A_VIEW        A_START_POS_B_VIEW
 #define BOOT_ANOTHER_POS_A_VIEW   BOOT_ANOTHER_POS

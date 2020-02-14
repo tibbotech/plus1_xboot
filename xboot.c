@@ -183,13 +183,6 @@ static void prn_clk_info(int is_A)
 }
 #endif
 
-static void boot_next_set_addr(unsigned int addr)
-{
-	volatile unsigned int *next = (volatile unsigned int *)BOOT_ANOTHER_POS;
-	*next = addr;
-	prn_string("boot next @"); prn_dword(*next);
-}
-
 
 int arm_AChip_setup(void)
 {
@@ -526,6 +519,13 @@ static void fixup_boot_compatible(void)
 	}
 }
 
+static void boot_next_set_addr(unsigned int addr)
+{
+	volatile unsigned int *next = (volatile unsigned int *)BOOT_ANOTHER_POS;
+	*next = addr;
+	prn_string("boot next @"); prn_dword(*next);
+}
+
 
 static void prn_A_setup(void)
 {
@@ -541,15 +541,12 @@ static void boot_next_in_A(void)
 	fixup_boot_compatible();
 
 	prn_string("wake up A\n");
-
 	prn_A_setup();
-
 
 	/* Wake up another to run from boot_next_no_stack() */
 #ifdef PLATFORM_I137 /* B_SRAM address is 9e00_0000 from A view */
 	*(volatile unsigned int *)A_START_POS_B_VIEW = ((u32)&boot_next_no_stack) - 0x800000;
 #elif defined(PLATFORM_I143)
-	prn_dword(CA7_START_ADDR);
 	*(volatile unsigned int *)A_START_POS_B_VIEW = CA7_START_ADDR;
 #else 
 	*(volatile unsigned int *)A_START_POS_B_VIEW = (u32)&boot_next_no_stack;
@@ -595,13 +592,15 @@ static void boot_uboot(void)
 	reg = (reg & HW_CFG_MASK) >> HW_CFG_SHIFT;
 	if(reg == INT_CA7_BOOT)
 	{
-		prn_string("C+P mode,CA7(ARM) do uboot ");
-		//boot_next_set_addr(UBOOT_RUN_ADDR);
+		prn_string("C+P mode,CA7(ARM) do uboot,wait CA7 ready\n");
+		boot_next_set_addr(UBOOT_RUN_ADDR_A_VIEW);
 		if(image_get_arch(hdr) == 0x1A)
 		{
 			prn_string("WARN: CA7 can't run riscv u-boot\n");
 			while(1);
 		}
+		while(*(volatile unsigned int *)A_START_POS_B_VIEW != 0xFFFFFFFF);	//wait CA7 start and init
+
 		boot_next_in_A();
 	}
 	else{

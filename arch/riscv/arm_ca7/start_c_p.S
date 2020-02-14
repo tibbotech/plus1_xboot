@@ -2,15 +2,11 @@
 #include <asm/link.h>
 #include <asm/common.h>
 #include <cpu/arm.h>
-#define ABIO_CFG 0x020718
-//#define A_PLL_CTL0_CFG      0x2c5109  /* default: pllclk=1215M, corelck= 607.5M */
-#define A_PLL_CTL0_CFG      0x445149    /* pllclk=1863M, corelck= 931.5M */
+#include <config_xboot.h>
 
 .global _start
 _start:
-
-	STAMP(0x11116666);
-	STAMP(0x22226666);
+	STAMP(0xCA700001);
 	ldr r0, =RF_GRP(18, 0)
 	ldr	r1, ='C'
 	str	r1, [r0]
@@ -20,34 +16,31 @@ _start:
 	ldr r0, =RF_GRP(18, 0)
 	ldr	r1, ='7'
 	str	r1, [r0]	
-//FUNC(boot_next_no_stack)
+
 	/* abio up */
 #if defined(PLATFORM_I137) || defined(CONFIG_PLATFORM_I143)
 #ifdef CONFIG_PLATFORM_I143
 	bl	A_raise_pll		@ A: speed up core clock
 #endif
-	STAMP(0xa0000001);
 	bl	A_setup_abio		@ A: speed up ABIO bus clock
 #if defined(CONFIG_PLATFORM_I143) && !defined(CONFIG_DISABLE_CORE2_3)
 	bl	A_release_cores
 #endif
 	bl	A_bus_fixup
+	bl	A_BIO_access_set
 skip_abio_up:
 #endif
-
 	mov	r0, #0			@ 0
 	mov	r1, #0			@ mach id
-	ldr	r2, =0	@ dtb
-	ldr	r12, =0x20100000;//BOOT_ANOTHER_POS_A_VIEW
-	ldr r4, =0x9c000000
-	str r12, [r4]
+	ldr	r2, = DTB_RUN_ADDR_A_VIEW	@ dtb
+	ldr	r12, = A_BOOT_POS_A_VIEW
+	ldr	r12, [r12]
 	WORD_DSB
 	WORD_ISB
-	
-
+	ldr r4, = 0x9c000000
+	str r12, [r4]
 	bx	r12
-
-//ENDFUNC(boot_next_no_stack)
+	b .
 
 
 /*
@@ -74,14 +67,32 @@ A_setup_iobus_start:
 	bx	lr
 A_setup_iobus_end:
 
-#ifdef CONFIG_PLATFORM_I143
+/* A : set BIO to access CBDMA  */
+FUNC(A_BIO_access_set)
+	ldr	r0, = 0x9c105038	@ A BIO 0.14 src addr
+	ldr	r1, = 0x9e80000f
+	str	r1, [r0]
+
+	ldr	r0, = 0x9c10503c	@ A BIO 0.15 dst addr
+	ldr	r1, = 0xfe8000ff
+	str	r1, [r0]
+	
+	ldr r0, = 0x9c105030	@ A BIO 0.12 enable remap
+	ldr r2, = 0x400040
+	ldr r1, [r0]
+	orr r1,r1,r2
+	str r1, [r0]
+	
+	bx	lr
+ENDFUNC(A_BIO_access_set)
+
+
 FUNC(A_raise_pll)
 	ldr	r0, =A_RF_GRP(0, 11)	@ A G0.11 pll_ctl0
 	ldr	r1, =A_PLL_CTL0_CFG
 	str	r1, [r0]
 	bx	lr
 ENDFUNC(A_raise_pll)
-#endif
 
 /* A : setup abio on A_SRAM */
 FUNC(A_setup_abio)
@@ -105,7 +116,6 @@ iobus_cpy:
 	b	iobus_cpy
 	
 iobus_start:
-		STAMP(0x22224444);
 	WORD_DSB
 	WORD_ISB
 	ldr	r0, =A_REG_BASE
