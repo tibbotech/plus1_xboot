@@ -1155,6 +1155,7 @@ static void emmc_boot(void)
 	if (run_draminit()) {
 		return;
 	}
+	
 
 	if (initDriver_SD(EMMC_SLOT_NUM)) {
 		prn_string("init fail\n");
@@ -1252,16 +1253,23 @@ static void emmc_boot(void)
 	for (i = 0; i < 4; i++) {
 		blk_start2 = (u32) gpt_part[i].starting_lba;
 		prn_string("part"); prn_decimal(1 + i);
-		prn_string(" LBA="); prn_dword(blk_start1);
+		prn_string(" LBA="); prn_dword(blk_start2);
 		len = emmc_load_uhdr_image("freertos", (void *)FREERTOS_LOAD_ADDR, 0,
 				blk_start2, 0, UBOOT_MAX_LEN, MMC_USER_AREA);
 		if (len > 0)
 			break;
-	}	
+	}		
 #endif	
-
-
-
+	for (i = 0; i < 4; i++) {
+		blk_start2 = (u32) gpt_part[i].starting_lba;
+		prn_string("part"); prn_decimal(1 + i);
+		prn_string(" LBA="); prn_dword(blk_start2);
+		len = emmc_load_uhdr_image("dtb", (void *)DTB_LOAD_ADDR, 0,
+				blk_start2, 0, UBOOT_MAX_LEN, MMC_USER_AREA);
+		if (len > 0)
+			break;
+	}	
+	
 	if (len <= 0) {
 		prn_string("bad uboot\n");
 		return;
