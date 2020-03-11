@@ -526,6 +526,8 @@ static void halt(void)
 
 static void boot_next_in_A(void)
 {
+	volatile u32 *pB_Addr;
+	
 	fixup_boot_compatible();
 
 	prn_string("wake up A\n");
@@ -538,23 +540,14 @@ static void boot_next_in_A(void)
 #else
 	*(volatile unsigned int *)A_START_POS_B_VIEW = (u32)&boot_next_no_stack;
 #endif
-
-	/* Drop to shell if having 2nd uart debug port */
-#ifdef CONFIG_DEBUG_WITH_2ND_UART
-	mon_shell();
-#endif
-
-#ifdef IPC_B2A_TEST
-	ipc_b2a_test();
-#endif
-
-	/* B halt */
-#ifdef CONFIG_PLATFORM_Q628
-	prn_string("B wfi\n");
-	halt();
-#endif
-
-	while (1);
+	/* no print since this point */
+	g_bootinfo.mp_flag = 1;
+	pB_Addr = (volatile unsigned int *)B_START_POS;
+	*pB_Addr = CPU_WAIT_INIT_VAL;
+	
+	/* B chip wait run addr */
+	while(*pB_Addr == CPU_WAIT_INIT_VAL);
+	exit_bootROM(*pB_Addr);// jump to nonos_B
 }
 
 /* Assume u-boot has been loaded */
@@ -1608,7 +1601,6 @@ static void boot_flow(void)
 
 static void init_uart(void)
 {
-#ifdef CONFIG_DEBUG_WITH_2ND_UART
 #ifdef CONFIG_PLATFORM_Q628
 	/* uart1 pinmux : x1,UA0_TX, X2,UA1_RX */
 	MOON3_REG->sft_cfg[14] = RF_MASK_V((0x7f << 0), (1 << 0));
@@ -1616,7 +1608,9 @@ static void init_uart(void)
 	MOON0_REG->reset[1] = RF_MASK_V_CLR(1 << 9); /* release UA1 */
 	UART1_REG->div_l = UART_BAUD_DIV_L(BAUDRATE, UART_SRC_CLK);
 	UART1_REG->div_h = UART_BAUD_DIV_H(BAUDRATE, UART_SRC_CLK);
-#endif
+	UART1_REG->dr = 'U';
+	UART1_REG->dr = 'A';
+	UART1_REG->dr = '1';
 #endif
 }
 
