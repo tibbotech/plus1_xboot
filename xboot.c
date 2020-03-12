@@ -761,7 +761,7 @@ static int fat_load_uhdr_image(fat_info *finfo, const char *img_name, void *dst,
 	}
 	
 	/* ISPBOOOT.BIN file index is 0,uboot.img is 1*/
-	int fileindex = (type==SDCARD_ISP)?1:0;
+	int fileindex = (type==SDCARD_BOOT)?1:0;
 
 	/* read header first */
 	len = 64;
@@ -867,16 +867,14 @@ static void do_fat_boot(u32 type, u32 port)
 
 	run_draminit();
 
-	if(type==SDCARD_ISP)
+	if(type==SDCARD_ISP && (fat_sdcard_check_boot_mode(&g_finfo)==TRUE))
 	{
-		if(fat_sdcard_check_boot_mode(&g_finfo)==FALSE)
-		{
-			prn_string(" sdcard do isp mode !!!!!\n");
-			type = USB_ISP;// check isp mode or boot mode by check whether get 4 files.if isp mode,do the usb isp flow;
-		}
+		prn_string("sdcard do boot mode !!!!!\n");
+		type = SDCARD_BOOT;
 	}
+
 	/* load u-boot from usb */
-	if (fat_load_uhdr_image(&g_finfo, "uboot", (void *)UBOOT_LOAD_ADDR, ((type==SDCARD_ISP)?0:ISP_IMG_OFF_UBOOT), UBOOT_MAX_LEN,type) <= 0) {
+	if (fat_load_uhdr_image(&g_finfo, "uboot", (void *)UBOOT_LOAD_ADDR, ((type==SDCARD_BOOT)?0:ISP_IMG_OFF_UBOOT), UBOOT_MAX_LEN,type) <= 0) {
 		prn_string("failed to load uboot\n");
 		return;
 	}

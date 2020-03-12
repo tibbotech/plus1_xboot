@@ -14,7 +14,6 @@ static const unsigned char FILENAMES[FAT_FILES][12] =
 	"ISPBOOOTBIN","U-BOOT  IMG","UIMAGE     ","DTB        "
 };
 
-static u8 g_find_all_files = FALSE;
 static u32 search_files(fat_info *info, u8 *buffer, u8 type);
 
 static u32 next_cluster(fat_info *info, u32 currentClus, u8 *buffer)
@@ -350,7 +349,6 @@ static u32 search_files(fat_info *info, u8 *buffer, u8 type)
 								fat_type == CARD2_ISP || fat_type == CARD3_ISP)
 								return PASS2;
 							*/
-							g_find_all_files = TRUE;
 							return PASS;
 						}
 					}
@@ -374,14 +372,19 @@ static u32 search_files(fat_info *info, u8 *buffer, u8 type)
 	return FAIL;
 }
 
+/*sdcard do isp or boot is decide by ISPBOOOT.BIN size
+  do isp: ISPBOOOT.BIN size > xboot.img size (64k);
+  do boot: ISPBOOOT.BIN size == xboot.img size (64k);
+  for debug Uboot, do not check file
+*/
 u8 fat_sdcard_check_boot_mode(fat_info *info)
 {
-	if(info->fileInfo[0].size >= 0x400000) 
+
+	if(info->fileInfo[0].size != 0x10000) 
 	{
-		//ISPBOOOT.BIN only have xboot and uboot,smaller than 2M,if larger than 4M,do isp mode.
 		dbg_info();
 		return FALSE;
 	}
-	return g_find_all_files;
+	return TRUE;
 }
 
