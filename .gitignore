@@ -4,3 +4,5 @@
 .depend
 .config*
 include/auto_config.h
+bin/
+boot.ld
