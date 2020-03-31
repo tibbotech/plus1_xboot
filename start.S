@@ -67,6 +67,9 @@ FUNC(exit_bootROM)
 	WORD_DSB
 	WORD_ISB
 1:
+#ifndef CONFIG_LOAD_LINUX
+	ldr r0, =DTB_LOAD_ADDR	@ dtb
+#endif
 	bx	r12
 ENDFUNC(exit_bootROM)
 
@@ -201,5 +204,8 @@ skip_abio_up:
 	WORD_DSB
 	WORD_ISB
 1:
+#ifndef CONFIG_LOAD_LINUX
+	ldr	r0, =DTB_LOAD_ADDR	@ dtb
+#endif
 	bx	r12
 ENDFUNC(boot_next_no_stack)

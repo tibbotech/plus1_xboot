@@ -13,6 +13,10 @@
 #define FAT_FILENAMELEN 	11
 //#define SECTORSIZE 		512
 
+#define FAT_ISPBOOOT_INDEX		(0)
+#define FAT_UBOOT_INDEX			(1)
+#define FAT_DTB_INDEX			(3)
+
 typedef struct {
 	u32 size;
 	u32 sectPos;

@@ -20,6 +20,9 @@
 #define SIGN_DATA_SIZE	(64+8)// 64:sign data  8:flag data
 #endif
 
+#define FDT_MAGIC     0xedfe0dd0
+
+
 /*
  * TOC
  * ---------------------
@@ -61,7 +64,6 @@ int verify_uboot_signature(const struct image_header  *hdr)
 	int ret = -1;
 	int mmu = 1;
 	int imgsize = 0;
-	u8 sig_flag[8] = {0};
 	u8 *data=NULL, *sig=NULL;
 	u8 in_pub[32];
 	unsigned int data_size=0;
@@ -94,11 +96,7 @@ int verify_uboot_signature(const struct image_header  *hdr)
 	data_size = imgsize  + sizeof(struct image_header);//- sig_size-sig_flag_size;
 	sig = data + data_size+sig_flag_size;
 	
-	sig_flag[0]=*(u8 *)(data+data_size); // get sign flag data
-	sig_flag[1]=*(u8 *)((data+data_size)+1);
-	sig_flag[2]=*(u8 *)((data+data_size)+2);
-	sig_flag[3]=*(u8 *)((data+data_size)+3);
-	u32 sig_magic_data = (sig_flag[0]<<24)|(sig_flag[1]<<16)|(sig_flag[2]<<8)|(sig_flag[3]);
+	u32 sig_magic_data = *(u32 *)(data+data_size);// get sign flag data
 	prn_string("sig_magic_data=");prn_dword0(sig_magic_data);
 	if(sig_magic_data != VERIFY_SIGN_MAGIC_DATA)
 	{
@@ -550,6 +548,26 @@ static void boot_next_in_A(void)
 	exit_bootROM(*pB_Addr);// jump to nonos_B
 }
 
+/*dtb is contain in uboot,and load dtb after uboot have loaded.*/
+/******  |uboot-header|uboot-data|dtb-data(32k)|sign-data| ******/
+static int boot_load_dtb(void)
+{
+	const struct image_header *hdr = NULL;
+	int dtb_start_addr,uboot_size;
+
+	hdr = (struct image_header *)UBOOT_LOAD_ADDR;
+	uboot_size = image_get_size(hdr);
+
+	dtb_start_addr=UBOOT_RUN_ADDR+uboot_size-DTB_MAX_LEN;//dtb is place at last 32k of uboot.bin
+
+	memcpy32((u32 *)DTB_LOAD_ADDR, (u32 *)dtb_start_addr, DTB_MAX_LEN / 4);
+	if(*(u32 *)DTB_LOAD_ADDR != FDT_MAGIC){
+		prn_string("load dtb fail! \n");
+		return -1;
+	}
+	return 0;
+}
+
 /* Assume u-boot has been loaded */
 static void boot_uboot(void)
 {
@@ -569,6 +587,11 @@ static void boot_uboot(void)
 	boot_next_set_addr(UBOOT_RUN_ADDR);
 
 	is_for_A = memcmp((const u8 *)image_get_name(hdr), (const u8 *)"uboot_B", 7);
+
+	/* load dtb from uboot memory to dtb addr */
+	if(g_bootinfo.gbootRom_boot_mode!=SDCARD_ISP && (boot_load_dtb() != 0)){
+		return;
+	}
 
 	/* if B but image is for A, wake up A */
 	if (g_bootinfo.bootcpu == 0 && is_for_A) {
@@ -747,8 +770,8 @@ static int fat_load_uhdr_image(fat_info *finfo, const char *img_name, void *dst,
 	u32 img_offs, int max_img_sz,int type)
 {
 	struct image_header *hdr = dst;
-	int len;
-	int ret;
+	int len,ret;
+	int fileindex = 0;
 	u8 *buf = g_io_buf.usb.sect_buf;
 
 	prn_string("fat load ");
@@ -756,12 +779,25 @@ static int fat_load_uhdr_image(fat_info *finfo, const char *img_name, void *dst,
 	prn_string("\n");
 
 	/* usb dma need aligned address */
-	if ((u32)dst & 0x7ff) {
+	if ((u32)dst & 0xfff) {
 		prn_string("WARN: unaligned dst "); prn_dword((u32)dst);
 	}
-	
-	/* ISPBOOOT.BIN file index is 0,uboot.img is 1*/
-	int fileindex = (type==SDCARD_BOOT)?1:0;
+	if (memcmp((const u8 *)img_name, (const u8 *)"dtb", strlen("dtb")) == 0)
+	{
+		fileindex = FAT_DTB_INDEX;
+		prn_dword0(finfo->fileInfo[fileindex].size);
+		ret = fat_read_file(fileindex, finfo, buf, 0, finfo->fileInfo[fileindex].size, dst);
+		if (ret == FAIL) {
+			prn_string("load body failed\n");
+			return -1;
+		}
+		return finfo->fileInfo[fileindex].size;
+	}
+	else
+	{
+		/* ISPBOOOT.BIN file index is 0,uboot.img is 1*/
+		fileindex = (type==SDCARD_BOOT)?FAT_UBOOT_INDEX:FAT_ISPBOOOT_INDEX;
+	}
 
 	/* read header first */
 	len = 64;
@@ -878,7 +914,20 @@ static void do_fat_boot(u32 type, u32 port)
 		prn_string("failed to load uboot\n");
 		return;
 	}
-
+	if(type==SDCARD_BOOT)// sdcard boot load dtb from /dtb file
+	{
+		/* load dtb from sdcard */
+		if (fat_load_uhdr_image(&g_finfo, "dtb", (void *)DTB_RUN_ADDR, 0, UBOOT_MAX_LEN,type) <= 0) {
+			prn_string("failed to load DTB\n");
+			return;
+		}
+		memcpy32((u32 *)DTB_LOAD_ADDR,(u32 *)DTB_RUN_ADDR,g_finfo.fileInfo[FAT_DTB_INDEX].size);
+	}
+	else if(type==SDCARD_ISP)
+	{
+		boot_load_dtb();
+	}
+	
 	boot_uboot();
 }
 #endif /* CONFIG_HAVE_FS_FAT */
