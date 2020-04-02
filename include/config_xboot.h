@@ -54,6 +54,7 @@
 #define DTB_RUN_ADDR_A_VIEW         0x201F0000          /* for  C+P */
 #define DTB_RUN_ADDR        		0xA01F0000          /* dtb */
 #define DTB_LOAD_ADDR         		(DTB_RUN_ADDR-0X40)     /* skip header */
+#define DTB_MAX_LEN        	  0x8000
 
 // Linux
 #define LINUX_RUN_ADDR_A_VIEW 		0x20028000 				 /* for  C+P */

@@ -121,6 +121,7 @@
 #define SDCARD_ISP              0x11
 #define UART_ISP                0x13
 #define USB_ISP                 0x15
+#define SDCARD_BOOT             0xfb  // add for sdcard boot.
 #define SPINAND_BOOT            0xfe  // not use ,for code compile
 #define NAND_LARGE_BOOT         0xfd  // not use ,for code compile
 #define EXT_BOOT                0xfc  // not use ,for code compile
