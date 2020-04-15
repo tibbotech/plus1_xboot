@@ -37,9 +37,8 @@
 #define UBOOT_MAX_LEN        0x200000
 
 // DTB
-#define DTB_LOAD_ADDR         (0x300000 - 0x40)          /* dtb */
-#define DTB_RUN_ADDR          0x300000                   /* skip header */
-#define DTB_MAX_LEN        	  0x8000
+#define DTB_LOAD_ADDR        (0x300000 - 0x40)          /* dtb */
+#define DTB_RUN_ADDR         0x300000                   /* skip header */
 
 // Linux
 #define LINUX_RUN_ADDR       0x308000                   /* vmlinux */
