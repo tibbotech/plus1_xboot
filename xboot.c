@@ -66,7 +66,7 @@ int verify_uboot_signature(const struct image_header  *hdr)
 	unsigned int data_size=0;
 	/* Not Secure Chip => return ok */
 	if ((!(g_bootinfo.sb_flag & SB_FLAG_ENABLE))) {
-		prn_string("\n ******OTP Secure Boot is OFF ,return success******\n");
+		prn_string("\n ******OTP Secure Boot is OFF, return success******\n");
 		return 0;
 	}
 
