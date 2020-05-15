@@ -190,7 +190,7 @@ clean:
 distclean: clean
 	@rm -rf .config .config.old $(BIN)/v7
 	@rm -f GPATH GTAGS GRTAGS
-	@-rmdir $(BIN)
+	@rm -rf $(BIN)
 	@echo "$@: done"
 
 #################
