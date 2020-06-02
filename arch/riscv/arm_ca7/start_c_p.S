@@ -18,12 +18,10 @@ _start:
 	str	r1, [r0]	
 
 	/* abio up */
-#if defined(PLATFORM_I137) || defined(CONFIG_PLATFORM_I143)
-#ifdef CONFIG_PLATFORM_I143
+#ifdef PLATFORM_I143
 	bl	A_raise_pll		@ A: speed up core clock
-#endif
 	bl	A_setup_abio		@ A: speed up ABIO bus clock
-#if defined(CONFIG_PLATFORM_I143) && !defined(CONFIG_DISABLE_CORE2_3)
+#ifndef CONFIG_DISABLE_CORE2_3
 	bl	A_release_cores
 #endif
 	bl	A_bus_fixup
@@ -52,7 +50,7 @@ skip_abio_up:
  */
 A_setup_iobus_start:
 	/* ASCI io delay */
-#if defined(CONFIG_PLATFORM_I143) && !defined(CONFIG_BOOT_ON_ZEBU)
+#if defined(PLATFORM_I143) && !defined(CONFIG_BOOT_ON_ZEBU)
 	str	r3, [r0, #0x48]
 #endif
 	str	r1, [r0, #0xc]
@@ -125,7 +123,7 @@ iobus_start:
 	ldr	r3, =A_RF_GRP(19, 3)	@ A_STC divisor
 	ldr	r4, =(1 << 15 | 0x95)	@ A_STC 90K with extdiv=1
 	str	r4, [r3]
-#if defined(CONFIG_PLATFORM_I143) && !defined(CONFIG_BOOT_ON_ZEBU)
+#if defined(PLATFORM_I143) && !defined(CONFIG_BOOT_ON_ZEBU)
 	ldr	r3, =ABIO_IOCTRL_CFG
 #endif
 	/* Jump to A_SRAM */
@@ -136,7 +134,7 @@ iobus_start:
 	bx	lr
 ENDFUNC(A_setup_abio)
 
-#ifdef CONFIG_PLATFORM_I143
+#ifdef PLATFORM_I143
 /* A release cores 2, 3 */
 FUNC(A_release_cores)
 	ldr	r2, =A_RF_GRP(0, 2)

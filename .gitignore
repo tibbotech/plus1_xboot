@@ -6,3 +6,4 @@
 include/auto_config.h
 bin/
 boot.ld
+boot_c_p.ld

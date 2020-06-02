@@ -1888,11 +1888,7 @@ int ReadSDMultipleSectorDma(unsigned int SectorIdx, unsigned int SectorNum,
 		SDRSPTYPE_R2(0);
 	}
 	else {
-#ifdef PLATFORM_8388
-		SD_CONFIG_SET(SD_CONFIG_GET() & 0xfffff7ff);	/* Set response type to 6 bytes*/
-#else
 		SD_CONFIG_SET(SD_CONFIG_GET() & (~(1ul << 13)));	/* Set response type to 6 bytes*/
-#endif
 	}
 	SD_CMD_BUF0_SET( (unsigned char) (CMD18 + 0x40));
 	SD_CMD_BUF1_SET( (unsigned char) ((cmd_args >> 24) & 0x000000ff));
@@ -1999,11 +1995,7 @@ int ReadSDMultipleSector(unsigned int SectorIdx, unsigned int SectorNum,
 		SDRSPTYPE_R2(0);
 	}
 	else {
-#ifdef PLATFORM_8388
-		SD_CONFIG_SET(SD_CONFIG_GET() & 0xfffff7ff);	/* Set response type to 6 bytes*/
-#else
 		SD_CONFIG_SET(SD_CONFIG_GET() & (~(1ul << 13)));	/* Set response type to 6 bytes*/
-#endif
 	}
 
 	SD_CMD_BUF0_SET( (unsigned char) (CMD18 + 0x40));

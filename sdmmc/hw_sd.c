@@ -71,12 +71,7 @@ void hwSdInit(unsigned int mmcMode)
 		SD_RXDATTMR_SET(SD_RXDATTMR_MASK);
 	}
 	else {
-#ifdef PLATFORM_8388
-		SD_CONFIG_SET((SD_CONFIG_GET() & ~ (0x7000 | (1<<17))) | 0x3000 | (1 << 17));
-		SD_RXDATTMR_SET(3);
-#else
 		SD_CONFIG_SET((SD_CONFIG_GET() & ~ ((0x7ul << 14) | (0x1ul<<19))) | (0x3ul << 14) | (0x1 << 19));
-#endif
 	}
 	SD_TXDUMMY_SET(8);
 	SD_RST();
@@ -108,11 +103,7 @@ void hwSdBusWidthSet(unsigned char sdBusWidth)
 
 		tval = (sdBusWidth==BUS_WIDTH_4BIT) ? 1 : 0;
 		value = SD_CONFIG_GET();
-#ifdef PLATFORM_8388
-		value = (value & ~(1<<10)) | (tval << 10);
-#else
 		value = (value & ~(1ul<<12)) | (tval << 12);
-#endif
 		SD_CONFIG_SET(value);
 	}
 }
@@ -126,11 +117,7 @@ void hwSdFreqSet(unsigned int sdFreq)
 		unsigned int value;
 
 		value = SD_CONFIG_GET();
-#ifdef PLATFORM_8388
-		value = (value & 0xfffffc00) | (sdFreq & 0x3ff);
-#else
 		value = (value & 0xfffff000) | (sdFreq & 0xfff);
-#endif
 		SD_CONFIG_SET(value);
 	}
 }
@@ -165,13 +152,8 @@ void hwSdConfig(unsigned int sdBusWidth, unsigned int mmcMode)
 		unsigned int tmp;
 
 		tmp = SD_CONFIG_GET();
-#ifdef PLATFORM_8388
-		tmp &= 0xffff8800;
-		tmp |= (unsigned short) ((mmcMode << 14) | (sdBusWidth << 10) | 0x3000);
-#else
 		tmp &= ~((1ul << 16) | (1ul << 12) | (0x3ul << 14));
 		tmp |=  ((mmcMode << 16) | (sdBusWidth << 12) | (0x3 << 14));
-#endif
 		SD_CONFIG_SET(tmp);
 	}
 }
@@ -258,23 +240,6 @@ unsigned int hwSdRxResponse(unsigned char * rspBuf, unsigned int rspType)
 #endif
 
 	if (rspType == RSP_TYPE_R2) {
-#ifdef PLATFORM_8388
-		for (rspNum = 6; rspNum < 17; rspNum++) {
-			while (1) {
-				value = SD_STATUS0_GET();
-				if ((value & 0x02) == 0x02) {
-					break;	/* Wait until response buffer full*/
-				} else if ((value & 0x40) == 0x40) {
-					EPRINTK("Rsp timeout (1)...\n");
-					return SD_RSP_TIMEOUT;
-				}
-			}
-			rspBuf[rspNum] = (SD_RSP_BUF4_5_GET & 0xff);
-#ifdef SD_VERBOSE
-			prn_byte(rspBuf[rspNum]); // conti. SD RSP print
-#endif
-		}
-#else
 		if (!IS_EMMC_SLOT()) {
 			status = wait_response_buff_full();
 			if (status)
@@ -309,7 +274,6 @@ unsigned int hwSdRxResponse(unsigned char * rspBuf, unsigned int rspType)
 #ifdef SD_VERBOSE
 	// SD RSP print end
 	prn_string("\n");
-#endif
 #endif
 	}
 	// Check RSP CRC7 error
@@ -549,11 +513,7 @@ unsigned int hwSdCmdSend(unsigned int cmd, unsigned int arg,
 		}
 		else {
 			value = SD_CONFIG_GET();
-#ifdef PLATFORM_8388
-			SD_CONFIG_SET(value & 0xfffff7ff);	/* Set response type to 6 bytes*/
-#else
 			SD_CONFIG_SET(value & (~(1ul << 13)));	/* Set response type to 6 bytes*/
-#endif
 		}
 	} else {
 		if (IS_EMMC_SLOT()) {
@@ -561,11 +521,7 @@ unsigned int hwSdCmdSend(unsigned int cmd, unsigned int arg,
 		}
 		else {
 			value = SD_CONFIG_GET();
-#ifdef PLATFORM_8388
-			SD_CONFIG_SET(value | (1ul << 11));	/* Set response type to 17 bytes*/
-#else
 			SD_CONFIG_SET(value | (1ul << 13));	/* Set response type to 17 bytes*/
-#endif
 		}
 	}
 

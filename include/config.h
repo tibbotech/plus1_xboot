@@ -21,13 +21,7 @@
 #endif
 
 /* Emulation */
-#ifdef CONFIG_PLATFORM_8388
-#define PLATFORM_8388                   /* Build for 8388 */
-#elif defined(CONFIG_PLATFORM_I137)
-#define PLATFORM_I137                   /* Build for I137 */
-#elif defined(CONFIG_PLATFORM_3502)
-#define PLATFORM_3502                   /* Build for 3502 */
-#elif defined(CONFIG_PLATFORM_Q628)
+#ifdef CONFIG_PLATFORM_Q628
 #define PLATFORM_Q628                   /* Build for Q628 */
 #elif defined(CONFIG_PLATFORM_I143)
 #define PLATFORM_I143                   /* Build for Q628 */
@@ -92,19 +86,9 @@
  *********************/
 
 /* IV_MX[6:2] */
-#if defined(PLATFORM_8388) || defined(PLATFORM_I137)
-#define HW_CFG_REG              RF_GRP(0, 28)
-#define HW_CFG_SHIFT            10
-#define HW_CFG_MASK_VAL         0x1D
-#elif defined(PLATFORM_3502)
-#define HW_CFG_REG              RF_GRP(0, 28)
-#define HW_CFG_SHIFT            14
-#define HW_CFG_MASK_VAL         0x1D
-#else
 #define HW_CFG_REG              RF_GRP(0, 31)
 #define HW_CFG_SHIFT            12
 #define HW_CFG_MASK_VAL         0x1F
-#endif
 #define HW_CFG_MASK             (HW_CFG_MASK_VAL << HW_CFG_SHIFT)
 
 #ifdef PLATFORM_I143
@@ -159,14 +143,7 @@
  * Clock
  *********************/
 #define XTAL_CLK               (27 * 1000 * 1000)
-
-#ifndef PLATFORM_8388
 #define PLLSYS                 (202500 * 1000)      /* 202.5MHz */
-#endif
-
-#if defined(PLATFORM_I137) || defined(CONFIG_PLATFORM_Q628)
-#define CLK_B_PLLSYS            202500000       /* 202.5MHz */
-#endif
 
 /**********************
  * Timer
@@ -196,11 +173,7 @@
 /**********************
  * SRAM 
  *********************/
-#ifdef PLATFORM_I137
-#define SRAM0_SIZE          (32 * 1024)
-#else
 #define SRAM0_SIZE          (40 * 1024)
-#endif
 
 #ifdef PLATFORM_I143
 #define SRAM0_BASE          0xFE800000
@@ -216,10 +189,7 @@
 #define CA7_START_ADDR    (0x7E800000+0x6800+0x20)
 #endif
 #endif
-#ifdef PLATFORM_I137
-#define B_SRAM_BASE_A_VIEW  0x9e000000
-#define A_WORK_MEM_BASE     0x9e800000
-#elif defined(PLATFORM_I143)
+#ifdef PLATFORM_I143
 #define B_SRAM_BASE_A_VIEW  0xFE800000
 #define A_WORK_MEM_BASE     0x9ea00000
 #else
@@ -254,13 +224,7 @@
 #define B_START_POS              (SRAM0_END - 0x8)       // 9e809ff8
 #define BOOT_ANOTHER_POS         (SRAM0_END - 0x4)       // 9e809ffc
 
-#ifdef PLATFORM_I137
-/* B can't access A sram */
-#define A_START_POS_B_VIEW       (SRAM0_END - 0xc)       // 9e809ff4
-#define SRAM0_BASE_A_VIEW        0x9e000000
-#define A_START_POS_A_VIEW       (SRAM0_BASE_A_VIEW + SRAM0_SIZE - 0xc) // 9e007ff4
-#define BOOT_ANOTHER_POS_A_VIEW  (SRAM0_BASE_A_VIEW + SRAM0_SIZE - 0x4) // 9e007ffc
-#elif defined(PLATFORM_Q628)
+#ifdef PLATFORM_Q628
 /* B can access A sram */
 #define A_START_POS_B_VIEW        (A_WORK_MEM_END - 0xc) // 9ea7fff4 - (core * 4)
 #define A_START_POS_A_VIEW        A_START_POS_B_VIEW
@@ -281,13 +245,7 @@
 /**********************
  * UART
  *********************/
-#ifdef PLATFORM_8388
-#define UART_SRC_CLK        (270 * 1000 * 1000)  /* 8388 SYSSLOW */
-#elif defined(PLATFORM_3502)
-#define UART_SRC_CLK        (250 * 1000 * 1000)  /* 3502 SYSCLK */
-#else
 #define UART_SRC_CLK        (XTAL_CLK)
-#endif
 
 /*
  * X = ((sclk + baud/2) / baud)
@@ -344,14 +302,8 @@
 //#define SD_VERBOSE
 
 /* Card controller source clock */
-#ifdef PLATFORM_8388
-#define CARD_CLK           (135*1000*1000)  /* SD0 */
-#define CARD012_CLK        (135*1000*1000)
-#else
-/* Q628 SD0 SD1 source clock */
 #define CARD_CLK           (PLLSYS)
 #define CARD012_CLK        (PLLSYS)
-#endif
 
 /***********************
 * eMMC
@@ -364,11 +316,6 @@
 /***********************
 * OTP
 ***********************/
-#ifdef PLATFORM_8388
-#define OTP_WHO_BOOT_REG	0x9e80fffc	/* Fake &OTP[WHO_BOOT] */
-#define OTP_WHO_BOOT_BIT	2
-#else
-/* Q628 OTP[WHO_BOOT] = G350.0 bit10 = G4.31 bit0 */
 #define OTP_WHO_BOOT_REG	RF_GRP(4, 31)
 #define OTP_WHO_BOOT_BIT	0
-#endif
+

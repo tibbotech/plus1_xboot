@@ -190,12 +190,7 @@ enum SD_HANDLE_STATE {
 /******************************************************************************
 *                SD AND EMMC MACRO Function Define
 *******************************************************************************/
-#ifdef PLATFORM_8388
-#define IS_EMMC_SLOT()  (0)
-#else
 #define IS_EMMC_SLOT()    ((gDEV_SDCTRL_BASE_ADRS == (unsigned int)ADDRESS_CONVERT(CARD0_CTL_REG)) || (gDEV_SDCTRL_BASE_ADRS == (unsigned int)ADDRESS_CONVERT(CARD1_CTL_REG)))
-//#define IS_SDCARD_SLOT()  (0)
-#endif
 
 #define SD_WAIT_RSP_TIME_SET(x) \
 	do { \

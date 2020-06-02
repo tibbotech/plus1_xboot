@@ -158,15 +158,6 @@ static void fixup_boot_compatible(void)
 }
 
 #ifdef PLATFORM_Q628
-static int b_pll_get_rate(void)
-{
-	unsigned int reg = MOON4_REG->pllsys;    /* G4.26 */
-	unsigned int reg2 = MOON4_REG->clk_sel0; /* G4.27 */
-
-	if ((reg >> 9) & 1) /* bypass? */
-		return 27000000;
-	return (((reg & 0xf) + 1) * 13500000) >> ((reg2 >> 4) & 0xf);
-}
 static void exit_xboot(const char *msg, u32 addr)
 {
 	fixup_boot_compatible();
@@ -176,20 +167,22 @@ static void exit_xboot(const char *msg, u32 addr)
 	}
 	exit_bootROM(addr);
 }
-#endif
+static int b_pll_get_rate(void)
+{
+	unsigned int reg = MOON4_REG->pllsys;    /* G4.26 */
+	unsigned int reg2 = MOON4_REG->clk_sel0; /* G4.27 */
 
-#if defined(PLATFORM_I137) || defined(PLATFORM_Q628)
+	if ((reg >> 9) & 1) /* bypass? */
+		return 27000000;
+	return (((reg & 0xf) + 1) * 13500000) >> ((reg2 >> 4) & 0xf);
+}
 static void prn_clk_info(int is_A)
 {
 	unsigned int b_sysclk, io_ctrl;
 	unsigned int a_pllclk, coreclk, ioclk, sysclk, clk_cfg, a_pllioclk;
 
 	prn_string("B: b_sysclk=");
-#if defined(PLATFORM_I137)
-	b_sysclk = CLK_B_PLLSYS >> ((MOON0_REG->clk_sel[1] >> 4) & 7);
-#else
 	b_sysclk = b_pll_get_rate();
-#endif
 	prn_decimal(b_sysclk / 1000000);
 	prn_string("M abio_ctrl=(");
 	io_ctrl = BIO_CTL_REG->io_ctrl;
@@ -224,11 +217,8 @@ static void init_hw(void)
 {
 	int i;
 	__attribute__((unused)) int is_A = 0;
-
 	dbg();
-
 	*(volatile unsigned int *) (0x9C000000 +0x2EC) = 0x01c30000;// set DC12_CTL_1(G5.27) to default,for DCIN_1.2V set.
-
 #if 0 /* experiment : slower b_sysclk  */
 	//MOON4_REG->pllsys = RF_MASK_V(0xf, 0xe); /* 202.5 (default) */
 	//MOON4_REG->pllsys = RF_MASK_V(0xf, 0xd); /* 189 */
@@ -251,6 +241,7 @@ static void init_hw(void)
 		extern void A_bus_fixup(void);
 		A_bus_fixup();
 	}
+	prn_clk_info(is_A);
 #endif
 
 #if defined(PLATFORM_Q628)|| defined(PLATFORM_I143)
@@ -274,20 +265,6 @@ static void init_hw(void)
 	/* reset[all] = clear */
 	for (i = 0; i < sizeof(MOON0_REG->reset) / 4; i++)
 		MOON0_REG->reset[i] = RF_MASK_V_CLR(0xffff);
-#else
-	/* clken[all] enable */
-	for (i = 0; i < sizeof(MOON0_REG->clken) / 4; i++)
-		MOON0_REG->clken[i] = 0xffffffff;
-	/* gclken[all] = no */
-	for (i = 0; i < sizeof(MOON0_REG->clken) / 4; i++)
-		MOON0_REG->gclken[i] = 0;
-	/* reset[all] = clear */
-	for (i = 0; i < sizeof(MOON0_REG->reset) / 4; i++)
-		MOON0_REG->reset[i] = 0;
-#endif
-
-#if defined(PLATFORM_I137) || defined(PLATFORM_Q628)
-	prn_clk_info(is_A);
 #endif
 
 #if defined(PLATFORM_Q628) && !defined(CONFIG_DISABLE_CORE2_3)
@@ -344,12 +321,7 @@ static int run_draminit(void)
 static inline void release_spi_ctrl(void)
 {
 	// SPIFL & SPI_COMBO no reset
-#if defined(PLATFORM_8388) || defined(PLATFORM_I137)
-	MOON0_REG->reset[0] &= ~(0x3 << 9);
-#else
-	/* Q628 SPI NOR */
 	MOON0_REG->reset[0] = RF_MASK_V_CLR(3 << 9); /* SPI_COMBO_RESET=0, SPIFL_RESET=0 */
-#endif
 }
 
 __attribute__((unused))
@@ -491,9 +463,7 @@ static void boot_next_in_A(void)
 	prn_A_setup();
 
 	/* Wake up another to run from boot_next_no_stack() */
-#ifdef PLATFORM_I137 /* B_SRAM address is 9e00_0000 from A view */
-	*(volatile unsigned int *)A_START_POS_B_VIEW = ((u32)&boot_next_no_stack) - 0x800000;
-#elif defined(PLATFORM_I143)
+#ifdef PLATFORM_I143
 	*(volatile unsigned int *)A_START_POS_B_VIEW = CA7_START_ADDR;
 #else
 	*(volatile unsigned int *)A_START_POS_B_VIEW = (u32)&boot_next_no_stack;
@@ -710,12 +680,8 @@ static void spi_nor_boot(int pin_x)
 {
 #ifdef SPEED_UP_SPI_NOR_CLK
 	dbg();
-#if defined(PLATFORM_8388) || defined(PLATFORM_I137)
-	SPI_CTRL_REG->spi_ctrl = (SPI_CTRL_REG->spi_ctrl & ~0x7) | 0x5; // CLK_SPI/16
-#else
 	SPI_CTRL_REG->spi_ctrl = (SPI_CTRL_REG->spi_ctrl & ~(7 << 16)) | (3 << 16); // 3: CLK_SPI/6
 	SPI_CTRL_REG->spi_cfg[2] = 0x00150095; // restore default after seeting spi_ctrl
-#endif
 #endif
 
 	if (nor_draminit()) {
@@ -906,19 +872,7 @@ static int emmc_read(u8 *buf, u32 blk_off, u32 count)
 	/* dma mode supports multi-sector read */
 	return ReadSDSector(blk_off, count, (unsigned int *)buf);
 #else
-#ifdef PLATFORM_8388
-	/* polling mode supports single-sector read */
-	int res;
-	for (; count > 0; count--, buf += EMMC_BLOCK_SZ, blk_off++) {
-		res = ReadSDSector(blk_off, 1, (unsigned int *)buf);
-		if (res < 0) {
-			return res;
-		}
-	}
-	return 0;
-#else
 	return ReadSDSector(blk_off, count, (unsigned int *)buf);
-#endif
 #endif
 }
 
@@ -1452,21 +1406,11 @@ static void nand_uboot(u32 type)
 #endif
 
 #ifdef CONFIG_HAVE_PARA_NAND
-static void release_para_nand(void)
-{
-#ifdef PLATFORM_8388
-	MOON0_REG->reset[2] &= ~(0x3 << 3);  // NAND & BCH no reset
-#else
-	// Q628 has no reset BCH
-#endif
-}
-
 static void para_nand_boot(int pin_x)
 {
 	u32 ret;
 
 	prn_string("\n{{nand_boot}}\n");
-	release_para_nand();
 	dbg();
 	SetBootDev(DEVICE_PARA_NAND, 1, 0);
 	ret = InitDevice(0);

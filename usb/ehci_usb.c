@@ -91,29 +91,13 @@ void uphy_init(void)
 	unsigned int val, set;
 
 	// 1. Default value modification
-	#if defined(PLATFORM_8388) || defined(PLATFORM_I137)
-	MOON1_REG->sft_cfg[14] = 0x87474002;
-        MOON1_REG->sft_cfg[15] = 0x87474004;
-	#else
 	/* Q628 uphy0_ctl uphy1_ctl */
 	MOON4_REG->uphy0_ctl[0] = RF_MASK_V(0xffff, 0x4002);
 	MOON4_REG->uphy0_ctl[1] = RF_MASK_V(0xffff, 0x8747);
 	MOON4_REG->uphy1_ctl[0] = RF_MASK_V(0xffff, 0x4004);
 	MOON4_REG->uphy1_ctl[1] = RF_MASK_V(0xffff, 0x8747);
-	#endif
 
 	// 2. PLL power off/on twice
-	#if defined(PLATFORM_8388) || defined(PLATFORM_I137)
-	MOON1_REG->sft_cfg[21] = 0x8888;
-	_delay_1ms(1);
-	MOON1_REG->sft_cfg[21] = 0x8080;
-	_delay_1ms(1);
-	MOON1_REG->sft_cfg[21] = 0x8888;
-	_delay_1ms(1);
-	MOON1_REG->sft_cfg[21] = 0x8080;
-	_delay_1ms(1);
-	MOON1_REG->sft_cfg[21] = 0;
-	#else
 	/* Q628 uphy012_ctl */
 	MOON4_REG->uphy0_ctl[3] = RF_MASK_V(0xffff, 0x88);
 	MOON4_REG->uphy1_ctl[3] = RF_MASK_V(0xffff, 0x88);
@@ -129,18 +113,12 @@ void uphy_init(void)
 	_delay_1ms(1);
 	MOON4_REG->uphy0_ctl[3] = RF_MASK_V(0xffff, 0);
 	MOON4_REG->uphy1_ctl[3] = RF_MASK_V(0xffff, 0);
-	#endif
 	_delay_1ms(1);
 
 	// 3. reset UPHY0/1
-	#if defined(PLATFORM_8388) || defined(PLATFORM_I137)
-	MOON0_REG->reset[1] |= (3 << 13);
-	MOON0_REG->reset[1] &= ~(3 << 13);
-	#else
 	/* Q628 UPHY0_RESET UPHY1_RESET : 1->0 */
 	MOON0_REG->reset[2] = RF_MASK_V_SET(3 << 13);
 	MOON0_REG->reset[2] = RF_MASK_V_CLR(3 << 13);
-	#endif
 	_delay_1ms(1);
 
 	// 4. UPHY 0 internal register modification
@@ -148,31 +126,14 @@ void uphy_init(void)
 	UPHY1_RN_REG->cfg[7] = 0x8b;
 
 	// 5. USBC 0 reset
-	#if defined(PLATFORM_8388) || defined(PLATFORM_I137)
-	MOON0_REG->reset[1] |= (3 << 10);
-	MOON0_REG->reset[1] &= ~(3 << 10);
-	#else
 	/* Q628 USBC0_RESET USBC1_RESET : 1->0 */
 	MOON0_REG->reset[2] = RF_MASK_V_SET(3 << 10);
 	MOON0_REG->reset[2] = RF_MASK_V_CLR(3 << 10);
-	#endif
 
 	CSTAMP(0xE5B0A000);
 
 	// Backup solution to workaround real IC USB clock issue
 	// (issue: hang on reading EHCI_USBSTS after EN_ASYNC_SCHEDULE)
-	#if defined(PLATFORM_8388)
-	if (HB_GP_REG->hb_otp_data2 & 0x1) { // G350.2 bit[0]
-		prn_string("uphy0 rx clk inv\n");
-		MOON1_REG->sft_cfg[19] |= (1 << 6);
-	}
-	if (HB_GP_REG->hb_otp_data2 & 0x2) { // G350.2 bit[1]
-		prn_string("uphy1 rx clk inv\n");
-		MOON1_REG->sft_cfg[19] |= (1 << 14);
-	}
-	#elif defined(PLATFORM_I137)
-	MOON1_REG->sft_cfg[19] |= (1 << 6);
-	#else
 	if (HB_GP_REG->hb_otp_data2 & 0x1) { // G350.2 bit[0]
 		prn_string("uphy0 rx clk inv\n");
 		MOON4_REG->uphy0_ctl[2] = RF_MASK_V_SET(1 << 6);
@@ -181,47 +142,26 @@ void uphy_init(void)
 		prn_string("uphy1 rx clk inv\n");
 		MOON4_REG->uphy1_ctl[2] = RF_MASK_V_SET(1 << 6);
 	}
-	#endif
 
 	CSTAMP(0xE5B0A001);
 
-        // OTP for USB DISC (disconnect voltage)
-	#if defined(PLATFORM_8388)
-        val = HB_GP_REG->hb_otp_data6;
-        set = val & 0x1F; // UPHY0 DISC
-        if (!set) {
-                set = DEFAULT_UPHY_DISC;
-        } else if (set <= ORIG_UPHY_DISC) {
-                set += 2;
-        }
-        UPHY0_RN_REG->cfg[7] = (UPHY0_RN_REG->cfg[7] & ~0x1F) | set;
-        set = (val >> 5) & 0x1F; // UPHY1 DISC
-        if (!set) {
-                set = DEFAULT_UPHY_DISC;
-        } else if (set <= ORIG_UPHY_DISC) {
-                set += 2;
-        }
-        UPHY1_RN_REG->cfg[7] = (UPHY1_RN_REG->cfg[7] & ~0x1F) | set;
-	#elif defined(PLATFORM_I137)
-	UPHY0_RN_REG->cfg[7] = (UPHY0_RN_REG->cfg[7] & ~0x1F) | DEFAULT_UPHY_DISC;
-	#else
+     // OTP for USB DISC (disconnect voltage)
 	/* Q628 OTP[UPHY0_DISC] OTP[UPHY1_DISC] */
 	val = HB_GP_REG->hb_otp_data6;
-        set = val & 0x1F; // UPHY0 DISC
-        if (!set) {
-                set = DEFAULT_UPHY_DISC;
-        } else if (set <= ORIG_UPHY_DISC) {
-                set += 2;
-        }
-        UPHY0_RN_REG->cfg[7] = (UPHY0_RN_REG->cfg[7] & ~0x1F) | set;
-        set = (val >> 5) & 0x1F; // UPHY1 DISC
-        if (!set) {
-                set = DEFAULT_UPHY_DISC;
-        } else if (set <= ORIG_UPHY_DISC) {
-                set += 2;
-        }
-        UPHY1_RN_REG->cfg[7] = (UPHY1_RN_REG->cfg[7] & ~0x1F) | set;
-	#endif
+    set = val & 0x1F; // UPHY0 DISC
+    if (!set) {
+            set = DEFAULT_UPHY_DISC;
+    } else if (set <= ORIG_UPHY_DISC) {
+            set += 2;
+    }
+    UPHY0_RN_REG->cfg[7] = (UPHY0_RN_REG->cfg[7] & ~0x1F) | set;
+    set = (val >> 5) & 0x1F; // UPHY1 DISC
+    if (!set) {
+            set = DEFAULT_UPHY_DISC;
+    } else if (set <= ORIG_UPHY_DISC) {
+            set += 2;
+    }
+    UPHY1_RN_REG->cfg[7] = (UPHY1_RN_REG->cfg[7] & ~0x1F) | set;
 
 	CSTAMP(0xE5B0A002);
 }
@@ -232,19 +172,7 @@ void usb_power_init(int is_host)
 	// a. enable pin mux control
 	//    Host: enable
 	//    Device: disable
-#ifdef PLATFORM_8388
-	if (is_host) {
-		MOON1_REG->sft_cfg[8] |= (3 << 2);
-	} else {
-		MOON1_REG->sft_cfg[8] &= ~(3 << 2);
-	}
-#elif defined(PLATFORM_I137)
-	if (is_host) {
-		MOON1_REG->sft_cfg[5] |= (1 << 2);
-	} else {
-		MOON1_REG->sft_cfg[5] &= ~(1 << 2);
-	}
-#elif defined(PLATFORM_I143)
+#ifdef PLATFORM_I143
 	/* I143 USBC0_OTG_EN_SEL USBC1_OTG_EN_SEL */
 	if (is_host) {
 		MOON1_REG->sft_cfg[2] = RF_MASK_V_SET(3 << 12);
@@ -261,24 +189,7 @@ void usb_power_init(int is_host)
 #endif
 
 	// b. USB control register:
-#ifdef PLATFORM_8388
-	//    Host:   ctrl=1, host sel=1, type=1
-	//    Device  ctrl=1, host sel=0, type=0
-	if (is_host) {
-		MOON2_REG->sft_cfg[3] |= ((7 << 12) | (7 << 4));
-	} else {
-		MOON2_REG->sft_cfg[3] |= ((1 << 12) | (1 << 4));
-		MOON2_REG->sft_cfg[3] &= ~((3 << 13) | (3 << 5));
-	}
-#elif defined(PLATFORM_I137)
-	//    Host:   host sel=1, type=1
-	//    Device  host sel=0, type=0
-	if (is_host) {
-		MOON2_REG->sft_cfg[3] |= (3 << 5);
-	} else {
-		MOON2_REG->sft_cfg[3] &= ~(3 << 5);
-	}
-#elif defined(PLATFORM_I143)
+#ifdef PLATFORM_I143
 	/* I143 USBC0_TYPE, USBC0_SEL, USBC1_TYPE, USBC1_SEL */
 	if (is_host) {
 		MOON5_REG->sft_cfg[17] = RF_MASK_V_SET((7 << 12) | (7 << 4));
