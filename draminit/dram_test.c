@@ -12,8 +12,8 @@
 int dram_test(void)
 {
 	volatile unsigned int *addr;
-	unsigned int *beg  = (unsigned int *)DRAM_TEST_BEGIN;
-	unsigned int *end  = (unsigned int *)DRAM_TEST_END;
+	unsigned int *beg  = (unsigned int *)ADDRESS_CONVERT(DRAM_TEST_BEGIN);
+	unsigned int *end  = (unsigned int *)ADDRESS_CONVERT(DRAM_TEST_END);
 	unsigned int val, expect;
 	int flip;
 	int bad = 0;
@@ -30,9 +30,9 @@ int dram_test(void)
 #endif
 
         prn_string("dram test ");
-	prn_dword0((unsigned int)beg);
+	prn_dword0((unsigned int)ADDRESS_CONVERT(beg));
         prn_string(" - ");
-	prn_dword((unsigned int)end);
+	prn_dword((unsigned int)ADDRESS_CONVERT(end));
 
 	for (flip = 1; flip <= 2; flip++) {
 #ifdef DRAM_TEST_VERBOSE
@@ -49,10 +49,10 @@ int dram_test(void)
 #endif
 		for (addr = (end - 1); addr >= beg && addr < end; addr--) {
 			expect = (flip % 2) ?
-				~(unsigned int)addr :
-				(unsigned int)addr;
+				~(unsigned int)ADDRESS_CONVERT(addr) :
+				(unsigned int)ADDRESS_CONVERT(addr);
 
-			if (((unsigned int)addr & 0xfffff) == 0) {
+			if (((unsigned int)ADDRESS_CONVERT(addr) & 0xfffff) == 0) {
 				CSTAMP(addr);
 			}
 
@@ -69,10 +69,10 @@ int dram_test(void)
 		// Read to verify
 		for (addr = (end - 1); addr >= beg && addr < end; addr--) {
 			expect = (flip % 2) ?
-				~(unsigned int)addr :
-				(unsigned int)addr;
+				~(unsigned int)ADDRESS_CONVERT(addr) :
+				(unsigned int)ADDRESS_CONVERT(addr);
 
-			if (((unsigned int)addr & 0xfffff) == 0) {
+			if (((unsigned int)ADDRESS_CONVERT(addr) & 0xfffff) == 0) {
 				CSTAMP(addr);
 			}
 
@@ -86,14 +86,14 @@ int dram_test(void)
 				CSTAMP(addr);
 
 				prn_string("Mismatch @");
-				prn_dword((unsigned int)addr);
+				prn_dword((unsigned int)ADDRESS_CONVERT(addr));
 				prn_string(" expect=");
 				prn_dword((unsigned int)expect);
 				prn_string(" read=");
 				prn_dword((unsigned int)val);
 				bad = 1;
 				goto out;
-			} else if (((unsigned int)addr & 0x3fffff) == 0) {
+			} else if (((unsigned int)ADDRESS_CONVERT(addr) & 0x3fffff) == 0) {
 				// Good
 				CSTAMP(0x83886666);
 				CSTAMP(addr);

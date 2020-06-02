@@ -2,6 +2,8 @@
 # Automatically generated file; DO NOT EDIT.
 # Linux Kernel Configuration
 #
+# CONFIG_ARCH_RISCV is not set
+CONFIG_ARCH_ARM=y
 CONFIG_PLATFORM_Q628=y
 # CONFIG_PLATFORM_8388 is not set
 # CONFIG_PLATFORM_I137 is not set

@@ -146,8 +146,8 @@ unsigned int GetTotalSector(void)
 
 int get_card_number(void)
 {
-	if (gDEV_SDCTRL_BASE_ADRS == (unsigned int)CARD0_CTL_REG) return 0;
-	if (gDEV_SDCTRL_BASE_ADRS == (unsigned int)CARD1_CTL_REG) return 1;
+	if (gDEV_SDCTRL_BASE_ADRS == (unsigned int)ADDRESS_CONVERT(CARD0_CTL_REG)) return 0;
+	if (gDEV_SDCTRL_BASE_ADRS == (unsigned int)ADDRESS_CONVERT(CARD1_CTL_REG)) return 1;
 	return 0;
 }
 
@@ -1865,7 +1865,7 @@ int ReadSDMultipleSectorDma(unsigned int SectorIdx, unsigned int SectorNum,
 	prn_string("SD Read blk="); prn_decimal(SectorIdx);
 	prn_string(" num="); prn_decimal(SectorNum); prn_string("\n");
 #endif
-	if(!IS_DMA_ADDR_2BYTE_ALIGNED((unsigned int)pRecBuff)) {
+	if(!IS_DMA_ADDR_2BYTE_ALIGNED((unsigned int)ADDRESS_CONVERT(pRecBuff))) {
 		prn_string("[sd err]dma addr is not 2 bytes aligned\n");
 		return SD_FAIL;
 	}

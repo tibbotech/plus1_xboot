@@ -83,6 +83,8 @@ static inline void set_emmc_pinmux(int pin_x)
 #ifdef PLATFORM_8388
 	MOON1_REG->sft_cfg[4] = (MOON1_REG->sft_cfg[4] & ~(0x3 << 13)) | ((pin_x&0x3)<<13);
 	MOON1_REG->sft_cfg[4] = (MOON1_REG->sft_cfg[4] & ~(0x3 << 15)) | ((pin_x&0x3)<<15);
+#elif defined(PLATFORM_I143)
+	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 2, pin_x << 2);
 #else
 	// Q628 eMMC : X1,CARD0_SD
 	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 5, pin_x << 5);
@@ -97,6 +99,8 @@ static inline void set_sdcard1_pinmux(int pin_x)
 	MOON1_REG->sft_cfg[4] = (MOON1_REG->sft_cfg[4] & ~(0x3 << 25)) | ((pin_x&0x3)<<25);
 	// X1~X3,CARD0_SD must be off
 	MOON1_REG->sft_cfg[4] = (MOON1_REG->sft_cfg[4] & ~(0xf << 13));
+#elif defined(PLATFORM_I143)
+	MOON1_REG->sft_cfg[4] = RF_MASK_V(1 << 0, pin_x << 0);
 #else
 	// Q628 SD_CARD : X1,CARD1_SD
 	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 6, pin_x << 6);
@@ -149,7 +153,7 @@ void SetBootDev(unsigned int bootdev, unsigned int pin_x, unsigned int dev_port)
 				set_para_nand_pinmux(0); /* conflict: PARA_NAND X1 */
 			set_para_nand_padctl(0);         /* undo para nand padctl */
 #endif
-#ifdef PLATFORM_Q628
+#if defined(PLATFORM_Q628)|| defined(PLATFORM_I143)
 			if (pin_x == 1 && get_spi_nor_pinmux() == 2) {
 				set_spi_nor_pinmux(0);   /* conflict: X2,SPI_NOR */
 			}
@@ -168,8 +172,8 @@ void SetBootDev(unsigned int bootdev, unsigned int pin_x, unsigned int dev_port)
 #ifdef CONFIG_HAVE_EMMC
 		case DEVICE_EMMC:
 			g_bootinfo.gbootRom_boot_mode = EMMC_BOOT;
-			gDEV_SDCTRL_BASE_ADRS = (unsigned int)CARD0_CTL_REG; /* eMMC is on SD0 */
-#ifdef PLATFORM_Q628
+			gDEV_SDCTRL_BASE_ADRS = (unsigned int)ADDRESS_CONVERT(CARD0_CTL_REG); /* eMMC is on SD0 */
+#if defined(PLATFORM_Q628)|| defined(PLATFORM_I143)
 			if (pin_x == 1) {
 				set_spi_nand_pinmux(0);  /* conflict: X1,SPI_NAND */
 			}
@@ -183,7 +187,7 @@ void SetBootDev(unsigned int bootdev, unsigned int pin_x, unsigned int dev_port)
 #ifdef CONFIG_HAVE_SDCARD
 		case DEVICE_SDCARD:
 			g_bootinfo.gbootRom_boot_mode = SDCARD_ISP;
-			gDEV_SDCTRL_BASE_ADRS = (unsigned int)CARD1_CTL_REG;
+			gDEV_SDCTRL_BASE_ADRS = (unsigned int)ADDRESS_CONVERT(CARD1_CTL_REG);
 			set_sdcard1_pinmux(pin_x);
 			break;
 #endif

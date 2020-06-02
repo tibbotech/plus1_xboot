@@ -5,7 +5,9 @@
 #include <regmap.h>
 #include <fat/fat.h>
 #include <cpu/cpu.h>
+#ifdef PLATFORM_Q628
 #include <cpu/arm.h>
+#endif
 #include <image.h>
 #include <misc.h>
 #include <otp/sp_otp.h>
@@ -18,6 +20,8 @@
 #ifdef CONFIG_SECURE_BOOT_SIGN
 #define VERIFY_SIGN_MAGIC_DATA	(0x7369676E)
 #define SIGN_DATA_SIZE	(64+8)// 64:sign data  8:flag data
+#else
+#define SIGN_DATA_SIZE	(0)
 #endif
 
 /*
@@ -43,8 +47,7 @@ __attribute__ ((section("boothead_sect")))       u8                  g_boothead[
 __attribute__ ((section("xboot_header_sect")))   u8                  g_xboot_buf[32];
 
 #ifdef CONFIG_SECURE_BOOT_SIGN
-
-static void load_otp_pub_key(u8 in_pub[])
+static void load_otp_pub_key(unsigned char *in_pub)
 {
 	int i;
 	for (i = 0; i < 32; i++) {
@@ -58,12 +61,11 @@ int verify_uboot_signature(const struct image_header  *hdr)
 {
 	int sig_size = 64;
 	int sig_flag_size = 8;
-	int ret = -1;
-	int mmu = 1;
-	int imgsize = 0;
+	int ret = -1,mmu = 1;
+	int imgsize = 0,data_size;
+	u8 	in_pub[32];
 	u8 *data=NULL, *sig=NULL;
-	u8 in_pub[32];
-	unsigned int data_size=0;
+
 	/* Not Secure Chip => return ok */
 	if ((!(g_bootinfo.sb_flag & SB_FLAG_ENABLE))) {
 		prn_string("\n ******OTP Secure Boot is OFF, return success******\n");
@@ -128,7 +130,34 @@ out:
 }
 #endif
 
-#ifdef CONFIG_PLATFORM_Q628
+static void halt(void)
+{
+	while (1) {
+		cpu_wfi();
+	}
+}
+
+static void fixup_boot_compatible(void)
+{
+	prn_string("put bootinfo\n");
+
+	/* bootinfo and bhdr SRAM addresses are changed in new iBoot ROM v1.02.
+	 * Have a copy in old addresses so that u-boot can use it.
+	 * Though these addresses are in new 3K-64 stack. 2K-64 stack is sufficient near
+	 * exit_xboot.
+	 */
+
+	#define ROM_V100_BOOTINFO_ADDR	(SRAM0_BASE+0x9400)//0x9e809400
+	#define ROM_V100_BHDR_ADDR	(SRAM0_BASE+0x9600) //0x9e809600
+	memcpy((u8 *)ROM_V100_BOOTINFO_ADDR, (UINT8 *)&g_bootinfo, sizeof(struct bootinfo));
+
+	if ((g_bootinfo.gbootRom_boot_mode == SPINAND_BOOT) ||
+	    (g_bootinfo.gbootRom_boot_mode == NAND_LARGE_BOOT)) {
+		memcpy((u8 *)ROM_V100_BHDR_ADDR, (UINT8 *)&g_boothead, GLOBAL_HEADER_SIZE);
+	}
+}
+
+#ifdef PLATFORM_Q628
 static int b_pll_get_rate(void)
 {
 	unsigned int reg = MOON4_REG->pllsys;    /* G4.26 */
@@ -138,9 +167,18 @@ static int b_pll_get_rate(void)
 		return 27000000;
 	return (((reg & 0xf) + 1) * 13500000) >> ((reg2 >> 4) & 0xf);
 }
+static void exit_xboot(const char *msg, u32 addr)
+{
+	fixup_boot_compatible();
+	prn_decimal_ln(AV1_GetStc32());
+	if (msg) {
+		prn_string(msg); prn_dword(addr);
+	}
+	exit_bootROM(addr);
+}
 #endif
 
-#if defined(PLATFORM_I137) || defined(CONFIG_PLATFORM_Q628)
+#if defined(PLATFORM_I137) || defined(PLATFORM_Q628)
 static void prn_clk_info(int is_A)
 {
 	unsigned int b_sysclk, io_ctrl;
@@ -177,11 +215,9 @@ static void prn_clk_info(int is_A)
 
 static void prn_A_setup(void)
 {
-#ifdef CONFIG_PLATFORM_Q628
 	prn_string("A_G0.11(pll): "); prn_dword(A_PLL_CTL0_CFG);
 	prn_string("A_G0.3(abio): "); prn_dword(ABIO_CFG);
 	prn_string("A_G0.18(ioctrl): "); prn_dword(ABIO_IOCTRL_CFG);
-#endif
 }
 
 static void init_hw(void)
@@ -199,28 +235,25 @@ static void init_hw(void)
 	MOON4_REG->pllsys = RF_MASK_V(0xf, 0x7); /* 108 */
 #endif
 
+#ifdef PLATFORM_Q628
 	if ((cpu_main_id() & 0xfff0) == 0x9260)
 		prn_string("-- B --\n");
-	else {
+	else 
+	{
 		is_A = 1;
 		prn_string("-- A --\n");
 		prn_A_setup();
-#ifdef CONFIG_PLATFORM_Q628
 		/* raise ca7 clock */
 		extern void A_raise_pll(void);
 		A_raise_pll();
-#endif
-#if defined(PLATFORM_I137) || defined(CONFIG_PLATFORM_Q628)
 		extern void A_setup_abio(void);
 		A_setup_abio();
-#endif
-#ifdef CONFIG_PLATFORM_Q628
 		extern void A_bus_fixup(void);
 		A_bus_fixup();
-#endif
 	}
+#endif
 
-#ifdef CONFIG_PLATFORM_Q628
+#if defined(PLATFORM_Q628)|| defined(PLATFORM_I143)
 #ifdef CONFIG_PARTIAL_CLKEN
 	prn_string("partial clken\n");
 	/* power saving, provided by yuwen + CARD_CTL4 */
@@ -253,11 +286,11 @@ static void init_hw(void)
 		MOON0_REG->reset[i] = 0;
 #endif
 
-#if defined(PLATFORM_I137) || defined(CONFIG_PLATFORM_Q628)
+#if defined(PLATFORM_I137) || defined(PLATFORM_Q628)
 	prn_clk_info(is_A);
 #endif
 
-#if defined(CONFIG_PLATFORM_Q628) && !defined(CONFIG_DISABLE_CORE2_3)
+#if defined(PLATFORM_Q628) && !defined(CONFIG_DISABLE_CORE2_3)
 	if (is_A) {
 		prn_string("release cores\n");
 		extern void A_release_cores(void);
@@ -266,37 +299,6 @@ static void init_hw(void)
 #endif
 
 	dbg();
-}
-
-static void fixup_boot_compatible(void)
-{
-	prn_string("put bootinfo\n");
-
-	/* bootinfo and bhdr SRAM addresses are changed in new iBoot ROM v1.02.
-	 * Have a copy in old addresses so that u-boot can use it.
-	 * Though these addresses are in new 3K-64 stack. 2K-64 stack is sufficient near
-	 * exit_xboot.
-	 */
-#define ROM_V100_BOOTINFO_ADDR	0x9e809400
-#define ROM_V100_BHDR_ADDR	0x9e809600
-	memcpy((u8 *)ROM_V100_BOOTINFO_ADDR, &g_bootinfo, sizeof(struct bootinfo));
-
-	if ((g_bootinfo.gbootRom_boot_mode == SPINAND_BOOT) ||
-	    (g_bootinfo.gbootRom_boot_mode == NAND_LARGE_BOOT)) {
-		memcpy((u8 *)ROM_V100_BHDR_ADDR, &g_boothead, GLOBAL_HEADER_SIZE);
-	}
-}
-
-static void exit_xboot(const char *msg, u32 addr)
-{
-	fixup_boot_compatible();
-
-	prn_decimal_ln(AV1_GetStc32());
-	if (msg) {
-		prn_string(msg); prn_dword(addr);
-	}
-
-	exit_bootROM(addr);
 }
 
 static int run_draminit(void)
@@ -325,7 +327,6 @@ static int run_draminit(void)
 	g_bootinfo.mp_flag = save_val;	/* restore prints */
 	prn_string("Done draiminit\n");
 #endif
-
 
 #ifdef CONFIG_USE_ZMEM
 	/* don't corrupt zmem */
@@ -385,7 +386,7 @@ static int nor_load_uhdr_image(const char *img_name, void *dst, void *src, int v
 	int i, len, step;
 
 	prn_string("load "); prn_string(img_name);
-	prn_string("@"); prn_dword((u32)dst);
+	prn_string("@"); prn_dword((u32)ADDRESS_CONVERT(dst));
 	prn_string("\n");
 
 	dbg();
@@ -413,11 +414,7 @@ static int nor_load_uhdr_image(const char *img_name, void *dst, void *src, int v
 
 	// load image data
 	
-#ifdef CONFIG_SECURE_BOOT_SIGN
 	len = image_get_size(hdr)+ SIGN_DATA_SIZE;
-#else
-	len = image_get_size(hdr);
-#endif
 	prn_string("load data size="); prn_decimal(len); prn_string("\n");
 
 	/* copy chunk size */
@@ -469,8 +466,8 @@ static int nor_draminit(void)
 		prn_string("No draminit\n");
 		return -1;
 	}
-
 	cpu_invalidate_icache_all();
+
 #endif
 	return run_draminit();
 }
@@ -481,42 +478,6 @@ static void boot_next_set_addr(unsigned int addr)
 	volatile unsigned int *next = (volatile unsigned int *)BOOT_ANOTHER_POS;
 	*next = addr;
 	prn_string("boot next @"); prn_dword(*next);
-}
-
-//#define IPC_B2A_TEST
-#ifdef IPC_B2A_TEST
-#define IPC_A2B		(0x9c008100) // G258
-#define IPC_B2A		(0x9c008180) // G259
-#define CA7_READY	(0xca700001)
-
-static void ipc_b2a_test(void)
-{
-	volatile unsigned int *a2b = (volatile unsigned int *)IPC_A2B;
-	volatile unsigned int *b2a = (volatile unsigned int *)IPC_B2A;
-
-	prn_string("IPC test:\nwait A ready...\n");
-	while (a2b[31] != CA7_READY);
-
-	prn_string("test B2A...\n");
-	// direct (mbox)
-	b2a[24] = 0x12345678;
-	b2a[25] = 0x5a5a5a5a;
-	b2a[26] = 0xa5a5a5a5;
-	b2a[27] = 0xdeadc0de;
-	b2a[28] = 0x01010101;
-	b2a[29] = 0x19730611;
-	b2a[30] = 0x87654321;
-	b2a[31] = 0x00000000;
-	// rpc
-	b2a[0] = 1;
-}
-#endif
-
-static void halt(void)
-{
-	while (1) {
-		cpu_wfi();
-	}
 }
 
 static void boot_next_in_A(void)
@@ -532,9 +493,12 @@ static void boot_next_in_A(void)
 	/* Wake up another to run from boot_next_no_stack() */
 #ifdef PLATFORM_I137 /* B_SRAM address is 9e00_0000 from A view */
 	*(volatile unsigned int *)A_START_POS_B_VIEW = ((u32)&boot_next_no_stack) - 0x800000;
+#elif defined(PLATFORM_I143)
+	*(volatile unsigned int *)A_START_POS_B_VIEW = CA7_START_ADDR;
 #else
 	*(volatile unsigned int *)A_START_POS_B_VIEW = (u32)&boot_next_no_stack;
 #endif
+
 	/* no print since this point */
 	g_bootinfo.mp_flag = 1;
 	pB_Addr = (volatile unsigned int *)B_START_POS;
@@ -542,13 +506,13 @@ static void boot_next_in_A(void)
 	
 	/* B chip wait run addr */
 	while(*pB_Addr == CPU_WAIT_INIT_VAL);
-	exit_bootROM(*pB_Addr);// jump to nonos_B
+	exit_bootROM(*pB_Addr);// q628 jump to nonos_B,I143 wait!
 }
 
 /* Assume u-boot has been loaded */
 static void boot_uboot(void)
 {
-	int is_for_A = 0;
+	__attribute__((unused)) int is_for_A = 0;
 	const struct image_header *hdr = (struct image_header *)UBOOT_LOAD_ADDR;
 #ifdef CONFIG_SECURE_BOOT_SIGN
 	prn_string(" start verify in xboot!!!!!\n");
@@ -559,6 +523,26 @@ static void boot_uboot(void)
 		halt();
 	}
 #endif
+#ifdef PLATFORM_I143
+	u32 reg = *(volatile unsigned int *)HW_CFG_REG; /* = MOON0_REG->hw_cfg */
+	prn_string("hw_cfg="); prn_dword(reg);
+	reg = (reg & HW_CFG_MASK) >> HW_CFG_SHIFT;
+	if(reg == INT_CA7_BOOT)
+	{
+		prn_string("C+P mode,CA7(ARM) do uboot,wait CA7 ready\n");
+		boot_next_set_addr(UBOOT_RUN_ADDR_A_VIEW);
+		if(image_get_arch(hdr) == 0x1A)
+		{
+			prn_string("WARN: CA7 can't run riscv u-boot\n");
+			while(1);
+		}
+		while(*(volatile unsigned int *)A_START_POS_B_VIEW != 0xFFFFFFFF);	//wait CA7 start and init
+		boot_next_in_A();
+	}
+	else{
+		exit_bootROM(OPENSBI_RUN_ADDR);	
+	}
+#else
 	prn_string((const char *)image_get_name(hdr)); prn_string("\n");
 
 	boot_next_set_addr(UBOOT_RUN_ADDR);
@@ -577,6 +561,7 @@ static void boot_uboot(void)
 
 		exit_xboot("Run u-boot @", UBOOT_RUN_ADDR);
 	}
+#endif	
 }
 
 #ifdef CONFIG_HAVE_SPI_NOR
@@ -585,7 +570,10 @@ static void boot_uboot(void)
 /* Assume dtb and uImage has been loaded */
 static void boot_linux(void)
 {
-	int is_for_A = 0;
+#ifdef PLATFORM_I143
+	exit_bootROM(OPENSBI_RUN_ADDR);
+#else
+	__attribute__((unused)) int is_for_A = 0;
 	const struct image_header *hdr = (struct image_header *)LINUX_LOAD_ADDR;
 
 	prn_string((const char *)image_get_name(hdr)); prn_string("\n");
@@ -607,6 +595,7 @@ static void boot_linux(void)
 		prn_string("run linux@"); prn_dword(LINUX_RUN_ADDR);
 		boot_next_no_stack();
 	}
+#endif	
 }
 
 static void spi_nor_linux(void)
@@ -698,6 +687,14 @@ static void spi_nor_uboot(void)
 		prn_string("[zmem] uboot len="); prn_dword(len);
 	}
 #else
+#ifdef PLATFORM_I143
+	len = nor_load_uhdr_image("freertos", (void *)FREERTOS_LOAD_ADDR,
+			(void *)(SPI_FLASH_BASE + SPI_FREERTOS_OFFSET), 1);
+	if (len <= 0) {
+		prn_string("No freertos\n");
+		return;
+	}
+#endif	
 	len = nor_load_uhdr_image("uboot", (void *)UBOOT_LOAD_ADDR,
 			(void *)(SPI_FLASH_BASE + SPI_UBOOT_OFFSET), 1);
 	if (len <= 0) {
@@ -751,8 +748,8 @@ static int fat_load_uhdr_image(fat_info *finfo, const char *img_name, void *dst,
 	prn_string("\n");
 
 	/* usb dma need aligned address */
-	if ((u32)dst & 0xfff) {
-		prn_string("WARN: unaligned dst "); prn_dword((u32)dst);
+	if ((u32)ADDRESS_CONVERT(dst) & 0xfff) {
+		prn_string("WARN: unaligned dst "); prn_dword((u32)ADDRESS_CONVERT(dst));
 	}
 	
 	/* ISPBOOOT.BIN file index is 0,uboot.img is 1*/
@@ -791,11 +788,7 @@ static int fat_load_uhdr_image(fat_info *finfo, const char *img_name, void *dst,
 		prn_decimal(len + 64);
 		return -1;
 	}
-#ifdef CONFIG_SECURE_BOOT_SIGN
 	ret = fat_read_file(fileindex, finfo, buf, img_offs + 64, len + SIGN_DATA_SIZE, dst + 64);
-#else
-	ret = fat_read_file(fileindex, finfo, buf, img_offs + 64, len, dst + 64);
-#endif
 	if (ret == FAIL) {
 		prn_string("load body failed\n");
 		return -1;
@@ -992,11 +985,7 @@ static int emmc_load_uhdr_image(const char *img_name, u8 *dst, u32 loaded,
 	}
 
 	// load remaining
-#ifdef CONFIG_SECURE_BOOT_SIGN
 	res = sizeof(*hdr) + len + SIGN_DATA_SIZE - loaded;
-#else
-	res = sizeof(*hdr) + len - loaded;
-#endif
 	if (res > 0) {
 		blks = (res + EMMC_BLOCK_SZ - 1) / EMMC_BLOCK_SZ;
 		res = emmc_read(dst + loaded, blk_off, blks);
@@ -1162,6 +1151,17 @@ static void emmc_boot(void)
 		prn_string("use uboot1\n");
 		len = emmc_load_uhdr_image("uboot", (void *)UBOOT_LOAD_ADDR, 0,
 					   blk_start1, 0, UBOOT_MAX_LEN, MMC_USER_AREA);
+	}
+#endif
+#ifdef PLATFORM_I143
+	for (i = 0; i < 4; i++) {
+		blk_start2 = (u32) gpt_part[i].starting_lba;
+		prn_string("part"); prn_decimal(1 + i);
+		prn_string(" LBA="); prn_dword(blk_start2);
+		len = emmc_load_uhdr_image("freertos", (void *)FREERTOS_LOAD_ADDR, 0,
+				blk_start2, 0, UBOOT_MAX_LEN, MMC_USER_AREA);
+		if (len > 0)
+			break;
 	}
 #endif
 	if (len <= 0) {
@@ -1360,11 +1360,7 @@ static int nand_load_uhdr_image(int type, const char *img_name, void *dst,
 	prn_string("load data size=");
 	prn_decimal(len);
 	prn_string("\n");
-#ifdef CONFIG_SECURE_BOOT_SIGN
-	res = bblk_read(type, (u8 *)hdr, real_blk_off, 64 + SIGN_DATA_SIZE + len, 100, img_blk_end);
-#else
-	res = bblk_read(type, (u8 *)hdr, real_blk_off, 64 + len, 100, img_blk_end);
-#endif
+	res = bblk_read(type, (u8 *)hdr, real_blk_off, 64 + len + SIGN_DATA_SIZE, 100, img_blk_end);
 	if (res) {
 		prn_string("failed to load data\n");
 		return -1;
@@ -1504,7 +1500,6 @@ void boot_not_support(void)
 			g_bootinfo.gbootRom_boot_mode);
 	mon_shell();
 }
-
 /*
  * boot_flow - Top boot flow logic
  */
@@ -1533,76 +1528,73 @@ static void boot_flow(void)
 #ifdef CONFIG_HAVE_UART_BOOTSTRAP
 				dbg();
 				uart_isp(1);
-#else
-				boot_not_support();
 #endif
 				break;
 			case USB_ISP:
 #ifdef CONFIG_HAVE_USB_DISK
 				dbg();
 				usb_isp();
-#else
-				boot_not_support();
 #endif
 				break;
 			case SDCARD_ISP:
 #ifdef CONFIG_HAVE_SDCARD
-				CSTAMP(0xC0DE000C);
-				dbg();
+				CSTAMP(0xC0DE000C);dbg();
 				sdcard_isp();
-#else
-				boot_not_support();
 #endif
 				break;
 			case SPI_NOR_BOOT:
 #ifdef CONFIG_HAVE_SPI_NOR
 				spi_nor_boot(g_bootinfo.bootdev_pinx);
-#else
-				boot_not_support();
 #endif
 				break;
 			case SPINAND_BOOT:
 #ifdef CONFIG_HAVE_SPI_NAND
 				spi_nand_boot(g_bootinfo.bootdev_pinx);
-#else
-				boot_not_support();
 #endif
 				break;
 			case NAND_LARGE_BOOT:
 #ifdef CONFIG_HAVE_PARA_NAND
 				para_nand_boot(g_bootinfo.bootdev_pinx);
-#else
-				boot_not_support();
 #endif
 				break;
 			case EMMC_BOOT:
 #ifdef CONFIG_HAVE_EMMC
 				emmc_boot();
-#else
-				boot_not_support();
 #endif
 				break;
 			default:
 				dbg();
-				boot_not_support();
+				break;
 		}
+		boot_not_support();
 	}
-
 	prn_string("halt");
 	halt();
 }
 
 static void init_uart(void)
 {
-#ifdef CONFIG_PLATFORM_Q628
+#ifdef CONFIG_DEBUG_WITH_2ND_UART
+#ifdef PLATFORM_Q628
 	/* uart1 pinmux : x1,UA0_TX, X2,UA1_RX */
 	MOON3_REG->sft_cfg[14] = RF_MASK_V((0x7f << 0), (1 << 0));
 	MOON3_REG->sft_cfg[14] = RF_MASK_V((0x7f << 8), (2 << 8));
 	MOON0_REG->reset[1] = RF_MASK_V_CLR(1 << 9); /* release UA1 */
 	UART1_REG->div_l = UART_BAUD_DIV_L(BAUDRATE, UART_SRC_CLK);
 	UART1_REG->div_h = UART_BAUD_DIV_H(BAUDRATE, UART_SRC_CLK);
+#endif
+#endif
+#ifdef PLATFORM_I143
+	MOON1_REG->sft_cfg[1] = RF_MASK_V_SET(1 << 12);
+	MOON0_REG->reset[1] = RF_MASK_V_CLR(1 << 9);	/* reset of UA1 */
+	MOON0_REG->reset[1] = RF_MASK_V_CLR(1 << 15);	/* reset of UADMA */
+	MOON0_REG->reset[1] = RF_MASK_V_CLR(1 << 13);	/* reset of BUF_UA */
+	UART1_REG->div_l = UART_BAUD_DIV_L(BAUDRATE, UART_SRC_CLK);	/* baud rate */
+	UART1_REG->div_h = UART_BAUD_DIV_H(BAUDRATE, UART_SRC_CLK);
 	UART1_REG->dr = 'U';
 	UART1_REG->dr = 'A';
+	UART1_REG->dr = 'R';
+	UART1_REG->dr = 'T';
 	UART1_REG->dr = '1';
 #endif
 }
@@ -1642,7 +1634,7 @@ void xboot_main(void)
 	prn_decimal_ln(AV1_GetStc32());
 	/* first msg */
 	prn_string("+++xBoot " __DATE__ " " __TIME__ "\n");
-#if defined(CONFIG_PLATFORM_Q628) && (CONFIG_PLATFORM_IC_REV < 2)
+#if defined(PLATFORM_Q628) && (CONFIG_PLATFORM_IC_REV < 2)
 	prn_string("NOTICE: this xboot works with ROM_CODE v1.0\n");
 #endif
 

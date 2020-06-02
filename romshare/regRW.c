@@ -133,6 +133,7 @@ void mon_shell(void)
 				}
 			}
 			break;
+#ifdef CONFIG_ARCH_ARM
 		case 'S':
 			/* armv7 sev */
 #ifdef __thumb__
@@ -141,6 +142,7 @@ void mon_shell(void)
 			asm volatile (".word 0xe320f004");
 #endif
 			break;
+#endif
 		case 'g':
 		case 'l':
 			if (get_word_ex(" G=", 0, &group)) {

@@ -29,6 +29,8 @@
 #define PLATFORM_3502                   /* Build for 3502 */
 #elif defined(CONFIG_PLATFORM_Q628)
 #define PLATFORM_Q628                   /* Build for Q628 */
+#elif defined(CONFIG_PLATFORM_I143)
+#define PLATFORM_I143                   /* Build for Q628 */
 #endif
 
 /* CSIM build: Enable Stamp. No UART. Less delay. */
@@ -44,7 +46,11 @@
 
 /* zmem support */
 #ifdef CONFIG_USE_ZMEM
+#ifdef PLATFORM_I143
+#define ZMEM_XBOOT_ADDR    0xA00F0000
+#else
 #define ZMEM_XBOOT_ADDR    0x1000
+#endif
 #endif
 
 /***********************
@@ -75,7 +81,7 @@
 
 #ifdef CSIM_NEW            // CSIM Stamp
 #define STAMP(value)       REGS0(RF_GRP(0, 0), value);
-#define CSTAMP(value)      { *(volatile unsigned int *)RF_GRP(0, 0) = (unsigned int)(value); }
+#define CSTAMP(value)      { *(volatile unsigned int *)RF_GRP(0, 0) = (unsigned int)ADDRESS_CONVERT(value); }
 #else                      // ASIC: No stamp
 #define STAMP(value)       // empty
 #define CSTAMP(value)      // empty
@@ -101,6 +107,22 @@
 #endif
 #define HW_CFG_MASK             (HW_CFG_MASK_VAL << HW_CFG_SHIFT)
 
+#ifdef PLATFORM_I143
+#define AUTO_SCAN               0x01
+#define EMMC_BOOT               0x05
+#define SPI_NOR_BOOT            0x07
+#define EXT_U54_BOOT            0x09
+#define EXT_CA7_BOOT            0x1F
+#define INT_CA7_BOOT            0x17
+#define SDCARD_ISP              0x11
+#define UART_ISP                0x13
+#define USB_ISP                 0x15
+#define SDCARD_BOOT             0xfb  // not use ,for code compile
+#define SPINAND_BOOT            0xfe  // not use ,for code compile
+#define NAND_LARGE_BOOT         0xfd  // not use ,for code compile
+#define EXT_BOOT                0xfc  // not use ,for code compile
+#define AUTO_SCAN_ACHIP         0x1F  //for arm ca7,match in start.S ,equal to EXT_CA7_BOOT
+#else 
 #define AUTO_SCAN               0x01
 #define AUTO_SCAN_ACHIP         0x15
 #define SPI_NOR_BOOT            0x11
@@ -112,15 +134,24 @@
 #define USB_ISP                 0x17
 #define SDCARD_BOOT             0xfe // add for sdcard boot.
 #define NAND_LARGE_BOOT         0xff // Q628: no PARA_NAND
+#endif
 
 /************************************
  * Secure boot  xboot-->uboot
  ************************************/
 #ifdef CONFIG_SECURE_BOOT_SIGN
 #ifdef PLATFORM_SPIBAREMETAL
+#if defined(PLATFORM_I143) 
+#define SECURE_VERIFY_FUN_ADDR	(0xF8008000)
+#else
 #define SECURE_VERIFY_FUN_ADDR	(0x98008001) // function defined in iboot.c
+#endif
+#else
+#if defined(PLATFORM_I143) 
+#define SECURE_VERIFY_FUN_ADDR	(0xFE008000)
 #else
 #define SECURE_VERIFY_FUN_ADDR	(0xFFFF8001)// // function defined in iboot.c
+#endif
 #endif
 #endif
 
@@ -152,7 +183,11 @@
 /**********************
  * SPI
  *********************/
+#ifdef PLATFORM_I143
+#define SPI_FLASH_BASE      0xF8000000
+#else
 #define SPI_FLASH_BASE      0x98000000
+#endif
 #define SPI_IBOOT_OFFSET    ( 0 * 1024)
 #define SPI_XBOOT_OFFSET    (64 * 1024) 
 
@@ -167,12 +202,26 @@
 #define SRAM0_SIZE          (40 * 1024)
 #endif
 
-#define SRAM0_BASE          0x9e800000
+#ifdef PLATFORM_I143
+#define SRAM0_BASE          0xFE800000
+#else
+#define SRAM0_BASE          0x9E800000
+#endif
 #define SRAM0_END           (SRAM0_BASE + SRAM0_SIZE)
 
+#ifdef PLATFORM_I143
+#ifdef CONFIG_USE_ZMEM
+#define CA7_START_ADDR    (0x200F0000+0x6800+0x20) //ca7 code is offset 26k 
+#else
+#define CA7_START_ADDR    (0x7E800000+0x6800+0x20)
+#endif
+#endif
 #ifdef PLATFORM_I137
 #define B_SRAM_BASE_A_VIEW  0x9e000000
 #define A_WORK_MEM_BASE     0x9e800000
+#elif defined(PLATFORM_I143)
+#define B_SRAM_BASE_A_VIEW  0xFE800000
+#define A_WORK_MEM_BASE     0x9ea00000
 #else
 #define B_SRAM_BASE_A_VIEW  0x9e800000
 #define A_WORK_MEM_BASE     0x9ea00000
@@ -214,6 +263,11 @@
 #elif defined(PLATFORM_Q628)
 /* B can access A sram */
 #define A_START_POS_B_VIEW        (A_WORK_MEM_END - 0xc) // 9ea7fff4 - (core * 4)
+#define A_START_POS_A_VIEW        A_START_POS_B_VIEW
+#define BOOT_ANOTHER_POS_A_VIEW   BOOT_ANOTHER_POS
+#elif defined(PLATFORM_I143)
+#define A_BOOT_POS_A_VIEW         0x9e809ffc       // remap to BOOT_ANOTHER_POS
+#define A_START_POS_B_VIEW        0x6ea7fff4 // 6ea7fff4 - (core * 4)
 #define A_START_POS_A_VIEW        A_START_POS_B_VIEW
 #define BOOT_ANOTHER_POS_A_VIEW   BOOT_ANOTHER_POS
 #else
