@@ -31,7 +31,7 @@ LDFLAGS +=  -Wl,--build-id=none
 ifeq ($(ARCH),arm)
 CFLAGS  += -march=armv5te -mthumb -mthumb-interwork
 else
-CFLAGS	+= -march=rv64gc -mabi=lp64d -mcmodel=medany
+CFLAGS	+= -march=rv64gc -mabi=lp64d -mcmodel=medany -msave-restore
 endif
 ifeq ($(CONFIG_I143_C_P), y)
 CROSS_ARM   := ../../crossgcc/armv5-eabi--glibc--stable/bin/armv5-glibc-linux-
@@ -53,8 +53,6 @@ endif
 # default target
 release debug: all
 
-aaa:
-	@echo ">>>>> Link $(CC)   $(CROSS)"
 
 all:  $(TARGET)
 	@# 32-byte xboot header
@@ -110,11 +108,8 @@ endif # CONFIG_STANDALONE_DRAMINIT
 debug: DRAMINIT_TARGET:=debug
 
 build_draminit:
-	@echo ">>>>> Link $(CC)  "
 	@echo ">>>>>>>>>>> Build draminit"
-ifeq ($(ARCH),arm)
 	make -C ../draminit $(DRAMINIT_TARGET) ARCH=$(ARCH) CROSS=$(CROSS) MKIMAGE=$(MKIMAGE)
-endif
 	@echo ">>>>>>>>>>> Build draminit (done)"
 	@echo ""
 
@@ -199,11 +194,7 @@ $(TARGET): $(OBJS)
 endif
 	@echo ">>>>> Link $@  "
 	@$(CPP) -P $(CFLAGS) -x c $(LD_SRC) -o $(LD_GEN)
-ifeq ($(ARCH),arm)
 	$(CC) $(CFLAGS) $(OBJS) $(DRAMINIT_OBJ) -T $(LD_GEN) $(LDFLAGS) -o $(BIN)/$(TARGET) -Wl,-Map,$(BIN)/$(TARGET).map
-else
-	$(CC) $(CFLAGS) $(OBJS) -T $(LD_GEN) $(LDFLAGS) -o $(BIN)/$(TARGET) -Wl,-Map,$(BIN)/$(TARGET).map
-endif
 	@$(OBJCOPY) -O binary -S $(BIN)/$(TARGET) $(BIN)/$(TARGET).bin
 	@$(OBJDUMP) -d -S $(BIN)/$(TARGET) > $(BIN)/$(TARGET).dis
 ifeq ($(CONFIG_I143_C_P), y)

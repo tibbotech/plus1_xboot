@@ -295,7 +295,7 @@ static int run_draminit(void)
 	dram_init = (void *)dram_init_main;
 #endif
 
-	prn_string("Run draiminit@"); prn_dword((u32)dram_init);
+	prn_string("Run draiminit@"); prn_dword((u32)ADDRESS_CONVERT(dram_init));
 	save_val = g_bootinfo.mp_flag;
 #ifdef PLATFORM_3502
 	g_bootinfo.mp_flag = 1;		/* mask prints */
@@ -1554,10 +1554,11 @@ static inline void init_cdata(void)
 
 static u32 read_mp_bit(void)
 {
-	char data;
+	char data = 0;
 	u32  mp_bit;
-
+#ifdef CONFIG_HAVE_OTP
 	sunplus_otprx_read(1, &data);
+#endif
 	mp_bit = (data >> 4) & 0x1;
 
 	return mp_bit;

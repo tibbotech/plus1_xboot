@@ -10,7 +10,6 @@
 #define ARM_MODE_UNDEFINED  0x1B
 #define ARM_MODE_USER       0x10
 
-#ifdef CONFIG_SECURE_BOOT_SIGN
 #ifdef __ARM_ARCH_7A__
 #warning "******************************************"
 #warning "*** You build with ARMv7 toolchain!    ***"
@@ -28,6 +27,5 @@
 #define WORD_ISB        .word   0xf57ff06f
 #define WORD_WFENE      .word   0x1320f002
 #define WORD_SEV        .word   0xe320f004
-#endif
 #endif
 #endif
