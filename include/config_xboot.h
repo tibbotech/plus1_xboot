@@ -16,7 +16,6 @@
 #define SPI_DTB_OFFSET        0x020000   // 128K
 #define SPI_UBOOT_OFFSET      0x040000   // 256K
 
-#define SPI_FREERTOS_OFFSET   0x180000   // 1.5M
 #define SPI_INITRAMFS_OFFSET  0x400000   // 4M
 #define SPI_LINUX_OFFSET      0x600000   // 6M
 
