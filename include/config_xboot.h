@@ -1,7 +1,7 @@
 #ifndef _INC_CONFIG_XBOOT_
 #define _INC_CONFIG_XBOOT_
 
-#include <auto_config.h>
+#include <config.h>
 
 ////////////////////////////////////////////////////////////////////////////
 //
@@ -16,14 +16,10 @@
 #define SPI_DTB_OFFSET        0x020000   // 128K
 #define SPI_UBOOT_OFFSET      0x040000   // 256K
 
-#ifdef PLATFORM_I143
-#define SPI_INITRAMFS_OFFSET  0x200000   // 2M
-#define SPI_LINUX_OFFSET      0x700000   // 7M
 #define SPI_FREERTOS_OFFSET   0x180000   // 1.5M
-#else
 #define SPI_INITRAMFS_OFFSET  0x400000   // 4M
 #define SPI_LINUX_OFFSET      0x600000   // 6M
-#endif
+
 //
 // Load & Run Address
 //

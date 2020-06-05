@@ -703,6 +703,7 @@ enum SD_HANDLE_STATE {
 	} while (0)
 
 /* only sd card need this */
+#define DMA_SIZE_SET(x)					/* for compile error*/
 #define SD_INT_CONTROL_SET(x)           sd_int(gDEV_SDCTRL_BASE_ADRS) = (x)
 #define SD_INT_CONTROL_GET()            sd_int(gDEV_SDCTRL_BASE_ADRS)
 

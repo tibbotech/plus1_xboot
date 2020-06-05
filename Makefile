@@ -80,14 +80,6 @@ size_check:
 		exit 1; \
 	 fi
 
-ifeq ($(CONFIG_LOAD_LINUX), y)
-ifeq ($(ARCH),riscv)
-	@echo ">>>>>>>>>>> Build opensbi"
-	@$(MAKE) -C ../opensbi distclean && $(MAKE) -C ../opensbi FW_PAYLOAD_TYPE=kernel CROSS_COMPILE=$(CROSS)
-	@cd ../../ipack;./add_uhdr.sh uboot_i143_kernel ../boot/opensbi/out/fw_payload.bin ../boot/xboot/bin/OpenSBI_Kernel.img riscv 0xA0200000 0xA0200000
-	@echo ">>>>>>>>>>> Build opensbi  end"
-endif
-endif
 ###################
 # draminit
 
@@ -200,7 +192,14 @@ endif
 ifeq ($(CONFIG_I143_C_P), y)
 	@dd if=$(BIN)/$(TARGET_C_P).bin of=$(BIN)/$(TARGET).bin bs=1k seek=26 conv=notrunc 2>/dev/null
 endif
-ifeq ($(CONFIG_LOAD_LINUX), )
+ifeq ($(CONFIG_LOAD_LINUX),y)
+ifeq ($(ARCH),riscv)
+	@echo ">>>>>>>>>>> Build opensbi"
+	@$(MAKE) -C ../opensbi distclean && $(MAKE) -C ../opensbi FW_PAYLOAD_TYPE=kernel CROSS_COMPILE=$(CROSS)
+	@cd ../../ipack;./add_uhdr.sh uboot_i143_kernel ../boot/opensbi/out/fw_payload.bin ../boot/xboot/bin/OpenSBI_Kernel.img riscv 0xA0200000 0xA0200000
+	@echo ">>>>>>>>>>> Build opensbi  end"
+endif
+else
 	@if [ -f bin/OpenSBI_Kernel.img ]; then\
 		echo "####delete the opensbi_kernel file #######" ;\
 		rm -f bin/OpenSBI_Kernel.img ;\
@@ -212,7 +211,7 @@ endif
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-I143_C_P:
+I143_C_P: prepare
 	@echo "build arm ca7 !!!"
 	@$(CROSS_ARM)gcc $(CFLAGS_C_P) -c -o $(START_C_P_PATH)/start_c_p.o $(START_C_P_PATH)/start_c_p.S
 	@$(CROSS_ARM)cpp -P $(CFLAGS_C_P) $(START_C_P_PATH)/boot_c_p.ldi boot_c_p.ld
