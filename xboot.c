@@ -1511,7 +1511,7 @@ static void boot_flow(void)
 
 static void init_uart(void)
 {
-#ifdef CONFIG_DEBUG_WITH_2ND_UART
+#ifndef CONFIG_DEBUG_WITH_2ND_UART
 #ifdef PLATFORM_Q628
 	/* uart1 pinmux : x1,UA0_TX, X2,UA1_RX */
 	MOON3_REG->sft_cfg[14] = RF_MASK_V((0x7f << 0), (1 << 0));
