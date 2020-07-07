@@ -94,9 +94,9 @@ int verify_uboot_signature(const struct image_header  *hdr)
 	data = ((u8 *)hdr);
 	data_size = imgsize  + sizeof(struct image_header);//- sig_size-sig_flag_size;
 	sig = data + data_size+sig_flag_size;
-	
-	u32 sig_magic_data = *(u32 *)(data+data_size);// get sign flag data
-	prn_string("sig_magic_data=");prn_dword0(sig_magic_data);
+	prn_string("sig_magic_data=");
+	u32 sig_magic_data = (*(u8 *)(data+data_size))<<24|(*(u8 *)(data+data_size+1))<<16|(*(u8 *)(data+data_size+2))<<8|(*(u8 *)(data+data_size+3));
+	prn_dword(sig_magic_data);
 	if(sig_magic_data != VERIFY_SIGN_MAGIC_DATA)
 	{
 		prn_string("\n imgdata no secure flag \n");
@@ -489,7 +489,6 @@ static void boot_uboot(void)
 	int ret = verify_uboot_signature(hdr);
 	if(ret)
 	{
-		prn_string(" verify  fail !!!!!\\n");
 		halt();
 	}
 #endif
