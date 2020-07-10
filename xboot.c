@@ -1534,7 +1534,9 @@ static void init_uart(void)
    //  prn_dword(UART0_REG->div_h);  
 
   *(volatile unsigned int *) (0x9C000000 +0x230) = 0x3F009800;// down CPU FREQ.	
-  
+  *(volatile unsigned int *) (0x9C000000 +0x224) = 0x000C0000;// clean pll setting.	
+
+ 
      	prn_string("9C000230: "); 
      prn_dword(*(volatile unsigned int *) (0x9C000000 +0x230));
       	prn_string("9C000224: "); 
