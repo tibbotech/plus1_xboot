@@ -245,8 +245,11 @@
 /**********************
  * UART
  *********************/
-//#define UART_SRC_CLK        (XTAL_CLK)
+#ifdef PLATFORM_I143
 #define UART_SRC_CLK        (19575*10000)  /* 8388 SYSSLOW */ //(19575*10000)
+#else
+#define UART_SRC_CLK        (XTAL_CLK)
+#endif
 
 /*
  * X = ((sclk + baud/2) / baud)
