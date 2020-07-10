@@ -219,6 +219,8 @@ static void init_hw(void)
 	__attribute__((unused)) int is_A = 0;
 	dbg();
 	*(volatile unsigned int *) (0x9C000000 +0x2EC) = 0x01c30000;// set DC12_CTL_1(G5.27) to default,for DCIN_1.2V set.
+
+
 #if 0 /* experiment : slower b_sysclk  */
 	//MOON4_REG->pllsys = RF_MASK_V(0xf, 0xe); /* 202.5 (default) */
 	//MOON4_REG->pllsys = RF_MASK_V(0xf, 0xd); /* 189 */
@@ -1521,6 +1523,26 @@ static void init_uart(void)
 #endif
 #endif
 #ifdef PLATFORM_I143
+
+
+     UART0_REG->div_l = UART_BAUD_DIV_L(BAUDRATE, UART_SRC_CLK);	/* baud rate */
+     UART0_REG->div_h = UART_BAUD_DIV_H(BAUDRATE, UART_SRC_CLK);
+
+   //  	prn_string("UART0 div_l: "); 
+   //  prn_dword(UART0_REG->div_l);
+   //  	prn_string("UART0 div_h: "); 
+   //  prn_dword(UART0_REG->div_h);  
+
+  *(volatile unsigned int *) (0x9C000000 +0x230) = 0x3F009800;// down CPU FREQ.	
+  
+     	prn_string("9C000230: "); 
+     prn_dword(*(volatile unsigned int *) (0x9C000000 +0x230));
+      	prn_string("9C000224: "); 
+     prn_dword(*(volatile unsigned int *) (0x9C000000 +0x224));	     	 
+
+
+
+
 	MOON1_REG->sft_cfg[1] = RF_MASK_V_SET(1 << 12);
 	MOON0_REG->reset[1] = RF_MASK_V_CLR(1 << 9);	/* reset of UA1 */
 	MOON0_REG->reset[1] = RF_MASK_V_CLR(1 << 15);	/* reset of UADMA */

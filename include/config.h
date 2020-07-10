@@ -245,7 +245,8 @@
 /**********************
  * UART
  *********************/
-#define UART_SRC_CLK        (XTAL_CLK)
+//#define UART_SRC_CLK        (XTAL_CLK)
+#define UART_SRC_CLK        (19575*10000)  /* 8388 SYSSLOW */ //(19575*10000)
 
 /*
  * X = ((sclk + baud/2) / baud)
