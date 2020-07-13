@@ -38,31 +38,33 @@
 
 #ifdef PLATFORM_I143
 
-#define OPENSBI_RUN_ADDR			0xA01D0000
+#define OPENSBI_RUN_ADDR        0xA01D0000
 
 // freertos
-#define FREERTOS_RUN_ADDR      		0xA0000040
-#define FREERTOS_LOAD_ADDR       	0xA0000000
+#define FREERTOS_RUN_ADDR       0xA0000040
+#define FREERTOS_LOAD_ADDR      0xA0000000
+
 // u-boot
-#define UBOOT_RUN_ADDR_A_VIEW       0x20100000
-#define UBOOT_RUN_ADDR      		0xA0100000
-#define UBOOT_LOAD_ADDR       		(0xA0100000-0X40)
-#define UBOOT_MAX_LEN        		0x400000
+#define UBOOT_RUN_ADDR_A_VIEW   0x20100000
+#define UBOOT_RUN_ADDR          0xA0100040
+#define UBOOT_LOAD_ADDR         0xA0100000
+#define UBOOT_MAX_LEN           0x400000
 
 // DTB
-#define DTB_RUN_ADDR_A_VIEW         0x201F0000          /* for  C+P */
-#define DTB_RUN_ADDR        		0xA01F0000          /* dtb */
-#define DTB_LOAD_ADDR         		(DTB_RUN_ADDR-0X40)     /* skip header */
-#define DTB_MAX_LEN        	  0x8000
+#define DTB_RUN_ADDR_A_VIEW     0x201F0000                      /* for  C+P */
+#define DTB_RUN_ADDR            0xA01F0000                      /* dtb */
+#define DTB_LOAD_ADDR           (DTB_RUN_ADDR-0X40)             /* skip header */
+#define DTB_MAX_LEN             0x8000
 
 // Linux
-#define LINUX_RUN_ADDR_A_VIEW 		0x20028000 				 /* for  C+P */
-#define LINUX_RUN_ADDR       		0xA0200000                   /* vmlinux */
-#define LINUX_LOAD_ADDR      		(LINUX_RUN_ADDR - 0x40)    /* - header */
+#define LINUX_RUN_ADDR_A_VIEW   0x20028000                      /* for  C+P */
+#define LINUX_RUN_ADDR          0xA0200000                      /* vmlinux */
+#define LINUX_LOAD_ADDR         (LINUX_RUN_ADDR - 0x40)         /* - header */
 
 // initramfs
-#define INITRAMFS_RUN_ADDR   		0xA2000000                   /* cpio */
-#define INITRAMFS_LOAD_ADDR  		(INITRAMFS_RUN_ADDR - 0x40)
+#define INITRAMFS_RUN_ADDR      0xA2000000                      /* cpio */
+#define INITRAMFS_LOAD_ADDR     (INITRAMFS_RUN_ADDR - 0x40)
+
 #else
 // u-boot
 #define UBOOT_LOAD_ADDR      0x200000
