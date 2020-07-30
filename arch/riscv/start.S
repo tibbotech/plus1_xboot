@@ -15,7 +15,7 @@ start:
     
 /* initialize global pointer */
     la	sp, __stack_top
-	smp_pause(s1, s2)/* pause hart 1...4,only hart 0 do the work */
+	//smp_pause(s1, s2)/* pause hart 1...4,only hart 0 do the work */
 	
 init_bss:
     /* init bss section */
@@ -28,6 +28,8 @@ C_code_start:
 	la	t0, __boot_info_tmp_value
 	fence	rw, w
 	amoswap.w zero, zero, 0(t0)
+	csrr a0, mhartid
+	bnez a0, boot_other_hart
 	call xboot_main 
 	ret
 
@@ -45,7 +47,7 @@ exit_bootROM:
 	la	t0, __boot_info_tmp_value
 	amoswap.w zero, a0, 0(t0)
 
-	smp_resume(s1, s2) //resume hart 1...4
+	//smp_resume(s1, s2) //resume hart 1...4
 	j boot_other_hart
 	ret
 	
