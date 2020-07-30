@@ -328,8 +328,13 @@ int CheckSDAppOpCond(struct STORAGE_DEVICE* pStroage_dev)
 		cmd_args |= (ARGS_OCR_VDD_WIN_V32_33|ARGS_OCR_VDD_WIN_V33_34);
 
 		if (host_support_high_capacity_flag == 1) {
+#ifdef PLATFORM_I143
 			// Not support SDXC:
-			cmd_args |= ARGS_HOST_CAPACITY_SUPPORT|ARGS_S18R(0)|ARGS_XPC(0);
+			cmd_args |= ARGS_HOST_CAPACITY_SUPPORT|ARGS_S18R(1)|ARGS_XPC(0);  // add S18R
+#else
+			// Not support SDXC:
+	                cmd_args |= ARGS_HOST_CAPACITY_SUPPORT|ARGS_S18R(0)|ARGS_XPC(0);  // add S18R
+#endif
 		}
 
 		CSTAMP(0xCAD05005);
@@ -385,6 +390,46 @@ int CheckSDAppOpCond(struct STORAGE_DEVICE* pStroage_dev)
 			pStroage_dev->what_dev = ERR_NEGATIVE_VALUE;
 		}
 	}
+
+#ifdef PLATFORM_I143    // 1.8v switch 
+#if(0)
+
+
+    if(rsp_buf[1]&0x01){
+        prn_string("Get A18R\n");
+
+	    SD_VOL_TMR_SET(1);
+	    SD_HW_VOL_SET(1);
+		ret = hwSdCmdSend(CMD11, 0, RSP_TYPE_R1, rsp_buf);
+
+		if(ret == SD_SUCCESS){
+            _delay_1ms(20);
+			SD_TXDUMMY_SET(401);
+			hwSdTxDummy();
+		    SD_TXDUMMY_SET(8);
+
+
+		   if(SD_VOL_RESULT_GET() == 0x01){
+		       prn_string("switch 1.8v success\n");
+			   prn_string(" i143-1 status0="); prn_dword0(SD_STATUS0_GET());
+	           prn_string(" i143-1 status1="); prn_dword(SD_STATUS1_GET());
+		   }
+           else{
+			   prn_string("switch 1.8v result\n");	prn_dword0(SD_VOL_RESULT_GET()); prn_string("\n");
+			   prn_string(" i143-2 status0="); prn_dword0(SD_STATUS0_GET());
+	           prn_string(" i143-2 status1="); prn_dword(SD_STATUS1_GET());
+		   }
+		}else{
+	        return ret;		
+		}
+		//_delay_1ms(500);
+    }
+	else{
+		prn_string(" Not Get A18R\n");
+	}
+
+#endif
+#endif
 
 	return ret;
 

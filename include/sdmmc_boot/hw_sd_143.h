@@ -769,4 +769,31 @@ enum SD_HANDLE_STATE {
 	}while(0)
 
 
+#define SD_VOL_18_SET(x) \
+			do{ \
+					(TO_EMMC_REG(gDEV_SDCTRL_BASE_ADRS)->sw_set_vol) = (x) ; \
+			}while(0)
+
+
+
+#define SD_VOL_TMR_SET(x) \
+			do{ \
+					(TO_EMMC_REG(gDEV_SDCTRL_BASE_ADRS)->vol_tmr) = (x) ; \
+			}while(0)
+
+
+#define SD_HW_VOL_SET(x) \
+			do{ \
+					(TO_EMMC_REG(gDEV_SDCTRL_BASE_ADRS)->hw_set_vol) = (x) ; \
+			}while(0)
+
+		
+#define SD_VOL_RESULT_GET() \
+			({ \
+				unsigned int ret; \
+					ret = (TO_EMMC_REG(gDEV_SDCTRL_BASE_ADRS)->vol_result); \
+				(ret);\
+			})
+
+
 #endif //#ifndef _HWSD_H_
