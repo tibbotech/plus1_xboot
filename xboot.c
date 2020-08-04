@@ -102,7 +102,7 @@ int verify_uboot_signature(const struct image_header  *hdr)
 		prn_string("\n imgdata no secure flag \n");
 		goto out;
 	}
-	
+
 	load_otp_pub_key(in_pub);
 
 	/* verify signature */
@@ -230,7 +230,7 @@ static void init_hw(void)
 #ifdef PLATFORM_Q628
 	if ((cpu_main_id() & 0xfff0) == 0x9260)
 		prn_string("-- B --\n");
-	else 
+	else
 	{
 		is_A = 1;
 		prn_string("-- A --\n");
@@ -387,7 +387,6 @@ static int nor_load_uhdr_image(const char *img_name, void *dst, void *src, int v
 	}
 
 	// load image data
-	
 	len = image_get_size(hdr)+ SIGN_DATA_SIZE;
 	prn_string("load data size="); prn_decimal(len); prn_string("\n");
 
@@ -457,7 +456,7 @@ static void boot_next_set_addr(unsigned int addr)
 static void boot_next_in_A(void)
 {
 	volatile u32 *pB_Addr;
-	
+
 	fixup_boot_compatible();
 
 	prn_string("wake up A\n");
@@ -475,11 +474,25 @@ static void boot_next_in_A(void)
 	g_bootinfo.mp_flag = 1;
 	pB_Addr = (volatile unsigned int *)B_START_POS;
 	*pB_Addr = CPU_WAIT_INIT_VAL;
-	
+
 	/* B chip wait run addr */
 	while(*pB_Addr == CPU_WAIT_INIT_VAL);
 	exit_bootROM(*pB_Addr);// q628 jump to nonos_B,I143 wait!
 }
+
+#ifdef PLATFORM_I143
+#define UART_LSR_RX     (1 << 1)
+/* Clear RX buffer of UART 0. */
+static void clear_uart_rx_buf(void)
+{
+	u8 buf;
+
+	while (DBG_UART_REG->lsr & UART_LSR_RX) {
+		buf = DBG_UART_REG->dr;
+		buf = buf;
+	}
+}
+#endif
 
 /* Assume u-boot has been loaded */
 static void boot_uboot(void)
@@ -497,6 +510,12 @@ static void boot_uboot(void)
 #ifdef PLATFORM_I143
 	u32 reg = *(volatile unsigned int *)HW_CFG_REG; /* = MOON0_REG->hw_cfg */
 	prn_string("hw_cfg="); prn_dword(reg);
+
+	// Clear RX buffer before jump to u-boot,
+	// to prevent from unexpected characters stopping
+	// auto-running u-boot scripts.
+	clear_uart_rx_buf();
+
 	reg = (reg & HW_CFG_MASK) >> HW_CFG_SHIFT;
 	if(reg == INT_CA7_BOOT)
 	{
@@ -511,7 +530,7 @@ static void boot_uboot(void)
 		boot_next_in_A();
 	}
 	else{
-		exit_bootROM(OPENSBI_RUN_ADDR);	
+		exit_bootROM(OPENSBI_RUN_ADDR);
 	}
 #else
 	prn_string((const char *)image_get_name(hdr)); prn_string("\n");
@@ -532,7 +551,7 @@ static void boot_uboot(void)
 
 		exit_xboot("Run u-boot @", UBOOT_RUN_ADDR);
 	}
-#endif	
+#endif
 }
 
 #ifdef CONFIG_HAVE_SPI_NOR
@@ -566,7 +585,7 @@ static void boot_linux(void)
 		prn_string("run linux@"); prn_dword(LINUX_RUN_ADDR);
 		boot_next_no_stack();
 	}
-#endif	
+#endif
 }
 
 static void spi_nor_linux(void)
@@ -710,7 +729,7 @@ static int fat_load_uhdr_image(fat_info *finfo, const char *img_name, void *dst,
 	if ((u32)ADDRESS_CONVERT(dst) & 0xfff) {
 		prn_string("WARN: unaligned dst "); prn_dword((u32)ADDRESS_CONVERT(dst));
 	}
-	
+
 	/* ISPBOOOT.BIN file index is 0,uboot.img is 1*/
 	fileindex = (type==SDCARD_BOOT)?FAT_UBOOT_INDEX:FAT_ISPBOOOT_INDEX;
 
@@ -825,7 +844,7 @@ static void do_fat_boot(u32 type, u32 port)
 		prn_string("failed to load uboot\n");
 		return;
 	}
-	
+
 	boot_uboot();
 }
 #endif /* CONFIG_HAVE_FS_FAT */
