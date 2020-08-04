@@ -1101,27 +1101,6 @@ static void emmc_boot(void)
 	}
 #endif
 
-#ifdef PLATFORM_I143
-	res = emmc_read(g_boothead, 3, 1); /* LBA 3 */
-	if (res < 0) {
-		dbg();
-		return;
-	}
-	gpt_part = (gpt_entry *)g_boothead;
-
-	for (i = 0; i < 4; i++) {
-		blk_start2 = (u32) gpt_part[i].starting_lba;
-		prn_string("part"); prn_decimal(1 + i);
-		prn_string(" LBA="); prn_dword(blk_start2);
-		len = emmc_load_uhdr_image("freertos", (void *)FREERTOS_LOAD_ADDR, 0,
-				blk_start2, 0, UBOOT_MAX_LEN, MMC_USER_AREA);
-		if (len > 0)
-		{
-			prn_string("freertos good\n");
-			break;
-		}	
-	}		
-#endif	
 	if (len <= 0) {
 		prn_string("bad uboot\n");
 		return;
