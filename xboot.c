@@ -1539,11 +1539,15 @@ static void init_uart(void)
 	//prn_string("UART0 div_h: ");
 	//prn_dword(UART0_REG->div_h);
 
-	//*(volatile unsigned int *)(0x9C000000 +0x230) = 0x3F001800;  // Down CPU FREQ to 168.75 MHz.
-	*(volatile unsigned int *)(0x9C000000 +0x224) = 0x000C0000;  // Clean G2 & G1 to 0.
+	//*(volatile u32 *)(0x9C000230) = 0x3F001800;  // Down CPU FREQ to 168.75 MHz.
+	*(volatile u32 *)(0x9C000224) = 0x000C0000;  // Clear G2 & G1 to 0.
 
-	prn_string("9C000230: "); prn_dword(*(volatile unsigned int *)(0x9C000000 +0x230));
-	prn_string("9C000224: "); prn_dword(*(volatile unsigned int *)(0x9C000000 +0x224));
+	prn_string("9C000230: "); prn_dword(*(volatile u32 *)(0x9C000230));
+	prn_string("9C000224: "); prn_dword(*(volatile u32 *)(0x9C000224));
+
+	// for GL2SW
+	*(volatile u32 *)(0x9C000238) = 0x00800000;  // Clear CK250M_EN to 0.
+	//prn_string("9C000238: "); prn_dword(*(volatile u32 *)(0x9C000238));
 
 	MOON1_REG->sft_cfg[1] = RF_MASK_V_SET(1 << 12);
 	MOON0_REG->reset[1] = RF_MASK_V_CLR(1 << 9);	/* reset of UA1 */
