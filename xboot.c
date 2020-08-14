@@ -1545,6 +1545,14 @@ static void init_uart(void)
 	prn_string("9C000230: "); prn_dword(*(volatile u32 *)(0x9C000230));
 	prn_string("9C000224: "); prn_dword(*(volatile u32 *)(0x9C000224));
 
+        // *(volatile unsigned int *) (0x9C000000 +0x204) = 0x7E007C00;// 	
+        // *(volatile unsigned int *) (0x9C000000 +0x208) = 0x00010001;// 	
+        *(volatile unsigned int *) (0x9C000000 +0x20C) = 0x07E007E0;// SD CARD smith tri
+
+	prn_string("9C000204: "); prn_dword(*(volatile u32 *)(0x9C000204));
+	prn_string("9C000208: "); prn_dword(*(volatile u32 *)(0x9C000208));
+	prn_string("9C00020C: "); prn_dword(*(volatile u32 *)(0x9C00020C));
+
 	// for GL2SW
 	*(volatile u32 *)(0x9C000238) = 0x00800000;  // Clear CK250M_EN to 0.
 	//prn_string("9C000238: "); prn_dword(*(volatile u32 *)(0x9C000238));
