@@ -1545,8 +1545,8 @@ static void init_uart(void)
 	prn_string("9C000230: "); prn_dword(*(volatile u32 *)(0x9C000230));
 	prn_string("9C000224: "); prn_dword(*(volatile u32 *)(0x9C000224));
 
-        // *(volatile unsigned int *) (0x9C000000 +0x204) = 0x7E007C00;// 	
-        // *(volatile unsigned int *) (0x9C000000 +0x208) = 0x00010001;// 	
+        // *(volatile unsigned int *) (0x9C000000 +0x204) = 0x7E007C00;//
+        // *(volatile unsigned int *) (0x9C000000 +0x208) = 0x00010001;//
         *(volatile unsigned int *) (0x9C000000 +0x20C) = 0x07E007E0;// SD CARD smith tri
 
 	prn_string("9C000204: "); prn_dword(*(volatile u32 *)(0x9C000204));
@@ -1555,7 +1555,11 @@ static void init_uart(void)
 
 	// for GL2SW
 	*(volatile u32 *)(0x9C000238) = 0x00800000;  // Clear CK250M_EN to 0.
+	*(volatile u32 *)(0x9C000078) = 0x00800080;  // Set GL2SW_RESET to 1.
+	STC_delay_us(100);
+	*(volatile u32 *)(0x9C000078) = 0x00800000;  // Clear GL2SW_RESET to 0.
 	//prn_string("9C000238: "); prn_dword(*(volatile u32 *)(0x9C000238));
+	//prn_string("9C000078: "); prn_dword(*(volatile u32 *)(0x9C000078));
 
 	MOON1_REG->sft_cfg[1] = RF_MASK_V_SET(1 << 12);
 	MOON0_REG->reset[1] = RF_MASK_V_CLR(1 << 9);	/* reset of UA1 */
