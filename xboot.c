@@ -269,6 +269,11 @@ static void init_hw(void)
 		MOON0_REG->reset[i] = RF_MASK_V_CLR(0xffff);
 #endif
 
+#ifdef PLATFORM_I143
+      /* GPU driver (if not,all the date that gpu output to frame buffer is 0) by xt*/
+     MOON5_REG->sft_cfg[2] = RF_MASK_V_SET((1 << 0) | (1 << 1));
+#endif
+
 #if defined(PLATFORM_Q628) && !defined(CONFIG_DISABLE_CORE2_3)
 	if (is_A) {
 		prn_string("release cores\n");
