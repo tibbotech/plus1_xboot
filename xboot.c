@@ -1546,9 +1546,11 @@ static void init_uart(void)
 
 	//*(volatile u32 *)(0x9C000230) = 0x3F001800;  // Down CPU FREQ to 168.75 MHz.
 	*(volatile u32 *)(0x9C000224) = 0x000C0000;  // Clear G2 & G1 to 0.
+	*(volatile u32 *)(0x9C000228) = 0x3F001E00;  // Down PLLFLA FREQ to 209.25 MHz.
 
 	prn_string("9C000230: "); prn_dword(*(volatile u32 *)(0x9C000230));
 	prn_string("9C000224: "); prn_dword(*(volatile u32 *)(0x9C000224));
+	prn_string("9C000228: "); prn_dword(*(volatile u32 *)(0x9C000228));
 
         // *(volatile unsigned int *) (0x9C000000 +0x204) = 0x7E007C00;//
         // *(volatile unsigned int *) (0x9C000000 +0x208) = 0x00010001;//
