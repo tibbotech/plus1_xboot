@@ -1546,15 +1546,18 @@ static void init_uart(void)
 
 	//*(volatile u32 *)(0x9C000230) = 0x3F001800;  // Down CPU FREQ to 168.75 MHz.
 	*(volatile u32 *)(0x9C000224) = 0x000C0000;  // Clear G2 & G1 to 0.
-	*(volatile u32 *)(0x9C000228) = 0x3F001E00;  // Down PLLFLA FREQ to 209.25 MHz.
+	*(volatile u32 *)(0x9C000228) = 0xFF00A000; // Down PLLFLA FREQ to 222.75 MHz.
 
 	prn_string("9C000230: "); prn_dword(*(volatile u32 *)(0x9C000230));
 	prn_string("9C000224: "); prn_dword(*(volatile u32 *)(0x9C000224));
 	prn_string("9C000228: "); prn_dword(*(volatile u32 *)(0x9C000228));
 
-        // *(volatile unsigned int *) (0x9C000000 +0x204) = 0x7E007C00;//
-        // *(volatile unsigned int *) (0x9C000000 +0x208) = 0x00010001;//
-        *(volatile unsigned int *) (0x9C000000 +0x20C) = 0x07E007E0;// SD CARD smith tri
+
+	//*(volatile u32 *)(0x9C000228) = 0x00010001;  // power on FLA pll
+	//prn_string("9C000228: "); prn_dword(*(volatile u32 *)(0x9C000228));
+        *(volatile unsigned int *) (0x9C000000 +0x204) = 0xFE008600;// 	//0xFE008600;  0xFE00FE00
+        *(volatile unsigned int *) (0x9C000000 +0x208) = 0x00010001;// 	set SD CARD DS
+        *(volatile unsigned int *) (0x9C000000 +0x20C) = 0x07E007E0;//  SD CARD smith tri
 
 	prn_string("9C000204: "); prn_dword(*(volatile u32 *)(0x9C000204));
 	prn_string("9C000208: "); prn_dword(*(volatile u32 *)(0x9C000208));
