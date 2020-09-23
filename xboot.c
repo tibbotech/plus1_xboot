@@ -1563,6 +1563,18 @@ static void init_uart(void)
 	prn_string("9C000208: "); prn_dword(*(volatile u32 *)(0x9C000208));
 	prn_string("9C00020C: "); prn_dword(*(volatile u32 *)(0x9C00020C));
 
+
+        *(volatile unsigned int *) (0x9C000000 +0x214) = 0xFE00FE00;// 	//0xFE008600;  0xFE00FE00
+        *(volatile unsigned int *) (0x9C000000 +0x218) = 0x001F001F;// 	set SD CARD DS 0x00010001  0x001F001F
+        *(volatile unsigned int *) (0x9C000000 +0x21C) = 0x07E007E0;//  SDIO smith tri
+
+	prn_string("9C000204: "); prn_dword(*(volatile u32 *)(0x9C000204));
+	prn_string("9C000208: "); prn_dword(*(volatile u32 *)(0x9C000218));
+	prn_string("9C00020C: "); prn_dword(*(volatile u32 *)(0x9C00020C));
+
+
+
+
 	// for GL2SW
 	*(volatile u32 *)(0x9C000238) = 0x00800000;  // Clear CK250M_EN to 0.
 	*(volatile u32 *)(0x9C000078) = 0x00800080;  // Set GL2SW_RESET to 1.
