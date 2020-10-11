@@ -51,7 +51,11 @@ static void load_otp_pub_key(unsigned char *in_pub)
 {
 	int i;
 	for (i = 0; i < 32; i++) {
+#ifdef CONFIG_HAVE_OTP
 		sunplus_otprx_read(i+64,(char *)&in_pub[i]);
+#else
+		in_pub[i] = 0;
+#endif
 	}
 	prn_string("OTP pub-key:\n");
 	prn_dump_buffer(in_pub, 32);
