@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux Kernel Configuration
+# Configuration: q628_xboot_uart1_mon_defconfig
 #
 # CONFIG_ARCH_RISCV is not set
 CONFIG_ARCH_ARM=y

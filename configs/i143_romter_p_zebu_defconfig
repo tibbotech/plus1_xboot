@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux Kernel Configuration
+# Configuration: i143_romter_p_zebu_defconfig
 #
 # CONFIG_ARCH_ARM is not set
 CONFIG_ARCH_RISCV=y
