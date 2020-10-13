@@ -23,7 +23,7 @@ unsigned int getBootDevID(void)
 	return g_bootinfo.bootdev;
 }
 
-static inline void set_spi_nor_pinmux(int pin_x)
+void set_spi_nor_pinmux(int pin_x)
 {
 	MOON1_REG->sft_cfg[1] = RF_MASK_V(0xf, (pin_x << 2) | pin_x);
 }

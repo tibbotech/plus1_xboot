@@ -1475,6 +1475,12 @@ static void boot_flow(void)
 	prn_string("mode=");
 	prn_dword(g_bootinfo.gbootRom_boot_mode);
 
+	// NOR pins are enabled by hardware.
+	// Release them if boot device is not NOR.
+	if (g_bootinfo.gbootRom_boot_mode != SPI_NOR_BOOT) {
+		set_spi_nor_pinmux(0);
+	}
+
 	/* coverity[no_escape] */
 	while (retry-- > 0) {
 		/* Read boot mode */

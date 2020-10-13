@@ -14,6 +14,7 @@ struct xboot_hdr {
 	u32 reserved[3];
 };
 
+void set_spi_nor_pinmux(int pin_x);
 void SetBootDev(unsigned int bootdev, unsigned int pinx, unsigned int dev_port);
 
 int get_xboot_size(u8 *img);
