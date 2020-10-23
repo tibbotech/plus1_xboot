@@ -1,6 +1,7 @@
 #ifndef __NANDOP_H__
 #define __NANDOP_H__
 
+#include "types.h"
 #define DBGPRINT(args...) //printf(args)
 #define DBGOUT(args...) //printf(args)
 #define printk(args...) //printf(args)
@@ -16,12 +17,12 @@ void rd_memset(UINT8* pDst, UINT8 ch, UINT32 size);
 
 inline static void Xil_Out32(unsigned int OutAddress, unsigned int Value)
 {
-        *(volatile unsigned int *) OutAddress = Value;
+        *(volatile unsigned int *) ADDRESS_CONVERT(OutAddress) = Value;
 }
 
 inline static unsigned int Xil_In32(unsigned int Addr)
 {
-        return *(volatile unsigned int *) Addr;
+        return *(volatile unsigned int *) ADDRESS_CONVERT(Addr);
 }
 
 #include <types.h>

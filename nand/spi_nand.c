@@ -15,6 +15,8 @@
 #define CFG_SUPPORT_DMA_MODE
 //#define CFG_SUPPORT_DMA_AUTOBCH_MODE
 
+//#define SUPPORT_SPINAND_TEST
+
 #define writel(value,reg)           Xil_Out32((unsigned int)reg, value)
 #define readl(reg)                  Xil_In32((unsigned int)reg)
 
@@ -68,7 +70,8 @@ extern int verify_xboot_img(u8 *img);
 /**************************************************************************
  *                   F U N C T I O N   D E F I N E S                      *
  **************************************************************************/
-void dump_spi_regs(struct sp_spinand_info *info)
+__attribute__((unused))
+static void dump_spi_regs(struct sp_spinand_info *info)
 {
 	struct sp_spinand_regs *regs = info->regs;
 	u32 *p = (u32 *)regs;
@@ -317,7 +320,7 @@ static int spi_nand_reset(struct sp_spinand_info *info)
 		| SPINAND_USRCMD_ADDRSZ(0);
 	writel(value, &regs->spi_ctrl);
 
-	value = SPINAND_READ_TIMING(CONFIG_READ_TIMING_SEL);
+	value = SPINAND_READ_TIMING(CONFIG_SPINAND_READ_TIMING_SEL);
 	writel(value ,&regs->spi_timing);
 
 	value = SPINAND_LITTLE_ENDIAN
@@ -663,6 +666,7 @@ int spi_nand_pageread_1k60_autobch(struct sp_spinand_info *info,u32 io_mode,
 		else
 			ret = data_size;
 	}
+	writel(0, &regs->spi_bch);
 
 	return ret;
 }
@@ -690,15 +694,6 @@ static int spi_nand_pageread_1k60(struct sp_spinand_info *info,
 		#else
 		ret = -1;
 		#endif
-	} else if (trs_mode == SPINAND_TRS_PIO) {
-		#ifdef CFG_SUPPORT_PIO_MODE
-		ret = spi_nand_read_by_pio(info,
-			io_mode, row, 0, data_buf, data_size);
-		ret |= spi_nand_read_by_pio(info,
-			io_mode, row, data_size, redunt_buf, redunt_size);
-		#else
-		ret = -1;
-		#endif
 	} else if (trs_mode == SPINAND_TRS_PIO_AUTO) {
 		#ifdef CFG_SUPPORT_PIO_AUTO_MODE
 		ret = spi_nand_read_by_pio_auto(info,
@@ -708,8 +703,11 @@ static int spi_nand_pageread_1k60(struct sp_spinand_info *info,
 		#else
 		ret = -1;
 		#endif
-	} else {
-		ret = -1;
+	} else if (trs_mode == SPINAND_TRS_PIO) {
+		ret = spi_nand_read_by_pio(info,
+			io_mode, row, 0, data_buf, data_size);
+		ret |= spi_nand_read_by_pio(info,
+			io_mode, row, data_size, redunt_buf, redunt_size);
 	}
 
 	if (ret < 0)
@@ -863,7 +861,7 @@ SINT32 ReadSPINANDSector_1K60(UINT32 * ptrPyldData, UINT32 pageNo)
 	u8 *oob_buf = data_buf + data_size;
 	int ret;
 
-	ret = spi_nand_read_by_pio(info, CONFIG_READ_BITMODE,
+	ret = spi_nand_read_by_pio(info, CONFIG_SPINAND_READ_BITMODE,
 		pageNo, 0, data_buf, data_size+oob_size);
 	if(ret < 0)
 		return ROM_FAIL;
@@ -887,8 +885,8 @@ SINT32 SPINANDReadNANDPage_1K60(UINT8 which_cs, UINT32 pageNo, UINT32 * ptrPyldD
 	u8 *redunt_buf = data_buf + data_size;
 	int ret;
 
-	ret = spi_nand_pageread_1k60(info, CONFIG_READ_BITMODE,
-		CONFIG_DEFAULT_TRSMODE, pageNo, data_buf, redunt_buf);
+	ret = spi_nand_pageread_1k60(info, CONFIG_SPINAND_READ_BITMODE,
+		CONFIG_SPINAND_TRSMODE, pageNo, data_buf, redunt_buf);
 	if (ret < 0) {
 		*read_bytes = 0;
 		ret = ROM_FAIL;
@@ -977,5 +975,4 @@ SINT32 SPINANDReadBootBlock(UINT32 *target_address)
 	return ROM_FAIL;
 }
 #endif /* CONFIG_HAVE_PARA_NAND */
-
 

@@ -5,7 +5,9 @@
 #include <regmap.h>
 #include <fat/fat.h>
 #include <cpu/cpu.h>
+#ifdef PLATFORM_Q628
 #include <cpu/arm.h>
+#endif
 #include <image.h>
 #include <misc.h>
 #include <otp/sp_otp.h>
@@ -20,6 +22,8 @@
 #ifdef CONFIG_SECURE_BOOT_SIGN
 #define VERIFY_SIGN_MAGIC_DATA	(0x7369676E)
 #define SIGN_DATA_SIZE	(64+8)// 64:sign data  8:flag data
+#else
+#define SIGN_DATA_SIZE	(0)
 #endif
 
 
@@ -54,20 +58,13 @@ static void FT_Rom_Test_End(char gpioData)
 	GPIO_F_SET(gpio,1);
 	GPIO_M_SET(gpio,1);
 	GPIO_E_SET(gpio,1);
-	for(i = 7;i >= 0;i--)
-	{
-		GPIO_O_SET(gpio,(gpioData>>i)&0x01);
-		_delay_1ms(2);
-	}
+	GPIO_O_SET(gpio,1);
+
 }
 #endif
 
 #ifdef CONFIG_SECURE_BOOT_SIGN
-u8 *data=NULL, *sig=NULL;
-u8 in_pub[32] = {0};
-unsigned int data_size=0;
-
-static void load_otp_pub_key(void)
+static void load_otp_pub_key(unsigned char *in_pub)
 {
 	int i;
 	for (i = 0; i < 32; i++) {
@@ -81,14 +78,15 @@ int verify_uboot_signature(const struct image_header  *hdr)
 {
 	int sig_size = 64;
 	int sig_flag_size = 8;
-	int ret = -1;
-	int mmu = 1;
-	int imgsize = 0;
-	u8 sig_flag[8] = {0};
-	
-	/* Load public key */
-	if (g_bootinfo.sb_flag & SB_FLAG_ENABLE) {
-		prn_string("* Secure *\n");
+	int ret = -1,mmu = 1;
+	int imgsize = 0,data_size;
+	u8 	in_pub[32];
+	u8 *data=NULL, *sig=NULL;
+
+	/* Not Secure Chip => return ok */
+	if ((!(g_bootinfo.sb_flag & SB_FLAG_ENABLE))) {
+		prn_string("\n ******OTP Secure Boot is OFF, return success******\n");
+		return 0;
 	}
 
 	imgsize = image_get_size(hdr);
@@ -113,20 +111,16 @@ int verify_uboot_signature(const struct image_header  *hdr)
 	data = ((u8 *)hdr);
 	data_size = imgsize  + sizeof(struct image_header);//- sig_size-sig_flag_size;
 	sig = data + data_size+sig_flag_size;
-	
-	sig_flag[0]=*(u8 *)(data+data_size); // get sign flag data
-	sig_flag[1]=*(u8 *)((data+data_size)+1);
-	sig_flag[2]=*(u8 *)((data+data_size)+2);
-	sig_flag[3]=*(u8 *)((data+data_size)+3);
-	u32 sig_magic_data = (sig_flag[0]<<24)|(sig_flag[1]<<16)|(sig_flag[2]<<8)|(sig_flag[3]);
-	prn_string("sig_magic_data=");prn_dword0(sig_magic_data);
+	prn_string("sig_magic_data=");
+	u32 sig_magic_data = (*(u8 *)(data+data_size))<<24|(*(u8 *)(data+data_size+1))<<16|(*(u8 *)(data+data_size+2))<<8|(*(u8 *)(data+data_size+3));
+	prn_dword(sig_magic_data);
 	if(sig_magic_data != VERIFY_SIGN_MAGIC_DATA)
 	{
 		prn_string("\n imgdata no secure flag \n");
 		goto out;
 	}
-	
-	load_otp_pub_key();
+
+	load_otp_pub_key(in_pub);
 
 	/* verify signature */
 	int  (*fptr)(const unsigned char *signature, const unsigned char *message, size_t message_len, const unsigned char *public_key);;
@@ -149,16 +143,47 @@ int verify_uboot_signature(const struct image_header  *hdr)
 		disable_mmu();
 	}
 out:
-	/* Not Secure Chip => still allow booting */
-	if ((ret != 0) && (!(g_bootinfo.sb_flag & SB_FLAG_ENABLE))) {
-		prn_string("\n ******OTP Secure Boot is OFF ******\n");
-		return 0;
-	}
 	return ret;
 }
 #endif
 
-#ifdef CONFIG_PLATFORM_Q628
+static void halt(void)
+{
+	while (1) {
+		cpu_wfi();
+	}
+}
+
+static void fixup_boot_compatible(void)
+{
+	prn_string("put bootinfo\n");
+
+	/* bootinfo and bhdr SRAM addresses are changed in new iBoot ROM v1.02.
+	 * Have a copy in old addresses so that u-boot can use it.
+	 * Though these addresses are in new 3K-64 stack. 2K-64 stack is sufficient near
+	 * exit_xboot.
+	 */
+
+	#define ROM_V100_BOOTINFO_ADDR	(SRAM0_BASE+0x9400)//0x9e809400
+	#define ROM_V100_BHDR_ADDR	(SRAM0_BASE+0x9600) //0x9e809600
+	memcpy((u8 *)ROM_V100_BOOTINFO_ADDR, (UINT8 *)&g_bootinfo, sizeof(struct bootinfo));
+
+	if ((g_bootinfo.gbootRom_boot_mode == SPINAND_BOOT) ||
+	    (g_bootinfo.gbootRom_boot_mode == NAND_LARGE_BOOT)) {
+		memcpy((u8 *)ROM_V100_BHDR_ADDR, (UINT8 *)&g_boothead, GLOBAL_HEADER_SIZE);
+	}
+}
+
+#ifdef PLATFORM_Q628
+static void exit_xboot(const char *msg, u32 addr)
+{
+	fixup_boot_compatible();
+	prn_decimal_ln(AV1_GetStc32());
+	if (msg) {
+		prn_string(msg); prn_dword(addr);
+	}
+	exit_bootROM(addr);
+}
 static int b_pll_get_rate(void)
 {
 	unsigned int reg = MOON4_REG->pllsys;    /* G4.26 */
@@ -168,20 +193,13 @@ static int b_pll_get_rate(void)
 		return 27000000;
 	return (((reg & 0xf) + 1) * 13500000) >> ((reg2 >> 4) & 0xf);
 }
-#endif
-
-#if defined(PLATFORM_I137) || defined(CONFIG_PLATFORM_Q628)
 static void prn_clk_info(int is_A)
 {
 	unsigned int b_sysclk, io_ctrl;
 	unsigned int a_pllclk, coreclk, ioclk, sysclk, clk_cfg, a_pllioclk;
 
 	prn_string("B: b_sysclk=");
-#if defined(PLATFORM_I137)
-	b_sysclk = CLK_B_PLLSYS >> ((MOON0_REG->clk_sel[1] >> 4) & 7);
-#else
 	b_sysclk = b_pll_get_rate();
-#endif
 	prn_decimal(b_sysclk / 1000000);
 	prn_string("M abio_ctrl=(");
 	io_ctrl = BIO_CTL_REG->io_ctrl;
@@ -207,19 +225,18 @@ static void prn_clk_info(int is_A)
 
 static void prn_A_setup(void)
 {
-#ifdef CONFIG_PLATFORM_Q628
 	prn_string("A_G0.11(pll): "); prn_dword(A_PLL_CTL0_CFG);
 	prn_string("A_G0.3(abio): "); prn_dword(ABIO_CFG);
 	prn_string("A_G0.18(ioctrl): "); prn_dword(ABIO_IOCTRL_CFG);
-#endif
 }
 
 static void init_hw(void)
 {
 	int i;
 	__attribute__((unused)) int is_A = 0;
-
 	dbg();
+	*(volatile unsigned int *) (0x9C000000 +0x2EC) = 0x01c30000;// set DC12_CTL_1(G5.27) to default,for DCIN_1.2V set.
+
 
 #if 0 /* experiment : slower b_sysclk  */
 	//MOON4_REG->pllsys = RF_MASK_V(0xf, 0xe); /* 202.5 (default) */
@@ -227,28 +244,26 @@ static void init_hw(void)
 	MOON4_REG->pllsys = RF_MASK_V(0xf, 0x7); /* 108 */
 #endif
 
+#ifdef PLATFORM_Q628
 	if ((cpu_main_id() & 0xfff0) == 0x9260)
 		prn_string("-- B --\n");
-	else {
+	else
+	{
 		is_A = 1;
 		prn_string("-- A --\n");
 		prn_A_setup();
-#ifdef CONFIG_PLATFORM_Q628
 		/* raise ca7 clock */
 		extern void A_raise_pll(void);
 		A_raise_pll();
-#endif
-#if defined(PLATFORM_I137) || defined(CONFIG_PLATFORM_Q628)
 		extern void A_setup_abio(void);
 		A_setup_abio();
-#endif
-#ifdef CONFIG_PLATFORM_Q628
 		extern void A_bus_fixup(void);
 		A_bus_fixup();
-#endif
 	}
+	prn_clk_info(is_A);
+#endif
 
-#ifdef CONFIG_PLATFORM_Q628
+#if defined(PLATFORM_Q628)|| defined(PLATFORM_I143)
 #ifdef CONFIG_PARTIAL_CLKEN
 	prn_string("partial clken\n");
 	/* power saving, provided by yuwen + CARD_CTL4 */
@@ -269,23 +284,14 @@ static void init_hw(void)
 	/* reset[all] = clear */
 	for (i = 0; i < sizeof(MOON0_REG->reset) / 4; i++)
 		MOON0_REG->reset[i] = RF_MASK_V_CLR(0xffff);
-#else
-	/* clken[all] enable */
-	for (i = 0; i < sizeof(MOON0_REG->clken) / 4; i++)
-		MOON0_REG->clken[i] = 0xffffffff;
-	/* gclken[all] = no */
-	for (i = 0; i < sizeof(MOON0_REG->clken) / 4; i++)
-		MOON0_REG->gclken[i] = 0;
-	/* reset[all] = clear */
-	for (i = 0; i < sizeof(MOON0_REG->reset) / 4; i++)
-		MOON0_REG->reset[i] = 0;
 #endif
 
-#if defined(PLATFORM_I137) || defined(CONFIG_PLATFORM_Q628)
-	prn_clk_info(is_A);
+#ifdef PLATFORM_I143
+      /* GPU driver (if not,all the date that gpu output to frame buffer is 0) by xt*/
+     MOON5_REG->sft_cfg[2] = RF_MASK_V_SET((1 << 0) | (1 << 1));
 #endif
 
-#if defined(CONFIG_PLATFORM_Q628) && !defined(CONFIG_DISABLE_CORE2_3)
+#if defined(PLATFORM_Q628) && !defined(CONFIG_DISABLE_CORE2_3)
 	if (is_A) {
 		prn_string("release cores\n");
 		extern void A_release_cores(void);
@@ -294,37 +300,6 @@ static void init_hw(void)
 #endif
 
 	dbg();
-}
-
-static void fixup_boot_compatible(void)
-{
-	prn_string("put bootinfo\n");
-
-	/* bootinfo and bhdr SRAM addresses are changed in new iBoot ROM v1.02.
-	 * Have a copy in old addresses so that u-boot can use it.
-	 * Though these addresses are in new 3K-64 stack. 2K-64 stack is sufficient near
-	 * exit_xboot.
-	 */
-#define ROM_V100_BOOTINFO_ADDR	0x9e809400
-#define ROM_V100_BHDR_ADDR	0x9e809600
-	memcpy((u8 *)ROM_V100_BOOTINFO_ADDR, &g_bootinfo, sizeof(struct bootinfo));
-
-	if ((g_bootinfo.gbootRom_boot_mode == SPINAND_BOOT) ||
-	    (g_bootinfo.gbootRom_boot_mode == NAND_LARGE_BOOT)) {
-		memcpy((u8 *)ROM_V100_BHDR_ADDR, &g_boothead, GLOBAL_HEADER_SIZE);
-	}
-}
-
-static void exit_xboot(const char *msg, u32 addr)
-{
-	fixup_boot_compatible();
-
-	prn_decimal_ln(AV1_GetStc32());
-	if (msg) {
-		prn_string(msg); prn_dword(addr);
-	}
-
-	exit_bootROM(addr);
 }
 
 static int run_draminit(void)
@@ -344,17 +319,15 @@ static int run_draminit(void)
 	dram_init = (void *)dram_init_main;
 #endif
 
-	prn_string("Run draiminit@"); prn_dword((u32)dram_init);
+	prn_string("Run draiminit@"); prn_dword((u32)ADDRESS_CONVERT(dram_init));
 	save_val = g_bootinfo.mp_flag;
 #ifdef PLATFORM_3502
 	g_bootinfo.mp_flag = 1;		/* mask prints */
 #endif
 	dram_init();
-
 	g_bootinfo.mp_flag = save_val;	/* restore prints */
 	prn_string("Done draiminit\n");
 #endif
-
 
 #ifdef CONFIG_USE_ZMEM
 	/* don't corrupt zmem */
@@ -375,12 +348,7 @@ static int run_draminit(void)
 static inline void release_spi_ctrl(void)
 {
 	// SPIFL & SPI_COMBO no reset
-#if defined(PLATFORM_8388) || defined(PLATFORM_I137)
-	MOON0_REG->reset[0] &= ~(0x3 << 9);
-#else
-	/* Q628 SPI NOR */
 	MOON0_REG->reset[0] = RF_MASK_V_CLR(3 << 9); /* SPI_COMBO_RESET=0, SPIFL_RESET=0 */
-#endif
 }
 
 __attribute__((unused))
@@ -417,7 +385,7 @@ static int nor_load_uhdr_image(const char *img_name, void *dst, void *src, int v
 	int i, len, step;
 
 	prn_string("load "); prn_string(img_name);
-	prn_string("@"); prn_dword((u32)dst);
+	prn_string("@"); prn_dword((u32)ADDRESS_CONVERT(dst));
 	prn_string("\n");
 
 	dbg();
@@ -444,12 +412,7 @@ static int nor_load_uhdr_image(const char *img_name, void *dst, void *src, int v
 	}
 
 	// load image data
-	
-#ifdef CONFIG_SECURE_BOOT_SIGN
 	len = image_get_size(hdr)+ SIGN_DATA_SIZE;
-#else
-	len = image_get_size(hdr);
-#endif
 	prn_string("load data size="); prn_decimal(len); prn_string("\n");
 
 	/* copy chunk size */
@@ -501,8 +464,8 @@ static int nor_draminit(void)
 		prn_string("No draminit\n");
 		return -1;
 	}
-
 	cpu_invalidate_icache_all();
+
 #endif
 #ifndef DRAM_CHECK_BEFORE_OTP
 	return run_draminit();
@@ -510,6 +473,7 @@ static int nor_draminit(void)
 	return 0;
 #endif
 }
+#endif /* CONFIG_HAVE_SPI_NOR */
 
 static void boot_next_set_addr(unsigned int addr)
 {
@@ -518,44 +482,10 @@ static void boot_next_set_addr(unsigned int addr)
 	prn_string("boot next @"); prn_dword(*next);
 }
 
-//#define IPC_B2A_TEST
-#ifdef IPC_B2A_TEST
-#define IPC_A2B		(0x9c008100) // G258
-#define IPC_B2A		(0x9c008180) // G259
-#define CA7_READY	(0xca700001)
-
-static void ipc_b2a_test(void)
-{
-	volatile unsigned int *a2b = (volatile unsigned int *)IPC_A2B;
-	volatile unsigned int *b2a = (volatile unsigned int *)IPC_B2A;
-
-	prn_string("IPC test:\nwait A ready...\n");
-	while (a2b[31] != CA7_READY);
-
-	prn_string("test B2A...\n");
-	// direct (mbox)
-	b2a[24] = 0x12345678;
-	b2a[25] = 0x5a5a5a5a;
-	b2a[26] = 0xa5a5a5a5;
-	b2a[27] = 0xdeadc0de;
-	b2a[28] = 0x01010101;
-	b2a[29] = 0x19730611;
-	b2a[30] = 0x87654321;
-	b2a[31] = 0x00000000;
-	// rpc
-	b2a[0] = 1;
-}
-#endif
-
-static void halt(void)
-{
-	while (1) {
-		cpu_wfi();
-	}
-}
-
 static void boot_next_in_A(void)
 {
+	volatile u32 *pB_Addr;
+
 	fixup_boot_compatible();
 
 	prn_string("wake up A\n");
@@ -563,44 +493,84 @@ static void boot_next_in_A(void)
 	prn_A_setup();
 
 	/* Wake up another to run from boot_next_no_stack() */
-#ifdef PLATFORM_I137 /* B_SRAM address is 9e00_0000 from A view */
-	*(volatile unsigned int *)A_START_POS_B_VIEW = ((u32)&boot_next_no_stack) - 0x800000;
+#ifdef PLATFORM_I143
+	*(volatile unsigned int *)A_START_POS_B_VIEW = CA7_START_ADDR;
 #else
 	*(volatile unsigned int *)A_START_POS_B_VIEW = (u32)&boot_next_no_stack;
 #endif
 
-	/* Drop to shell if having 2nd uart debug port */
-#ifdef CONFIG_DEBUG_WITH_2ND_UART
-	mon_shell();
-#endif
+	/* no print since this point */
+	g_bootinfo.mp_flag = 1;
+	pB_Addr = (volatile unsigned int *)B_START_POS;
+	*pB_Addr = CPU_WAIT_INIT_VAL;
 
-#ifdef IPC_B2A_TEST
-	ipc_b2a_test();
-#endif
-
-	/* B halt */
-#ifdef CONFIG_PLATFORM_Q628
-	prn_string("B wfi\n");
-	halt();
-#endif
-
-	while (1);
+	/* B chip wait run addr */
+	while(*pB_Addr == CPU_WAIT_INIT_VAL);
+	exit_bootROM(*pB_Addr);// q628 jump to nonos_B,I143 wait!
 }
+
+#ifdef PLATFORM_I143
+#define UART_LSR_RX     (1 << 1)
+/* Clear RX buffer of UART 0. */
+static void clear_uart_rx_buf(void)
+{
+	u8 buf;
+
+	while (DBG_UART_REG->lsr & UART_LSR_RX) {
+		buf = DBG_UART_REG->dr;
+		buf = buf;
+	}
+}
+#endif
 
 /* Assume u-boot has been loaded */
 static void boot_uboot(void)
 {
-	int is_for_A = 0;
+	__attribute__((unused)) int is_for_A = 0;
 	const struct image_header *hdr = (struct image_header *)UBOOT_LOAD_ADDR;
 #ifdef CONFIG_SECURE_BOOT_SIGN
 	prn_string(" start verify in xboot!!!!!\n");
 	int ret = verify_uboot_signature(hdr);
 	if(ret)
 	{
-		prn_string(" verify  fail !!!!!\\n");
 		halt();
 	}
 #endif
+#ifdef PLATFORM_I143
+	u32 reg = *(volatile unsigned int *)HW_CFG_REG; /* = MOON0_REG->hw_cfg */
+	prn_string("hw_cfg="); prn_dword(reg);
+
+	// Clear RX buffer before jump to u-boot,
+	// to prevent from unexpected characters stopping
+	// auto-running u-boot scripts.
+	clear_uart_rx_buf();
+
+	reg = (reg & HW_CFG_MASK) >> HW_CFG_SHIFT;
+	if(reg == INT_CA7_BOOT)
+	{
+		prn_string("C+P mode,CA7(ARM) do uboot,wait CA7 ready\n");
+		boot_next_set_addr(UBOOT_RUN_ADDR_A_VIEW);
+		if(image_get_arch(hdr) == 0x1A)
+		{
+			prn_string("WARN: CA7 can't run riscv u-boot\n");
+			while(1);
+		}
+		while(*(volatile unsigned int *)A_START_POS_B_VIEW != 0xFFFFFFFF);	//wait CA7 start and init
+		boot_next_in_A();
+	}
+	else{
+		exit_bootROM(OPENSBI_RUN_ADDR);
+	}
+#else
+	
+#ifdef CONFIG_FT_ROM_TEST
+	u32 gpio = 36;
+	GPIO_F_SET(gpio,1);
+	GPIO_M_SET(gpio,1);
+	GPIO_E_SET(gpio,1);
+	GPIO_O_SET(gpio,1);
+#endif	
+
 	prn_string((const char *)image_get_name(hdr)); prn_string("\n");
 
 	boot_next_set_addr(UBOOT_RUN_ADDR);
@@ -619,14 +589,19 @@ static void boot_uboot(void)
 
 		exit_xboot("Run u-boot @", UBOOT_RUN_ADDR);
 	}
+#endif
 }
 
+#ifdef CONFIG_HAVE_SPI_NOR
 #ifdef CONFIG_LOAD_LINUX
 
 /* Assume dtb and uImage has been loaded */
 static void boot_linux(void)
 {
-	int is_for_A = 0;
+#ifdef PLATFORM_I143
+	exit_bootROM(OPENSBI_RUN_ADDR);
+#else
+	__attribute__((unused)) int is_for_A = 0;
 	const struct image_header *hdr = (struct image_header *)LINUX_LOAD_ADDR;
 
 	prn_string((const char *)image_get_name(hdr)); prn_string("\n");
@@ -648,6 +623,7 @@ static void boot_linux(void)
 		prn_string("run linux@"); prn_dword(LINUX_RUN_ADDR);
 		boot_next_no_stack();
 	}
+#endif
 }
 
 static void spi_nor_linux(void)
@@ -754,12 +730,8 @@ static void spi_nor_boot(int pin_x)
 {
 #ifdef SPEED_UP_SPI_NOR_CLK
 	dbg();
-#if defined(PLATFORM_8388) || defined(PLATFORM_I137)
-	SPI_CTRL_REG->spi_ctrl = (SPI_CTRL_REG->spi_ctrl & ~0x7) | 0x5; // CLK_SPI/16
-#else
 	SPI_CTRL_REG->spi_ctrl = (SPI_CTRL_REG->spi_ctrl & ~(7 << 16)) | (3 << 16); // 3: CLK_SPI/6
 	SPI_CTRL_REG->spi_cfg[2] = 0x00150095; // restore default after seeting spi_ctrl
-#endif
 #endif
 
 	if (nor_draminit()) {
@@ -776,15 +748,15 @@ static void spi_nor_boot(int pin_x)
 }
 #endif /* CONFIG_HAVE_SPI_NOR */
 
-#ifdef CONFIG_HAVE_FS_FAT
 
+#ifdef CONFIG_HAVE_FS_FAT
 /* return image data size (exclude header) */
 static int fat_load_uhdr_image(fat_info *finfo, const char *img_name, void *dst,
-	u32 img_offs, int max_img_sz)
+	u32 img_offs, int max_img_sz,int type)
 {
 	struct image_header *hdr = dst;
-	int len;
-	int ret;
+	int len,ret;
+	int fileindex = 0;
 	u8 *buf = g_io_buf.usb.sect_buf;
 
 	prn_string("fat load ");
@@ -792,13 +764,16 @@ static int fat_load_uhdr_image(fat_info *finfo, const char *img_name, void *dst,
 	prn_string("\n");
 
 	/* usb dma need aligned address */
-	if ((u32)dst & 0x7ff) {
-		prn_string("WARN: unaligned dst "); prn_dword((u32)dst);
+	if ((u32)ADDRESS_CONVERT(dst) & 0xfff) {
+		prn_string("WARN: unaligned dst "); prn_dword((u32)ADDRESS_CONVERT(dst));
 	}
+
+	/* ISPBOOOT.BIN file index is 0,uboot.img is 1*/
+	fileindex = (type==SDCARD_BOOT)?FAT_UBOOT_INDEX:FAT_ISPBOOOT_INDEX;
 
 	/* read header first */
 	len = 64;
-	ret = fat_read_file(0, finfo, buf, img_offs, len, dst);
+	ret = fat_read_file(fileindex, finfo, buf, img_offs, len, dst);
 	if (ret == FAIL) {
 		prn_string("load hdr failed\n");
 		return -1;
@@ -829,11 +804,7 @@ static int fat_load_uhdr_image(fat_info *finfo, const char *img_name, void *dst,
 		prn_decimal(len + 64);
 		return -1;
 	}
-#ifdef CONFIG_SECURE_BOOT_SIGN
-	ret = fat_read_file(0, finfo, buf, img_offs + 64, len + SIGN_DATA_SIZE, dst + 64);
-#else
-	ret = fat_read_file(0, finfo, buf, img_offs + 64, len, dst + 64);
-#endif
+	ret = fat_read_file(fileindex, finfo, buf, img_offs + 64, len + SIGN_DATA_SIZE, dst + 64);
 	if (ret == FAIL) {
 		prn_string("load body failed\n");
 		return -1;
@@ -898,14 +869,16 @@ static void do_fat_boot(u32 type, u32 port)
 		memcpy32((u32 *) DRAMINIT_LOAD_ADDR, (u32 *) buf, (64 + len + 3) / 4);
 #endif
 
-#ifndef DRAM_CHECK_BEFORE_OTP
-		if (run_draminit()) {
-			return;
-		}
-#endif
+	run_draminit();
+
+	if(type==SDCARD_ISP && (fat_sdcard_check_boot_mode(&g_finfo)==TRUE))
+	{
+		prn_string("sdcard do boot mode !!!!!\n");
+		type = SDCARD_BOOT;
+	}
 
 	/* load u-boot from usb */
-	if (fat_load_uhdr_image(&g_finfo, "uboot", (void *)UBOOT_LOAD_ADDR, ISP_IMG_OFF_UBOOT, UBOOT_MAX_LEN) <= 0) {
+	if (fat_load_uhdr_image(&g_finfo, "uboot", (void *)UBOOT_LOAD_ADDR, ((type==SDCARD_BOOT)?0:ISP_IMG_OFF_UBOOT), UBOOT_MAX_LEN,type) <= 0) {
 		prn_string("failed to load uboot\n");
 		return;
 	}
@@ -949,19 +922,7 @@ static int emmc_read(u8 *buf, u32 blk_off, u32 count)
 	/* dma mode supports multi-sector read */
 	return ReadSDSector(blk_off, count, (unsigned int *)buf);
 #else
-#ifdef PLATFORM_8388
-	/* polling mode supports single-sector read */
-	int res;
-	for (; count > 0; count--, buf += EMMC_BLOCK_SZ, blk_off++) {
-		res = ReadSDSector(blk_off, 1, (unsigned int *)buf);
-		if (res < 0) {
-			return res;
-		}
-	}
-	return 0;
-#else
 	return ReadSDSector(blk_off, count, (unsigned int *)buf);
-#endif
 #endif
 }
 
@@ -1028,11 +989,7 @@ static int emmc_load_uhdr_image(const char *img_name, u8 *dst, u32 loaded,
 	}
 
 	// load remaining
-#ifdef CONFIG_SECURE_BOOT_SIGN
 	res = sizeof(*hdr) + len + SIGN_DATA_SIZE - loaded;
-#else
-	res = sizeof(*hdr) + len - loaded;
-#endif
 	if (res > 0) {
 		blks = (res + EMMC_BLOCK_SZ - 1) / EMMC_BLOCK_SZ;
 		res = emmc_read(dst + loaded, blk_off, blks);
@@ -1202,6 +1159,7 @@ static void emmc_boot(void)
 					   blk_start1, 0, UBOOT_MAX_LEN, MMC_USER_AREA);
 	}
 #endif
+
 	if (len <= 0) {
 		prn_string("bad uboot\n");
 		return;
@@ -1398,11 +1356,7 @@ static int nand_load_uhdr_image(int type, const char *img_name, void *dst,
 	prn_string("load data size=");
 	prn_decimal(len);
 	prn_string("\n");
-#ifdef CONFIG_SECURE_BOOT_SIGN
-	res = bblk_read(type, (u8 *)hdr, real_blk_off, 64 + SIGN_DATA_SIZE + len, 100, img_blk_end);
-#else
-	res = bblk_read(type, (u8 *)hdr, real_blk_off, 64 + len, 100, img_blk_end);
-#endif
+	res = bblk_read(type, (u8 *)hdr, real_blk_off, 64 + len + SIGN_DATA_SIZE, 100, img_blk_end);
 	if (res) {
 		prn_string("failed to load data\n");
 		return -1;
@@ -1496,21 +1450,11 @@ static void nand_uboot(u32 type)
 #endif
 
 #ifdef CONFIG_HAVE_PARA_NAND
-static void release_para_nand(void)
-{
-#ifdef PLATFORM_8388
-	MOON0_REG->reset[2] &= ~(0x3 << 3);  // NAND & BCH no reset
-#else
-	// Q628 has no reset BCH
-#endif
-}
-
 static void para_nand_boot(int pin_x)
 {
 	u32 ret;
 
 	prn_string("\n{{nand_boot}}\n");
-	release_para_nand();
 	dbg();
 	SetBootDev(DEVICE_PARA_NAND, 1, 0);
 	ret = InitDevice(0);
@@ -1544,7 +1488,6 @@ void boot_not_support(void)
 			g_bootinfo.gbootRom_boot_mode);
 	mon_shell();
 }
-
 /*
  * boot_flow - Top boot flow logic
  */
@@ -1573,61 +1516,46 @@ static void boot_flow(void)
 #ifdef CONFIG_HAVE_UART_BOOTSTRAP
 				dbg();
 				uart_isp(1);
-#else
-				boot_not_support();
 #endif
 				break;
 			case USB_ISP:
 #ifdef CONFIG_HAVE_USB_DISK
 				dbg();
 				usb_isp();
-#else
-				boot_not_support();
 #endif
 				break;
 			case SDCARD_ISP:
 #ifdef CONFIG_HAVE_SDCARD
-				CSTAMP(0xC0DE000C);
-				dbg();
+				CSTAMP(0xC0DE000C);dbg();
 				sdcard_isp();
-#else
-				boot_not_support();
 #endif
 				break;
 			case SPI_NOR_BOOT:
 #ifdef CONFIG_HAVE_SPI_NOR
 				spi_nor_boot(g_bootinfo.bootdev_pinx);
-#else
-				boot_not_support();
 #endif
 				break;
 			case SPINAND_BOOT:
 #ifdef CONFIG_HAVE_SPI_NAND
 				spi_nand_boot(g_bootinfo.bootdev_pinx);
-#else
-				boot_not_support();
 #endif
 				break;
 			case NAND_LARGE_BOOT:
 #ifdef CONFIG_HAVE_PARA_NAND
 				para_nand_boot(g_bootinfo.bootdev_pinx);
-#else
-				boot_not_support();
 #endif
 				break;
 			case EMMC_BOOT:
 #ifdef CONFIG_HAVE_EMMC
 				emmc_boot();
-#else
-				boot_not_support();
 #endif
 				break;
 			default:
 				dbg();
-				boot_not_support();
+				break;
 		}
+		boot_not_support();
 	}
-
 	prn_string("halt");
 	halt();
 }
@@ -1635,7 +1563,7 @@ static void boot_flow(void)
 static void init_uart(void)
 {
 #ifdef CONFIG_DEBUG_WITH_2ND_UART
-#ifdef CONFIG_PLATFORM_Q628
+#ifdef PLATFORM_Q628
 	/* uart1 pinmux : x1,UA0_TX, X2,UA1_RX */
 	MOON3_REG->sft_cfg[14] = RF_MASK_V((0x7f << 0), (1 << 0));
 	MOON3_REG->sft_cfg[14] = RF_MASK_V((0x7f << 8), (2 << 8));
@@ -1643,6 +1571,66 @@ static void init_uart(void)
 	UART1_REG->div_l = UART_BAUD_DIV_L(BAUDRATE, UART_SRC_CLK);
 	UART1_REG->div_h = UART_BAUD_DIV_H(BAUDRATE, UART_SRC_CLK);
 #endif
+#endif
+#ifdef PLATFORM_I143
+	UART0_REG->div_l = UART_BAUD_DIV_L(BAUDRATE, UART_SRC_CLK);	/* baud rate */
+	UART0_REG->div_h = UART_BAUD_DIV_H(BAUDRATE, UART_SRC_CLK);
+
+	//prn_string("UART0 div_l: ");
+	//prn_dword(UART0_REG->div_l);
+	//prn_string("UART0 div_h: ");
+	//prn_dword(UART0_REG->div_h);
+
+	//*(volatile u32 *)(0x9C000230) = 0x3F001800;  // Down CPU FREQ to 168.75 MHz.
+	*(volatile u32 *)(0x9C000224) = 0x000C0000;  // Clear G2 & G1 to 0.
+	*(volatile u32 *)(0x9C000228) = 0xFF00A000; // Down PLLFLA FREQ to 222.75 MHz.
+
+	prn_string("9C000230: "); prn_dword(*(volatile u32 *)(0x9C000230));
+	prn_string("9C000224: "); prn_dword(*(volatile u32 *)(0x9C000224));
+	prn_string("9C000228: "); prn_dword(*(volatile u32 *)(0x9C000228));
+
+
+	//*(volatile u32 *)(0x9C000228) = 0x00010001;  // power on FLA pll
+	//prn_string("9C000228: "); prn_dword(*(volatile u32 *)(0x9C000228));
+        *(volatile unsigned int *) (0x9C000000 +0x204) = 0xFE008600;// 	//0xFE008600;  0xFE00FE00
+        *(volatile unsigned int *) (0x9C000000 +0x208) = 0x00010001;// 	set SD CARD DS
+        *(volatile unsigned int *) (0x9C000000 +0x20C) = 0x07E007E0;//  SD CARD smith tri
+
+	prn_string("9C000204: "); prn_dword(*(volatile u32 *)(0x9C000204));
+	prn_string("9C000208: "); prn_dword(*(volatile u32 *)(0x9C000208));
+	prn_string("9C00020C: "); prn_dword(*(volatile u32 *)(0x9C00020C));
+
+
+        *(volatile unsigned int *) (0x9C000000 +0x214) = 0xFE00FE00;// 	//0xFE008600;  0xFE00FE00
+        *(volatile unsigned int *) (0x9C000000 +0x218) = 0x001F001F;// 	set SD CARD DS 0x00010001  0x001F001F
+        *(volatile unsigned int *) (0x9C000000 +0x21C) = 0x07E007E0;//  SDIO smith tri
+
+	prn_string("9C000204: "); prn_dword(*(volatile u32 *)(0x9C000204));
+	prn_string("9C000208: "); prn_dword(*(volatile u32 *)(0x9C000218));
+	prn_string("9C00020C: "); prn_dword(*(volatile u32 *)(0x9C00020C));
+
+
+
+
+	// for GL2SW
+	*(volatile u32 *)(0x9C000238) = 0x00800000;  // Clear CK250M_EN to 0.
+	*(volatile u32 *)(0x9C000078) = 0x00800080;  // Set GL2SW_RESET to 1.
+	STC_delay_us(100);
+	*(volatile u32 *)(0x9C000078) = 0x00800000;  // Clear GL2SW_RESET to 0.
+	//prn_string("9C000238: "); prn_dword(*(volatile u32 *)(0x9C000238));
+	//prn_string("9C000078: "); prn_dword(*(volatile u32 *)(0x9C000078));
+
+	MOON1_REG->sft_cfg[1] = RF_MASK_V_SET(1 << 12);
+	MOON0_REG->reset[1] = RF_MASK_V_CLR(1 << 9);	/* reset of UA1 */
+	MOON0_REG->reset[1] = RF_MASK_V_CLR(1 << 15);	/* reset of UADMA */
+	MOON0_REG->reset[1] = RF_MASK_V_CLR(1 << 13);	/* reset of BUF_UA */
+	UART1_REG->div_l = UART_BAUD_DIV_L(BAUDRATE, UART_SRC_CLK);	/* baud rate */
+	UART1_REG->div_h = UART_BAUD_DIV_H(BAUDRATE, UART_SRC_CLK);
+	UART1_REG->dr = 'U';
+	UART1_REG->dr = 'A';
+	UART1_REG->dr = 'R';
+	UART1_REG->dr = 'T';
+	UART1_REG->dr = '1';
 #endif
 }
 
@@ -1655,6 +1643,17 @@ static inline void init_cdata(void)
 	}
 }
 
+static u32 read_mp_bit(void)
+{
+	char data = 0;
+	u32  mp_bit;
+#ifdef CONFIG_HAVE_OTP
+	sunplus_otprx_read(1, &data);
+#endif
+	mp_bit = (data >> 4) & 0x1;
+
+	return mp_bit;
+}
 int dram_get_size(void)
 {
 	volatile unsigned int *ptr;
@@ -1682,8 +1681,6 @@ int dram_get_size(void)
 	diag_printf("####### dram size is %dM ########\n",dramsize>>20);
 	return dramsize;
 }
-
-
 void xboot_main(void)
 {
 	/* Initialize global data */
@@ -1692,15 +1689,14 @@ void xboot_main(void)
 	g_bootinfo.in_xboot = 1;
 
 	/* Is MP chip? Silent UART */
-	//g_bootinfo.mp_flag = read_mp_bit();
+	g_bootinfo.mp_flag = read_mp_bit();
 
 	init_uart();
 
 	prn_decimal_ln(AV1_GetStc32());
-
 	/* first msg */
 	prn_string("+++xBoot " __DATE__ " " __TIME__ "\n");
-#if defined(CONFIG_PLATFORM_Q628) && (CONFIG_PLATFORM_IC_REV < 2)
+#if defined(PLATFORM_Q628) && (CONFIG_PLATFORM_IC_REV < 2)
 	prn_string("NOTICE: this xboot works with ROM_CODE v1.0\n");
 #endif
 

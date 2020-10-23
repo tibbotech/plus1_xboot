@@ -22,7 +22,7 @@ int bch_s338_process(UINT8 *data, UINT8 *parity, int data_size, int codec_mode, 
 	NANDREG_W(BCH_S338_DATA_PTR, (UINT32)data);
 	NANDREG_W(BCH_S338_PARITY_PTR, (UINT32)parity);
 
-	val = BCH_S338_FINISH_MASK(1) | BCH_S338_DECODE_FAIL_MASK(1);
+	val = ~(BCH_S338_FINISH_MASK(1) | BCH_S338_DECODE_FAIL_MASK(1));
 	NANDREG_W(BCH_S338_INT_MASK, val);
 
 	if ( (correct_mode==BCH_S338_512B8_BITS_MODE) || (correct_mode==BCH_S338_512B4_BITS_MODE) ) {
@@ -47,7 +47,7 @@ int bch_s338_process(UINT8 *data, UINT8 *parity, int data_size, int codec_mode, 
 	NANDREG_W(BCH_S338_CFG, val);
 
 	// polling busy
-	while((NANDREG_R(BCH_S338_INT_STATUS)&BCH_S338_BUSY)!=0);
+	while((NANDREG_R(BCH_S338_INT_STATUS)&BCH_S338_INT)==0);
 	
 
 	if (codec_mode == BCH_DECODE) {
@@ -86,6 +86,7 @@ int bch_s338_process(UINT8 *data, UINT8 *parity, int data_size, int codec_mode, 
 			DBGPRINT("decode fail, rBCH_S338_REPORT_STATUS(0x%x), error count = %d, 00_flag = %x, ff_flag = %x\n", NANDREG_R(BCH_S338_REPORT_STATUS), NANDREG_R(BCH_S338_ERROR_COUNT_REG), (NANDREG_R(BCH_S338_REPORT_STATUS)>>28)&0x01, (NANDREG_R(BCH_S338_REPORT_STATUS)>>24)&0x01);
 
 			NANDREG_W(BCH_S338_SOFT_RESET, 1);
+			NANDREG_W(BCH_S338_REPORT_STATUS, BCH_S338_DECODE_FAIL);
 
 			_repeat_ = 0;
 
@@ -120,7 +121,7 @@ int bch_s338_config(UINT8 *data, UINT8 *parity, int data_size, int codec_mode, i
 	NANDREG_W(BCH_S338_DATA_PTR, (UINT32)data);	
 	NANDREG_W(BCH_S338_PARITY_PTR, (UINT32)parity);	
 
-	val = BCH_S338_FINISH_MASK(1) | BCH_S338_DECODE_FAIL_MASK(1);
+	val = ~(BCH_S338_FINISH_MASK(1) | BCH_S338_DECODE_FAIL_MASK(1));
 	NANDREG_W(BCH_S338_INT_MASK, val);	
 
 	if ( (correct_mode==BCH_S338_512B8_BITS_MODE) || (correct_mode==BCH_S338_512B4_BITS_MODE) ) 
@@ -181,6 +182,7 @@ SINT32 BCHCheckStatus(int codec_mode)
 			DBGPRINT("decode fail, rBCH_S338_REPORT_STATUS(0x%x), error count = %d, 00_flag = %x, ff_flag = %x\n", NANDREG_R(BCH_S338_REPORT_STATUS), NANDREG_R(BCH_S338_ERROR_COUNT_REG), (NANDREG_R(BCH_S338_REPORT_STATUS)>>28)&0x01, (NANDREG_R(BCH_S338_REPORT_STATUS)>>24)&0x01);
 	
 			NANDREG_W(BCH_S338_SOFT_RESET, 1);
+			NANDREG_W(BCH_S338_REPORT_STATUS, BCH_S338_DECODE_FAIL);
 			return ret_BCH_S338_FAIL;
 		}
 	}

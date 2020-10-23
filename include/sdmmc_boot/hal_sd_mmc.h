@@ -30,6 +30,7 @@
 #define CMD7 			0x00000007
 #define CMD8 			0x00000008
 #define CMD9 			0x00000009
+#define CMD11 		0x0000000B
 #define CMD12 		0x0000000C
 #define CMD13 		0x0000000D
 #define CMD16 		0x00000010

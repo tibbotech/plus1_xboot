@@ -9,9 +9,9 @@
  * FAT32 and short file name only
  ********************************************************************************/
 
-static const unsigned char FILENAMES[1][12] =
+static const unsigned char FILENAMES[FAT_FILES][12] =
 {
-	"ISPBOOOTBIN",
+	"ISPBOOOTBIN","U-BOOT  IMG","UIMAGE     ","DTB        "
 };
 
 static u32 search_files(fat_info *info, u8 *buffer, u8 type);
@@ -175,7 +175,7 @@ u32 fat_boot(u32 type, u32 port, fat_info *info, u8 *buffer)
 	fat32_bpb *bpb;
 	u32 tmp;
 	u32 ret;
-
+	
 	CSTAMP(0xFAB00000);
 
 	dbg_info();
@@ -203,7 +203,8 @@ u32 fat_boot(u32 type, u32 port, fat_info *info, u8 *buffer)
 		return FAIL;
 	}
 
-	memcpy(g_bootinfo.fat_fileName[0], (u8 *)FILENAMES[0], 12);
+	memset(info->fileInfo,0,sizeof(info->fileInfo));
+	
 	CSTAMP(0xFAB00001);
 
 	/*
@@ -310,7 +311,8 @@ static u32 search_files(fat_info *info, u8 *buffer, u8 type)
 	u32 fdbOffset;
 	u32 currentSect;
 	fdb_info *fdb;
-
+	u32 filecount = (type == SDCARD_ISP)?FAT_FILES:1;
+	
 	dbg_info();
 	count = 0;
 	nextClus = info->rootClus;
@@ -326,14 +328,20 @@ static u32 search_files(fat_info *info, u8 *buffer, u8 type)
 			info->read_sector(currentSect, 1, (u32 *)buffer);
 			while (fdbOffset < info->bytePerSect) {
 				fdb = (fdb_info*)(&buffer[fdbOffset]);
-				for (i = 0; i < FAT_FILES; i++) {
-					if (memcmp((u8 *)fdb->name, (u8 *)g_bootinfo.fat_fileName[i], FAT_FILENAMELEN) == 0) {
+				for (i = 0; i < filecount; i++) {
+					if (memcmp((u8 *)fdb->name, FILENAMES[i], FAT_FILENAMELEN) == 0) {
 						info->fileInfo[i].size = fdb->fileSize;
 						info->fileInfo[i].cluster = (fdb->clusterH << 16) + fdb->clusterL;
 						info->fileInfo[i].sectPos = info->clust0Sect +
 							((info->fileInfo[i].cluster - info->rootClus) * info->sectPerClus);
 						count++;
-						if (count == FAT_FILES) {
+						if(type == USB_ISP && info->fileInfo[0].size !=0)
+						{
+							dbg_info();
+							return PASS;
+						}
+						/* sdcard boot,check ispbooot.bin u-boot uimage  dtb  */
+						if (type == SDCARD_ISP && count == filecount) {
 							dbg_info();
 							/* 
 							// only one return type
@@ -352,8 +360,31 @@ static u32 search_files(fat_info *info, u8 *buffer, u8 type)
 		/* next cluster */
 		nextClus = next_cluster(info, nextClus, (u8*)buffer);
 	}
+	
+	/* sdcard isp ,check ispbooot.bin. sdcard boot,check ispbooot.bin u-boot uimage dtb  */
+	if(type == SDCARD_ISP && info->fileInfo[0].size !=0)
+	{
+		dbg_info();
+		return PASS;
+	}
 	dbg_info();
 	/* can't find files that we need.... */
 	return FAIL;
+}
+
+/*sdcard do isp or boot is decide by ISPBOOOT.BIN size
+  do isp: ISPBOOOT.BIN size > xboot.img size (64k);
+  do boot: ISPBOOOT.BIN size == xboot.img size (64k);
+  for debug Uboot, do not check file
+*/
+u8 fat_sdcard_check_boot_mode(fat_info *info)
+{
+
+	if(info->fileInfo[0].size != 0x10000) 
+	{
+		dbg_info();
+		return FALSE;
+	}
+	return TRUE;
 }
 

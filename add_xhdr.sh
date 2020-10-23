@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # $1: val
 # $2: 1=no reverse

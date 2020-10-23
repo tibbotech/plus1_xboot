@@ -1,4 +1,12 @@
 choice
+        prompt "Architecture select"
+        default ARCH_ARM
+config ARCH_ARM
+		bool "ARM architecture"
+config ARCH_RISCV
+		bool "RISCV architecture"
+endchoice
+choice
         prompt "Platform"
         default PLATFORM_Q628
         config PLATFORM_Q628
@@ -9,12 +17,14 @@ choice
                 bool "I137"
         config PLATFORM_3502
                 bool "3502"
+config PLATFORM_I143
+		bool "I143"
 endchoice
 
 config PLATFORM_IC_REV
 	int "IC revision number"
 	range 1 2
-	default 2
+	default 1
 	help
 	  IC revision number. First IC is 1.
 	  A new IC revision may have a different SRAM layout.
@@ -146,10 +156,17 @@ endmenu
 config SECURE_BOOT_SIGN
 	bool "Sign image to enable Secure Boot"
 	default n
+	select HAVE_OTP
 	help
 	  Sign xboot image and append generated signature to it.
 	  If IC OTP secure boot bit is enabled, ROM code only boots
 	  signed xboot image.
+config I143_C_P
+	bool "I143_C_P"
+	default y
+	depends on ARCH_RISCV && XIP_SPIBAREMETAL=n
+	help 
+		I143_C_P(U54+CA7),CA7 code place in xboot.bin from 26K  to 27k
 config FT_ROM_TEST
 	bool "Ft_Rom_Dram_Test"
 	default y
