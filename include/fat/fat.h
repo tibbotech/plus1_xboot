@@ -4,12 +4,32 @@
 #include <types.h>
 //#include <nand_boot/nandop.h>
 
+//#define FAT16_SUPPORT
+
+#define FAT_UNKNOW		0
+#define FAT_32			1
+#ifdef FAT16_SUPPORT
+#define FAT_16			2
+#endif
+
 //#define MAX_SECTOR_SIZE     1024
 #define FAT32_U 		0x20202032
 #define FAT32_L 		0x33544146
+#ifdef FAT16_SUPPORT
+#define FAT16_U 		0x20202036
+#define FAT16_L 		0x31544146
+#endif
 #define FAT_FDB_SIZE 		32
+#define FAT_PART_ENTRY_SIZE	0x10
+#define FAT_MAX_PARTITION	4
+#ifdef FAT16_SUPPORT
+#define FAT_DATA_1ST_CLUS_NUM	2
+#endif
 #define FAT_FILES 		4
-#define FAT_MAXSECTSIZE 	(16 * 1024)
+#define FAT32_MAXSECTSIZE 	(16 * 1024)
+#ifdef FAT16_SUPPORT
+#define FAT16_MAXSECTSIZE 	(32 * 1024)
+#endif
 #define FAT_FILENAMELEN 	11
 //#define SECTORSIZE 		512
 
@@ -28,8 +48,16 @@ typedef struct {
 	u32 rootClus;
 	u32 fat1Sect;
 	u32 clust0Sect;
+#ifdef FAT16_SUPPORT
+	u32 rootSectStart;
+	u32 rootSect;
+#endif
 	u16 bytePerSect;
 	u16 numOfReserveSect;
+#ifdef FAT16_SUPPORT
+	u16 rootEntCnt;
+#endif
+	u8 fatType;
 	u8 sectPerClus;
 	u8 numFatCopy;
 	u8 bytePerSectInPower;
@@ -54,6 +82,21 @@ typedef struct {
 	u16 systemType[4];
 } fat32_bpb;
 
+#ifdef FAT16_SUPPORT
+typedef struct {
+	u8 info1[11];
+	u8 bytePerSect[2];
+	u8 sectPerClus;
+	u16 sectResearve;
+	u8 numFat;
+	u8 rootEntCnt[2];
+	u8 info2[3];
+	u8 fatSz16[2];
+	u8 info3[30];
+	u16 systemType[4];
+} fat16_bpb;
+#endif
+
 typedef struct {
 	u8 name[11];	/* short file name only */
 	u8 reserved[9];
@@ -65,8 +108,14 @@ typedef struct {
 } fdb_info;
 
 typedef struct {
-	u32 fat[FAT_MAXSECTSIZE];
-} fatable_info;
+	u32 fat[FAT32_MAXSECTSIZE];
+} fat32table_info;
+
+#ifdef FAT16_SUPPORT
+typedef struct {
+	u16 fat[FAT16_MAXSECTSIZE];
+} fat16table_info;
+#endif
 
 //u32 search_files(u32 files, fat_info *info, u8 *buffer, u8 fat_type);
 u32 fat_boot(u32 type, u32 port, fat_info *info, u8 *buffer);
