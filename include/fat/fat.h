@@ -20,8 +20,6 @@
 #define FAT16_L 		0x31544146
 #endif
 #define FAT_FDB_SIZE 		32
-#define FAT_PART_ENTRY_SIZE	0x10
-#define FAT_MAX_PARTITION	4
 #ifdef FAT16_SUPPORT
 #define FAT_DATA_1ST_CLUS_NUM	2
 #endif

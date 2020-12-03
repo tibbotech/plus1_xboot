@@ -270,7 +270,6 @@ u32 fat_boot(u32 type, u32 port, fat_info *info, u8 *buffer)
 #endif
 	u32 tmp;
 	u32 ret;
-	int entry = 0;
 
 	CSTAMP(0xFAB00000);
 
@@ -342,35 +341,24 @@ u32 fat_boot(u32 type, u32 port, fat_info *info, u8 *buffer)
 	bpb16 = (fat16_bpb *)buffer;
 #endif
 
-check_partition_entry:
 	// MBR criteria:
 	// 1. signature        : 55 aa
 	// 2. partition status : 80=active, 00=inactive, 00~7f=invalid
 	// 3. partition type   : non-zero
 	if (buffer[0x1fe] == 0x55 && buffer[0x1ff] == 0xaa &&
-		(buffer[0x1be + entry * FAT_PART_ENTRY_SIZE] & ~0x80) == 0 &&
-		buffer[0x1c2 + entry * FAT_PART_ENTRY_SIZE] != 0 &&
-		buffer[0x1c2 + entry * FAT_PART_ENTRY_SIZE] != 0xF) {
+		(buffer[0x1be] & ~0x80) == 0 && buffer[0x1c2] != 0) {
 		/* get start sector */
-		info->startSector = buffer[457 + entry * FAT_PART_ENTRY_SIZE] << 24 |
-			buffer[456 + entry * FAT_PART_ENTRY_SIZE] << 16 |
-			buffer[455 + entry * FAT_PART_ENTRY_SIZE] << 8  |
-			buffer[454 + entry * FAT_PART_ENTRY_SIZE];
+		info->startSector = buffer[457] << 24 |
+			buffer[456] << 16 |
+			buffer[455] << 8  |
+			buffer[454];
 
-		prn_string("part"); prn_byte((u8)entry); prn_string("@");
-		prn_dword(info->startSector);
+		prn_string("part@"); prn_dword(info->startSector);
 
 		/* get BPB */
 		info->read_sector(info->startSector, 1, (u32 *)buffer);
 	} else {
-		if (buffer[0x1fe] != 0x55 || buffer[0x1ff] != 0xaa ||
-			(buffer[0x1be + entry * FAT_PART_ENTRY_SIZE] & ~0x80) != 0)
-			prn_string("no MBR\n");
-		else if (buffer[0x1c2 + entry * FAT_PART_ENTRY_SIZE] == 0)
-			prn_string("no PARTITION\n");
-		else if (buffer[0x1c2 + entry * FAT_PART_ENTRY_SIZE] == 0xF)
-			prn_string("extended PARTITION (not supported)\n");
-
+		prn_string("no MBR\n");
 		return FAIL;
 	}
 
@@ -451,23 +439,8 @@ check_partition_entry:
 #endif
 
 	if (ret == FAIL) {
-		info->startSector = 0;
-		info->bytePerSect = 0;
-		info->fatType = FAT_UNKNOW;
-		entry++;
-
-		if (entry >= FAT_MAX_PARTITION) {
-			dbg_info();
-			return FAIL;
-		}
-
-		ret = info->read_sector(info->startSector, 1, (u32 *)buffer);
-		if (ret != ROM_SUCCESS) {
-			dbg();
-			return FAIL;
-		}
-
-		goto check_partition_entry;
+		dbg();
+		return FAIL;
 	}
 	return ret;
 }
