@@ -21,7 +21,7 @@ CFLAGS += -ffunction-sections -fdata-sections
 CFLAGS += -fno-pie -fno-PIE -fno-pic -fno-PIC
 CFLAGS += -fno-partial-inlining -fno-jump-tables
 CFLAGS += -static
-LD_GEN   = boot.ld
+LD_GEN   = arch/$(ARCH)/boot.ld
 LD_SRC   = arch/$(ARCH)/boot.ldi
 LDFLAGS  = -L $(shell dirname `$(CC) -print-libgcc-file-name`) -lgcc
 #LDFLAGS += -Wl,--gc-sections,--print-gc-sections
@@ -214,8 +214,8 @@ endif
 I143_C_P: prepare
 	@echo "build arm ca7 !!!"
 	@$(CROSS_ARM)gcc $(CFLAGS_C_P) -c -o $(START_C_P_PATH)/start_c_p.o $(START_C_P_PATH)/start_c_p.S
-	@$(CROSS_ARM)cpp -P $(CFLAGS_C_P) $(START_C_P_PATH)/boot_c_p.ldi boot_c_p.ld
-	@$(CROSS_ARM)gcc $(CFLAGS_C_P) $(START_C_P_PATH)/start_c_p.o -T boot_c_p.ld $(LDFLAGS_C_P) -o $(BIN)/$(TARGET_C_P) -Wl,-Map,$(BIN)/$(TARGET_C_P).map
+	@$(CROSS_ARM)cpp -P $(CFLAGS_C_P) $(START_C_P_PATH)/boot_c_p.ldi $(START_C_P_PATH)/boot_c_p.ld
+	@$(CROSS_ARM)gcc $(CFLAGS_C_P) $(START_C_P_PATH)/start_c_p.o -T $(START_C_P_PATH)/boot_c_p.ld $(LDFLAGS_C_P) -o $(BIN)/$(TARGET_C_P) -Wl,-Map,$(BIN)/$(TARGET_C_P).map
 	@$(CROSS_ARM)objcopy -O binary -S $(BIN)/$(TARGET_C_P) $(BIN)/$(TARGET_C_P).bin	
 	@$(CROSS_ARM)objdump -d -S $(BIN)/$(TARGET_C_P) > $(BIN)/$(TARGET_C_P).dis
 
