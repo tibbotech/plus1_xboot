@@ -23,7 +23,7 @@
 #ifdef FAT16_SUPPORT
 #define FAT_DATA_1ST_CLUS_NUM	2
 #endif
-#define FAT_FILES 		4
+#define FAT_FILES 		2
 #define FAT32_MAXSECTSIZE 	(16 * 1024)
 #ifdef FAT16_SUPPORT
 #define FAT16_MAXSECTSIZE 	(32 * 1024)

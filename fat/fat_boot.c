@@ -11,7 +11,7 @@
 
 static const unsigned char FILENAMES[FAT_FILES][12] =
 {
-	"ISPBOOOTBIN","U-BOOT  IMG","UIMAGE     ","DTB        "
+	"ISPBOOOTBIN","U-BOOT  IMG"
 };
 
 static u32 search_fat32_files(fat_info *info, u8 *buffer, u8 type);
@@ -482,7 +482,7 @@ static u32 search_fat32_files(fat_info *info, u8 *buffer, u8 type)
 							dbg_info();
 							return PASS;
 						}
-						/* sdcard boot,check ispbooot.bin u-boot uimage dtb */
+						/* sdcard boot,check ispbooot.bin u-boot.img */
 						if (type == SDCARD_ISP && count == filecount) {
 							dbg_info();
 							/*
@@ -503,7 +503,7 @@ static u32 search_fat32_files(fat_info *info, u8 *buffer, u8 type)
 		nextClus = next_cluster(info, nextClus, (u8*)buffer);
 	}
 
-	/* sdcard isp ,check ispbooot.bin. sdcard boot,check ispbooot.bin u-boot uimage dtb  */
+	/* sdcard isp ,check ispbooot.bin. sdcard boot,check ispbooot.bin u-boot.img */
 	if(type == SDCARD_ISP && info->fileInfo[0].size !=0)
 	{
 		dbg_info();
@@ -546,7 +546,7 @@ static u32 search_fat16_files(fat_info *info, u8 *buffer, u8 type)
 						dbg_info();
 						return PASS;
 					}
-					/* sdcard boot, check ispbooot.bin u-boot uimage dtb */
+					/* sdcard boot,check ispbooot.bin u-boot.img */
 					if (type == SDCARD_ISP && count == filecount) {
 						dbg_info();
 						/*
@@ -562,6 +562,13 @@ static u32 search_fat16_files(fat_info *info, u8 *buffer, u8 type)
 			fdbOffset += FAT_FDB_SIZE;
 		}
 		sectOffset++;
+	}
+
+	/* sdcard isp ,check ispbooot.bin. sdcard boot,check ispbooot.bin u-boot.img */
+	if(type == SDCARD_ISP && info->fileInfo[0].size !=0)
+	{
+		dbg_info();
+		return PASS;
 	}
 	dbg_info();
 	/* can't find files that we need.... */
