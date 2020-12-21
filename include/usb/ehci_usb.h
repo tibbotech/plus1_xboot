@@ -131,6 +131,8 @@ struct ehci_qh {
 
 ////////////////////////////////////////
 
+//#define USB_HUB
+
 // Setup packet format
 typedef struct
 {
@@ -194,27 +196,74 @@ typedef struct
 	UINT8 bMaxPower;
 } *pUSB_CfgDesc;
 
+#ifdef USB_HUB
+// Hub Device descriptor
+typedef struct
+{
+	UINT8 bLength;
+	UINT8 bType;
+	UINT8 bNumPorts;
+	UINT16 wHubChar;
+	UINT8 bPO2PG;
+	UINT8 bHubConCur;
+	UINT8 DevRmv;
+	UINT8 PortPwrPtrlMask;
+} *pUSB_HubDesc;
+
+typedef struct
+{
+	UINT16 wDevStatus;;
+} *pUSB_DevStatus;
+
+typedef struct
+{
+	UINT16 wPortStatus;
+	UINT16 wPortChange;
+} *pUSB_PortStatus;
+#endif
+
 ////////////////////////////////////////
 
+// USB address
+#define HUB_ADRESS			0x02
+#define STORAGE_ADDRESS			0x03
+
 // Enum cmd
-#define DESC_DEVICE                 0x0100
-#define DESC_CONFIGURATION          0x0200
+#define DESC_DEVICE			0x0100
+#define DESC_CONFIGURATION		0x0200
+#define DESC_HUB			0x2900
 
+// standard request code
+#define USB_REQ_GET_STATUS		0x00
 #define USB_REQ_CLEAR_FEATURE		0x01
-#define SET_ADDRESS                 0x05
-#define GET_DESCRIPTOR              0x06
-#define SET_CONFIG                  0x09
+#define USB_REQ_SET_FEATURE		0x03
+#define USB_REQ_SET_ADDRESS		0x05
+#define USB_REQ_GET_DESCRIPTOR		0x06
+#define USB_REQ_SET_CONFIG		0x09
 
-#define CBWIn                       0x80
-#define CBWSignature                0x43425355
+// Device feature selector
+#define DEVICE_REMOTE_WAKEUP		0x01
+
+// Hub class feature selector
+#define S_PORT_RESET			0x04
+#define S_PORT_POWER			0x08
+#define C_PORT_CONNECTION		0x10
+#define C_PORT_RESET			0x14
+
+// USB class code
+#define USB_CLASS_MASS_STORAGE		0x08
+#define USB_CLASS_HUB			0x09
+
+#define CBWIn				0x80
+#define CBWSignature			0x43425355
 
 // scsi command
-#define SCSICMD_READ10_CBWTag           0x22000120
-#define SCSICMD_READ_10                 0x28
-#define SCSICMD_TEST_UNIT_READY_CBWTag  0x19821018
-#define SCSICMD_TEST_UNIT_READY	        0x00
-#define SCSICMD_REQUEST_SENSE_CBWTag    0x02030120
-#define SCSICMD_REQUEST_SENSE           0x03
+#define SCSICMD_READ10_CBWTag		0x22000120
+#define SCSICMD_READ_10			0x28
+#define SCSICMD_TEST_UNIT_READY_CBWTag	0x19821018
+#define SCSICMD_TEST_UNIT_READY		0x00
+#define SCSICMD_REQUEST_SENSE_CBWTag	0x02030120
+#define SCSICMD_REQUEST_SENSE		0x03
 
 typedef struct
 {
