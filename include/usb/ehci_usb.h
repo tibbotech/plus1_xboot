@@ -225,8 +225,7 @@ typedef struct
 ////////////////////////////////////////
 
 // USB address
-#define HUB_ADRESS			0x02
-#define STORAGE_ADDRESS			0x03
+#define DEVICE_ADDRESS			0x02
 
 // Enum cmd
 #define DESC_DEVICE			0x0100

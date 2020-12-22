@@ -378,9 +378,10 @@ int usb_init(int port)
 	EHCI_addr = 0;
 
 #ifdef USB_HUB
+	_delay_1ms(400);
 	prn_string("set addr\n");
-	USB_vendorCmd(0, USB_REQ_SET_ADDRESS, HUB_ADRESS, 0, 0);
-	EHCI_addr = HUB_ADRESS;
+	USB_vendorCmd(0, USB_REQ_SET_ADDRESS, DEVICE_ADDRESS, 0, 0);
+	EHCI_addr = DEVICE_ADDRESS;
 
 	prn_string("get dev desc (8)\n");
 	USB_vendorCmd(0x80, USB_REQ_GET_DESCRIPTOR, DESC_DEVICE, 0, 0x08);
@@ -393,12 +394,12 @@ int usb_init(int port)
 
 	if (USB_dataBuf[9+5] == USB_CLASS_MASS_STORAGE) {
 		is_storage = 1;
-		prn_string("USB mass storage device found\n");
+		prn_string("usb mass storage device found\n");
 		goto usb_storage_device;
 	} else if (USB_dataBuf[9+5] != USB_CLASS_HUB)
 		return -1;
 	else
-		prn_string("USB hub found\n");
+		prn_string("usb hub found\n");
 
 	prn_string("set config "); prn_decimal(pCfg->bCV); prn_string("\n");
 	USB_vendorCmd(0, USB_REQ_SET_CONFIG, (pCfg->bCV), 0, 0);
@@ -406,14 +407,6 @@ int usb_init(int port)
 	prn_string("get hub desc (9)\n");
 	USB_vendorCmd(0xA0, USB_REQ_GET_DESCRIPTOR, DESC_HUB, 0, 0x09);
 	NumberOfPorts = pHub->bNumPorts;
-
-	#if 0
-	prn_string("get dev status (2)\n");
-	USB_vendorCmd(0x80, USB_REQ_GET_STATUS, 0, 0, 0x02);
-
-	prn_string("get hub status (4)\n");
-	USB_vendorCmd(0xA0, USB_REQ_GET_STATUS, 0, 0, 0x04);
-	#endif
 
 	for (port_num = 1; port_num <= NumberOfPorts; port_num++) {
 		prn_string("set feature (S_PORT"); prn_decimal(port_num); prn_string("_POWER) \n");
@@ -430,9 +423,9 @@ int usb_init(int port)
 	#endif
 
 		if (pPortsts->wPortStatus & 0x1) {
-			prn_string("USB device detected in port ");
+			prn_string("usb device detected on port ");
 			prn_decimal(port_num); prn_string("\n");
-			goto found_device_in_port;
+			goto found_device_on_port;
 		}
 	}
 
@@ -455,7 +448,10 @@ int usb_init(int port)
 	prn_string("clear feature (Device Remote Wakeup) \n");
 	USB_vendorCmd(0, USB_REQ_CLEAR_FEATURE, DEVICE_REMOTE_WAKEUP, 0, 0);
 
-	for (port_num = 1; port_num <= NumberOfPorts; port_num++) {
+	port_num = 1;
+
+scan_device_on_port:
+	while (port_num <= NumberOfPorts) {
 		prn_string("get port "); prn_decimal(port_num); prn_string(" status \n");
 		USB_vendorCmd(0xA3, USB_REQ_GET_STATUS, 0, port_num, 0x04);
 
@@ -465,29 +461,31 @@ int usb_init(int port)
 	#endif
 
 		if (pPortsts->wPortStatus & 0x1) {
-			prn_string("USB device detected in port ");
+			prn_string("usb device detected on port ");
 			prn_decimal(port_num); prn_string("\n");
 			break;
 		}
 
-		if (port_num == NumberOfPorts) {
-			port_num = 0;
-			dev_dct_cnt = 0;
-			prn_string("\nwait the insertion of an USB drive\n");
-
-			while (dev_dct_cnt++ < 2500) {
-				_delay_1ms(1);
-
-				// print DOT every  100 ms
-				if (!(dev_dct_cnt % 100))
-					prn_string(".");
-			}
-
-			prn_string("\n");
-		}
+		port_num++;
 	}
 
-found_device_in_port:
+	if (port_num > NumberOfPorts) {
+		prn_string("No usb mass storage devices on ports of the hub (port ");
+		prn_decimal(port); prn_string(")\n");
+
+		while (dev_dct_cnt++ < 2500) {
+			_delay_1ms(1);
+
+			// print DOT every  100 ms
+			if (!(dev_dct_cnt % 100))
+				prn_string(".");
+		}
+
+		prn_string("\n");
+		return -1;
+	}
+
+found_device_on_port:
 	prn_string("clear feature (C_PORT"); prn_decimal(port_num); prn_string("_CONNECTION) \n");
 	USB_vendorCmd(0x23, USB_REQ_CLEAR_FEATURE, C_PORT_CONNECTION, port_num, 0);
 
@@ -510,13 +508,12 @@ found_device_in_port:
 	#endif
 
 	prn_string("clear feature (C_PORT"); prn_decimal(port_num); prn_string("_RESET) \n");
-	USB_vendorCmd(0x23, USB_REQ_SET_FEATURE, C_PORT_RESET, port_num, 0);
-
-usb_storage_device:
-	if (is_storage == 1)
-		USB_vendorCmd(0, USB_REQ_SET_ADDRESS, 0, 0, 0);
+	USB_vendorCmd(0x23, USB_REQ_CLEAR_FEATURE, C_PORT_RESET, port_num, 0);
+	_delay_1ms(300);
 
 	EHCI_addr = 0;
+
+usb_storage_device:
 #endif
 
 	CSTAMP(0xE5B00008);
@@ -524,18 +521,21 @@ usb_storage_device:
 	USB_vendorCmd(0x80, USB_REQ_GET_DESCRIPTOR, DESC_DEVICE, 0, 0x40);
 
 	prn_string("vid="); prn_byte((pDev->idVendor  >> 8) & 0xff); prn_byte(pDev->idVendor & 0xff);
-	prn_string("pid=");         prn_byte((pDev->idProduct >> 8) & 0xff); prn_byte(pDev->idProduct & 0xff);
-	prn_string("rev=");    prn_byte((pDev->bcdDevice >> 8) & 0xff); prn_byte(pDev->bcdDevice & 0xff);
+	prn_string("pid="); prn_byte((pDev->idProduct >> 8) & 0xff); prn_byte(pDev->idProduct & 0xff);
+	prn_string("rev="); prn_byte((pDev->bcdDevice >> 8) & 0xff); prn_byte(pDev->bcdDevice & 0xff);
 	prn_string("\n");
 
 	CSTAMP(0xE5B00009);
 	prn_string("set addr\n");
+
 #ifdef USB_HUB
-	USB_vendorCmd(0, USB_REQ_SET_ADDRESS, STORAGE_ADDRESS+port_num, 0, 0);
-	EHCI_addr = STORAGE_ADDRESS + port_num;
+	if (is_storage == 0) {
+		USB_vendorCmd(0, USB_REQ_SET_ADDRESS, DEVICE_ADDRESS+port_num, 0, 0);
+		EHCI_addr = DEVICE_ADDRESS + port_num;
+	}
 #else
-	USB_vendorCmd(0, USB_REQ_SET_ADDRESS, STORAGE_ADDRESS, 0, 0);
-	EHCI_addr = STORAGE_ADDRESS;
+	USB_vendorCmd(0, USB_REQ_SET_ADDRESS, DEVICE_ADDRESS, 0, 0);
+	EHCI_addr = DEVICE_ADDRESS;
 #endif
 
 	CSTAMP(0xE5B0000A);
@@ -543,11 +543,23 @@ usb_storage_device:
 	USB_vendorCmd(0x80, USB_REQ_GET_DESCRIPTOR, DESC_DEVICE, 0, (pDev->bLength));
 
 	CSTAMP(0xE5B0000B);
-	prn_string("get conf desc (9)\n");
-	USB_vendorCmd(0x80, USB_REQ_GET_DESCRIPTOR, DESC_CONFIGURATION, 0, 9);
+	prn_string("get conf desc (18)\n");
+	USB_vendorCmd(0x80, USB_REQ_GET_DESCRIPTOR, DESC_CONFIGURATION, 0, 18);
+
+#ifdef USB_HUB
+	if (is_storage == 0) {
+		if (USB_dataBuf[9+5] != USB_CLASS_MASS_STORAGE) {
+			prn_string("not usb mass storage device\n");
+			port_num++;
+			EHCI_addr = DEVICE_ADDRESS;
+
+			goto scan_device_on_port;
+		}
+	}
+#endif
 
 	CSTAMP(0xE5B0000C);
-	prn_string("get conf desc ("); prn_decimal(pDev->bLength); prn_string(")\n");
+	prn_string("get conf desc ("); prn_decimal(pCfg->wLength); prn_string(")\n");
 	USB_vendorCmd(0x80, USB_REQ_GET_DESCRIPTOR, DESC_CONFIGURATION, 0, (pCfg->wLength));
 
 	tmp1 = USB_dataBuf[9+9+2];
