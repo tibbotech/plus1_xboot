@@ -102,6 +102,11 @@ config HAVE_FS_FAT
 	default n
 	depends on HAVE_USB_DISK || HAVE_SDCARD
 
+config HAVE_FS_FAT16
+	bool "FAT16 filesystem"
+	default n
+	depends on HAVE_USB_DISK || HAVE_SDCARD
+
 config HAVE_SPI_NOR
 	bool "SPI NOR boot"
 	default y

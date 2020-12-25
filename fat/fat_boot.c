@@ -15,7 +15,7 @@ static const unsigned char FILENAMES[FAT_FILES][12] =
 };
 
 static u32 search_fat32_files(fat_info *info, u8 *buffer, u8 type);
-#ifdef FAT16_SUPPORT
+#ifdef CONFIG_HAVE_FS_FAT16
 static u32 search_fat16_files(fat_info *info, u8 *buffer, u8 type);
 #endif
 
@@ -24,7 +24,7 @@ static u32 next_cluster(fat_info *info, u32 currentClus, u8 *buffer)
 	u32 cluster = currentClus;
 	u32 sector = 0;
 	fat32table_info *fat32table;
-#ifdef FAT16_SUPPORT
+#ifdef CONFIG_HAVE_FS_FAT16
 	fat16table_info *fat16table;
 #endif
 
@@ -32,7 +32,7 @@ static u32 next_cluster(fat_info *info, u32 currentClus, u8 *buffer)
 		sector = info->fat1Sect +
 				(cluster >> (info->bytePerSectInPower - 2));
 	}
-#ifdef FAT16_SUPPORT
+#ifdef CONFIG_HAVE_FS_FAT16
 	else if (info->fatType == FAT_16) {
 		sector = info->fat1Sect +
 				(cluster >> (info->bytePerSectInPower - 1));
@@ -45,7 +45,7 @@ static u32 next_cluster(fat_info *info, u32 currentClus, u8 *buffer)
 		fat32table = (fat32table_info *)(buffer);
 		cluster = fat32table->fat[cluster & ((info->bytePerSect >> 2) - 1)];	/* X mod 2^n == X & (2^n - 1) */
 	}
-#ifdef FAT16_SUPPORT
+#ifdef CONFIG_HAVE_FS_FAT16
 	else if (info->fatType == FAT_16) {
 		fat16table = (fat16table_info *)(buffer);
 		cluster = fat16table->fat[cluster & ((info->bytePerSect >> 1) - 1)];	/* X mod 2^n == X & (2^n - 1) */
@@ -83,7 +83,7 @@ u32 fat_read_file(u32 idx, fat_info *info, u8 *buffer, u32 offset, u32 length, u
 	cluster = info->fileInfo[idx].cluster;
 	while (off >= info->sectPerClus) {
 		if (((info->fatType == FAT_32) && (cluster >= 0x0FFFFFF8))
-#ifdef FAT16_SUPPORT
+#ifdef CONFIG_HAVE_FS_FAT16
 			|| ((info->fatType == FAT_16) && (cluster >= 0xFFF5))
 #endif
 			) {
@@ -108,7 +108,7 @@ u32 fat_read_file(u32 idx, fat_info *info, u8 *buffer, u32 offset, u32 length, u
 			sector = info->clust0Sect +
 					((cluster - info->rootClus) * info->sectPerClus);
 		}
-#ifdef FAT16_SUPPORT
+#ifdef CONFIG_HAVE_FS_FAT16
 		else if (info->fatType == FAT_16) {
 			sector = info->rootSectStart + info->rootSect +
 					((cluster - FAT_DATA_1ST_CLUS_NUM) * info->sectPerClus);
@@ -140,7 +140,7 @@ u32 fat_read_file(u32 idx, fat_info *info, u8 *buffer, u32 offset, u32 length, u
 			sector = off + info->clust0Sect +
 					((cluster - info->rootClus) * info->sectPerClus);
 		}
-#ifdef FAT16_SUPPORT
+#ifdef CONFIG_HAVE_FS_FAT16
 		else if (info->fatType == FAT_16) {
 			sector = off + info->rootSectStart + info->rootSect +
 					((cluster - FAT_DATA_1ST_CLUS_NUM) * info->sectPerClus);
@@ -178,7 +178,7 @@ u32 fat_read_file(u32 idx, fat_info *info, u8 *buffer, u32 offset, u32 length, u
 			sector = info->clust0Sect +
 					((cluster - info->rootClus) * info->sectPerClus);
 		}
-#ifdef FAT16_SUPPORT
+#ifdef CONFIG_HAVE_FS_FAT16
 		else if (info->fatType == FAT_16) {
 			sector = info->rootSectStart + info->rootSect +
 					((cluster - FAT_DATA_1ST_CLUS_NUM) * info->sectPerClus);
@@ -201,7 +201,7 @@ u32 fat_read_file(u32 idx, fat_info *info, u8 *buffer, u32 offset, u32 length, u
 		sector = info->clust0Sect +
 				((cluster - info->rootClus) * info->sectPerClus);
 	}
-#ifdef FAT16_SUPPORT
+#ifdef CONFIG_HAVE_FS_FAT16
 	else if (info->fatType == FAT_16) {
 		sector = info->rootSectStart + info->rootSect +
 				((cluster - FAT_DATA_1ST_CLUS_NUM) * info->sectPerClus);
@@ -265,7 +265,7 @@ static void prn_data(u8 *buffer, int length)
 u32 fat_boot(u32 type, u32 port, fat_info *info, u8 *buffer)
 {
 	fat32_bpb *bpb32;
-#ifdef FAT16_SUPPORT
+#ifdef CONFIG_HAVE_FS_FAT16
 	fat16_bpb *bpb16;
 #endif
 	u32 tmp;
@@ -337,7 +337,7 @@ u32 fat_boot(u32 type, u32 port, fat_info *info, u8 *buffer)
 
 	// MBR
 	bpb32 = (fat32_bpb *)buffer;
-#ifdef FAT16_SUPPORT
+#ifdef CONFIG_HAVE_FS_FAT16
 	bpb16 = (fat16_bpb *)buffer;
 #endif
 
@@ -389,7 +389,7 @@ u32 fat_boot(u32 type, u32 port, fat_info *info, u8 *buffer)
 
 		prn_string("FAT32 file system\n");
 	}
-#ifdef FAT16_SUPPORT
+#ifdef CONFIG_HAVE_FS_FAT16
 	else if ((((bpb16->systemType[1] << 16) | bpb16->systemType[0]) == FAT16_L) &&
 				(((bpb16->systemType[3] << 16) | bpb16->systemType[2]) == FAT16_U)) {
 		info->fatType = FAT_16;
@@ -433,7 +433,7 @@ u32 fat_boot(u32 type, u32 port, fat_info *info, u8 *buffer)
 	dbg_info();
 	if (info->fatType == FAT_32)
 		ret = search_fat32_files(info, (u8*)buffer, type);
-#ifdef FAT16_SUPPORT
+#ifdef CONFIG_HAVE_FS_FAT16
 	else if (info->fatType == FAT_16)
 		ret = search_fat16_files(info, (u8*)buffer, type);
 #endif
@@ -514,7 +514,7 @@ static u32 search_fat32_files(fat_info *info, u8 *buffer, u8 type)
 	return FAIL;
 }
 
-#ifdef FAT16_SUPPORT
+#ifdef CONFIG_HAVE_FS_FAT16
 static u32 search_fat16_files(fat_info *info, u8 *buffer, u8 type)
 {
 	u32 i;
