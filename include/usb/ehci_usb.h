@@ -264,6 +264,11 @@ typedef struct
 #define SCSICMD_REQUEST_SENSE_CBWTag	0x02030120
 #define SCSICMD_REQUEST_SENSE		0x03
 
+// USB device
+#define USB_SPEED_MASK			(3<<9)
+#define USB_FULL_SPEED_DEVICE		0x0000
+#define USB_LOW_SPEED_DEVICE		0x0200
+
 typedef struct
 {
     UINT8 reserved[64];

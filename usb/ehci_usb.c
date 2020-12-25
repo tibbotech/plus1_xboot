@@ -214,7 +214,7 @@ int usb_init(int port)
 #ifdef USB_HUB
 	UINT8 NumberOfPorts;
 	UINT8 port_num;
-	unsigned int is_storage = 0;
+	unsigned int is_hub = 0;
 #endif
 	unsigned int dev_dct_cnt = 0;
 
@@ -326,7 +326,7 @@ int usb_init(int port)
 		if (dev_dct_cnt++ > 5) { // 50 ms
 			prn_string("portsc="); prn_dword(EHCI_PORTSC);
 			CSTAMP(0xE5B00006);
-			prn_string("not HS, retry\n");
+			prn_string("not HS, try another port\n");
 			return -1;
 		}
 
@@ -393,13 +393,14 @@ int usb_init(int port)
 	USB_vendorCmd(0x80, USB_REQ_GET_DESCRIPTOR, DESC_CONFIGURATION, 0, 0x12);
 
 	if (USB_dataBuf[9+5] == USB_CLASS_MASS_STORAGE) {
-		is_storage = 1;
 		prn_string("usb mass storage device found\n");
 		goto usb_storage_device;
-	} else if (USB_dataBuf[9+5] != USB_CLASS_HUB)
-		return -1;
-	else
+	} else if (USB_dataBuf[9+5] == USB_CLASS_HUB) {
+		is_hub = 1;
 		prn_string("usb hub found\n");
+	} else {
+		return -1;
+	}
 
 	prn_string("set config "); prn_decimal(pCfg->bCV); prn_string("\n");
 	USB_vendorCmd(0, USB_REQ_SET_CONFIG, (pCfg->bCV), 0, 0);
@@ -422,11 +423,8 @@ int usb_init(int port)
 		prn_string("port change :"); prn_dword(pPortsts->wPortChange);
 	#endif
 
-		if (pPortsts->wPortStatus & 0x1) {
-			prn_string("usb device detected on port ");
-			prn_decimal(port_num); prn_string("\n");
+		if (pPortsts->wPortStatus & 0x1)
 			goto found_device_on_port;
-		}
 	}
 
 	prn_string("set feature (Device Remote Wakeup) \n");
@@ -460,11 +458,8 @@ scan_device_on_port:
 		prn_string("port change :"); prn_dword(pPortsts->wPortChange);
 	#endif
 
-		if (pPortsts->wPortStatus & 0x1) {
-			prn_string("usb device detected on port ");
-			prn_decimal(port_num); prn_string("\n");
+		if (pPortsts->wPortStatus & 0x1)
 			break;
-		}
 
 		port_num++;
 	}
@@ -489,27 +484,34 @@ found_device_on_port:
 	prn_string("clear feature (C_PORT"); prn_decimal(port_num); prn_string("_CONNECTION) \n");
 	USB_vendorCmd(0x23, USB_REQ_CLEAR_FEATURE, C_PORT_CONNECTION, port_num, 0);
 
-	#if 0
-	prn_string("get port"); prn_decimal(port_num); prn_string(" status \n");
-	USB_vendorCmd(0xA3, USB_REQ_GET_STATUS, 0, port_num, 0x04);
-	prn_string("port status :"); prn_dword(pPortsts->wPortStatus);
-	prn_string("port change :"); prn_dword(pPortsts->wPortChange);
-	#endif
-
 	prn_string("set feature (S_PORT"); prn_decimal(port_num); prn_string("_RESET) \n");
 	USB_vendorCmd(0x23, USB_REQ_SET_FEATURE, S_PORT_RESET, port_num, 0);
 	_delay_1ms(10);
 
-	#if 0
-	prn_string("get port"); prn_decimal(port_num); prn_string(" status \n");
+	prn_string("clear feature (C_PORT"); prn_decimal(port_num); prn_string("_RESET) \n");
+	USB_vendorCmd(0x23, USB_REQ_CLEAR_FEATURE, C_PORT_RESET, port_num, 0);
+	_delay_1ms(350);
+
+	prn_string("get port "); prn_decimal(port_num); prn_string(" status \n");
 	USB_vendorCmd(0xA3, USB_REQ_GET_STATUS, 0, port_num, 0x04);
+
+	#if 0
 	prn_string("port status :"); prn_dword(pPortsts->wPortStatus);
 	prn_string("port change :"); prn_dword(pPortsts->wPortChange);
 	#endif
 
-	prn_string("clear feature (C_PORT"); prn_decimal(port_num); prn_string("_RESET) \n");
-	USB_vendorCmd(0x23, USB_REQ_CLEAR_FEATURE, C_PORT_RESET, port_num, 0);
-	_delay_1ms(300);
+	if (((pPortsts->wPortStatus & USB_SPEED_MASK) == USB_FULL_SPEED_DEVICE) ||
+	    ((pPortsts->wPortStatus & USB_SPEED_MASK) == USB_LOW_SPEED_DEVICE)) {
+		prn_string("skip usb low/full speed device detected on port ");
+		prn_decimal(port_num); prn_string(" of the hub (port ");
+		prn_decimal(port); prn_string(")\n");
+		port_num++;
+		goto scan_device_on_port;
+	} else {
+		prn_string("usb high speed device detected on port ");
+		prn_decimal(port_num); prn_string(" of the hub (port ");
+		prn_decimal(port); prn_string(")\n");
+	}
 
 	EHCI_addr = 0;
 
@@ -525,15 +527,16 @@ usb_storage_device:
 	prn_string("rev="); prn_byte((pDev->bcdDevice >> 8) & 0xff); prn_byte(pDev->bcdDevice & 0xff);
 	prn_string("\n");
 
-	CSTAMP(0xE5B00009);
-	prn_string("set addr\n");
-
 #ifdef USB_HUB
-	if (is_storage == 0) {
+	if (is_hub == 1) {
+		CSTAMP(0xE5B00009);
+		prn_string("set addr\n");
 		USB_vendorCmd(0, USB_REQ_SET_ADDRESS, DEVICE_ADDRESS+port_num, 0, 0);
 		EHCI_addr = DEVICE_ADDRESS + port_num;
 	}
 #else
+	CSTAMP(0xE5B00009);
+	prn_string("set addr\n");
 	USB_vendorCmd(0, USB_REQ_SET_ADDRESS, DEVICE_ADDRESS, 0, 0);
 	EHCI_addr = DEVICE_ADDRESS;
 #endif
@@ -547,12 +550,11 @@ usb_storage_device:
 	USB_vendorCmd(0x80, USB_REQ_GET_DESCRIPTOR, DESC_CONFIGURATION, 0, 18);
 
 #ifdef USB_HUB
-	if (is_storage == 0) {
+	if (is_hub == 1) {
 		if (USB_dataBuf[9+5] != USB_CLASS_MASS_STORAGE) {
 			prn_string("not usb mass storage device\n");
 			port_num++;
 			EHCI_addr = DEVICE_ADDRESS;
-
 			goto scan_device_on_port;
 		}
 	}
