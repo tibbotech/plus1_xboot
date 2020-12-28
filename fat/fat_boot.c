@@ -270,45 +270,68 @@ u32 fat_boot(u32 type, u32 port, fat_info *info, u8 *buffer)
 #endif
 	u32 tmp;
 	u32 ret;
+#ifdef CONFIG_HAVE_USB_DISK
+	int next_port_in_hub = 0;
+#endif
 
 	CSTAMP(0xFAB00000);
 
 	dbg_info();
 	info->startSector = 0;
 	info->bytePerSect = 0;
-	info->init = NULL;
+	info->init_usb = NULL;
+	info->init_sd = NULL;
 	info->fatType = FAT_UNKNOW;
 
 	/* Set init function and read_sector function*/
 	if (type == USB_ISP) {
 #ifdef CONFIG_HAVE_USB_DISK
 		dbg_info();
-		info->init = usb_init;
+		info->init_usb = usb_init;
 		info->read_sector = usb_readSector;
 #endif
 	} else if (type == SDCARD_ISP) {
 #ifdef CONFIG_HAVE_SDCARD
 		dbg_info();
-		info->init = initDriver_SD;
+		info->init_sd = initDriver_SD;
 		info->read_sector = ReadSDSector;
 #endif
 	}
 
-	if (info->init == NULL) {
+	if (((type == USB_ISP) && (info->init_usb == NULL)) ||
+		((type == SDCARD_ISP) && (info->init_sd == NULL))) {
 		dbg_info();
 		return FAIL;
 	}
 
-	memset(info->fileInfo,0,sizeof(info->fileInfo));
-	
+	memset(info->fileInfo, 0, sizeof(info->fileInfo));
 	CSTAMP(0xFAB00001);
 
+#ifdef CONFIG_HAVE_USB_DISK
+check_next_port:
+	if ((type == USB_ISP) && (next_port_in_hub)) {
+		info->startSector = 0;
+		info->fatType = FAT_UNKNOW;
+	}
+#endif
 	/*
 	 * Initialization
 	 */
-	if (info->init(port) != ROM_SUCCESS) {
-		dbg_info();
-		return FAIL;
+	if (type == USB_ISP) {
+#ifdef CONFIG_HAVE_USB_DISK
+		next_port_in_hub = info->init_usb(port, next_port_in_hub);
+		if (next_port_in_hub == -1) {
+			dbg_info();
+			return FAIL;
+		}
+#endif
+	} else if (type == SDCARD_ISP) {
+#ifdef CONFIG_HAVE_SDCARD
+		if (info->init_sd(port) != ROM_SUCCESS) {
+			dbg_info();
+			return FAIL;
+		}
+#endif
 	}
 
 	CSTAMP(0xFAB00002);
@@ -359,6 +382,10 @@ u32 fat_boot(u32 type, u32 port, fat_info *info, u8 *buffer)
 		info->read_sector(info->startSector, 1, (u32 *)buffer);
 	} else {
 		prn_string("no MBR\n");
+#ifdef CONFIG_HAVE_USB_DISK
+		if ((type == USB_ISP) && (next_port_in_hub))
+			goto check_next_port;
+#endif
 		return FAIL;
 	}
 
@@ -370,7 +397,7 @@ u32 fat_boot(u32 type, u32 port, fat_info *info, u8 *buffer)
 #endif
 
 	/*
-	 * check FAT32
+	 * check FAT type
 	 */
 	if ((((bpb32->systemType[1] << 16) | bpb32->systemType[0]) == FAT32_L) &&
 				(((bpb32->systemType[3] << 16) | bpb32->systemType[2]) == FAT32_U)) {
@@ -408,12 +435,20 @@ u32 fat_boot(u32 type, u32 port, fat_info *info, u8 *buffer)
 		prn_string("FAT16 file system\n");
 	} else {
 		prn_string("Not FAT32/FAT16\n");
+	#ifdef CONFIG_HAVE_USB_DISK
+		if ((type == USB_ISP) && (next_port_in_hub))
+			goto check_next_port;
+	#endif
 		return FAIL;
 		/* Not FAT32/FAT16...*/
 	}
 #else
 	else {
 		prn_string("Not FAT32\n");
+	#ifdef CONFIG_HAVE_USB_DISK
+		if ((type == USB_ISP) && (next_port_in_hub))
+			goto check_next_port;
+	#endif
 		return FAIL;
 		/* Not FAT32...*/
 	}
@@ -440,6 +475,12 @@ u32 fat_boot(u32 type, u32 port, fat_info *info, u8 *buffer)
 
 	if (ret == FAIL) {
 		dbg();
+#ifdef CONFIG_HAVE_USB_DISK
+		if ((type == USB_ISP) && (next_port_in_hub)) {
+			prn_string("not found, try next port of the hub\n");
+			goto check_next_port;
+		}
+#endif
 		return FAIL;
 	}
 	return ret;

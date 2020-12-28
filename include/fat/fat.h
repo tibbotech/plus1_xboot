@@ -48,7 +48,8 @@ typedef struct {
 	u8 reserved;
 	file_info fileInfo[FAT_FILES];
 	int (*read_sector)(u32, u32, u32*);
-	int (*init)(int type);
+	int (*init_sd)(int type);
+	int (*init_usb)(int port, int next_port_in_hub);
 	void (*reset)();
 } fat_info;
 

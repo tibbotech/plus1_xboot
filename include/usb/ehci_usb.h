@@ -196,7 +196,6 @@ typedef struct
 	UINT8 bMaxPower;
 } *pUSB_CfgDesc;
 
-#ifdef USB_HUB
 // Hub Device descriptor
 typedef struct
 {
@@ -220,7 +219,6 @@ typedef struct
 	UINT16 wPortStatus;
 	UINT16 wPortChange;
 } *pUSB_PortStatus;
-#endif
 
 ////////////////////////////////////////
 
@@ -304,7 +302,7 @@ typedef struct
 
 ////////////////////////////////////////
 
-int usb_init(int port);
+int usb_init(int port, int next_port_in_hub);
 int usb_readSector(u32 lba, u32 count, u32 *dest);
 
 

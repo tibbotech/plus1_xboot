@@ -208,7 +208,7 @@ void usb_power_init(int is_host)
 #endif
 }
 
-int usb_init(int port)
+int usb_init(int port, int next_port_in_hub)
 {
 	UINT32 tmp1, tmp2;
 #ifdef USB_HUB
@@ -217,6 +217,11 @@ int usb_init(int port)
 	unsigned int is_hub = 0;
 #endif
 	unsigned int dev_dct_cnt = 0;
+
+#ifdef USB_HUB
+	if (next_port_in_hub)
+		goto data_structure_init;
+#endif
 
 	CSTAMP(0xE5B00000);
 	dbg();
@@ -345,8 +350,9 @@ int usb_init(int port)
 #ifdef USB_HUB
 	pUSB_HubDesc pHub = (pUSB_HubDesc)(USB_dataBuf);
 	pUSB_PortStatus pPortsts = (pUSB_PortStatus)(USB_dataBuf);
-#endif
 
+data_structure_init:
+#endif
 	//EHCI_ASYNC_LISTADDR = CACHE_TO_BUS(&EHCI_QH);
 	EHCI_ASYNC_LISTADDR = (u32)ADDRESS_CONVERT(&EHCI_QH);
 
@@ -378,6 +384,13 @@ int usb_init(int port)
 	EHCI_addr = 0;
 
 #ifdef USB_HUB
+	if (next_port_in_hub) {
+		is_hub = 1;
+		port_num = next_port_in_hub;
+		EHCI_addr = DEVICE_ADDRESS;
+		goto scan_device_on_port;
+	}
+
 	_delay_1ms(400);
 	prn_string("set addr\n");
 	USB_vendorCmd(0, USB_REQ_SET_ADDRESS, DEVICE_ADDRESS, 0, 0);
@@ -449,6 +462,12 @@ int usb_init(int port)
 	port_num = 1;
 
 scan_device_on_port:
+	if (next_port_in_hub) {
+		prn_string("get hub desc (9)\n");
+		USB_vendorCmd(0xA0, USB_REQ_GET_DESCRIPTOR, DESC_HUB, 0, 0x09);
+		NumberOfPorts = pHub->bNumPorts;
+	}
+
 	while (port_num <= NumberOfPorts) {
 		prn_string("get port "); prn_decimal(port_num); prn_string(" status \n");
 		USB_vendorCmd(0xA3, USB_REQ_GET_STATUS, 0, port_num, 0x04);
@@ -464,9 +483,9 @@ scan_device_on_port:
 		port_num++;
 	}
 
+	dev_dct_cnt = 0;
 	if (port_num > NumberOfPorts) {
-		prn_string("No usb mass storage devices on ports of the hub (port ");
-		prn_decimal(port); prn_string(")\n");
+		prn_string("No usb mass storage devices on ports of the hub\n");
 
 		while (dev_dct_cnt++ < 2500) {
 			_delay_1ms(1);
@@ -486,14 +505,25 @@ found_device_on_port:
 
 	prn_string("set feature (S_PORT"); prn_decimal(port_num); prn_string("_RESET) \n");
 	USB_vendorCmd(0x23, USB_REQ_SET_FEATURE, S_PORT_RESET, port_num, 0);
-	_delay_1ms(10);
+
+	dev_dct_cnt = 0;
+	while (1) {
+		prn_string("get port "); prn_decimal(port_num); prn_string(" status \n");
+		USB_vendorCmd(0xA3, USB_REQ_GET_STATUS, 0, port_num, 0x04);
+
+		if (!(pPortsts->wPortStatus & 0x10))
+			break;
+
+		_delay_1ms(1);
+		dev_dct_cnt++;
+		if (dev_dct_cnt > 100) {	// 100ms
+			prn_string("port reset timeout \n");
+			break;
+		}
+	}
 
 	prn_string("clear feature (C_PORT"); prn_decimal(port_num); prn_string("_RESET) \n");
 	USB_vendorCmd(0x23, USB_REQ_CLEAR_FEATURE, C_PORT_RESET, port_num, 0);
-	_delay_1ms(350);
-
-	prn_string("get port "); prn_decimal(port_num); prn_string(" status \n");
-	USB_vendorCmd(0xA3, USB_REQ_GET_STATUS, 0, port_num, 0x04);
 
 	#if 0
 	prn_string("port status :"); prn_dword(pPortsts->wPortStatus);
@@ -502,15 +532,13 @@ found_device_on_port:
 
 	if (((pPortsts->wPortStatus & USB_SPEED_MASK) == USB_FULL_SPEED_DEVICE) ||
 	    ((pPortsts->wPortStatus & USB_SPEED_MASK) == USB_LOW_SPEED_DEVICE)) {
-		prn_string("skip usb low/full speed device detected on port ");
-		prn_decimal(port_num); prn_string(" of the hub (port ");
-		prn_decimal(port); prn_string(")\n");
+		prn_string("skip usb low/full speed device found on port ");
+		prn_decimal(port_num); prn_string(" of the hub\n");
 		port_num++;
 		goto scan_device_on_port;
 	} else {
-		prn_string("usb high speed device detected on port ");
-		prn_decimal(port_num); prn_string(" of the hub (port ");
-		prn_decimal(port); prn_string(")\n");
+		prn_string("usb high speed device found on port ");
+		prn_decimal(port_num); prn_string(" of the hub\n");
 	}
 
 	EHCI_addr = 0;
@@ -528,7 +556,7 @@ usb_storage_device:
 	prn_string("\n");
 
 #ifdef USB_HUB
-	if (is_hub == 1) {
+	if (is_hub) {
 		CSTAMP(0xE5B00009);
 		prn_string("set addr\n");
 		USB_vendorCmd(0, USB_REQ_SET_ADDRESS, DEVICE_ADDRESS+port_num, 0, 0);
@@ -550,7 +578,7 @@ usb_storage_device:
 	USB_vendorCmd(0x80, USB_REQ_GET_DESCRIPTOR, DESC_CONFIGURATION, 0, 18);
 
 #ifdef USB_HUB
-	if (is_hub == 1) {
+	if (is_hub) {
 		if (USB_dataBuf[9+5] != USB_CLASS_MASS_STORAGE) {
 			prn_string("not usb mass storage device\n");
 			port_num++;
@@ -597,10 +625,17 @@ usb_storage_device:
 	}
 	if (tmp2) {
 		prn_string("unit still not ready...\n");
-		boot_reset();	
+		boot_reset();
 	}
 
+#ifdef USB_HUB
+	if (is_hub)
+		return ++port_num;
+	else
+		return 0;
+#else
 	return 0;
+#endif
 }
 
 int USB_testUnitReady(void)
