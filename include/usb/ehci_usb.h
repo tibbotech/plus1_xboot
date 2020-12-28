@@ -131,8 +131,6 @@ struct ehci_qh {
 
 ////////////////////////////////////////
 
-//#define USB_HUB
-
 // Setup packet format
 typedef struct
 {

@@ -58,6 +58,11 @@ config HAVE_USB_DISK
 	default y
 	select HAVE_FS_FAT
 
+config HAVE_USB_HUB
+	bool "USB hub support"
+	default n
+	depends on HAVE_USB_DISK
+
 config HAVE_OTP
 	bool "OTP driver"
 	default n

@@ -211,14 +211,14 @@ void usb_power_init(int is_host)
 int usb_init(int port, int next_port_in_hub)
 {
 	UINT32 tmp1, tmp2;
-#ifdef USB_HUB
+#ifdef CONFIG_HAVE_USB_HUB
 	UINT8 NumberOfPorts;
 	UINT8 port_num;
 	unsigned int is_hub = 0;
 #endif
 	unsigned int dev_dct_cnt = 0;
 
-#ifdef USB_HUB
+#ifdef CONFIG_HAVE_USB_HUB
 	if (next_port_in_hub)
 		goto data_structure_init;
 #endif
@@ -347,7 +347,7 @@ int usb_init(int port, int next_port_in_hub)
 	//enum USB disk
 	pUSB_CfgDesc pCfg = (pUSB_CfgDesc)(USB_dataBuf);
 	pUSB_DevDesc pDev = (pUSB_DevDesc)(USB_dataBuf);
-#ifdef USB_HUB
+#ifdef CONFIG_HAVE_USB_HUB
 	pUSB_HubDesc pHub = (pUSB_HubDesc)(USB_dataBuf);
 	pUSB_PortStatus pPortsts = (pUSB_PortStatus)(USB_dataBuf);
 
@@ -383,7 +383,7 @@ data_structure_init:
 
 	EHCI_addr = 0;
 
-#ifdef USB_HUB
+#ifdef CONFIG_HAVE_USB_HUB
 	if (next_port_in_hub) {
 		is_hub = 1;
 		port_num = next_port_in_hub;
@@ -391,7 +391,6 @@ data_structure_init:
 		goto scan_device_on_port;
 	}
 
-	_delay_1ms(400);
 	prn_string("set addr\n");
 	USB_vendorCmd(0, USB_REQ_SET_ADDRESS, DEVICE_ADDRESS, 0, 0);
 	EHCI_addr = DEVICE_ADDRESS;
@@ -555,7 +554,7 @@ usb_storage_device:
 	prn_string("rev="); prn_byte((pDev->bcdDevice >> 8) & 0xff); prn_byte(pDev->bcdDevice & 0xff);
 	prn_string("\n");
 
-#ifdef USB_HUB
+#ifdef CONFIG_HAVE_USB_HUB
 	if (is_hub) {
 		CSTAMP(0xE5B00009);
 		prn_string("set addr\n");
@@ -577,16 +576,22 @@ usb_storage_device:
 	prn_string("get conf desc (18)\n");
 	USB_vendorCmd(0x80, USB_REQ_GET_DESCRIPTOR, DESC_CONFIGURATION, 0, 18);
 
-#ifdef USB_HUB
-	if (is_hub) {
+#ifdef CONFIG_HAVE_USB_HUB
+	if (is_hub)
+#endif
+	{
 		if (USB_dataBuf[9+5] != USB_CLASS_MASS_STORAGE) {
 			prn_string("not usb mass storage device\n");
+#ifdef CONFIG_HAVE_USB_HUB
 			port_num++;
 			EHCI_addr = DEVICE_ADDRESS;
 			goto scan_device_on_port;
+#else
+			return -1;
+#endif
 		}
 	}
-#endif
+
 
 	CSTAMP(0xE5B0000C);
 	prn_string("get conf desc ("); prn_decimal(pCfg->wLength); prn_string(")\n");
@@ -628,7 +633,7 @@ usb_storage_device:
 		boot_reset();
 	}
 
-#ifdef USB_HUB
+#ifdef CONFIG_HAVE_USB_HUB
 	if (is_hub)
 		return ++port_num;
 	else
