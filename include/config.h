@@ -57,6 +57,7 @@
  *********************/
 #define REG_BASE           0x9c000000
 #define RF_GRP(_grp, _reg) ((((_grp) * 32 + (_reg)) * 4) + REG_BASE)
+#define RF_AMBA(_grp, _reg) ((((_grp) * 1024 + (_reg)) * 4) + REG_BASE)
 
 #define AHB0_REG_BASE      0x9c100000
 #define AHB_GRP(_ahb_grp, _grp, _reg) \
@@ -106,7 +107,7 @@
 #define NAND_LARGE_BOOT         0xfd  // not use ,for code compile
 #define EXT_BOOT                0xfc  // not use ,for code compile
 #define AUTO_SCAN_ACHIP         0x1F  //for arm ca7,match in start.S ,equal to EXT_CA7_BOOT
-#else 
+#else
 #define AUTO_SCAN               0x01
 #define AUTO_SCAN_ACHIP         0x15
 #define SPI_NOR_BOOT            0x11
@@ -125,13 +126,13 @@
  ************************************/
 #ifdef CONFIG_SECURE_BOOT_SIGN
 #ifdef PLATFORM_SPIBAREMETAL
-#if defined(PLATFORM_I143) 
+#if defined(PLATFORM_I143)
 #define SECURE_VERIFY_FUN_ADDR	(0xF8008000)
 #else
 #define SECURE_VERIFY_FUN_ADDR	(0x98008001) // function defined in iboot.c
 #endif
 #else
-#if defined(PLATFORM_I143) 
+#if defined(PLATFORM_I143)
 #define SECURE_VERIFY_FUN_ADDR	(0xFE008000)
 #else
 #define SECURE_VERIFY_FUN_ADDR	(0xFFFF8001)// // function defined in iboot.c
@@ -166,14 +167,18 @@
 #define SPI_FLASH_BASE      0x98000000
 #endif
 #define SPI_IBOOT_OFFSET    ( 0 * 1024)
-#define SPI_XBOOT_OFFSET    (64 * 1024) 
+#define SPI_XBOOT_OFFSET    (64 * 1024)
 
 #define MAGIC_NUM_SPI_BAREMETAL 0x6D622B52
 
 /**********************
- * SRAM 
+ * SRAM
  *********************/
+#if defined(PLATFORM_I143)
+#define SRAM0_SIZE          (64 * 1024)
+#else
 #define SRAM0_SIZE          (40 * 1024)
+#endif
 
 #ifdef PLATFORM_I143
 #define SRAM0_BASE          0xFE800000
@@ -184,7 +189,7 @@
 
 #ifdef PLATFORM_I143
 #ifdef CONFIG_USE_ZMEM
-#define CA7_START_ADDR    (0x200F0000+0x6800+0x20) //ca7 code is offset 26k 
+#define CA7_START_ADDR    (0x200F0000+0x6800+0x20) //ca7 code is offset 26k
 #else
 #define CA7_START_ADDR    (0x7E800000+0x6800+0x20)
 #endif
@@ -201,7 +206,14 @@
 #define A_WORK_MEM_END      (A_WORK_MEM_BASE + A_WORK_MEM_SIZE)
 
 /* SRAM layout: must match with boot.ldi */
-#if defined(PLATFORM_Q628) && (CONFIG_PLATFORM_IC_REV < 2)
+#if defined(PLATFORM_I143)
+#define XBOOT_BUF_SIZE      (36 * 1024)
+#define STORAGE_BUF_SIZE    (20 * 1024)
+#define BOOTINFO_SIZE       (384)
+#define GLOBAL_HEADER_SIZE  (512)
+#define CDATA_SIZE          (128)
+#define STACK_SIZE          (3008) /* 3K - 64 */
+#elif defined(PLATFORM_Q628) && (CONFIG_PLATFORM_IC_REV < 2)
 #define XBOOT_BUF_SIZE      (28 * 1024)
 #define STORAGE_BUF_SIZE    (9 * 1024)
 #define BOOTINFO_SIZE       (512)
