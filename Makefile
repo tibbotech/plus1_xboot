@@ -46,7 +46,7 @@ else
 XBOOT_MAX := $$((28 * 1024))
 endif
 ifeq ($(ARCH),riscv)
-XBOOT_MAX = $$((27 * 1024))
+XBOOT_MAX = $$((36 * 1024))
 endif
 .PHONY: release debug
 
@@ -57,7 +57,7 @@ release debug: all
 all:  $(TARGET)
 	@# 32-byte xboot header
 	@bash ./add_xhdr.sh $(BIN)/$(TARGET).bin $(BIN)/$(TARGET).img 0
-	
+
 ifeq ($(CONFIG_STANDALONE_DRAMINIT), y)
 	@# print draminit.img size
 	@sz=`du -sb $(DRAMINIT_IMG) | cut -f1` ; \
@@ -106,7 +106,7 @@ build_draminit:
 	@echo ""
 
 # Boot up
-ASOURCES_START := arch/$(ARCH)/start.S 
+ASOURCES_START := arch/$(ARCH)/start.S
 ifeq ($(CONFIG_SECURE_BOOT_SIGN), y)
 ifeq ($(ARCH),arm)
 ASOURCES_V5 := arch/$(ARCH)/cpu/mmu_ops.S
@@ -163,6 +163,11 @@ ifeq ($(CONFIG_HAVE_USB_DISK), y)
 CSOURCES += usb/ehci_usb.c
 endif
 
+# SNPS USB3
+ifeq ($(CONFIG_HAVE_SNPS_USB3_DISK), y)
+CSOURCES += usb/xhci_usb.c
+endif
+
 # MMC
 ifeq ($(CONFIG_HAVE_MMC), y)
 CSOURCES += sdmmc/drv_sd_mmc.c  sdmmc/hal_sd_mmc.c sdmmc/hw_sd.c
@@ -216,7 +221,7 @@ I143_C_P: prepare
 	@$(CROSS_ARM)gcc $(CFLAGS_C_P) -c -o $(START_C_P_PATH)/start_c_p.o $(START_C_P_PATH)/start_c_p.S
 	@$(CROSS_ARM)cpp -P $(CFLAGS_C_P) $(START_C_P_PATH)/boot_c_p.ldi $(START_C_P_PATH)/boot_c_p.ld
 	@$(CROSS_ARM)gcc $(CFLAGS_C_P) $(START_C_P_PATH)/start_c_p.o -T $(START_C_P_PATH)/boot_c_p.ld $(LDFLAGS_C_P) -o $(BIN)/$(TARGET_C_P) -Wl,-Map,$(BIN)/$(TARGET_C_P).map
-	@$(CROSS_ARM)objcopy -O binary -S $(BIN)/$(TARGET_C_P) $(BIN)/$(TARGET_C_P).bin	
+	@$(CROSS_ARM)objcopy -O binary -S $(BIN)/$(TARGET_C_P) $(BIN)/$(TARGET_C_P).bin
 	@$(CROSS_ARM)objdump -d -S $(BIN)/$(TARGET_C_P) > $(BIN)/$(TARGET_C_P).dis
 
 #################
