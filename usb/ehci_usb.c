@@ -231,6 +231,9 @@ int usb_init(int port, int next_port_in_hub)
 	// ehci register base
 	g_io_buf.usb.ehci.ehci_hcd_regs = port ? EHCI1_REG : EHCI0_REG;
 
+#ifndef EHCI_DEBUG
+tryagain:
+#endif
 	dbg();
 
 	CSTAMP(0xE5B00001);
@@ -331,8 +334,8 @@ int usb_init(int port, int next_port_in_hub)
 		if (dev_dct_cnt++ > 5) { // 50 ms
 			prn_string("portsc="); prn_dword(EHCI_PORTSC);
 			CSTAMP(0xE5B00006);
-			prn_string("not HS, try another port\n");
-			return -1;
+			prn_string("not HS, retry\n");
+			goto tryagain;
 		}
 
 		CSTAMP(0xE5B0A000);
