@@ -61,7 +61,12 @@ config HAVE_USB_DISK
 config HAVE_SNPS_USB3_DISK
 	bool "Synopsys USB 3.1 disk driver"
 	default n
-	select HAVE_FS_FAT
+	depends on HAVE_USB_DISK
+
+config HAVE_USB2_DISK
+	bool "USB 2.0 disk driver"
+	default y
+	depends on HAVE_USB_DISK
 
 config HAVE_USB_HUB
 	bool "USB hub support"

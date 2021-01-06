@@ -160,12 +160,16 @@ endif
 
 # USB
 ifeq ($(CONFIG_HAVE_USB_DISK), y)
-CSOURCES += usb/ehci_usb.c
 endif
 
 # SNPS USB3
 ifeq ($(CONFIG_HAVE_SNPS_USB3_DISK), y)
 CSOURCES += usb/xhci_usb.c
+endif
+
+# USB2
+ifeq ($(CONFIG_HAVE_USB2_DISK), y)
+CSOURCES += usb/ehci_usb.c
 endif
 
 # MMC

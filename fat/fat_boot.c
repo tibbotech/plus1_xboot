@@ -2,7 +2,12 @@
 #include <fat/fat.h>
 #include <config.h>
 #include <common.h>
+#ifdef CONFIG_HAVE_USB2_DISK
 #include <usb/ehci_usb.h>
+#endif
+#ifdef CONFIG_HAVE_SNPS_USB3_DISK
+#include <usb/xhci_usb.h>
+#endif
 #include <sdmmc_boot/drv_sd_mmc.h>
 
 /********************************************************************************
