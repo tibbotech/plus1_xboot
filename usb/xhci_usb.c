@@ -180,7 +180,7 @@ struct xhci_ring *xhci_ring_alloc(int link_trbs, int no)
 	}
 	// link = true
 	if (link_trbs) {
-		ringtmp_64 = (u64)tmpring->first_seg->trbs;
+		ringtmp_64 = (intptr_t) tmpring->first_seg->trbs;
 		tmpring->first_seg->trbs[TRBS_PER_SEGMENT-1].link.segment_ptr = ringtmp_64;
 		//prn_string("\n  *ringtmp_64 "); prn_dword(ringtmp_64);
 	
@@ -203,8 +203,8 @@ struct xhci_ring *xhci_ring_alloc(int link_trbs, int no)
 	
 	prn_string("  	*tmpring->first_seg->trbs[0].link.control "); prn_dword(tmpring->first_seg->trbs[0].link.control);
 	prn_string("  	*tmpring->first_seg->trbs[TRBS_PER_SEGMENT-1].link.control "); prn_dword(tmpring->first_seg->trbs[TRBS_PER_SEGMENT-1].link.control);
-	prn_string("  	*tmpring.enqueue "); prn_dword((u64)tmpring->enqueue);
-	prn_string("  	*tmpring->first_seg->trbs[TRBS_PER_SEGMENT-1] "); prn_dword((u64)&tmpring->first_seg->trbs[TRBS_PER_SEGMENT-1]);
+	prn_string("  	*tmpring.enqueue "); prn_dword((intptr_t)tmpring->enqueue);
+	prn_string("  	*tmpring->first_seg->trbs[TRBS_PER_SEGMENT-1] "); prn_dword((intptr_t)&tmpring->first_seg->trbs[TRBS_PER_SEGMENT-1]);
 	return tmpring;
 }
 
@@ -390,7 +390,7 @@ void queue_command(u8 *ptr, u32 slot_id, u32 ep_index, trb_type cmd)
 	u64 tmpqueue_64;
 	
 	prepare_ring(g_io_buf.usb.xhci.cmd_ring);
-	tmpqueue_64 = (u64)ptr;
+	tmpqueue_64 = (intptr_t) ptr;
 	trb_fields[0] = tmpqueue_64;
 	trb_fields[1] = tmpqueue_64 >> 32;
 	trb_fields[2] = 0;
@@ -413,7 +413,7 @@ void acknowledge_event(void)
 	
 	inc_deq(g_io_buf.usb.xhci.event_ring);	
 	//
-	tmpack = ((u64)(g_io_buf.usb.xhci.event_ring->dequeue) | ERST_EHB);
+	tmpack = ((intptr_t) (g_io_buf.usb.xhci.event_ring->dequeue) | ERST_EHB);
 	g_io_buf.usb.xhci.ir_set->erst_dequeue = tmpack;
 }
 
@@ -517,7 +517,7 @@ void set_address(int slot_id)
 			
 	ep0_ctx->ep_info2 |= ((0 & MAX_BURST_MASK) << MAX_BURST_SHIFT) | ((3 & ERROR_COUNT_MASK) << ERROR_COUNT_SHIFT);
 	
-	tmp_64 = (u64)virt_dev->eps[0].ring->first_seg->trbs;
+	tmp_64 = (intptr_t)virt_dev->eps[0].ring->first_seg->trbs;
 	ep0_ctx->deq = tmp_64 | virt_dev->eps[0].ring->cycle_state;
 	prn_string("  	ep0_ctx->deq "); prn_dword(ep0_ctx->deq);
 	
@@ -1153,7 +1153,7 @@ int set_configuration(usb_device *dev, int slot_id)
 			err_count = 3;
 		ep_ctx[ep_index]->ep_info2 |= MAX_BURST(max_burst) | ERROR_COUNT(err_count);
 
-		ptrb_64 = (u64) virt_dev->eps[ep_index].ring->enqueue;
+		ptrb_64 = (intptr_t) virt_dev->eps[ep_index].ring->enqueue;
 		ep_ctx[ep_index]->deq = ptrb_64 | virt_dev->eps[ep_index].ring->cycle_state;
 
 		/*
@@ -1229,7 +1229,7 @@ void ctrl_tx(struct devrequest *req, int length, void *buffer, u32 pipe)
 	if (length > 0) {
 		if (req->requesttype & USB_DIR_IN)
 			field |= TRB_DIR_IN;
-		buf_64 = (u64)buffer;
+		buf_64 = (intptr_t)buffer;
 
 		trb_fields[0] = buf_64;
 		trb_fields[1] = buf_64 >> 32;
@@ -1310,7 +1310,7 @@ int bulk_tx(u32 pipe, int length, void *buffer)
 	//int maxpacketsize;
 	u64 addr;
 	u32 trb_fields[4];
-	u64 pval_64 = (u64)buffer;
+	u64 pval_64 = (intptr_t)buffer;
 	
 	ep_index = usb_pipe_ep_index(pipe);
 	virt_dev = g_io_buf.usb.xhci.devs[g_io_buf.usb.xhci.udev.slot_id];
@@ -1626,7 +1626,7 @@ void USB_vendorCmd(u8 bReq, u8 bCmd, u16 wValue, u16 wIndex, u16 wLen)
 		prn_string("\n!!!!!usb_get_configuration_len != length!!!!!");
 }
 
-int usb_init(int port)
+int usb_init(int port, int next_port_in_hub)
 {
 	UINT32 tmp1, tmp2, tmp3;
         struct dwc3 *dwc3_reg;	
@@ -1655,9 +1655,9 @@ int usb_init(int port)
 	g_io_buf.usb.xhci.hcor = (struct xhci_hcor *)((char *)g_io_buf.usb.xhci.hccr +
 				  HC_LENGTH(g_io_buf.usb.xhci.hccr->cr_capbase));
         dwc3_reg = (struct dwc3 *)((char *)(g_io_buf.usb.xhci.hccr) + DWC3_REG_OFFSET);
-        prn_string("\n#hccr "); prn_dword((u64)g_io_buf.usb.xhci.hccr);
-        prn_string("#hcor "); prn_dword((u64)g_io_buf.usb.xhci.hcor);
-        prn_string("#dwc3_reg "); prn_dword((u64)dwc3_reg);
+        prn_string("\n#hccr "); prn_dword((intptr_t)g_io_buf.usb.xhci.hccr);
+        prn_string("#hcor "); prn_dword((intptr_t)g_io_buf.usb.xhci.hcor);
+        prn_string("#dwc3_reg "); prn_dword((intptr_t)dwc3_reg);
         prn_string("g_io_buf.usb.xhci.hccr->cr_capbase "); prn_dword((u64)g_io_buf.usb.xhci.hccr->cr_capbase);
 	/*Enable ehci test*/
 #if 0
@@ -1748,7 +1748,7 @@ int usb_init(int port)
 	prn_string("\n  or_config "); prn_dword(g_io_buf.usb.xhci.hcor->or_config);
 	//xhci_mem_init	
 	g_io_buf.usb.xhci.dcbaa = (struct xhci_device_context_array *) g_io_buf.usb.xhci.dev_context_ptrs;
-	g_io_buf.usb.xhci.hcor->or_dcbaap = (u64)g_io_buf.usb.xhci.dev_context_ptrs;
+	g_io_buf.usb.xhci.hcor->or_dcbaap = (intptr_t)g_io_buf.usb.xhci.dev_context_ptrs;
 	//prn_string("\n  pdcbaa "); prn_dword(g_io_buf.usb.xhci.dev_context_ptrs);
 	//prn_string("\n or_dcbaapL "); prn_dword(g_io_buf.usb.xhci.hcor->or_dcbaapL);
 	//prn_string("\n or_dcbaapH "); prn_dword(g_io_buf.usb.xhci.hcor->or_dcbaapH);
@@ -1756,7 +1756,7 @@ int usb_init(int port)
 	g_io_buf.usb.xhci.cmd_ring = xhci_ring_alloc(1, 0x10);	
 		
 	val_64 = (u64)g_io_buf.usb.xhci.hcor->or_crcr; //need to check
-	trb_64 = (u64)g_io_buf.usb.xhci.cmd_ring->first_seg->trbs;
+	trb_64 = (intptr_t)g_io_buf.usb.xhci.cmd_ring->first_seg->trbs;
 	//prn_string("\n g_io_buf.usb.xhci.cmd_ring->first_seg->trbs "); prn_dword(trb_64);
 	val_64 = (val_64 & (u64) CMD_RING_RSVD_BITS) | (trb_64 & (u64) ~CMD_RING_RSVD_BITS) |
 		  g_io_buf.usb.xhci.cmd_ring->cycle_state;
@@ -1770,16 +1770,16 @@ int usb_init(int port)
 	tmp1 = g_io_buf.usb.xhci.hccr->cr_dboff;
 	tmp1 &= DBOFF_MASK;
 	g_io_buf.usb.xhci.dba = (struct xhci_doorbell_array *)((char *)g_io_buf.usb.xhci.hccr + tmp1);
-	prn_string("\n#g_io_buf.usb.xhci.dba "); prn_dword((u64)g_io_buf.usb.xhci.dba);
+	prn_string("\n#g_io_buf.usb.xhci.dba "); prn_dword((intptr_t)g_io_buf.usb.xhci.dba);
 	
 	// write the address of runtime register 
 	tmp1 = g_io_buf.usb.xhci.hccr->cr_rtsoff;
 	tmp1 &= RTSOFF_MASK;
 	g_io_buf.usb.xhci.run_regs = (struct xhci_run_regs *)((char *)g_io_buf.usb.xhci.hccr + tmp1);
-	prn_string("#g_io_buf.usb.xhci.run_regs "); prn_dword((u64)g_io_buf.usb.xhci.run_regs);
+	prn_string("#g_io_buf.usb.xhci.run_regs "); prn_dword((intptr_t)g_io_buf.usb.xhci.run_regs);
 	// writting the address of ir_set structure 
 	g_io_buf.usb.xhci.ir_set = &g_io_buf.usb.xhci.run_regs->ir_set[0];
-	prn_string("#g_io_buf.usb.xhci.ir_set "); prn_dword((u64)g_io_buf.usb.xhci.ir_set);
+	prn_string("#g_io_buf.usb.xhci.ir_set "); prn_dword((intptr_t)g_io_buf.usb.xhci.ir_set);
 
 
 	// Event ring does not maintain link TRB 
@@ -1801,7 +1801,7 @@ int usb_init(int port)
 	struct xhci_segment *seg;
 	for (tmp1 = 0, seg = g_io_buf.usb.xhci.event_ring->first_seg; tmp1 < ERST_NUM_SEGS; tmp1++) {
 		trb_64 = 0;
-		trb_64 = (u64)seg->trbs;
+		trb_64 = (intptr_t)seg->trbs;
 		//prn_string("\n  trb_64 H "); prn_dword(trb_64>>32);
 		//prn_string("\n  trb_64 L "); prn_dword(trb_64);
 		//struct xhci_erst_entry *entry = (struct xhci_erst_entry *) &g_io_buf.usb.xhci.erst.entries[tmp1];
@@ -1817,7 +1817,7 @@ int usb_init(int port)
 	
 	//
 	u64 deq;
-	deq = (u64) g_io_buf.usb.xhci.event_ring->dequeue;
+	deq = (intptr_t) g_io_buf.usb.xhci.event_ring->dequeue;
 
 	//prn_string("\n  deq "); prn_dword(deq);
 	// Update HC event ring dequeue pointer 
@@ -1835,7 +1835,7 @@ int usb_init(int port)
 	//prn_string("\n  bf val_64 H "); prn_dword(val_64 >> 32);
 	//prn_string("\n  bf val_64 L "); prn_dword(val_64);
 	val_64 &= ERST_PTR_MASK;
-	val_64 |= ((u64)(g_io_buf.usb.xhci.erst.entries) & ~ERST_PTR_MASK);
+	val_64 |= ((intptr_t)(g_io_buf.usb.xhci.erst.entries) & ~ERST_PTR_MASK);
         //prn_string("\n  val_64 H "); prn_dword(val_64>>32);
 	//prn_string("\n  val_64 L "); prn_dword(val_64);
 	g_io_buf.usb.xhci.ir_set->erst_base = val_64;//need to check
@@ -1858,14 +1858,14 @@ int usb_init(int port)
 	//u32 tmpbuf[num_sp];
 	for (tmp2 = 0; tmp2 < val_64; tmp2++) {
 		//g_io_buf.usb.xhci.pscratchpad.sp_array = (u64 *)(&tmpbuf + tmp2 * tmp1);//assume num_sp = 1
-		g_io_buf.usb.xhci.sparray[tmp2] = (u64)(g_io_buf.usb.xhci.sparraybuf + tmp2 * tmp1);
+		g_io_buf.usb.xhci.sparray[tmp2] = (intptr_t)(g_io_buf.usb.xhci.sparraybuf + tmp2 * tmp1);
 	}
 	g_io_buf.usb.xhci.pscratchpad.sp_array = g_io_buf.usb.xhci.sparray;
 	
 	g_io_buf.usb.xhci.scratchpad = &g_io_buf.usb.xhci.pscratchpad;
 	
 	//prn_string("\n  g_io_buf.usb.xhci.sparray "); prn_dword((u64)g_io_buf.usb.xhci.sparray);
-	g_io_buf.usb.xhci.dcbaa->dev_context_ptrs[0] = (u64)g_io_buf.usb.xhci.pscratchpad.sp_array;
+	g_io_buf.usb.xhci.dcbaa->dev_context_ptrs[0] = (intptr_t)g_io_buf.usb.xhci.pscratchpad.sp_array;
 	//prn_string("\n  #g_io_buf.usb.xhci.dcbaa->dev_context_ptrs[0] "); prn_dword(g_io_buf.usb.xhci.dcbaa->dev_context_ptrs[0]);
 		
 // initializing the virtual devices to NULL
@@ -1932,7 +1932,7 @@ int usb_init(int port)
 		}
 		#endif
 		for (trb_64 = 0; trb_64 < 2; trb_64++) {
-			prn_string("\n    port "); prn_dword((u64)&g_io_buf.usb.xhci.hcor->portregs[trb_64]);					
+			prn_string("\n    port "); prn_dword((intptr_t)&g_io_buf.usb.xhci.hcor->portregs[trb_64]);					
 			tmp1 = g_io_buf.usb.xhci.hcor->portregs[trb_64].or_portsc;
 			tmp1 = (tmp1 & XHCI_PORT_RO) | (tmp1 & XHCI_PORT_RWS);
 			tmp1 |= PORT_POWER;
@@ -2067,7 +2067,7 @@ int usb_init(int port)
         //prn_string("\n  g_io_buf.usb.xhci.devs[slot_id]->in_ctx->type "); prn_dword(g_io_buf.usb.xhci.devs[g_io_buf.usb.xhci.udev.slot_id]->in_ctx->type);
         //prn_string("\n  g_io_buf.usb.xhci.devs[slot_id]->in_ctx->size "); prn_dword(g_io_buf.usb.xhci.devs[g_io_buf.usb.xhci.udev.slot_id]->in_ctx->size);
         //prn_string("\n  g_io_buf.usb.xhci.devs[slot_id]->in_ctx->bytes "); prn_dword(g_io_buf.usb.xhci.devs[g_io_buf.usb.xhci.udev.slot_id]->in_ctx->bytes);
-        g_io_buf.usb.xhci.dcbaa->dev_context_ptrs[g_io_buf.usb.xhci.udev.slot_id] = (u64)g_io_buf.usb.xhci.devs[g_io_buf.usb.xhci.udev.slot_id]->out_ctx->bytes;
+        g_io_buf.usb.xhci.dcbaa->dev_context_ptrs[g_io_buf.usb.xhci.udev.slot_id] = (intptr_t)g_io_buf.usb.xhci.devs[g_io_buf.usb.xhci.udev.slot_id]->out_ctx->bytes;
 //usb_setup_descriptor
 	g_io_buf.usb.xhci.udev.maxpacketsize = 3;//PACKET_SIZE_64;
 	g_io_buf.usb.xhci.udev.epmaxpacketin[0] = 64;

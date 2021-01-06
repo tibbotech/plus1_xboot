@@ -1291,7 +1291,7 @@ struct dwc3 {					/* offset: 0xC100 */
 #define usb_rcvbulkpipe(dev, endpoint)	((PIPE_BULK << 30) | create_pipe(dev, endpoint) | USB_DIR_IN)
 ////////////////////////////////////////
 
-int usb_init(int port);
+int usb_init(int port, int next_port_in_hub);
 int usb_readSector(u32 lba, u32 count, u32 *dest);
 
 #endif  //_XHCI_USB
