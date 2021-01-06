@@ -46,7 +46,7 @@ else
 XBOOT_MAX := $$((28 * 1024))
 endif
 ifeq ($(ARCH),riscv)
-XBOOT_MAX = $$((36 * 1024))
+XBOOT_MAX = $$((38 * 1024))
 endif
 .PHONY: release debug
 

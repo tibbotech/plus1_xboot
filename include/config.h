@@ -127,13 +127,13 @@
 #ifdef CONFIG_SECURE_BOOT_SIGN
 #ifdef PLATFORM_SPIBAREMETAL
 #if defined(PLATFORM_I143)
-#define SECURE_VERIFY_FUN_ADDR	(0xF8008000)
+#define SECURE_VERIFY_FUN_ADDR	(0xF800B000)
 #else
 #define SECURE_VERIFY_FUN_ADDR	(0x98008001) // function defined in iboot.c
 #endif
 #else
 #if defined(PLATFORM_I143)
-#define SECURE_VERIFY_FUN_ADDR	(0xFE008000)
+#define SECURE_VERIFY_FUN_ADDR	(0xFE00B000)
 #else
 #define SECURE_VERIFY_FUN_ADDR	(0xFFFF8001)// // function defined in iboot.c
 #endif
@@ -207,8 +207,8 @@
 
 /* SRAM layout: must match with boot.ldi */
 #if defined(PLATFORM_I143)
-#define XBOOT_BUF_SIZE      (36 * 1024)
-#define STORAGE_BUF_SIZE    (20 * 1024)
+#define XBOOT_BUF_SIZE      (38 * 1024)
+#define STORAGE_BUF_SIZE    (22 * 1024)
 #define BOOTINFO_SIZE       (384)
 #define GLOBAL_HEADER_SIZE  (512)
 #define CDATA_SIZE          (128)

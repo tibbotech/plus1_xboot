@@ -20,12 +20,12 @@ MEMORY
 	romshare        : ORIGIN = ROM_BASE + 0x0400, LENGTH = 4K
 
 	/* new SRAM layout */
-	xboot_buf       : ORIGIN = XBOOT_ADDR,        LENGTH = XBOOT_BUF_SIZE      /*    36K @ 0        */
-	boothead        : ORIGIN = SRAM0_BASE+0x9000, LENGTH = GLOBAL_HEADER_SIZE  /*    512 @ 36K      */
-	bootinfo        : ORIGIN = SRAM0_BASE+0x9200, LENGTH = BOOTINFO_SIZE       /*    384 @ 36K+512  */
-	cdata           : ORIGIN = SRAM0_BASE+0x9380, LENGTH = CDATA_SIZE          /*    128 @ 36K+896  */
+	xboot_buf       : ORIGIN = XBOOT_ADDR,        LENGTH = XBOOT_BUF_SIZE      /*    38K @ 0        */
+	boothead        : ORIGIN = SRAM0_BASE+0x9800, LENGTH = GLOBAL_HEADER_SIZE  /*    512 @ 38K      */
+	bootinfo        : ORIGIN = SRAM0_BASE+0x9a00, LENGTH = BOOTINFO_SIZE       /*    384 @ 38K+512  */
+	cdata           : ORIGIN = SRAM0_BASE+0x9b80, LENGTH = CDATA_SIZE          /*    128 @ 38K+896  */
 	/* storage_buf is part of ed25519_verify()'s stack (need 4K) */
-	storage_buf     : ORIGIN = SRAM0_BASE+0x9400, LENGTH = STORAGE_BUF_SIZE    /*    20K @ 37K      */
+	storage_buf     : ORIGIN = SRAM0_BASE+0x9c00, LENGTH = STORAGE_BUF_SIZE    /*    22K @ 39K      */
 	stack           : ORIGIN = SRAM0_BASE+0xf400, LENGTH = STACK_SIZE          /*  3K-64 @ 61K      */
 	bootcompat      : ORIGIN = SRAM0_BASE+0xffc0, LENGTH = 64                  /*     64 @ 64K-64   */
 }
