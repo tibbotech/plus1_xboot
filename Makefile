@@ -235,6 +235,7 @@ sinclude .depend
 # clean
 .PHONY:clean
 clean:
+	@$(MAKE) -C ../draminit $(DRAMINIT_TARGET) ARCH=$(ARCH) CROSS=$(CROSS) $@
 	@rm -rf .depend $(LD_GEN) $(OBJS) *.o *.d>/dev/null
 	@if [ -d $(BIN) ];then \
 		cd $(BIN) && rm -rf $(TARGET) $(TARGET).bin $(TARGET).map $(TARGET).dis \
