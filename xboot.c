@@ -858,7 +858,7 @@ static void do_fat_boot(u32 type, u32 port)
 }
 #endif /* CONFIG_HAVE_FS_FAT */
 
-#ifdef CONFIG_HAVE_USB_DISK
+#if defined(CONFIG_HAVE_USB_DISK) || defined(CONFIG_HAVE_SNPS_USB3_DISK)
 static void usb_isp(void)
 {
 	dbg();
@@ -1492,7 +1492,7 @@ static void boot_flow(void)
 #endif
 				break;
 			case USB_ISP:
-#ifdef CONFIG_HAVE_USB_DISK
+#if defined(CONFIG_HAVE_USB_DISK) || defined(CONFIG_HAVE_SNPS_USB3_DISK)
 				dbg();
 				usb_isp();
 #endif

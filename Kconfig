@@ -57,21 +57,20 @@ config HAVE_USB_DISK
 	bool "USB disk driver"
 	default y
 	select HAVE_FS_FAT
+	help 
+		Sunplus EHCI dirver, need to disable HAVE_SNPS_USB3_DISK
 
 config HAVE_SNPS_USB3_DISK
 	bool "Synopsys USB 3.1 disk driver"
 	default n
-	depends on HAVE_USB_DISK
-
-config HAVE_USB2_DISK
-	bool "USB 2.0 disk driver"
-	default y
-	depends on HAVE_USB_DISK
+	depends on HAVE_FS_FAT
+	help 
+		Sunplus synopsys XHCI dirver, need to disable HAVE_USB_DISK
 
 config HAVE_USB_HUB
 	bool "USB hub support"
 	default n
-	depends on HAVE_USB_DISK
+	depends on HAVE_USB_DISK || HAVE_SNPS_USB3_DISK
 
 config HAVE_OTP
 	bool "OTP driver"

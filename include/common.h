@@ -8,7 +8,7 @@
 #include <types.h>
 #include <stc.h>
 #include <fat/fat.h>
-#ifdef CONFIG_HAVE_USB2_DISK
+#ifdef CONFIG_HAVE_USB_DISK
 #include <usb/ehci_usb.h>
 #endif
 #ifdef CONFIG_HAVE_SNPS_USB3_DISK
@@ -113,7 +113,7 @@ union storage_buf {
 		u8           draminit_tmp[7 * 1024];
 		u8           sect_buf[512];         /* for FAT data read,  sector-size buffer */
 		u8           cmd_buf[1024];         /* for USB_vendorCmd(), usb descriptors */
-#ifdef CONFIG_HAVE_USB2_DISK
+#ifdef CONFIG_HAVE_USB_DISK
 		ehci_usb     ehci;                  /* for all usb transfer, 320 bytes */
 #endif
 #ifdef CONFIG_HAVE_SNPS_USB3_DISK
