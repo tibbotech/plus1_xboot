@@ -207,8 +207,13 @@
 
 /* SRAM layout: must match with boot.ldi */
 #if defined(PLATFORM_I143)
+#if defined(CONFIG_HAVE_SNPS_USB3_DISK)
 #define XBOOT_BUF_SIZE      (38 * 1024)
 #define STORAGE_BUF_SIZE    (22 * 1024)
+#else
+#define XBOOT_BUF_SIZE      (27 * 1024)
+#define STORAGE_BUF_SIZE    (9 * 1024)
+#endif
 #define BOOTINFO_SIZE       (384)
 #define GLOBAL_HEADER_SIZE  (512)
 #define CDATA_SIZE          (128)

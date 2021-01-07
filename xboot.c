@@ -161,6 +161,15 @@ static void fixup_boot_compatible(void)
 	}
 }
 
+#ifdef PLATFORM_I143
+static void copy_bootinfo_to_0xfe809a00(void)
+{
+	// To support Synopsys USB3, SRAM layout is re-defined.
+	// In order to support new layout, copy bootinfo to new area.
+	memcpy((u8 *)0xfe809a00, (UINT8 *)&g_bootinfo, sizeof(struct bootinfo));
+}
+#endif
+
 #ifdef PLATFORM_Q628
 static void exit_xboot(const char *msg, u32 addr)
 {
@@ -537,8 +546,8 @@ static void boot_uboot(void)
 		}
 		while(*(volatile unsigned int *)A_START_POS_B_VIEW != 0xFFFFFFFF);	//wait CA7 start and init
 		boot_next_in_A();
-	}
-	else{
+	} else {
+		copy_bootinfo_to_0xfe809a00();
 		exit_bootROM(OPENSBI_RUN_ADDR);
 	}
 #else
