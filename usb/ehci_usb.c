@@ -584,12 +584,17 @@ usb_storage_device:
 #endif
 	{
 		if (USB_dataBuf[9+5] != USB_CLASS_MASS_STORAGE) {
-			prn_string("not usb mass storage device\n");
 #ifdef CONFIG_HAVE_USB_HUB
+			prn_string("not usb mass storage device\n");
 			port_num++;
 			EHCI_addr = DEVICE_ADDRESS;
 			goto scan_device_on_port;
 #else
+			if (USB_dataBuf[9+5] == USB_CLASS_HUB)
+				prn_string("usb hub not supported\n");
+			else
+				prn_string("not usb mass storage device\n");
+
 			return -1;
 #endif
 		}

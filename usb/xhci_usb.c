@@ -135,8 +135,9 @@ struct xhci_ring *xhci_ring_alloc(int link_trbs, int no)
 	struct xhci_ring *tmpring;
 	u32 ringtmp;
 	u64 ringtmp_64;
-	
+#ifdef XHCI_DEBUG	
 	prn_string("\n*ring setting no "); prn_dword(no);
+#endif
 	if (no == 0x10) {
 		//memset32(g_io_buf.usb.xhci.pcmdtrb, 0, sizeof(g_io_buf.usb.xhci.pcmdtrb));
 		tmpring = &g_io_buf.usb.xhci.pcmd_ring;
@@ -175,7 +176,9 @@ struct xhci_ring *xhci_ring_alloc(int link_trbs, int no)
 		tmpring->first_seg->next = NULL;
 		tmpring->first_seg->next = tmpring->first_seg;
 	} else {
+#ifdef XHCI_DEBUG
 		prn_string("\n!!!!!ring no overflow!!!!! ");
+#endif
 		return NULL;
 	}
 	// link = true
@@ -200,11 +203,12 @@ struct xhci_ring *xhci_ring_alloc(int link_trbs, int no)
 	tmpring->dequeue = tmpring->enqueue;
 	tmpring->deq_seg = tmpring->first_seg;
 	tmpring->cycle_state = 1;
-	
+#ifdef XHCI_DEBUG	
 	prn_string("  	*tmpring->first_seg->trbs[0].link.control "); prn_dword(tmpring->first_seg->trbs[0].link.control);
 	prn_string("  	*tmpring->first_seg->trbs[TRBS_PER_SEGMENT-1].link.control "); prn_dword(tmpring->first_seg->trbs[TRBS_PER_SEGMENT-1].link.control);
 	prn_string("  	*tmpring.enqueue "); prn_dword((intptr_t)tmpring->enqueue);
 	prn_string("  	*tmpring->first_seg->trbs[TRBS_PER_SEGMENT-1] "); prn_dword((intptr_t)&tmpring->first_seg->trbs[TRBS_PER_SEGMENT-1]);
+#endif
 	return tmpring;
 }
 
@@ -500,26 +504,34 @@ void set_address(int slot_id)
 	//prn_string("\n  	slot_ctx "); prn_dword(slot_ctx);
 	
 	slot_ctx->dev_info |= LAST_CTX(1);
-	//slot_ctx->dev_info |= route;
+	slot_ctx->dev_info |= 0;//route;
 	slot_ctx->dev_info2 |= (g_io_buf.usb.xhci.udev.portnr & ROOT_HUB_PORT_MASK) << ROOT_HUB_PORT_SHIFT;//(port_num & ROOT_HUB_PORT_MASK) << ROOT_HUB_PORT_SHIFT;
 	ep0_ctx->ep_info2 = CTRL_EP << EP_TYPE_SHIFT;
 	if (g_io_buf.usb.xhci.udev.speed == USB_SPEED_SUPER) {
 		slot_ctx->dev_info |= SLOT_SPEED_SS;
-		prn_string("\n  	slot_ctx->dev_info "); prn_dword(slot_ctx->dev_info);		
+#ifdef XHCI_DEBUG
+		prn_string("\n  	slot_ctx->dev_info "); prn_dword(slot_ctx->dev_info);
+#endif		
 		ep0_ctx->ep_info2 |= ((512 & MAX_PACKET_MASK) << MAX_PACKET_SHIFT);
 	} else if (g_io_buf.usb.xhci.udev.speed == USB_SPEED_HIGH) {
 		slot_ctx->dev_info |= SLOT_SPEED_HS;
+#ifdef XHCI_DEBUG
 		prn_string("\n  	slot_ctx->dev_info "); prn_dword(slot_ctx->dev_info);
+#endif
 		ep0_ctx->ep_info2 |= ((64 & MAX_PACKET_MASK) << MAX_PACKET_SHIFT);
 	} else {
+#ifdef XHCI_DEBUG
 		prn_string("\n  	unknown speed "); prn_dword(g_io_buf.usb.xhci.udev.speed);
+#endif
 	}
 			
 	ep0_ctx->ep_info2 |= ((0 & MAX_BURST_MASK) << MAX_BURST_SHIFT) | ((3 & ERROR_COUNT_MASK) << ERROR_COUNT_SHIFT);
 	
 	tmp_64 = (intptr_t)virt_dev->eps[0].ring->first_seg->trbs;
 	ep0_ctx->deq = tmp_64 | virt_dev->eps[0].ring->cycle_state;
+#ifdef XHCI_DEBUG
 	prn_string("  	ep0_ctx->deq "); prn_dword(ep0_ctx->deq);
+#endif
 	
 	ep0_ctx->tx_info = EP_AVG_TRB_LENGTH(8);
 //xhci_get_input_control_ctx
@@ -535,16 +547,19 @@ void set_address(int slot_id)
 	//slot_id = TRB_TO_SLOT_ID(event->event_cmd.flags);
 	//tmp2 = GET_COMP_CODE(event->event_cmd.status);
 	if (GET_COMP_CODE(pevent->event_cmd.status) != 1) {
+#ifdef XHCI_DEBUG
 		prn_string("\n!!!!!set_address GET_COMP_CODE!!!!! "); prn_dword(GET_COMP_CODE(pevent->event_cmd.status));
+#endif
 	}
 
 	acknowledge_event();
 //xhci_get_slot_ctx
 	_delay_1ms(20);	
 	slot_ctx = get_slot_ctx(&g_io_buf.usb.xhci, virt_dev->out_ctx);
+#ifdef XHCI_DEBUG
 	prn_string("  xHCI internal address is: "); prn_dword(slot_ctx->dev_state & DEV_ADDR_MASK);
-	//slot_ctx = (struct xhci_slot_ctx *)virt_dev->out_ctx->bytes;
-	
+#endif
+	//slot_ctx = (struct xhci_slot_ctx *)virt_dev->out_ctx->bytes;	
 }
 
 void slot_copy(struct xhci_container_ctx *in_ctx, struct xhci_container_ctx *out_ctx)
@@ -594,29 +609,39 @@ int usb_parse_config(unsigned char *buffer, int cfgno)
 	g_io_buf.usb.xhci.udev.config.no_of_if = 0;
 
 	index = g_io_buf.usb.xhci.udev.config.desc.bLength;
+#ifdef XHCI_DEBUG
 	prn_string("\n  	config.desc.bLength "); prn_dword(g_io_buf.usb.xhci.udev.config.desc.bLength);
+#endif
 	/* Ok the first entry must be a configuration entry,
 	 * now process the others */
 	head = (struct usb_descriptor_header *) &buffer[index];
 	while (index + 1 < g_io_buf.usb.xhci.udev.config.desc.wTotalLength && head->bLength) {
+#ifdef XHCI_DEBUG
 		prn_string("  	config.desc.bLength "); prn_dword(head->bDescriptorType);
 		prn_string("  	index "); prn_dword(index);
+#endif
 		
 		switch (head->bDescriptorType) {
 		case USB_DT_INTERFACE:
 			if (head->bLength != USB_DT_INTERFACE_SIZE) {
+#ifdef XHCI_DEBUG
 				prn_string("\n!!!!!ERROR: Invalid USB IF length!!!!!");
+#endif
 				break;
 			}
 			if (index + USB_DT_INTERFACE_SIZE > g_io_buf.usb.xhci.udev.config.desc.wTotalLength) {
+#ifdef XHCI_DEBUG
 				prn_string("\n!!!!!USB IF descriptor overflowed buffer!!!!!");
+#endif
 				break;
 			}
 			if (((struct usb_interface_descriptor *) head)->bInterfaceNumber != curr_if_num) {
 				/* this is a new interface, copy new desc */
 				ifno = g_io_buf.usb.xhci.udev.config.no_of_if;
 				if (ifno >= USB_MAXINTERFACES) {
+#ifdef XHCI_DEBUG
 					prn_string("\n!!!!!Too many USB interfaces!!!!!");
+#endif
 					break;
 				}
 				if_desc = &g_io_buf.usb.xhci.udev.config.if_desc[ifno];
@@ -636,21 +661,29 @@ int usb_parse_config(unsigned char *buffer, int cfgno)
 		case USB_DT_ENDPOINT:
 			if (head->bLength != USB_DT_ENDPOINT_SIZE &&
 			    head->bLength != USB_DT_ENDPOINT_AUDIO_SIZE) {
+#ifdef XHCI_DEBUG
 			    	prn_string("\n!!!!!ERROR: Invalid USB EP length!!!!!");
+#endif
 				break;
 			}
 			if (index + head->bLength > g_io_buf.usb.xhci.udev.config.desc.wTotalLength) {
+#ifdef XHCI_DEBUG
 				prn_string("\n!!!!!USB EP descriptor overflowed buffer!!!!!");
+#endif
 				break;
 			}
 			if (ifno < 0) {
+#ifdef XHCI_DEBUG
 				prn_string("\n!!!!!Endpoint descriptor out of order!!!!!");
+#endif
 				break;
 			}
 			epno = g_io_buf.usb.xhci.udev.config.if_desc[ifno].no_of_ep;
 			if_desc = &g_io_buf.usb.xhci.udev.config.if_desc[ifno];
 			if (epno >= USB_MAXENDPOINTS) {
+#ifdef XHCI_DEBUG
 				prn_string("\n!!!!!Interface has too many endpoints!!!!!");
+#endif
 				break;
 			}
 			/* found an endpoint */
@@ -667,20 +700,28 @@ int usb_parse_config(unsigned char *buffer, int cfgno)
 					ep_desc[epno].\
 					wMaxPacketSize);
 			#endif
+#ifdef XHCI_DEBUG
 			prn_string("  	ifno "); prn_dword(ifno);
 			prn_string("  	epno "); prn_dword(epno);
+#endif
 			break;
 		case USB_DT_SS_ENDPOINT_COMP:
 			if (head->bLength != USB_DT_SS_EP_COMP_SIZE) {
+#ifdef XHCI_DEBUG
 				prn_string("\n!!!!!ERROR: Invalid USB EPC length!!!!!");
+#endif
 				break;
 			}
 			if (index + USB_DT_SS_EP_COMP_SIZE > g_io_buf.usb.xhci.udev.config.desc.wTotalLength) {
+#ifdef XHCI_DEBUG
 				prn_string("\n!!!!!USB EPC descriptor overflowed buffer!!!!!");
+#endif
 				break;
 			}
 			if (ifno < 0 || epno < 0) {
+#ifdef XHCI_DEBUG
 				prn_string("\n!!!!!EPC descriptor out of order!!!!!");
+#endif
 				break;
 			}
 			if_desc = &g_io_buf.usb.xhci.udev.config.if_desc[ifno];
@@ -688,10 +729,14 @@ int usb_parse_config(unsigned char *buffer, int cfgno)
 			break;
 		default:
 			if (head->bLength == 0) {
+#ifdef XHCI_DEBUG
 				prn_string("\n!!!!!head->bLength = 0!!!!!");
+#endif
 				break;
 			}
+#ifdef XHCI_DEBUG
                         prn_string("\n!!!!!unknown Description Type!!!!!");
+#endif
 
 			break;
 		}
@@ -717,24 +762,29 @@ void usb_set_maxpacket_ep(usb_device *dev, int if_idx, int ep_idx)
 		/* Control => bidirectional */
 		dev->epmaxpacketout[b] = ep_wMaxPacketSize;
 		dev->epmaxpacketin[b] = ep_wMaxPacketSize;
+#ifdef XHCI_DEBUG
 		prn_string("\n  	no "); prn_dword(b);
 		prn_string("  	##Control EP epmaxpacketout/in "); prn_dword(dev->epmaxpacketout[b]);
 		prn_string("  	##Control EP epmaxpacketin "); prn_dword(dev->epmaxpacketin[b]);
+#endif
 	} else {
 		if ((ep->bEndpointAddress & 0x80) == 0) {
 			/* OUT Endpoint */
 			if (ep_wMaxPacketSize > dev->epmaxpacketout[b]) {
 				dev->epmaxpacketout[b] = ep_wMaxPacketSize;
+#ifdef XHCI_DEBUG
 				prn_string("\n  	no "); prn_dword(b);
 				prn_string("  	##Control EP epmaxpacketout "); prn_dword(dev->epmaxpacketout[b]);
-
+#endif
 			}
 		} else {
 			/* IN Endpoint */
 			if (ep_wMaxPacketSize > dev->epmaxpacketin[b]) {
 				dev->epmaxpacketin[b] = ep_wMaxPacketSize;
+#ifdef XHCI_DEBUG
 				prn_string("\n  	no "); prn_dword(b);
 				prn_string("  	##Control EP epmaxpacketin "); prn_dword(dev->epmaxpacketin[b]);
+#endif
 			}
 		} /* if out */
 	} /* if control */
@@ -744,11 +794,13 @@ void usb_set_maxpacket_ep(usb_device *dev, int if_idx, int ep_idx)
 int usb_set_maxpacket(usb_device *dev)
 {
 	int i, ii;
-	
+#ifdef XHCI_DEBUG	
 	prn_string("\n  	config.desc.bNumInterfaces "); prn_dword(dev->config.desc.bNumInterfaces);
-	
+#endif	
 	for (i = 0; i < g_io_buf.usb.xhci.udev.config.desc.bNumInterfaces; i++) {
+#ifdef XHCI_DEBUG
 		prn_string("\n  	config.if_desc[i].desc.bNumEndpoints "); prn_dword(dev->config.if_desc[i].desc.bNumEndpoints);
+#endif
 		for (ii = 0; ii < dev->config.if_desc[i].desc.bNumEndpoints; ii++)
 			usb_set_maxpacket_ep(dev, i, ii);
 	}
@@ -760,20 +812,24 @@ int configure_endpoints(int slot_id, int ctx_change)
 {
 	struct xhci_container_ctx *in_ctx;
 	struct xhci_virt_device *virt_dev;
-	
+#ifdef XHCI_DEBUG	
 	union xhci_trb *pevent;
+#endif
 
 	virt_dev = g_io_buf.usb.xhci.devs[slot_id];
 	in_ctx = virt_dev->in_ctx;
 
 	queue_command(in_ctx->bytes, slot_id, 0, ctx_change ? TRB_EVAL_CONTEXT : TRB_CONFIG_EP);
+#ifdef XHCI_DEBUG
 	pevent = wait_for_event(TRB_COMPLETION);
 
 	prn_string("\n  	*TRB_TO_SLOT_ID "); prn_dword(TRB_TO_SLOT_ID(pevent->event_cmd.flags));
 	if (GET_COMP_CODE(pevent->event_cmd.status) != 1) {
 		prn_string("\n!!!!!GET_COMP_CODE!!!!! "); prn_dword(GET_COMP_CODE(pevent->event_cmd.status));
 	}
-
+#else
+	wait_for_event(TRB_COMPLETION);
+#endif
 	//switch (GET_COMP_CODE(le32_to_cpu(event->event_cmd.status))) {
 	//case COMP_SUCCESS:
 	//	debug("Successful %s command\n",
@@ -1066,8 +1122,10 @@ int set_configuration(usb_device *dev, int slot_id)
 	for (cur_ep = 0; cur_ep < num_of_ep; cur_ep++) { 
 		ep_flag = xhci_get_ep_index(&ifdesc->ep_desc[cur_ep]);
 		ctrl_ctx->add_flags |= (1 << (ep_flag + 1));
+#ifdef XHCI_DEBUG
 		prn_string("\n  	cur_ep "); prn_dword(cur_ep);
 		prn_string("  	ep_flag "); prn_dword(ep_flag);
+#endif
 		if (max_ep_flag < ep_flag)
 			max_ep_flag = ep_flag;
 	}
@@ -1163,10 +1221,12 @@ int set_configuration(usb_device *dev, int slot_id)
 		if (usb_endpoint_xfer_control(endpt_desc))
 			avg_trb_len = 8;
 		ep_ctx[ep_index]->tx_info = EP_MAX_ESIT_PAYLOAD_LO(max_esit_payload) | EP_AVG_TRB_LENGTH(avg_trb_len);
+#ifdef XHCI_DEBUG
 		prn_string("\n  	ep_index "); prn_dword(ep_index);
 		prn_string("  	ep_info "); prn_dword(ep_ctx[ep_index]->ep_info);
 		prn_string("  	ep_info2 "); prn_dword(ep_ctx[ep_index]->ep_info2);
 		prn_string("  	tx_info "); prn_dword(ep_ctx[ep_index]->tx_info);
+#endif
 		
 	}
 	#endif
@@ -1189,8 +1249,10 @@ void ctrl_tx(struct devrequest *req, int length, void *buffer, u32 pipe)
 	
 	ep_index = usb_pipe_ep_index(pipe);
 	//prn_string("\n  g_io_buf.usb.xhci.devs[1]->eps[ep_index].ring "); prn_dword(g_io_buf.usb.xhci.devs[1]->eps[ep_index].ring);
+#ifdef XHCI_DEBUG
 	prn_string("\n  	*pipe "); prn_dword(pipe);
 	prn_string("  	*ep_index "); prn_dword(ep_index);
+#endif
 	ep_ring = g_io_buf.usb.xhci.devs[1]->eps[ep_index].ring;
 	//ep_ctx = g_io_buf.usb.xhci.devs[1]->out_ctx->bytes + CTX_SIZE(g_io_buf.usb.xhci.hccr->cr_hccparams);
 	if (length > 0) 
@@ -1262,9 +1324,10 @@ void ctrl_tx(struct devrequest *req, int length, void *buffer, u32 pipe)
 	giveback_first_trb(ep_index, start_cycle, start_trb);
 
 	pevent = wait_for_event(TRB_TRANSFER);
+#ifdef XHCI_DEBUG
 	if (!pevent)
 		prn_string("\n  XXXwait_for_event err ");
-		
+#endif		
 	field = EVENT_TRB_LEN(pevent->trans_event.transfer_len);
 	if (field)
 		g_io_buf.usb.xhci.udev.act_len = length - field;
@@ -1279,10 +1342,14 @@ void ctrl_tx(struct devrequest *req, int length, void *buffer, u32 pipe)
 	
 	if (GET_COMP_CODE(pevent->trans_event.transfer_len) == COMP_SHORT_TX) {
 		/* Short data stage, clear up additional status stage event */
+#ifdef XHCI_DEBUG
 		prn_string("  	GET_COMP_CODE "); prn_dword(GET_COMP_CODE(pevent->trans_event.transfer_len));
+#endif
 		pevent = wait_for_event(TRB_TRANSFER);
+#ifdef XHCI_DEBUG
 		if (!pevent)
 			prn_string("\n  XXXwait_for_event err ");
+#endif
 			//goto abort;
 		//BUG_ON(TRB_TO_SLOT_ID(field) != slot_id);
 		//BUG_ON(TRB_TO_EP_INDEX(field) != ep_index);
@@ -1408,10 +1475,7 @@ int bulk_tx(u32 pipe, int length, void *buffer)
 		else
 			remainder = 0;//xhci_v1_0_td_remainder(running_total, trb_buff_len, total_packet_count, maxpacketsize, num_trbs - 1);
 
-		length_field = ((trb_buff_len & TRB_LEN_MASK) |
-				remainder |
-				((0 & TRB_INTR_TARGET_MASK) <<
-				TRB_INTR_TARGET_SHIFT));
+		length_field = ((trb_buff_len & TRB_LEN_MASK) | remainder | ((0 & TRB_INTR_TARGET_MASK) << TRB_INTR_TARGET_SHIFT));
 
 		trb_fields[0] = addr;
 		trb_fields[1] = addr >> 32;
@@ -1478,14 +1542,19 @@ void usb_string(int j, char *buf, int size)
 
 	
 	if (g_io_buf.usb.xhci.udev.string_langid == 0) {
+#ifdef XHCI_DEBUG
 		prn_string("\n    **<usb_get_string langid>**");
+#endif
 		USB_vendorCmd(USB_DIR_IN, USB_REQ_GET_DESCRIPTOR, 0x300, 0, 0xff);
 		g_io_buf.usb.xhci.udev.string_langid = (g_io_buf.usb.cmd_buf[3]<<8)|g_io_buf.usb.cmd_buf[2];
+#ifdef XHCI_DEBUG
 		prn_string("\n    g_io_buf.usb.cmd_buf[0] "); prn_dword(g_io_buf.usb.cmd_buf[0]);
 		prn_string("\n    language ID "); prn_dword(g_io_buf.usb.xhci.udev.string_langid);
+#endif
 	}
-	
+#ifdef XHCI_DEBUG	
 	prn_string("\n    **<usb_get_string>**");
+#endif
 	USB_vendorCmd(USB_DIR_IN, USB_REQ_GET_DESCRIPTOR, 0x300 + j, g_io_buf.usb.xhci.udev.string_langid, 0xff);
 
 	err = 0xff - g_io_buf.usb.xhci.udev.act_len;
@@ -1601,6 +1670,60 @@ void stor_BBB_transport(u32 datalen, u32 cmdlen, u8 dir_in, u8 *buf)
 		
 	//return result;
 }
+//xhci_alloc_device
+void xhci_alloc_device(void)
+{
+	union xhci_trb *event; 
+	
+	queue_command(NULL, 0, 0, TRB_ENABLE_SLOT);	
+	event = wait_for_event(TRB_COMPLETION);
+	if (GET_COMP_CODE(event->event_cmd.status) != 1) {
+#ifdef XHCI_DEBUG
+		prn_string("\n!!!!!GET_COMP_CODE!!!!! "); prn_dword(GET_COMP_CODE(event->event_cmd.status));
+#endif
+	}	
+	g_io_buf.usb.xhci.udev.slot_id = TRB_TO_SLOT_ID(event->event_cmd.flags);
+			
+	acknowledge_event();
+        
+//xhci_alloc_virt_device
+        memset32((u32 *)&g_io_buf.usb.xhci.pdevs, 0, sizeof(g_io_buf.usb.xhci.pdevs));
+        //out ctx
+#ifdef XHCI_DEBUG
+        prn_string("\n  slot id "); prn_dword(g_io_buf.usb.xhci.udev.slot_id);
+#endif
+        g_io_buf.usb.xhci.pout_ctx.type = (int)XHCI_CTX_TYPE_DEVICE;
+        g_io_buf.usb.xhci.pout_ctx.size = (MAX_EP_CTX_NUM + 1) *
+					    CTX_SIZE(g_io_buf.usb.xhci.hccr->cr_hccparams);        
+        g_io_buf.usb.xhci.pout_ctx.bytes = g_io_buf.usb.xhci.poutbyte;//???
+        g_io_buf.usb.xhci.pdevs.out_ctx = &g_io_buf.usb.xhci.pout_ctx;
+        //in ctx
+        g_io_buf.usb.xhci.pin_ctx.type = (int)XHCI_CTX_TYPE_INPUT;
+        g_io_buf.usb.xhci.pin_ctx.size = (MAX_EP_CTX_NUM + 1) *
+					    CTX_SIZE(g_io_buf.usb.xhci.hccr->cr_hccparams);
+	g_io_buf.usb.xhci.pin_ctx.bytes = g_io_buf.usb.xhci.pinbyte;//???
+        g_io_buf.usb.xhci.pdevs.in_ctx = &g_io_buf.usb.xhci.pin_ctx;
+        //
+        g_io_buf.usb.xhci.pdevs.eps[0].ring = xhci_ring_alloc(1, 0);
+        //prn_string("\n  g_io_buf.usb.xhci.pdevs.eps[0].ring "); prn_dword(g_io_buf.usb.xhci.pdevs.eps[0].ring);
+	//prn_string("\n  g_io_buf.usb.xhci.pdevs.eps[0].ring.enq_seg "); prn_dword(g_io_buf.usb.xhci.pdevs.eps[0].ring->enq_seg);	
+	//prn_string("\n  trb start "); prn_dword(&g_io_buf.usb.xhci.pep0trb[0]);
+	//prn_string("\n  trb end "); prn_dword(&g_io_buf.usb.xhci.pep0trb[TRBS_PER_SEGMENT-1]);
+	//prn_string("\n  eps[0].ring.first_seg->trbs[0].link.control "); prn_dword(g_io_buf.usb.xhci.pdevs.eps[0].ring->first_seg->trbs[0].link.control);
+	//prn_string("\n  eps[0].ring.first_seg->trbs[TRBS_PER_SEGMENT-1].link.control "); prn_dword(g_io_buf.usb.xhci.pdevs.eps[0].ring->first_seg->trbs[TRBS_PER_SEGMENT-1].link.control);
+	//prn_string("\n  eps[0].ring.first_seg->trbs[TRBS_PER_SEGMENT-1] "); prn_dword(&g_io_buf.usb.xhci.pdevs.eps[0].ring->first_seg->trbs[TRBS_PER_SEGMENT-1]);
+	//prn_string("\n  g_io_buf.usb.xhci.pdevs.eps[0].ring.enqueue "); prn_dword(g_io_buf.usb.xhci.pdevs.eps[0].ring->enqueue);
+        
+        g_io_buf.usb.xhci.devs[g_io_buf.usb.xhci.udev.slot_id] = &g_io_buf.usb.xhci.pdevs;
+        //prn_string("\n  g_io_buf.usb.xhci.devs[slot_id] "); prn_dword(g_io_buf.usb.xhci.devs[g_io_buf.usb.xhci.udev.slot_id]);
+        //prn_string("\n  g_io_buf.usb.xhci.devs[slot_id]->out_ctx->type "); prn_dword(g_io_buf.usb.xhci.devs[g_io_buf.usb.xhci.udev.slot_id]->out_ctx->type);
+        //prn_string("\n  g_io_buf.usb.xhci.devs[slot_id]->out_ctx->size "); prn_dword(g_io_buf.usb.xhci.devs[g_io_buf.usb.xhci.udev.slot_id]->out_ctx->size);
+        //prn_string("\n  g_io_buf.usb.xhci.devs[slot_id]->out_ctx->bytes "); prn_dword(g_io_buf.usb.xhci.devs[g_io_buf.usb.xhci.udev.slot_id]->out_ctx->bytes);
+        //prn_string("\n  g_io_buf.usb.xhci.devs[slot_id]->in_ctx->type "); prn_dword(g_io_buf.usb.xhci.devs[g_io_buf.usb.xhci.udev.slot_id]->in_ctx->type);
+        //prn_string("\n  g_io_buf.usb.xhci.devs[slot_id]->in_ctx->size "); prn_dword(g_io_buf.usb.xhci.devs[g_io_buf.usb.xhci.udev.slot_id]->in_ctx->size);
+        //prn_string("\n  g_io_buf.usb.xhci.devs[slot_id]->in_ctx->bytes "); prn_dword(g_io_buf.usb.xhci.devs[g_io_buf.usb.xhci.udev.slot_id]->in_ctx->bytes);
+        g_io_buf.usb.xhci.dcbaa->dev_context_ptrs[g_io_buf.usb.xhci.udev.slot_id] = (intptr_t)g_io_buf.usb.xhci.devs[g_io_buf.usb.xhci.udev.slot_id]->out_ctx->bytes;
+}
 
 void USB_vendorCmd(u8 bReq, u8 bCmd, u16 wValue, u16 wIndex, u16 wLen)
 {
@@ -1618,12 +1741,19 @@ void USB_vendorCmd(u8 bReq, u8 bCmd, u16 wValue, u16 wIndex, u16 wLen)
 	else 
 		pipe = usb_sndctrlpipe(&g_io_buf.usb.xhci.udev, 0);
 	
+	if ((bCmd == USB_REQ_SET_ADDRESS) && (bReq == 0)){
+		set_address(g_io_buf.usb.xhci.udev.slot_id);
+		return;
+	}
 	if (bCmd == USB_REQ_SET_CONFIGURATION)
 		set_configuration(&g_io_buf.usb.xhci.udev, g_io_buf.usb.xhci.udev.slot_id);
 	memset(g_io_buf.usb.cmd_buf, 0, 1024);
 	ctrl_tx(&psetup_packet, psetup_packet.length, g_io_buf.usb.cmd_buf, pipe);
-	if (g_io_buf.usb.xhci.udev.act_len != psetup_packet.length)
+#ifdef XHCI_DEBUG
+	if (g_io_buf.usb.xhci.udev.act_len != psetup_packet.length) {
 		prn_string("\n!!!!!usb_get_configuration_len != length!!!!!");
+	}
+#endif
 }
 
 int usb_init(int port, int next_port_in_hub)
@@ -1631,7 +1761,6 @@ int usb_init(int port, int next_port_in_hub)
 	UINT32 tmp1, tmp2, tmp3;
         struct dwc3 *dwc3_reg;	
 	u64 trb_64, val_64;
-	union xhci_trb *event;
 	
 	CSTAMP(0xE5B00000);
 	dbg();
@@ -1642,12 +1771,11 @@ int usb_init(int port, int next_port_in_hub)
 #ifndef XHCI_DEBUG
 //tryagain:
 #endif
+	prn_string("\nxboot usb_init \n");
 	CSTAMP(0xE5B00001);
 	uphy_init();	
-        prn_string("uphy_init \n");
 	CSTAMP(0xE5B00002);
-	usb_power_init();
-        prn_string("usb_power_init \n"); 
+	usb_power_init(); 
                 
 	// xhci register base
 	//g_io_buf.usb.ehci.ehci_hcd_regs = port ? EHCI1_REG : EHCI0_REG;
@@ -1655,26 +1783,12 @@ int usb_init(int port, int next_port_in_hub)
 	g_io_buf.usb.xhci.hcor = (struct xhci_hcor *)((char *)g_io_buf.usb.xhci.hccr +
 				  HC_LENGTH(g_io_buf.usb.xhci.hccr->cr_capbase));
         dwc3_reg = (struct dwc3 *)((char *)(g_io_buf.usb.xhci.hccr) + DWC3_REG_OFFSET);
+#ifdef XHCI_DEBUG
         prn_string("\n#hccr "); prn_dword((intptr_t)g_io_buf.usb.xhci.hccr);
         prn_string("#hcor "); prn_dword((intptr_t)g_io_buf.usb.xhci.hcor);
         prn_string("#dwc3_reg "); prn_dword((intptr_t)dwc3_reg);
         prn_string("g_io_buf.usb.xhci.hccr->cr_capbase "); prn_dword((u64)g_io_buf.usb.xhci.hccr->cr_capbase);
-	/*Enable ehci test*/
-#if 0
-	{
-		u32 reg_tmp;
-		reg_tmp = EHCI_PORTSC;
-		reg_tmp &= (7<<16);
-		reg_tmp |= (4<<16);
-		EHCI_PORTSC = reg_tmp;
-
-		prn_dword(EHCI_PORTSC);
-		prn_dword(reg_tmp);
-		prn_string("Test mode \n"); 
-		while(1);
-	}
 #endif
-
 	CSTAMP(0xE5B00003);
 // init DWC3
 	tmp1 = dwc3_reg->g_usb2phycfg[0];
@@ -1683,10 +1797,12 @@ int usb_init(int port, int next_port_in_hub)
 	tmp1 &= ~DWC3_GUSB2PHYCFG_USBTRDTIM_MASK;
 	tmp1 |= DWC3_GUSB2PHYCFG_USBTRDTIM_16BIT;
 	dwc3_reg->g_usb2phycfg[0] = tmp1;
+#ifdef XHCI_DEBUG
 	prn_string("dwc3_reg->g_usb2phycfg "); prn_dword(dwc3_reg->g_usb2phycfg[0]);
 //dwc3_core_init
 	//prn_string("\ndwc3_reg->g_snpsid "); prn_dword(dwc3_reg->g_snpsid);
 	prn_string("\ndwc3 reset");
+#endif
 	dwc3_reg->g_ctl |= DWC3_GCTL_CORESOFTRESET; 
 	dwc3_reg->g_usb3pipectl[0] |= DWC3_GUSB3PIPECTL_PHYSOFTRST;
 	dwc3_reg->g_usb2phycfg[0] |= DWC3_GUSB2PHYCFG_PHYSOFTRST;
@@ -1710,17 +1826,22 @@ int usb_init(int port, int next_port_in_hub)
 	dwc3_reg->g_ctl = tmp2;
 	//prn_string("\ndwc3 reset end\n");
 //set dr mode
-	prn_string("\nset dr mode "); prn_dword(dwc3_reg->g_ctl);
 	dwc3_reg->g_ctl &= ~DWC3_GCTL_PRTCAPDIR(DWC3_GCTL_PRTCAP_OTG);
 	dwc3_reg->g_ctl |= DWC3_GCTL_PRTCAPDIR(DWC3_GCTL_PRTCAP_HOST);
+#ifdef XHCI_DEBUG
 	prn_string("set dr mode end "); prn_dword(dwc3_reg->g_ctl);
+#endif
 //xhci reset
+#ifdef XHCI_DEBUG
 	prn_string("\nxhci reset");
+#endif
 	tmp1 = g_io_buf.usb.xhci.hcor->or_usbsts & STS_HALT;
 	if (!tmp1) {
 		tmp1 = g_io_buf.usb.xhci.hcor->or_usbcmd;
 		tmp1 &= ~CMD_RUN;
+#ifdef XHCI_DEBUG
 		prn_string("\n		or_usbcmd "); prn_dword(tmp1);
+#endif
 		g_io_buf.usb.xhci.hcor->or_usbcmd = tmp1;
 	}
 //handshake
@@ -1745,7 +1866,9 @@ int usb_init(int port, int next_port_in_hub)
 	tmp2 = g_io_buf.usb.xhci.hcor->or_config;
 	tmp1 |= (tmp2 & ~HCS_SLOTS_MASK);
 	g_io_buf.usb.xhci.hcor->or_config = tmp1;
+#ifdef XHCI_DEBUG
 	prn_string("\n  or_config "); prn_dword(g_io_buf.usb.xhci.hcor->or_config);
+#endif
 	//xhci_mem_init	
 	g_io_buf.usb.xhci.dcbaa = (struct xhci_device_context_array *) g_io_buf.usb.xhci.dev_context_ptrs;
 	g_io_buf.usb.xhci.hcor->or_dcbaap = (intptr_t)g_io_buf.usb.xhci.dev_context_ptrs;
@@ -1770,16 +1893,22 @@ int usb_init(int port, int next_port_in_hub)
 	tmp1 = g_io_buf.usb.xhci.hccr->cr_dboff;
 	tmp1 &= DBOFF_MASK;
 	g_io_buf.usb.xhci.dba = (struct xhci_doorbell_array *)((char *)g_io_buf.usb.xhci.hccr + tmp1);
+#ifdef XHCI_DEBUG
 	prn_string("\n#g_io_buf.usb.xhci.dba "); prn_dword((intptr_t)g_io_buf.usb.xhci.dba);
+#endif
 	
 	// write the address of runtime register 
 	tmp1 = g_io_buf.usb.xhci.hccr->cr_rtsoff;
 	tmp1 &= RTSOFF_MASK;
 	g_io_buf.usb.xhci.run_regs = (struct xhci_run_regs *)((char *)g_io_buf.usb.xhci.hccr + tmp1);
+#ifdef XHCI_DEBUG
 	prn_string("#g_io_buf.usb.xhci.run_regs "); prn_dword((intptr_t)g_io_buf.usb.xhci.run_regs);
+#endif
 	// writting the address of ir_set structure 
 	g_io_buf.usb.xhci.ir_set = &g_io_buf.usb.xhci.run_regs->ir_set[0];
+#ifdef XHCI_DEBUG
 	prn_string("#g_io_buf.usb.xhci.ir_set "); prn_dword((intptr_t)g_io_buf.usb.xhci.ir_set);
+#endif
 
 
 	// Event ring does not maintain link TRB 
@@ -1844,10 +1973,13 @@ int usb_init(int port, int next_port_in_hub)
 // xhci_scratchpad_alloc
 	//u32 num_sp;
 	val_64 = HCS_MAX_SCRATCHPAD(g_io_buf.usb.xhci.hccr->cr_hcsparams2);
+#ifdef XHCI_DEBUG
 	prn_string("\n  #num_sp "); prn_dword(val_64);
-	
+#endif
 	tmp1 = g_io_buf.usb.xhci.hcor->or_pagesize & 0xffff;
+#ifdef XHCI_DEBUG
 	prn_string("  #hcor->or_pagesize "); prn_dword(g_io_buf.usb.xhci.hcor->or_pagesize);
+#endif
 	for (tmp2 = 0; tmp2 < 16; tmp2++) {
 		if ((0x1 & tmp1) != 0)
 			break;
@@ -1886,7 +2018,9 @@ int usb_init(int port, int next_port_in_hub)
 						
 	// Port Indicators ????
 	tmp1 = g_io_buf.usb.xhci.hccr->cr_hccparams;
+#ifdef XHCI_DEBUG
 	prn_string("\n  #hccr->cr_hccparams "); prn_dword(tmp1);
+#endif
 	//if (HCS_INDICATOR(tmp1))
 	//	put_unaligned(get_unaligned(&descriptor.hub.wHubCharacteristics)
 	//			| 0x80, &descriptor.hub.wHubCharacteristics);
@@ -1901,7 +2035,9 @@ int usb_init(int port, int next_port_in_hub)
 	//	xhci_reset(hcor);
 	//	return -ENODEV;
 	//}
+#ifdef XHCI_DEBUG
 	prn_string("\n**<xhci_start>**");
+#endif
 	tmp1 = g_io_buf.usb.xhci.hcor->or_usbcmd;
 	tmp1 |= (CMD_RUN);
 	g_io_buf.usb.xhci.hcor->or_usbcmd = tmp1;
@@ -1919,7 +2055,9 @@ int usb_init(int port, int next_port_in_hub)
 	tmp3 = 0;
 	do
 	{
+#ifdef XHCI_DEBUG
 		prn_string("\n**<hub port power on 1/2>**");
+#endif
 		#if 0
 		for (trb_64 = 0; trb_64 < 2; trb_64++) {
  			tmp1 = g_io_buf.usb.xhci.hcor->portregs[trb_64].or_portsc;
@@ -1932,7 +2070,9 @@ int usb_init(int port, int next_port_in_hub)
 		}
 		#endif
 		for (trb_64 = 0; trb_64 < 2; trb_64++) {
-			prn_string("\n    port "); prn_dword((intptr_t)&g_io_buf.usb.xhci.hcor->portregs[trb_64]);					
+#ifdef XHCI_DEBUG
+			prn_string("\n    port "); prn_dword((intptr_t)&g_io_buf.usb.xhci.hcor->portregs[trb_64]);
+#endif					
 			tmp1 = g_io_buf.usb.xhci.hcor->portregs[trb_64].or_portsc;
 			tmp1 = (tmp1 & XHCI_PORT_RO) | (tmp1 & XHCI_PORT_RWS);
 			tmp1 |= PORT_POWER;
@@ -2010,74 +2150,43 @@ int usb_init(int port, int next_port_in_hub)
 	tmp2 |= PORT_RC;
 	g_io_buf.usb.xhci.hcor->portregs[trb_64].or_portsc = tmp2;
 	//prn_string("\n port 1 Reset the port end "); prn_dword(g_io_buf.usb.xhci.hcor->portregs[0].or_portsc);
+#ifdef XHCI_DEBUG
 	prn_string("\n**<port 1/2 Reset the port end**> "); prn_dword(tmp1);
+#endif
 	g_io_buf.usb.xhci.udev.portnr = trb_64 + 1;
 	switch (tmp1 & DEV_SPEED_MASK) {
 		case XDEV_HS:
 			g_io_buf.usb.xhci.udev.speed = USB_SPEED_HIGH;
+			prn_string("\n#####HIGH speed "); 
 			break;
 		case XDEV_SS:
 			g_io_buf.usb.xhci.udev.speed = USB_SPEED_SUPER;
+			prn_string("\n#####SUPER speed ");
+			break;
+		default:
+			prn_string("\n#####UNKNOWN speed ");
 			break;
 	}
-	prn_string("#####speed "); prn_dword(g_io_buf.usb.xhci.udev.speed);
+	prn_dword(g_io_buf.usb.xhci.udev.speed);
 	prn_string("#####portnr "); prn_dword(g_io_buf.usb.xhci.udev.portnr);
 //_xhci_alloc_device
+#ifdef XHCI_DEBUG
 	prn_string("\n**<alloc_device>**");
-	queue_command(NULL, 0, 0, TRB_ENABLE_SLOT);	
-	event = wait_for_event(TRB_COMPLETION);
-	if (GET_COMP_CODE(event->event_cmd.status) != 1) {
-		prn_string("\n!!!!!GET_COMP_CODE!!!!! "); prn_dword(GET_COMP_CODE(event->event_cmd.status));
-	}	
-	g_io_buf.usb.xhci.udev.slot_id = TRB_TO_SLOT_ID(event->event_cmd.flags);
-			
-	acknowledge_event();
-        
-//xhci_alloc_virt_device
-        memset32((u32 *)&g_io_buf.usb.xhci.pdevs, 0, sizeof(g_io_buf.usb.xhci.pdevs));
-        //out ctx
-        prn_string("\n  slot id "); prn_dword(g_io_buf.usb.xhci.udev.slot_id);
-        g_io_buf.usb.xhci.pout_ctx.type = (int)XHCI_CTX_TYPE_DEVICE;
-        g_io_buf.usb.xhci.pout_ctx.size = (MAX_EP_CTX_NUM + 1) *
-					    CTX_SIZE(g_io_buf.usb.xhci.hccr->cr_hccparams);        
-        g_io_buf.usb.xhci.pout_ctx.bytes = g_io_buf.usb.xhci.poutbyte;//???
-        g_io_buf.usb.xhci.pdevs.out_ctx = &g_io_buf.usb.xhci.pout_ctx;
-        //in ctx
-        g_io_buf.usb.xhci.pin_ctx.type = (int)XHCI_CTX_TYPE_INPUT;
-        g_io_buf.usb.xhci.pin_ctx.size = (MAX_EP_CTX_NUM + 1) *
-					    CTX_SIZE(g_io_buf.usb.xhci.hccr->cr_hccparams);
-	g_io_buf.usb.xhci.pin_ctx.bytes = g_io_buf.usb.xhci.pinbyte;//???
-        g_io_buf.usb.xhci.pdevs.in_ctx = &g_io_buf.usb.xhci.pin_ctx;
-        //
-        g_io_buf.usb.xhci.pdevs.eps[0].ring = xhci_ring_alloc(1, 0);
-        //prn_string("\n  g_io_buf.usb.xhci.pdevs.eps[0].ring "); prn_dword(g_io_buf.usb.xhci.pdevs.eps[0].ring);
-	//prn_string("\n  g_io_buf.usb.xhci.pdevs.eps[0].ring.enq_seg "); prn_dword(g_io_buf.usb.xhci.pdevs.eps[0].ring->enq_seg);	
-	//prn_string("\n  trb start "); prn_dword(&g_io_buf.usb.xhci.pep0trb[0]);
-	//prn_string("\n  trb end "); prn_dword(&g_io_buf.usb.xhci.pep0trb[TRBS_PER_SEGMENT-1]);
-	//prn_string("\n  eps[0].ring.first_seg->trbs[0].link.control "); prn_dword(g_io_buf.usb.xhci.pdevs.eps[0].ring->first_seg->trbs[0].link.control);
-	//prn_string("\n  eps[0].ring.first_seg->trbs[TRBS_PER_SEGMENT-1].link.control "); prn_dword(g_io_buf.usb.xhci.pdevs.eps[0].ring->first_seg->trbs[TRBS_PER_SEGMENT-1].link.control);
-	//prn_string("\n  eps[0].ring.first_seg->trbs[TRBS_PER_SEGMENT-1] "); prn_dword(&g_io_buf.usb.xhci.pdevs.eps[0].ring->first_seg->trbs[TRBS_PER_SEGMENT-1]);
-	//prn_string("\n  g_io_buf.usb.xhci.pdevs.eps[0].ring.enqueue "); prn_dword(g_io_buf.usb.xhci.pdevs.eps[0].ring->enqueue);
-        
-        g_io_buf.usb.xhci.devs[g_io_buf.usb.xhci.udev.slot_id] = &g_io_buf.usb.xhci.pdevs;
-        //prn_string("\n  g_io_buf.usb.xhci.devs[slot_id] "); prn_dword(g_io_buf.usb.xhci.devs[g_io_buf.usb.xhci.udev.slot_id]);
-        //prn_string("\n  g_io_buf.usb.xhci.devs[slot_id]->out_ctx->type "); prn_dword(g_io_buf.usb.xhci.devs[g_io_buf.usb.xhci.udev.slot_id]->out_ctx->type);
-        //prn_string("\n  g_io_buf.usb.xhci.devs[slot_id]->out_ctx->size "); prn_dword(g_io_buf.usb.xhci.devs[g_io_buf.usb.xhci.udev.slot_id]->out_ctx->size);
-        //prn_string("\n  g_io_buf.usb.xhci.devs[slot_id]->out_ctx->bytes "); prn_dword(g_io_buf.usb.xhci.devs[g_io_buf.usb.xhci.udev.slot_id]->out_ctx->bytes);
-        //prn_string("\n  g_io_buf.usb.xhci.devs[slot_id]->in_ctx->type "); prn_dword(g_io_buf.usb.xhci.devs[g_io_buf.usb.xhci.udev.slot_id]->in_ctx->type);
-        //prn_string("\n  g_io_buf.usb.xhci.devs[slot_id]->in_ctx->size "); prn_dword(g_io_buf.usb.xhci.devs[g_io_buf.usb.xhci.udev.slot_id]->in_ctx->size);
-        //prn_string("\n  g_io_buf.usb.xhci.devs[slot_id]->in_ctx->bytes "); prn_dword(g_io_buf.usb.xhci.devs[g_io_buf.usb.xhci.udev.slot_id]->in_ctx->bytes);
-        g_io_buf.usb.xhci.dcbaa->dev_context_ptrs[g_io_buf.usb.xhci.udev.slot_id] = (intptr_t)g_io_buf.usb.xhci.devs[g_io_buf.usb.xhci.udev.slot_id]->out_ctx->bytes;
+#endif
+	xhci_alloc_device();
 //usb_setup_descriptor
 	g_io_buf.usb.xhci.udev.maxpacketsize = 3;//PACKET_SIZE_64;
 	g_io_buf.usb.xhci.udev.epmaxpacketin[0] = 64;
 	g_io_buf.usb.xhci.udev.epmaxpacketout[0] = 64;	
 //set address    set_address(void)
+#ifdef XHCI_DEBUG
         prn_string("\n**<set address>**");
-        set_address(g_io_buf.usb.xhci.udev.slot_id);
-	
+#endif
+	USB_vendorCmd(0, USB_REQ_SET_ADDRESS, 2, 0, 0);
 //get_descriptor_len
+#ifdef XHCI_DEBUG
 	prn_string("\n**<get_descriptor_len>**");
+#endif
 	//xhci_ctrl_tx
 	//pUSB_DevDesc pDev = (pUSB_DevDesc)(USB_dataBuf);
 	USB_vendorCmd(USB_DIR_IN, USB_REQ_GET_DESCRIPTOR, DESC_DEVICE, 0, 0x12);	
@@ -2090,7 +2199,9 @@ int usb_init(int port, int next_port_in_hub)
 	//prn_string("\n    pDev.bcdDevice "); prn_dword(pDev->bcdDevice);
 	_delay_1ms(1);
 //usb_get_configuration_len
-	prn_string("\n**<usb_get_configuration_len>**");	
+#ifdef XHCI_DEBUG
+	prn_string("\n**<usb_get_configuration_len>**");
+#endif	
 	pUSB_CfgDesc pCfg = (pUSB_CfgDesc)(USB_dataBuf);
 	
 	USB_vendorCmd(USB_DIR_IN, USB_REQ_GET_DESCRIPTOR, DESC_CONFIGURATION, 0, 0x9);
@@ -2100,7 +2211,9 @@ int usb_init(int port, int next_port_in_hub)
 	//prn_string("\n    pCfg->wLength "); prn_dword(pCfg->wLength);
 	
 //usb_get_configuration_no
+#ifdef XHCI_DEBUG
 	prn_string("\n**<usb_get_configuration_no>**");	
+#endif
 	//pUSB_CfgDesc pCfg = (pUSB_CfgDesc)(USB_dataBuf);
 	USB_vendorCmd(USB_DIR_IN, USB_REQ_GET_DESCRIPTOR, DESC_CONFIGURATION, 0, pCfg->wLength);
 	
@@ -2142,33 +2255,45 @@ int usb_init(int port, int next_port_in_hub)
 	prn_string("\n    pCfg->bEndpointAddress "); prn_dword(pCfg->wLength & 0xff);
 #endif
 //xhci_set_configuration
+#ifdef XHCI_DEBUG
 	prn_string("\n**<set_configuration>**");
+#endif
 	USB_vendorCmd(0, USB_REQ_SET_CONFIGURATION, 0x1, 0, 0);	
 	_delay_1ms(10);
 //usb_string
-	prn_string("\n**<usb_string>**");	
+#ifdef XHCI_DEBUG
+	prn_string("\n**<usb_string>**");
+#endif	
 	g_io_buf.usb.xhci.udev.string_langid = 0;
 	usb_string(1, g_io_buf.usb.xhci.udev.mf, sizeof(g_io_buf.usb.xhci.udev.mf));
 	usb_string(2, g_io_buf.usb.xhci.udev.prod, sizeof(g_io_buf.usb.xhci.udev.prod));
 	usb_string(3, g_io_buf.usb.xhci.udev.serial, sizeof(g_io_buf.usb.xhci.udev.serial));
-	prn_string("\n  mf     ");prn_string(g_io_buf.usb.xhci.udev.mf);
-	prn_string("\n  prod   ");prn_string(g_io_buf.usb.xhci.udev.prod);
-	prn_string("\n  serial ");prn_string(g_io_buf.usb.xhci.udev.serial);
+	prn_string("\n  mf     "); prn_string(g_io_buf.usb.xhci.udev.mf);
+	prn_string("\n  prod   "); prn_string(g_io_buf.usb.xhci.udev.prod);
+	prn_string("\n  serial "); prn_string(g_io_buf.usb.xhci.udev.serial);
 	
 //usb_get_max_lun
+#ifdef XHCI_DEBUG
 	prn_string("\n**<usb_get_max_lun>**");
+#endif
 	USB_vendorCmd(0xa1, 0xfe, 0, 0, 1);
 	//prn_string("\n  g_io_buf.usb.cmd_buf ");prn_string(g_io_buf.usb.cmd_buf[0]);
 //usb_inquiry
+#ifdef XHCI_DEBUG
 	prn_string("\n**<usb_inquiry>**");
+#endif
 	usb_inquiry();
 //usb_test_unit_ready
+#ifdef XHCI_DEBUG
 	prn_string("\n**<usb_test_unit_ready>**");
+#endif
 	usb_test_unit_ready();	
 //usb_read_capacity
+#ifdef XHCI_DEBUG
 	prn_string("\n**<usb_read_capacity>**");
+#endif
 	usb_read_capacity();
-	prn_string("\n  #####end##### ");	
+	prn_string("\n#####end##### \n");	
 #if 0	
 	// Test Unit Ready
 	tmp2 = 0;
