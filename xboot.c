@@ -390,7 +390,7 @@ static int nor_load_uhdr_image(const char *img_name, void *dst, void *src, int v
 	dbg();
 	// magic check
 	if (!image_check_magic(hdr)) {
-		prn_string("bad mgaic\n");
+		prn_string("bad magic\n");
 		return -1;
 	}
 	// check name
@@ -763,7 +763,7 @@ static int fat_load_uhdr_image(fat_info *finfo, const char *img_name, void *dst,
 
 	/* magic check */
 	if (!image_check_magic(hdr)) {
-		prn_string("bad mgaic\n");
+		prn_string("bad magic\n");
 		return -1;
 	}
 
@@ -1269,7 +1269,7 @@ static int bblk_find_image(int type, const char *name, u8 *dst, u32 blk_off,
 
 		/* magic */
 		if (!image_check_magic(hdr)) {
-			/* prn_string("bad mgaic\n"); */
+			/* prn_string("bad magic\n"); */
 			continue;
 		}
 
