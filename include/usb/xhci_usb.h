@@ -28,7 +28,7 @@
 //#define DWC3_GUSB3PIPECTL_SUSPHY		(1 << 17)
 /* Global Configuration Register */
 //#define DWC3_GCTL_PWRDNSCALE(n)			((n) << 19)
-//#define DWC3_GCTL_U2RSTECN			(1 << 16)
+#define DWC3_GCTL_U2RSTECN			(1 << 16)
 //#define DWC3_GCTL_RAMCLKSEL(x)			(((x) & DWC3_GCTL_CLK_MASK) << 6)
 //#define DWC3_GCTL_CLK_BUS			(0)
 //#define DWC3_GCTL_CLK_PIPE			(1)
@@ -53,6 +53,30 @@
 /* Section 5.3.3 - MaxPorts */
 #define MAX_HC_PORTS            		2//255
 
+/* wPortStatus bits */
+#define USB_PORT_STAT_CONNECTION    0x0001
+#define USB_PORT_STAT_ENABLE        0x0002
+//#define USB_PORT_STAT_SUSPEND       0x0004
+//#define USB_PORT_STAT_OVERCURRENT   0x0008
+//#define USB_PORT_STAT_RESET         0x0010
+//#define USB_PORT_STAT_POWER         0x0100
+//#define USB_PORT_STAT_LOW_SPEED     0x0200
+//#define USB_PORT_STAT_HIGH_SPEED    0x0400	/* support for EHCI */
+//#define USB_PORT_STAT_SUPER_SPEED   0x0600	/* faking support to XHCI */
+/* wPortChange bits */
+#define USB_PORT_STAT_C_CONNECTION  0x0001
+//#define USB_PORT_STAT_C_ENABLE      0x0002
+//#define USB_PORT_STAT_C_SUSPEND     0x0004
+//#define USB_PORT_STAT_C_OVERCURRENT 0x0008
+#define USB_PORT_STAT_C_RESET       0x0010
+
+/*
+ * Changes to wPortChange bit fields in USB 3.0
+ * See USB 3.0 spec Table 10-12
+ */
+//#define USB_SS_PORT_STAT_C_BH_RESET	0x0020
+//#define USB_SS_PORT_STAT_C_LINK_STATE	0x0040
+//#define USB_SS_PORT_STAT_C_CONFIG_ERROR	0x0080
 /*
  * These bits are Read Only (RO) and should be saved and written to the
  * registers: 0, 3, 10:13, 30
@@ -363,7 +387,7 @@ typedef enum {
 
 /* Stop Endpoint TRB - ep_index to endpoint ID for this TRB */
 #define TRB_TO_EP_INDEX(p)		((((p) & (0x1f << 16)) >> 16) - 1)
-//#define	EP_ID_FOR_TRB(p)		((((p) + 1) & 0x1f) << 16)
+#define	EP_ID_FOR_TRB(p)		((((p) + 1) & 0x1f) << 16)
 
 /* Normal TRB fields */
 /* transfer_len bitmasks - bits 0:16 */
@@ -722,6 +746,9 @@ typedef struct {
 
 	/* Maximum packet size; one of: PACKET_SIZE_* */
 	int 	maxpacketsize;
+	/* [0] = IN, [1] = OUT */
+	int     ep_dir[2];
+	int 	lun;
 	/* one bit for each endpoint ([0] = IN, [1] = OUT) */
 	//unsigned int toggle[2];
 	/* endpoint halts; one bit per endpoint # & direction;
@@ -749,6 +776,8 @@ typedef struct {
 	u32 	CBWTag;
 } usb_device;
 ////////////////////////////////////////
+#define USB_RECIP_ENDPOINT    0x02
+
 //#define USB_DIR_OUT			0		/* to device */
 #define USB_DIR_IN			0x80		/* to host */
 
@@ -773,6 +802,7 @@ typedef struct {
 #define CBWFLAGS_OUT			0x00
 #define CBWFLAGS_IN			0x80
 #define CBWSignature                	0x43425355
+#define CSWSignature			0x53425355
 
 #define UMASS_BBB_CBW_SIZE	31
 #define UMASS_BBB_CSW_SIZE	13
@@ -781,7 +811,7 @@ typedef struct {
 #define SCSI_RD_CAPAC		0x25
 #define SCSICMD_READ_10                 0x28
 #define SCSICMD_TEST_UNIT_READY	        0x00
-//#define SCSICMD_REQUEST_SENSE           0x03
+#define SCSICMD_REQUEST_SENSE           0x03
 
 #define DWC3_REG_OFFSET			0xC100
 
