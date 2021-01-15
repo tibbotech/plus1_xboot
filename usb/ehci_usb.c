@@ -527,6 +527,9 @@ found_device_on_port:
 	prn_string("clear feature (C_PORT"); prn_decimal(port_num); prn_string("_RESET) \n");
 	USB_vendorCmd(0x23, USB_REQ_CLEAR_FEATURE, C_PORT_RESET, port_num, 0);
 
+	prn_string("get port "); prn_decimal(port_num); prn_string(" status \n");
+	USB_vendorCmd(0xA3, USB_REQ_GET_STATUS, 0, port_num, 0x04);
+
 	#if 0
 	prn_string("port status :"); prn_dword(pPortsts->wPortStatus);
 	prn_string("port change :"); prn_dword(pPortsts->wPortChange);
