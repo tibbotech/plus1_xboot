@@ -501,7 +501,11 @@ typedef enum {
  * since the command ring is 64-byte aligned.
  * It must also be greater than 16.
  */
+#ifdef CONFIG_HAVE_USB_HUB
+#define TRBS_PER_SEGMENT	4
+#else
 #define TRBS_PER_SEGMENT	8
+#endif
 /* Allow two commands + a link TRB, along with any reserved command TRBs */
 //#define MAX_RSVD_CMD_TRBS	(TRBS_PER_SEGMENT - 3)
 //#define SEGMENT_SIZE		(TRBS_PER_SEGMENT*16)
@@ -654,6 +658,30 @@ typedef struct
 	UINT8 	bMaxPower;
 }  __attribute__ ((packed)) *pUSB_CfgDesc;
 
+// Hub Device descriptor
+typedef struct
+{
+	UINT8 bLength;
+	UINT8 bType;
+	UINT8 bNumPorts;
+	UINT16 wHubChar;
+	UINT8 bPO2PG;
+	UINT8 bHubConCur;
+	UINT8 DevRmv;
+	UINT8 PortPwrPtrlMask;
+} *pUSB_HubDesc;
+
+typedef struct
+{
+	UINT16 wDevStatus;;
+} *pUSB_DevStatus;
+
+typedef struct
+{
+	UINT16 wPortStatus;
+	UINT16 wPortChange;
+} *pUSB_PortStatus;
+
 /* All standard descriptors have these 2 fields at the beginning */
 struct usb_descriptor_header {
 	u8  bLength;
@@ -795,9 +823,32 @@ typedef struct {
 #define USB_REQ_SET_SEL			0x30
 #define USB_REQ_SET_ISOCH_DELAY		0x31
 
+// USB address
+#define DEVICE_ADDRESS			0x02
+
 // Enum cmd
 #define DESC_DEVICE                 	0x0100
 #define DESC_CONFIGURATION          	0x0200
+#define DESC_HUB			0x2900
+
+// Device feature selector
+#define DEVICE_REMOTE_WAKEUP		0x01
+
+// Hub class feature selector
+#define S_PORT_RESET			0x04
+#define S_PORT_POWER			0x08
+#define C_PORT_CONNECTION		0x10
+#define C_PORT_ENABLE			0x11
+#define C_PORT_RESET			0x14
+
+// USB class code
+#define USB_CLASS_MASS_STORAGE		0x08
+#define USB_CLASS_HUB			0x09
+
+// USB device
+#define USB_SPEED_MASK			(3 << 9)
+#define USB_FULL_SPEED_DEVICE		0x0000
+#define USB_LOW_SPEED_DEVICE		0x0200
 
 #define CBWFLAGS_OUT			0x00
 #define CBWFLAGS_IN			0x80

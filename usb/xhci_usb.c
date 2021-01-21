@@ -79,7 +79,521 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[113] = 0x0;
 	UPHY3_U3_REG->cfg[114] = 0x1;
 	UPHY3_U3_REG->cfg[115] = 0x0;
-	UPHY3_U3_REG->cfg[128] = 0x9;		
+	UPHY3_U3_REG->cfg[128] = 0x9;
+
+	#ifdef CONFIG_HAVE_USB_HUB
+	//eq settings
+	UPHY3_U3_REG->cfg[75]  = 0x0;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xf0;
+	UPHY3_U3_REG->cfg[78]  = 0x1f;
+	UPHY3_U3_REG->cfg[79]  = 0x0e;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x1;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xf0;
+	UPHY3_U3_REG->cfg[78]  = 0x1f;
+	UPHY3_U3_REG->cfg[79]  = 0x0e;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x2;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xf0;
+	UPHY3_U3_REG->cfg[78]  = 0x4f;
+	UPHY3_U3_REG->cfg[79]  = 0x0e;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x3;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xf0;
+	UPHY3_U3_REG->cfg[78]  = 0x4f;
+	UPHY3_U3_REG->cfg[79]  = 0x0e;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x4;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xf0;
+	UPHY3_U3_REG->cfg[78]  = 0x7f;
+	UPHY3_U3_REG->cfg[79]  = 0x0e;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x5;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xf0;
+	UPHY3_U3_REG->cfg[78]  = 0x7f;
+	UPHY3_U3_REG->cfg[79]  = 0x0e;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x6;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xf0;
+	UPHY3_U3_REG->cfg[78]  = 0xaf;
+	UPHY3_U3_REG->cfg[79]  = 0x0e;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x7;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xf0;
+	UPHY3_U3_REG->cfg[78]  = 0xaf;
+	UPHY3_U3_REG->cfg[79]  = 0x0e;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x8;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xf0;
+	UPHY3_U3_REG->cfg[78]  = 0xdf;
+	UPHY3_U3_REG->cfg[79]  = 0x0e;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x9;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xf0;
+	UPHY3_U3_REG->cfg[78]  = 0xdf;
+	UPHY3_U3_REG->cfg[79]  = 0x0e;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0xa;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xf0;
+	UPHY3_U3_REG->cfg[78]  = 0x0f;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0xb;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xf0;
+	UPHY3_U3_REG->cfg[78]  = 0x0f;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0xc;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xf0;
+	UPHY3_U3_REG->cfg[78]  = 0x3f;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0xd;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xf0;
+	UPHY3_U3_REG->cfg[78]  = 0x3f;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0xe;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xf0;
+	UPHY3_U3_REG->cfg[78]  = 0x6f;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0xf;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xf0;
+	UPHY3_U3_REG->cfg[78]  = 0x6f;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x10;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xf0;
+	UPHY3_U3_REG->cfg[78]  = 0x9f;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x11;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xf0;
+	UPHY3_U3_REG->cfg[78]  = 0x9f;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x12;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xf0;
+	UPHY3_U3_REG->cfg[78]  = 0xcf;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x13;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xf0;
+	UPHY3_U3_REG->cfg[78]  = 0xcf;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x14;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xf0;
+	UPHY3_U3_REG->cfg[78]  = 0xef;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x15;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xf0;
+	UPHY3_U3_REG->cfg[78]  = 0xef;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x16;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0x30;
+	UPHY3_U3_REG->cfg[78]  = 0xef;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x17;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0x30;
+	UPHY3_U3_REG->cfg[78]  = 0xef;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x18;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0x70;
+	UPHY3_U3_REG->cfg[78]  = 0xee;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x19;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0x70;
+	UPHY3_U3_REG->cfg[78]  = 0xee;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x1a;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xb0;
+	UPHY3_U3_REG->cfg[78]  = 0xed;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x1b;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xb0;
+	UPHY3_U3_REG->cfg[78]  = 0xed;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x1c;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xf0;
+	UPHY3_U3_REG->cfg[78]  = 0xec;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x1d;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xf0;
+	UPHY3_U3_REG->cfg[78]  = 0xec;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x1e;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0x30;
+	UPHY3_U3_REG->cfg[78]  = 0xec;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x1f;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0x30;
+	UPHY3_U3_REG->cfg[78]  = 0xec;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x20;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0x70;
+	UPHY3_U3_REG->cfg[78]  = 0xeb;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x21;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0x70;
+	UPHY3_U3_REG->cfg[78]  = 0xeb;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x22;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xb0;
+	UPHY3_U3_REG->cfg[78]  = 0xea;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x23;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xb0;
+	UPHY3_U3_REG->cfg[78]  = 0xea;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x24;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xf0;
+	UPHY3_U3_REG->cfg[78]  = 0xe9;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x25;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xf0;
+	UPHY3_U3_REG->cfg[78]  = 0xe9;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x26;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0x30;
+	UPHY3_U3_REG->cfg[78]  = 0xe9;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x27;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0x30;
+	UPHY3_U3_REG->cfg[78]  = 0xe9;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x28;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0x70;
+	UPHY3_U3_REG->cfg[78]  = 0xe8;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x29;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0x70;
+	UPHY3_U3_REG->cfg[78]  = 0xe8;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x2a;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xb0;
+	UPHY3_U3_REG->cfg[78]  = 0xe7;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x2b;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xb0;
+	UPHY3_U3_REG->cfg[78]  = 0xe7;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x2c;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xf0;
+	UPHY3_U3_REG->cfg[78]  = 0xe6;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x2d;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xf0;
+	UPHY3_U3_REG->cfg[78]  = 0xe6;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x2e;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0x30;
+	UPHY3_U3_REG->cfg[78]  = 0xe6;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x2f;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0x30;
+	UPHY3_U3_REG->cfg[78]  = 0xe6;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x30;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0x70;
+	UPHY3_U3_REG->cfg[78]  = 0xe5;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x31;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0x70;
+	UPHY3_U3_REG->cfg[78]  = 0xe5;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x32;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xb0;
+	UPHY3_U3_REG->cfg[78]  = 0xe4;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x33;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xb0;
+	UPHY3_U3_REG->cfg[78]  = 0xe4;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x34;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xf0;
+	UPHY3_U3_REG->cfg[78]  = 0xe3;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x35;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xf0;
+	UPHY3_U3_REG->cfg[78]  = 0xe3;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x36;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0x30;
+	UPHY3_U3_REG->cfg[78]  = 0xe3;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x37;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0x30;
+	UPHY3_U3_REG->cfg[78]  = 0xe3;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x38;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0x70;
+	UPHY3_U3_REG->cfg[78]  = 0xe2;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x39;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0x70;
+	UPHY3_U3_REG->cfg[78]  = 0xe2;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x3a;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xb0;
+	UPHY3_U3_REG->cfg[78]  = 0xe1;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x3b;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xb0;
+	UPHY3_U3_REG->cfg[78]  = 0xe1;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x3c;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xf0;
+	UPHY3_U3_REG->cfg[78]  = 0xe0;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x3d;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0xf0;
+	UPHY3_U3_REG->cfg[78]  = 0xe0;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x3e;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0x30;
+	UPHY3_U3_REG->cfg[78]  = 0xe0;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+
+	UPHY3_U3_REG->cfg[80]  = 0x00;
+	UPHY3_U3_REG->cfg[75]  = 0x3f;
+	UPHY3_U3_REG->cfg[76]  = 0xbe;
+	UPHY3_U3_REG->cfg[77]  = 0x30;
+	UPHY3_U3_REG->cfg[78]  = 0xe0;
+	UPHY3_U3_REG->cfg[79]  = 0x0f;
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+#endif
 }
 #endif
 
@@ -470,8 +984,8 @@ struct xhci_ep_ctx *get_ep_ctx(xhci_usb *ctrl, struct xhci_container_ctx *ctx, i
 	return (struct xhci_ep_ctx *) (ctx->bytes + (ep_index * CTX_SIZE(ctrl->hccr->cr_hccparams)));
 }
 //usb_set_address
-void set_address(unsigned int slot_id)
-{	
+void set_address(unsigned int slot_id, u16 addr)
+{
 	struct xhci_input_control_ctx *ctrl_ctx;
         struct xhci_virt_device *virt_dev;
 	// xhci_setup_addressable_virt_dev
@@ -479,16 +993,21 @@ void set_address(unsigned int slot_id)
 	struct xhci_slot_ctx *slot_ctx;
 	union xhci_trb *pevent;
 	u64 tmp_64;
-	
+
 	virt_dev = g_io_buf.usb.xhci.devs[slot_id];
 //xhci_setup_addressable_virt_dev
 	//xhci_get_ep_ctx
 	ep0_ctx = get_ep_ctx(&g_io_buf.usb.xhci, virt_dev->in_ctx, 0);
 	// xhci_get_slot_ctx
 	slot_ctx = get_slot_ctx(&g_io_buf.usb.xhci, virt_dev->in_ctx);
-	
+
 	slot_ctx->dev_info |= LAST_CTX(1);
-	slot_ctx->dev_info |= 0;//route;
+
+	if (addr == DEVICE_ADDRESS)
+		slot_ctx->dev_info |= 0;//route;
+	else
+		slot_ctx->dev_info |= 1;//route;
+
 	slot_ctx->dev_info2 |= (g_io_buf.usb.xhci.udev.portnr & ROOT_HUB_PORT_MASK) << ROOT_HUB_PORT_SHIFT;//(port_num & ROOT_HUB_PORT_MASK) << ROOT_HUB_PORT_SHIFT;
 	ep0_ctx->ep_info2 = CTRL_EP << EP_TYPE_SHIFT;
 	if (g_io_buf.usb.xhci.udev.speed == USB_SPEED_SUPER) {
@@ -523,17 +1042,15 @@ void set_address(unsigned int slot_id)
 	ctrl_ctx->add_flags = SLOT_FLAG | EP0_FLAG;
 	ctrl_ctx->drop_flags = 0;
 	
-	queue_command((void *)ctrl_ctx, slot_id, 0, TRB_ADDR_DEV);	
+	queue_command((void *)ctrl_ctx, slot_id, 0, TRB_ADDR_DEV);
 	//even ring
 	pevent = wait_for_event(TRB_COMPLETION);
-
 	if (GET_COMP_CODE(pevent->event_cmd.status) != COMP_SUCCESS) {
 		prn_string("\n!!!!!set_address GET_COMP_CODE!!!!! "); prn_dword(GET_COMP_CODE(pevent->event_cmd.status));
 	}
-
 	acknowledge_event();
 //xhci_get_slot_ctx
-	_delay_1ms(20);	
+	_delay_1ms(20);
 	slot_ctx = get_slot_ctx(&g_io_buf.usb.xhci, virt_dev->out_ctx);
 #ifdef XHCI_DEBUG
 	prn_string("  xHCI internal address is: "); prn_dword(slot_ctx->dev_state & DEV_ADDR_MASK);
@@ -1754,9 +2271,10 @@ int stor_BBB_transport(u32 datalen, u32 cmdlen, u8 dir_in, u8 *buf)
 		prn_string("\n!!!!! FAILED ");
 		return -1;//USB_STOR_TRANSPORT_FAILED;
 	}
-	
+
 	return 0;
 }
+
 //xhci_alloc_device
 void xhci_alloc_device(void)
 {
@@ -1812,7 +2330,7 @@ void USB_vendorCmd(u8 bReq, u8 bCmd, u16 wValue, u16 wIndex, u16 wLen)
 		pipe = usb_sndctrlpipe(&g_io_buf.usb.xhci.udev, 0);
 		
 	if ((bCmd == USB_REQ_SET_ADDRESS) && (bReq == 0)){
-		set_address(g_io_buf.usb.xhci.udev.slot_id);
+		set_address(g_io_buf.usb.xhci.udev.slot_id, wValue);
 		return;
 	}	
 	if (bCmd == USB_REQ_SET_CONFIGURATION)
@@ -1831,7 +2349,17 @@ int usb_init(int port, int next_port_in_hub)
 	UINT32 tmp1, tmp2, tmp3;
         struct dwc3 *dwc3_reg;	
 	u64 trb_64, val_64;
-	
+#ifdef CONFIG_HAVE_USB_HUB
+	UINT8 NumberOfPorts;
+	UINT8 port_num;
+	unsigned int is_hub = 0;
+	unsigned int dev_dct_cnt;
+	#if 0
+	if (next_port_in_hub)
+		goto data_structure_init;
+	#endif
+#endif
+
 	CSTAMP(0xE5B00000);
 	dbg();
 
@@ -2233,29 +2761,233 @@ int usb_init(int port, int next_port_in_hub)
 #ifdef XHCI_DEBUG
         prn_string("\n**<set address>**");
 #endif
+	pUSB_CfgDesc pCfg = (pUSB_CfgDesc)(USB_dataBuf);
+
+#ifdef CONFIG_HAVE_USB_HUB
+	pUSB_DevDesc pDev = (pUSB_DevDesc)(USB_dataBuf);
+	pUSB_HubDesc pHub = (pUSB_HubDesc)(USB_dataBuf);
+	pUSB_PortStatus pPortsts = (pUSB_PortStatus)(USB_dataBuf);
+
+	#if 0
+	if (next_port_in_hub) {
+		is_hub = 1;
+		port_num = next_port_in_hub;
+		goto scan_device_on_port;
+	}
+	#endif
+
+	prn_string("set addr\n");
+	USB_vendorCmd(0, USB_REQ_SET_ADDRESS, DEVICE_ADDRESS, 0, 0);
+
+	prn_string("get dev desc (8)\n");
+	USB_vendorCmd(0x80, USB_REQ_GET_DESCRIPTOR, DESC_DEVICE, 0, 0x08);
+
+	prn_string("get dev desc ("); prn_decimal(pDev->bLength); prn_string(")\n");
+	USB_vendorCmd(0x80, USB_REQ_GET_DESCRIPTOR, DESC_DEVICE, 0, (pDev->bLength));
+
+	prn_string("get conf desc (18)\n");
+	USB_vendorCmd(0x80, USB_REQ_GET_DESCRIPTOR, DESC_CONFIGURATION, 0, 0x12);
+
+	if (USB_dataBuf[9+5] == USB_CLASS_MASS_STORAGE) {
+		prn_string("usb mass storage device found\n");
+		goto usb_storage_device;
+	} else if (USB_dataBuf[9+5] == USB_CLASS_HUB) {
+		is_hub = 1;
+		prn_string("usb hub found\n");
+	} else {
+		return -1;
+	}
+
+	prn_string("set config "); prn_decimal(pCfg->bCV); prn_string("\n");
+	USB_vendorCmd(0, USB_REQ_SET_CONFIGURATION, (pCfg->bCV), 0, 0);
+
+	prn_string("get hub desc (9)\n");
+	USB_vendorCmd(0xA0, USB_REQ_GET_DESCRIPTOR, DESC_HUB, 0, 0x09);
+	NumberOfPorts = pHub->bNumPorts;
+
+	for (port_num = 1; port_num <= NumberOfPorts; port_num++) {
+		prn_string("set feature (S_PORT"); prn_decimal(port_num); prn_string("_POWER) \n");
+		USB_vendorCmd(0x23, USB_REQ_SET_FEATURE, S_PORT_POWER, port_num, 0);
+	}
+
+	for (port_num = 1; port_num <= NumberOfPorts; port_num++) {
+		prn_string("get port "); prn_decimal(port_num); prn_string(" status \n");
+		USB_vendorCmd(0xA3, USB_REQ_GET_STATUS, 0, port_num, 0x04);
+
+	#if 1
+		prn_string("port status :"); prn_dword(pPortsts->wPortStatus);
+		prn_string("port change :"); prn_dword(pPortsts->wPortChange);
+	#endif
+
+		if (pPortsts->wPortStatus & 0x1)
+			goto found_device_on_port;
+	}
+
+	prn_string("set feature (Device Remote Wakeup) \n");
+	USB_vendorCmd(0, USB_REQ_SET_FEATURE, DEVICE_REMOTE_WAKEUP, 0, 0);
+
+	#if 0
+	while (1) {
+		prn_string("get dev status (2)\n");
+		USB_vendorCmd(0x80, USB_REQ_GET_STATUS, 0, 0, 0x02);
+
+		if (pDevsts->wDevStatus & 0x02) // check remote-wakeup bit
+			break;
+
+		prn_string("set feature (Device Remote Wakeup) \n");
+		USB_vendorCmd(0, USB_REQ_SET_FEATURE, DEVICE_REMOTE_WAKEUP, 0, 0);
+	}
+	#endif
+
+	prn_string("clear feature (Device Remote Wakeup) \n");
+	USB_vendorCmd(0, USB_REQ_CLEAR_FEATURE, DEVICE_REMOTE_WAKEUP, 0, 0);
+
+	port_num = 1;
+
+scan_device_on_port:
+	#if 0
+	if (next_port_in_hub) {
+		prn_string("get hub desc (9)\n");
+		USB_vendorCmd(0xA0, USB_REQ_GET_DESCRIPTOR, DESC_HUB, 0, 0x09);
+		NumberOfPorts = pHub->bNumPorts;
+	}
+	#endif
+
+	while (port_num <= NumberOfPorts) {
+		prn_string("get port "); prn_decimal(port_num); prn_string(" status \n");
+		USB_vendorCmd(0xA3, USB_REQ_GET_STATUS, 0, port_num, 0x04);
+
+	#if 0
+		prn_string("port status :"); prn_dword(pPortsts->wPortStatus);
+		prn_string("port change :"); prn_dword(pPortsts->wPortChange);
+	#endif
+
+		if (pPortsts->wPortStatus & 0x1)
+			break;
+
+		port_num++;
+	}
+
+	dev_dct_cnt = 0;
+	if (port_num > NumberOfPorts) {
+		prn_string("No usb mass storage devices on ports of the hub\n");
+		while (dev_dct_cnt++ < 2500) {
+			_delay_1ms(1);
+
+			// print DOT every 100 ms
+			if (!(dev_dct_cnt % 100))
+				prn_string(".");
+		}
+
+		prn_string("\n");
+
+		return -1;
+	}
+
+found_device_on_port:
+	prn_string("clear feature (C_PORT"); prn_decimal(port_num); prn_string("_CONNECTION) \n");
+	USB_vendorCmd(0x23, USB_REQ_CLEAR_FEATURE, C_PORT_CONNECTION, port_num, 0);
+
+	prn_string("set feature (S_PORT"); prn_decimal(port_num); prn_string("_RESET) \n");
+	USB_vendorCmd(0x23, USB_REQ_SET_FEATURE, S_PORT_RESET, port_num, 0);
+
+	dev_dct_cnt = 0;
+	while (1) {
+		prn_string("get port "); prn_decimal(port_num); prn_string(" status \n");
+		USB_vendorCmd(0xA3, USB_REQ_GET_STATUS, 0, port_num, 0x04);
+
+	#if 0
+		prn_string("port status :"); prn_dword(pPortsts->wPortStatus);
+		prn_string("port change :"); prn_dword(pPortsts->wPortChange);
+	#endif
+
+		if (pPortsts->wPortStatus & 0x2)
+			break;
+
+		_delay_1ms(1);
+		dev_dct_cnt++;
+		if (dev_dct_cnt > 100) {	// 100ms
+			prn_string("port reset timeout \n");
+			break;
+		}
+	}
+
+	prn_string("clear feature (C_PORT"); prn_decimal(port_num); prn_string("_RESET) \n");
+	USB_vendorCmd(0x23, USB_REQ_CLEAR_FEATURE, C_PORT_RESET, port_num, 0);
+
+	prn_string("get port "); prn_decimal(port_num); prn_string(" status \n");
+	USB_vendorCmd(0xA3, USB_REQ_GET_STATUS, 0, port_num, 0x04);
+
+	#if 0
+	prn_string("port status :"); prn_dword(pPortsts->wPortStatus);
+	prn_string("port change :"); prn_dword(pPortsts->wPortChange);
+	#endif
+
+	if (((pPortsts->wPortStatus & USB_SPEED_MASK) == USB_FULL_SPEED_DEVICE) ||
+	    ((pPortsts->wPortStatus & USB_SPEED_MASK) == USB_LOW_SPEED_DEVICE)) {
+		prn_string("skip usb low/full speed device found on port ");
+		prn_decimal(port_num); prn_string(" of the hub\n");
+		port_num++;
+		goto scan_device_on_port;
+	} else {
+		prn_string("usb high speed device found on port ");
+		prn_decimal(port_num); prn_string(" of the hub\n");
+	}
+
+usb_storage_device:
+	if (is_hub) {
+		xhci_alloc_device();
+		CSTAMP(0xE5B00009);
+
+		prn_string("set addr\n");
+		USB_vendorCmd(0, USB_REQ_SET_ADDRESS, DEVICE_ADDRESS+port_num, 0, 0);
+	}
+#else
 	USB_vendorCmd(0, USB_REQ_SET_ADDRESS, 2, 0, 0);
+#endif
+
 //get_descriptor_len
 #ifdef XHCI_DEBUG
 	prn_string("\n**<get_descriptor_len>**");
 #endif
-	USB_vendorCmd(USB_DIR_IN, USB_REQ_GET_DESCRIPTOR, DESC_DEVICE, 0, 0x12);	
-	
+	USB_vendorCmd(USB_DIR_IN, USB_REQ_GET_DESCRIPTOR, DESC_DEVICE, 0, 0x12);
 	_delay_1ms(1);
 //usb_get_configuration_len
 #ifdef XHCI_DEBUG
 	prn_string("\n**<usb_get_configuration_len>**");
-#endif	
-	pUSB_CfgDesc pCfg = (pUSB_CfgDesc)(USB_dataBuf);
-	
-	USB_vendorCmd(USB_DIR_IN, USB_REQ_GET_DESCRIPTOR, DESC_CONFIGURATION, 0, 0x9);	
-	
+#endif
+
+	prn_string("get conf desc (44)\n");
+	USB_vendorCmd(USB_DIR_IN, USB_REQ_GET_DESCRIPTOR, DESC_CONFIGURATION, 0, 0x2C);
+
+#ifdef CONFIG_HAVE_USB_HUB
+	if (is_hub)
+#endif
+	{
+		if (USB_dataBuf[9+5] != USB_CLASS_MASS_STORAGE) {
+#ifdef CONFIG_HAVE_USB_HUB
+			prn_string("not usb mass storage device\n");
+			port_num++;
+			goto scan_device_on_port;
+
+			return -1;
+#else
+			if (USB_dataBuf[9+5] == USB_CLASS_HUB)
+				prn_string("usb hub not supported\n");
+			else
+				prn_string("not usb mass storage device\n");
+
+			return -1;
+#endif
+		}
+	}
+
 //usb_get_configuration_no
 #ifdef XHCI_DEBUG
-	prn_string("\n**<usb_get_configuration_no>**");	
+	prn_string("\n**<usb_get_configuration_no>**");
 #endif
 	//pUSB_CfgDesc pCfg = (pUSB_CfgDesc)(USB_dataBuf);
 	USB_vendorCmd(USB_DIR_IN, USB_REQ_GET_DESCRIPTOR, DESC_CONFIGURATION, 0, pCfg->wLength);
-	
 	usb_parse_config(g_io_buf.usb.cmd_buf, 0);
 	usb_set_maxpacket(&g_io_buf.usb.xhci.udev);
 	//prn_string("\n    g_io_buf.usb.cmd_buf[0] "); prn_dword((g_io_buf.usb.cmd_buf[1]<<8)|g_io_buf.usb.cmd_buf[0]);
@@ -2302,20 +3034,25 @@ int usb_init(int port, int next_port_in_hub)
 //usb_string
 #ifdef XHCI_DEBUG
 	prn_string("\n**<usb_string>**");
-#endif	
+#endif
 	g_io_buf.usb.xhci.udev.string_langid = 0;
+#ifndef CONFIG_HAVE_USB_HUB
 	usb_string(1, g_io_buf.usb.xhci.udev.mf, sizeof(g_io_buf.usb.xhci.udev.mf));
 	usb_string(2, g_io_buf.usb.xhci.udev.prod, sizeof(g_io_buf.usb.xhci.udev.prod));
 	usb_string(3, g_io_buf.usb.xhci.udev.serial, sizeof(g_io_buf.usb.xhci.udev.serial));
 	prn_string("\n  mf     "); prn_string(g_io_buf.usb.xhci.udev.mf);
 	prn_string("\n  prod   "); prn_string(g_io_buf.usb.xhci.udev.prod);
 	prn_string("\n  serial "); prn_string(g_io_buf.usb.xhci.udev.serial);
-	
+#endif
+
 //usb_get_max_lun
 #ifdef XHCI_DEBUG
 	prn_string("\n**<usb_get_max_lun>**");
 #endif
+
+#ifndef CONFIG_HAVE_USB_HUB
 	USB_vendorCmd(0xa1, 0xfe, 0, 0, 1);
+#endif
 	g_io_buf.usb.xhci.udev.lun = g_io_buf.usb.cmd_buf[0];
 	//prn_string("\n  g_io_buf.usb.cmd_buf "); prn_dword(g_io_buf.usb.cmd_buf[0]);
 //usb_inquiry

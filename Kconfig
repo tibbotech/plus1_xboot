@@ -63,8 +63,8 @@ config HAVE_USB_DISK
 config HAVE_SNPS_USB3_DISK
 	bool "Synopsys USB 3.1 disk driver"
 	default n
-	depends on HAVE_FS_FAT
-	help 
+	select HAVE_FS_FAT
+	help
 		Sunplus synopsys XHCI dirver, need to disable HAVE_USB_DISK
 
 config HAVE_USB_HUB
@@ -114,12 +114,12 @@ config HAVE_SPI_NAND
 config HAVE_FS_FAT
 	bool "FAT32 filesystem"
 	default n
-	depends on HAVE_USB_DISK || HAVE_SDCARD
+	depends on HAVE_USB_DISK || HAVE_SNPS_USB3_DISK || HAVE_SDCARD
 
 config HAVE_FS_FAT16
 	bool "FAT16 filesystem"
 	default n
-	depends on HAVE_USB_DISK || HAVE_SDCARD
+	depends on HAVE_USB_DISK || HAVE_SNPS_USB3_DISK || HAVE_SDCARD
 
 config HAVE_SPI_NOR
 	bool "SPI NOR boot"
