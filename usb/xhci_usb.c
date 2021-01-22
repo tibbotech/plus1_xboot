@@ -3050,9 +3050,7 @@ usb_storage_device:
 	prn_string("\n**<usb_get_max_lun>**");
 #endif
 
-#ifndef CONFIG_HAVE_USB_HUB
 	USB_vendorCmd(0xa1, 0xfe, 0, 0, 1);
-#endif
 	g_io_buf.usb.xhci.udev.lun = g_io_buf.usb.cmd_buf[0];
 	//prn_string("\n  g_io_buf.usb.cmd_buf "); prn_dword(g_io_buf.usb.cmd_buf[0]);
 //usb_inquiry

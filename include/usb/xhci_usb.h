@@ -502,7 +502,7 @@ typedef enum {
  * It must also be greater than 16.
  */
 #ifdef CONFIG_HAVE_USB_HUB
-#define TRBS_PER_SEGMENT	4
+#define TRBS_PER_SEGMENT	32
 #else
 #define TRBS_PER_SEGMENT	8
 #endif
