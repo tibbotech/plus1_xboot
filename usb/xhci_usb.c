@@ -2352,6 +2352,7 @@ int usb_init(int port, int next_port_in_hub)
 #ifdef CONFIG_HAVE_USB_HUB
 	UINT8 NumberOfPorts;
 	UINT8 port_num;
+	UINT8 power_good;
 	unsigned int is_hub = 0;
 	unsigned int dev_dct_cnt;
 	#if 0
@@ -2776,16 +2777,24 @@ int usb_init(int port, int next_port_in_hub)
 	}
 	#endif
 
+	#ifdef XHCI_DEBUG
 	prn_string("set addr\n");
+	#endif
 	USB_vendorCmd(0, USB_REQ_SET_ADDRESS, DEVICE_ADDRESS, 0, 0);
 
+	#ifdef XHCI_DEBUG
 	prn_string("get dev desc (8)\n");
+	#endif
 	USB_vendorCmd(0x80, USB_REQ_GET_DESCRIPTOR, DESC_DEVICE, 0, 0x08);
 
+	#ifdef XHCI_DEBUG
 	prn_string("get dev desc ("); prn_decimal(pDev->bLength); prn_string(")\n");
+	#endif
 	USB_vendorCmd(0x80, USB_REQ_GET_DESCRIPTOR, DESC_DEVICE, 0, (pDev->bLength));
 
+	#ifdef XHCI_DEBUG
 	prn_string("get conf desc (18)\n");
+	#endif
 	USB_vendorCmd(0x80, USB_REQ_GET_DESCRIPTOR, DESC_CONFIGURATION, 0, 0x12);
 
 	if (USB_dataBuf[9+5] == USB_CLASS_MASS_STORAGE) {
@@ -2798,23 +2807,35 @@ int usb_init(int port, int next_port_in_hub)
 		return -1;
 	}
 
+	#ifdef XHCI_DEBUG
 	prn_string("set config "); prn_decimal(pCfg->bCV); prn_string("\n");
+	#endif
 	USB_vendorCmd(0, USB_REQ_SET_CONFIGURATION, (pCfg->bCV), 0, 0);
 
+	#ifdef XHCI_DEBUG
 	prn_string("get hub desc (9)\n");
+	#endif
 	USB_vendorCmd(0xA0, USB_REQ_GET_DESCRIPTOR, DESC_HUB, 0, 0x09);
+
 	NumberOfPorts = pHub->bNumPorts;
+	power_good = pHub->bPO2PG * 2;
 
 	for (port_num = 1; port_num <= NumberOfPorts; port_num++) {
+	#ifdef XHCI_DEBUG
 		prn_string("set feature (S_PORT"); prn_decimal(port_num); prn_string("_POWER) \n");
+	#endif
 		USB_vendorCmd(0x23, USB_REQ_SET_FEATURE, S_PORT_POWER, port_num, 0);
+		_delay_1ms(power_good);
 	}
 
 	for (port_num = 1; port_num <= NumberOfPorts; port_num++) {
+	#ifdef XHCI_DEBUG
 		prn_string("get port "); prn_decimal(port_num); prn_string(" status \n");
+	#endif
 		USB_vendorCmd(0xA3, USB_REQ_GET_STATUS, 0, port_num, 0x04);
+		_delay_1ms(10);
 
-	#if 1
+	#ifdef XHCI_DEBUG
 		prn_string("port status :"); prn_dword(pPortsts->wPortStatus);
 		prn_string("port change :"); prn_dword(pPortsts->wPortChange);
 	#endif
@@ -2823,7 +2844,9 @@ int usb_init(int port, int next_port_in_hub)
 			goto found_device_on_port;
 	}
 
+	#ifdef XHCI_DEBUG
 	prn_string("set feature (Device Remote Wakeup) \n");
+	#endif
 	USB_vendorCmd(0, USB_REQ_SET_FEATURE, DEVICE_REMOTE_WAKEUP, 0, 0);
 
 	#if 0
@@ -2839,7 +2862,9 @@ int usb_init(int port, int next_port_in_hub)
 	}
 	#endif
 
+	#ifdef XHCI_DEBUG
 	prn_string("clear feature (Device Remote Wakeup) \n");
+	#endif
 	USB_vendorCmd(0, USB_REQ_CLEAR_FEATURE, DEVICE_REMOTE_WAKEUP, 0, 0);
 
 	port_num = 1;
@@ -2854,10 +2879,13 @@ scan_device_on_port:
 	#endif
 
 	while (port_num <= NumberOfPorts) {
+	#ifdef XHCI_DEBUG
 		prn_string("get port "); prn_decimal(port_num); prn_string(" status \n");
+	#endif
 		USB_vendorCmd(0xA3, USB_REQ_GET_STATUS, 0, port_num, 0x04);
+		_delay_1ms(10);
 
-	#if 0
+	#ifdef XHCI_DEBUG
 		prn_string("port status :"); prn_dword(pPortsts->wPortStatus);
 		prn_string("port change :"); prn_dword(pPortsts->wPortChange);
 	#endif
@@ -2885,18 +2913,25 @@ scan_device_on_port:
 	}
 
 found_device_on_port:
+	#ifdef XHCI_DEBUG
 	prn_string("clear feature (C_PORT"); prn_decimal(port_num); prn_string("_CONNECTION) \n");
+	#endif
 	USB_vendorCmd(0x23, USB_REQ_CLEAR_FEATURE, C_PORT_CONNECTION, port_num, 0);
 
+	#ifdef XHCI_DEBUG
 	prn_string("set feature (S_PORT"); prn_decimal(port_num); prn_string("_RESET) \n");
+	#endif
 	USB_vendorCmd(0x23, USB_REQ_SET_FEATURE, S_PORT_RESET, port_num, 0);
 
 	dev_dct_cnt = 0;
 	while (1) {
+	#ifdef XHCI_DEBUG
 		prn_string("get port "); prn_decimal(port_num); prn_string(" status \n");
+	#endif
 		USB_vendorCmd(0xA3, USB_REQ_GET_STATUS, 0, port_num, 0x04);
+		_delay_1ms(10);
 
-	#if 0
+	#ifdef XHCI_DEBUG
 		prn_string("port status :"); prn_dword(pPortsts->wPortStatus);
 		prn_string("port change :"); prn_dword(pPortsts->wPortChange);
 	#endif
@@ -2912,13 +2947,18 @@ found_device_on_port:
 		}
 	}
 
+	#ifdef XHCI_DEBUG
 	prn_string("clear feature (C_PORT"); prn_decimal(port_num); prn_string("_RESET) \n");
+	#endif
 	USB_vendorCmd(0x23, USB_REQ_CLEAR_FEATURE, C_PORT_RESET, port_num, 0);
 
+	#ifdef XHCI_DEBUG
 	prn_string("get port "); prn_decimal(port_num); prn_string(" status \n");
+	#endif
 	USB_vendorCmd(0xA3, USB_REQ_GET_STATUS, 0, port_num, 0x04);
+	_delay_1ms(10);
 
-	#if 0
+	#ifdef XHCI_DEBUG
 	prn_string("port status :"); prn_dword(pPortsts->wPortStatus);
 	prn_string("port change :"); prn_dword(pPortsts->wPortChange);
 	#endif
@@ -2939,11 +2979,13 @@ usb_storage_device:
 		xhci_alloc_device();
 		CSTAMP(0xE5B00009);
 
+	#ifdef XHCI_DEBUG
 		prn_string("set addr\n");
+	#endif
 		USB_vendorCmd(0, USB_REQ_SET_ADDRESS, DEVICE_ADDRESS+port_num, 0, 0);
 	}
 #else
-	USB_vendorCmd(0, USB_REQ_SET_ADDRESS, 2, 0, 0);
+	USB_vendorCmd(0, USB_REQ_SET_ADDRESS, DEVICE_ADDRESS, 0, 0);
 #endif
 
 //get_descriptor_len
@@ -2957,7 +2999,9 @@ usb_storage_device:
 	prn_string("\n**<usb_get_configuration_len>**");
 #endif
 
+#ifdef XHCI_DEBUG
 	prn_string("get conf desc (44)\n");
+#endif
 	USB_vendorCmd(USB_DIR_IN, USB_REQ_GET_DESCRIPTOR, DESC_CONFIGURATION, 0, 0x2C);
 
 #ifdef CONFIG_HAVE_USB_HUB
