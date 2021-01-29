@@ -81,7 +81,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[115] = 0x0;
 	UPHY3_U3_REG->cfg[128] = 0x9;
 
-	#ifdef CONFIG_HAVE_USB_HUB
+	#ifdef CONFIG_HAVE_USB3_HUB
 	//eq settings
 	UPHY3_U3_REG->cfg[75]  = 0x0;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -2347,9 +2347,9 @@ void USB_vendorCmd(u8 bReq, u8 bCmd, u16 wValue, u16 wIndex, u16 wLen)
 int usb_init(int port, int next_port_in_hub)
 {
 	UINT32 tmp1, tmp2, tmp3;
-        struct dwc3 *dwc3_reg;	
+        struct dwc3 *dwc3_reg;
 	u64 trb_64, val_64;
-#ifdef CONFIG_HAVE_USB_HUB
+#ifdef CONFIG_HAVE_USB3_HUB
 	UINT8 NumberOfPorts;
 	UINT8 port_num;
 	UINT8 power_good;
@@ -2764,7 +2764,7 @@ int usb_init(int port, int next_port_in_hub)
 #endif
 	pUSB_CfgDesc pCfg = (pUSB_CfgDesc)(USB_dataBuf);
 
-#ifdef CONFIG_HAVE_USB_HUB
+#ifdef CONFIG_HAVE_USB3_HUB
 	pUSB_DevDesc pDev = (pUSB_DevDesc)(USB_dataBuf);
 	pUSB_HubDesc pHub = (pUSB_HubDesc)(USB_dataBuf);
 	pUSB_PortStatus pPortsts = (pUSB_PortStatus)(USB_dataBuf);
@@ -3004,12 +3004,12 @@ usb_storage_device:
 #endif
 	USB_vendorCmd(USB_DIR_IN, USB_REQ_GET_DESCRIPTOR, DESC_CONFIGURATION, 0, 0x2C);
 
-#ifdef CONFIG_HAVE_USB_HUB
+#ifdef CONFIG_HAVE_USB3_HUB
 	if (is_hub)
 #endif
 	{
 		if (USB_dataBuf[9+5] != USB_CLASS_MASS_STORAGE) {
-#ifdef CONFIG_HAVE_USB_HUB
+#ifdef CONFIG_HAVE_USB3_HUB
 			prn_string("not usb mass storage device\n");
 			port_num++;
 			goto scan_device_on_port;
@@ -3073,14 +3073,14 @@ usb_storage_device:
 #ifdef XHCI_DEBUG
 	prn_string("\n**<set_configuration>**");
 #endif
-	USB_vendorCmd(0, USB_REQ_SET_CONFIGURATION, pCfg->bCV, 0, 0);	
+	USB_vendorCmd(0, USB_REQ_SET_CONFIGURATION, pCfg->bCV, 0, 0);
 	_delay_1ms(10);
 //usb_string
 #ifdef XHCI_DEBUG
 	prn_string("\n**<usb_string>**");
 #endif
 	g_io_buf.usb.xhci.udev.string_langid = 0;
-#ifndef CONFIG_HAVE_USB_HUB
+#ifndef CONFIG_HAVE_USB3_HUB
 	usb_string(1, g_io_buf.usb.xhci.udev.mf, sizeof(g_io_buf.usb.xhci.udev.mf));
 	usb_string(2, g_io_buf.usb.xhci.udev.prod, sizeof(g_io_buf.usb.xhci.udev.prod));
 	usb_string(3, g_io_buf.usb.xhci.udev.serial, sizeof(g_io_buf.usb.xhci.udev.serial));
