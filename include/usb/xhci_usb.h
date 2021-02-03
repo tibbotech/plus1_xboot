@@ -800,10 +800,15 @@ typedef struct {
 	u32 	CBWTag;
 } usb_device;
 ////////////////////////////////////////
-#define USB_RECIP_ENDPOINT    0x02
+#define USB_RECIP_ENDPOINT		0x02
 
 //#define USB_DIR_OUT			0		/* to device */
 #define USB_DIR_IN			0x80		/* to host */
+
+#define NO_USB_DEVICE			0x00
+#define USB_DEVICE			0x01
+#define LOW_SPEED_DEVICE		0x02
+#define HIGH_SPEED_DEVICE		0x03
 
 #define USB_REQ_GET_STATUS		0x00
 #define USB_REQ_CLEAR_FEATURE		0x01
@@ -851,11 +856,11 @@ typedef struct {
 #define CBWSignature                	0x43425355
 #define CSWSignature			0x53425355
 
-#define UMASS_BBB_CBW_SIZE	31
-#define UMASS_BBB_CSW_SIZE	13
+#define UMASS_BBB_CBW_SIZE		31
+#define UMASS_BBB_CSW_SIZE		13
 // scsi command
-#define SCSI_INQUIRY		0x12
-#define SCSI_RD_CAPAC		0x25
+#define SCSI_INQUIRY			0x12
+#define SCSI_RD_CAPAC			0x25
 #define SCSICMD_READ_10                 0x28
 #define SCSICMD_TEST_UNIT_READY	        0x00
 #define SCSICMD_REQUEST_SENSE           0x03

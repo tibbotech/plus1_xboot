@@ -2353,6 +2353,8 @@ int usb_init(int port, int next_port_in_hub)
 	UINT8 NumberOfPorts;
 	UINT8 port_num;
 	UINT8 power_good;
+	UINT8 hub_port[10];
+	UINT8 high_speed_port_num = 0;
 	unsigned int is_hub = 0;
 	unsigned int dev_dct_cnt;
 	#if 0
@@ -2769,6 +2771,9 @@ int usb_init(int port, int next_port_in_hub)
 	pUSB_HubDesc pHub = (pUSB_HubDesc)(USB_dataBuf);
 	pUSB_PortStatus pPortsts = (pUSB_PortStatus)(USB_dataBuf);
 
+	for (port_num = 0; port_num < 10; port_num++)
+		hub_port[port_num] = NO_USB_DEVICE;
+
 	#if 0
 	if (next_port_in_hub) {
 		is_hub = 1;
@@ -2799,7 +2804,7 @@ int usb_init(int port, int next_port_in_hub)
 
 	if (USB_dataBuf[9+5] == USB_CLASS_MASS_STORAGE) {
 		prn_string("usb mass storage device found\n");
-		goto usb_storage_device;
+		goto get_descriptor;
 	} else if (USB_dataBuf[9+5] == USB_CLASS_HUB) {
 		is_hub = 1;
 		prn_string("usb hub found\n");
@@ -2841,6 +2846,11 @@ int usb_init(int port, int next_port_in_hub)
 	#endif
 
 		if (pPortsts->wPortStatus & 0x1)
+			hub_port[port_num-1] = USB_DEVICE;
+	}
+
+	for (port_num = 1; port_num <= NumberOfPorts; port_num++) {
+		if (hub_port[port_num-1] == USB_DEVICE)
 			goto found_device_on_port;
 	}
 
@@ -2851,13 +2861,17 @@ int usb_init(int port, int next_port_in_hub)
 
 	#if 0
 	while (1) {
+		#ifdef XHCI_DEBUG
 		prn_string("get dev status (2)\n");
+		#endif
 		USB_vendorCmd(0x80, USB_REQ_GET_STATUS, 0, 0, 0x02);
 
 		if (pDevsts->wDevStatus & 0x02) // check remote-wakeup bit
 			break;
 
+		#ifdef XHCI_DEBUG
 		prn_string("set feature (Device Remote Wakeup) \n");
+		#endif
 		USB_vendorCmd(0, USB_REQ_SET_FEATURE, DEVICE_REMOTE_WAKEUP, 0, 0);
 	}
 	#endif
@@ -2891,9 +2905,14 @@ scan_device_on_port:
 	#endif
 
 		if (pPortsts->wPortStatus & 0x1)
-			break;
+			hub_port[port_num-1] = USB_DEVICE;
 
 		port_num++;
+	}
+
+	for (port_num = 1; port_num <= NumberOfPorts; port_num++) {
+		if (hub_port[port_num-1] == USB_DEVICE)
+			break;
 	}
 
 	dev_dct_cnt = 0;
@@ -2952,6 +2971,23 @@ found_device_on_port:
 	#endif
 	USB_vendorCmd(0x23, USB_REQ_CLEAR_FEATURE, C_PORT_RESET, port_num, 0);
 
+	port_num++;
+	while (port_num <= NumberOfPorts) {
+		if (hub_port[port_num-1] == USB_DEVICE)
+			break;
+
+		port_num++;
+	}
+
+	if (port_num <= NumberOfPorts)
+		goto found_device_on_port;
+
+	for (port_num = 1; port_num <= NumberOfPorts; port_num++) {
+		if (hub_port[port_num-1] == USB_DEVICE)
+			break;
+	}
+
+check_device_speed:
 	#ifdef XHCI_DEBUG
 	prn_string("get port "); prn_decimal(port_num); prn_string(" status \n");
 	#endif
@@ -2967,27 +3003,51 @@ found_device_on_port:
 	    ((pPortsts->wPortStatus & USB_SPEED_MASK) == USB_LOW_SPEED_DEVICE)) {
 		prn_string("skip usb low/full speed device found on port ");
 		prn_decimal(port_num); prn_string(" of the hub\n");
-		port_num++;
-		goto scan_device_on_port;
+		hub_port[port_num-1] = LOW_SPEED_DEVICE;
 	} else {
 		prn_string("usb high speed device found on port ");
 		prn_decimal(port_num); prn_string(" of the hub\n");
+		hub_port[port_num-1] = HIGH_SPEED_DEVICE;
 	}
 
-usb_storage_device:
-	if (is_hub) {
-		xhci_alloc_device();
-		CSTAMP(0xE5B00009);
+	port_num++;
+	while (port_num <= NumberOfPorts) {
+		if (hub_port[port_num-1] == USB_DEVICE)
+			break;
+
+		port_num++;
+	}
+
+	if (port_num <= NumberOfPorts)
+		goto check_device_speed;
+
+	port_num = 1;
+
+high_speed_device:
+	while (port_num <= NumberOfPorts) {
+		if (hub_port[port_num-1] == HIGH_SPEED_DEVICE) {
+			high_speed_port_num = port_num;
+
+			xhci_alloc_device();
+			CSTAMP(0xE5B00009);
 
 	#ifdef XHCI_DEBUG
-		prn_string("set addr\n");
+			prn_string("set addr\n");
 	#endif
-		USB_vendorCmd(0, USB_REQ_SET_ADDRESS, DEVICE_ADDRESS+port_num, 0, 0);
+			USB_vendorCmd(0, USB_REQ_SET_ADDRESS, DEVICE_ADDRESS+port_num, 0, 0);
+			break;
+		}
+
+		port_num++;
 	}
+
+	if (port_num > NumberOfPorts)
+		goto scan_device_on_port;
 #else
 	USB_vendorCmd(0, USB_REQ_SET_ADDRESS, DEVICE_ADDRESS, 0, 0);
 #endif
 
+get_descriptor:
 //get_descriptor_len
 #ifdef XHCI_DEBUG
 	prn_string("\n**<get_descriptor_len>**");
@@ -3011,10 +3071,8 @@ usb_storage_device:
 		if (USB_dataBuf[9+5] != USB_CLASS_MASS_STORAGE) {
 #ifdef CONFIG_HAVE_USB3_HUB
 			prn_string("not usb mass storage device\n");
-			port_num++;
-			goto scan_device_on_port;
-
-			return -1;
+			port_num = high_speed_port_num + 1;
+			goto high_speed_device;
 #else
 			if (USB_dataBuf[9+5] == USB_CLASS_HUB)
 				prn_string("usb hub not supported\n");
