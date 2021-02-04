@@ -28,7 +28,9 @@ sz=`stat -c%s $1`
 finalsz=$((64 + sz))
 
 #chksum=`md5sum $input |cut -c 1-8`
-chksum=`./tools/tcpsum $input |cut -c 1-4`
+#chksum=`./tools/tcpsum $input |cut -c 1-4`
+curdir=`dirname $0`
+chksum=`${curdir}/tools/tcpsum $input |cut -c 1-4`
 chksum="0000$chksum"
 echo "chksum=$chksum"
 
