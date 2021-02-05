@@ -23,8 +23,10 @@
 /* Emulation */
 #ifdef CONFIG_PLATFORM_Q628
 #define PLATFORM_Q628                   /* Build for Q628 */
+#elif CONFIG_PLATFORM_Q645
+#define PLATFORM_Q645                   /* Build for Q645 */
 #elif defined(CONFIG_PLATFORM_I143)
-#define PLATFORM_I143                   /* Build for Q628 */
+#define PLATFORM_I143                   /* Build for I143 */
 #endif
 
 /* CSIM build: Enable Stamp. No UART. Less delay. */
@@ -234,10 +236,36 @@
 #define STACK_SIZE          (3008) /* 3K - 64 */
 #endif
 
+#ifdef PLATFORM_Q645
+#define DSB()    do { asm volatile ("dsb"); } while (0)
+#if defined(__aarch64__)
+#define ISB()    do { asm volatile ("isb"); } while (0)
+#define DSB()    do { asm volatile ("dsb sy"); } while (0)
+#elif defined(__arm__)
+#define ISB()    do { asm volatile ("isb"); } while (0)
+#define DSB()    do { asm volatile ("dsb"); } while (0)
+#endif
+
+#define BOOT_RAM_BASE		SRAM0_BASE
+#define XBOOT_A64_ADDR      (BOOT_RAM_BASE + (63 * 1024))
+#define BOOTCOMPT_SIZE	64	
+
+#endif
+
 /**********************
  * CPU boot address
  *********************/
+#ifdef PLATFORM_Q645
+#define CPU_WAIT_A64_VAL    	 	0xfffffffe
+#define CORE_CPU_START_POS(core_id)  (CORE0_CPU_START_POS - ((core_id) * 4))
+#define CORE3_CPU_START_POS          (0x9e810000 - 0x18)  // core3 wait 9e80_ffe8
+#define CORE2_CPU_START_POS          (0x9e810000 - 0x14)  // core2 wait 9e80_ffec
+#define CORE1_CPU_START_POS          (0x9e810000 - 0x10)  // core1 wait 9e80_fff0
+#define CORE0_CPU_START_POS          (0x9e810000 - 0xc)   // core0 wait 9e80_fff4
+#endif
+
 #define CPU_WAIT_INIT_VAL        0xffffffff
+
 #define B_START_POS              (SRAM0_END - 0x8)       // 9e809ff8
 #define BOOT_ANOTHER_POS         (SRAM0_END - 0x4)       // 9e809ffc
 
@@ -339,4 +367,12 @@
 ***********************/
 #define OTP_WHO_BOOT_REG	RF_GRP(4, 31)
 #define OTP_WHO_BOOT_BIT	0
+
+/***********************
+* Q645 HSM
+***********************/
+#ifdef PLATFORM_Q645
+#define XB_HSMK_PTR_OFFS  4 // offset to hsmk pointer in xboot.bin
+#define XB_HSMK_PTR_ADDR  (XBOOT_ADDR + 32 + XB_HSMK_PTR_OFFS) // 32: xhdr size
+#endif
 

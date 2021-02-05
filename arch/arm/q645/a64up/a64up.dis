@@ -1,0 +1,315 @@
+
+.//a64up:     file format elf64-littleaarch64
+
+
+Disassembly of section .stext:
+
+000000009e80fc00 <__stext>:
+	STAMP(0xa6401000);
+
+        /* default SPSel = 1 (use SP_ELx) */
+
+	/* setup stack */
+        get_core_N_sp x0, x1
+    9e80fc00:	580002c0 	ldr	x0, 9e80fc58 <boot_a64+0xc>
+    9e80fc04:	d53800a1 	mrs	x1, mpidr_el1
+    9e80fc08:	d348fc21 	lsr	x1, x1, #8
+    9e80fc0c:	f2400421 	ands	x1, x1, #0x3
+    9e80fc10:	54000080 	b.eq	9e80fc20 <__stext+0x20>  // b.none
+    9e80fc14:	d1080000 	sub	x0, x0, #0x200
+    9e80fc18:	f1000421 	subs	x1, x1, #0x1
+    9e80fc1c:	17fffffd 	b	9e80fc10 <__stext+0x10>
+    9e80fc20:	927cec00 	and	x0, x0, #0xfffffffffffffff0
+        mov     sp, x0		// sp_el3
+    9e80fc24:	9100001f 	mov	sp, x0
+        msr     sp_el2, x0
+    9e80fc28:	d51e4100 	msr	sp_el2, x0
+        msr     sp_el1, x0
+    9e80fc2c:	d51c4100 	msr	sp_el1, x0
+        msr     sp_el0, x0
+    9e80fc30:	d5184100 	msr	sp_el0, x0
+
+	get_core_N_ID x7
+    9e80fc34:	d53800a7 	mrs	x7, mpidr_el1
+    9e80fc38:	d348fce7 	lsr	x7, x7, #8
+    9e80fc3c:	f24004e7 	ands	x7, x7, #0x3
+        ands    x7, x7, #3
+    9e80fc40:	f24004e7 	ands	x7, x7, #0x3
+        b.ne    boot_a64
+    9e80fc44:	54000041 	b.ne	9e80fc4c <boot_a64>  // b.any
+
+	STAMP(0xa6401001);
+
+	// core 0 path : wake_cpuN
+	bl	wake_cpuN
+    9e80fc48:	94000038 	bl	9e80fd28 <wake_cpuN>
+
+000000009e80fc4c <boot_a64>:
+	adr     x2, el1_entry
+	msr     elr_el3, x2
+	eret
+el1_entry:
+#else
+	mov	x0, 0
+    9e80fc4c:	d2800000 	mov	x0, #0x0                   	// #0
+#endif
+
+	STAMP(0xa6401004);
+	// arg0: x0 = SCR_VALUE
+	bl	boot_cpuN
+    9e80fc50:	94000004 	bl	9e80fc60 <boot_cpuN>
+1:
+	b	1b
+    9e80fc54:	14000000 	b	9e80fc54 <boot_a64+0x8>
+    9e80fc58:	9e80f7c0 	.word	0x9e80f7c0
+    9e80fc5c:	00000000 	.word	0x00000000
+
+000000009e80fc60 <boot_cpuN>:
+
+	return (int)((val >> 8) & 0x3); // q642: MPIDR : 8100_0000 vs 8100_0100
+}
+
+void boot_cpuN(unsigned long scr_init)
+{
+    9e80fc60:	a9bd7bfd 	stp	x29, x30, [sp, #-48]!
+    9e80fc64:	910003fd 	mov	x29, sp
+    9e80fc68:	f9000bf3 	str	x19, [sp, #16]
+    9e80fc6c:	aa0003f3 	mov	x19, x0
+	char str[4] = { 0, ' ', 0 };
+    9e80fc70:	52840000 	mov	w0, #0x2000                	// #8192
+    9e80fc74:	b9002be0 	str	w0, [sp, #40]
+	asm volatile ("mrs %0, mpidr_el1" : "=r" (val) : : "cc");
+    9e80fc78:	d53800a0 	mrs	x0, mpidr_el1
+	fn = (void (*)())BL31_ADDR;
+
+	// u-boot or linux
+
+	// core0 NS-EL1 @ address
+	if (core == 0) {
+    9e80fc7c:	7218041f 	tst	w0, #0x300
+    9e80fc80:	54000321 	b.ne	9e80fce4 <boot_cpuN+0x84>  // b.any
+		prn_string("core0 ");
+    9e80fc84:	90000000 	adrp	x0, 9e80f000 <__init_stack_N-0x7c0>
+    9e80fc88:	f9468800 	ldr	x0, [x0, #3344]
+    9e80fc8c:	94000039 	bl	9e80fd70 <prn_string>
+		prn_string(scr_init & 1 ? "NS" : "S"); // bit0=SCR_NS in SCR_EL3
+    9e80fc90:	90000000 	adrp	x0, 9e80f000 <__init_stack_N-0x7c0>
+    9e80fc94:	f240027f 	tst	x19, #0x1
+    9e80fc98:	f9468401 	ldr	x1, [x0, #3336]
+    9e80fc9c:	90000000 	adrp	x0, 9e80f000 <__init_stack_N-0x7c0>
+    9e80fca0:	f9468000 	ldr	x0, [x0, #3328]
+    9e80fca4:	9a800020 	csel	x0, x1, x0, eq  // eq = none
+    9e80fca8:	94000032 	bl	9e80fd70 <prn_string>
+		prn_string("-EL");
+    9e80fcac:	90000000 	adrp	x0, 9e80f000 <__init_stack_N-0x7c0>
+    9e80fcb0:	f9468c00 	ldr	x0, [x0, #3352]
+    9e80fcb4:	9400002f 	bl	9e80fd70 <prn_string>
+	asm volatile("mrs %0, CurrentEL" : "=r" (el) : : "cc");
+    9e80fcb8:	d5384240 	mrs	x0, currentel
+	return el >> 2;
+    9e80fcbc:	53027c00 	lsr	w0, w0, #2
+		str[0] = ('0' + current_el());
+    9e80fcc0:	1100c000 	add	w0, w0, #0x30
+    9e80fcc4:	3900a3e0 	strb	w0, [sp, #40]
+		prn_string(str);
+    9e80fcc8:	9100a3e0 	add	x0, sp, #0x28
+    9e80fccc:	94000029 	bl	9e80fd70 <prn_string>
+		prn_string("@");
+    9e80fcd0:	90000000 	adrp	x0, 9e80f000 <__init_stack_N-0x7c0>
+    9e80fcd4:	f9469000 	ldr	x0, [x0, #3360]
+    9e80fcd8:	94000026 	bl	9e80fd70 <prn_string>
+		prn_dword((unsigned int)(unsigned long)fn);
+    9e80fcdc:	52a00400 	mov	w0, #0x200000              	// #2097152
+    9e80fce0:	94000053 	bl	9e80fe2c <prn_dword>
+	}
+
+	CSTAMP(0xCA0100AA);
+	CSTAMP(core);
+
+	DSB();
+    9e80fce4:	d5033f9f 	dsb	sy
+
+	fn();
+    9e80fce8:	d2a00400 	mov	x0, #0x200000              	// #2097152
+    9e80fcec:	d63f0000 	blr	x0
+}
+    9e80fcf0:	f9400bf3 	ldr	x19, [sp, #16]
+    9e80fcf4:	a8c37bfd 	ldp	x29, x30, [sp], #48
+    9e80fcf8:	d65f03c0 	ret
+    9e80fcfc:	d503201f 	nop
+    9e80fd00:	9e80fe48 	.word	0x9e80fe48
+    9e80fd04:	00000000 	.word	0x00000000
+    9e80fd08:	9e80fe49 	.word	0x9e80fe49
+    9e80fd0c:	00000000 	.word	0x00000000
+    9e80fd10:	9e80fe4b 	.word	0x9e80fe4b
+    9e80fd14:	00000000 	.word	0x00000000
+    9e80fd18:	9e80fe52 	.word	0x9e80fe52
+    9e80fd1c:	00000000 	.word	0x00000000
+    9e80fd20:	9e80fe56 	.word	0x9e80fe56
+    9e80fd24:	00000000 	.word	0x00000000
+
+000000009e80fd28 <wake_cpuN>:
+	CSTAMP(0xCA000100);
+
+	// let smp cores enter _start_a64 (see go_a32_to_a64)
+	for (i = 1; i < SMP_CORES; i++) {
+		cpuN_pos = (unsigned int *)(unsigned long)CORE_CPU_START_POS(i);
+		*cpuN_pos = CPU_WAIT_A64_VAL;
+    9e80fd28:	d29ffe01 	mov	x1, #0xfff0                	// #65520
+    9e80fd2c:	12800020 	mov	w0, #0xfffffffe            	// #-2
+    9e80fd30:	f2b3d001 	movk	x1, #0x9e80, lsl #16
+    9e80fd34:	b9000020 	str	w0, [x1]
+    9e80fd38:	d29ffd81 	mov	x1, #0xffec                	// #65516
+    9e80fd3c:	f2b3d001 	movk	x1, #0x9e80, lsl #16
+    9e80fd40:	b9000020 	str	w0, [x1]
+    9e80fd44:	d29ffd01 	mov	x1, #0xffe8                	// #65512
+    9e80fd48:	f2b3d001 	movk	x1, #0x9e80, lsl #16
+    9e80fd4c:	b9000020 	str	w0, [x1]
+	}
+
+	asm volatile ("dsb sy");
+    9e80fd50:	d5033f9f 	dsb	sy
+	asm volatile ("sev");
+    9e80fd54:	d503209f 	sev
+
+	CSTAMP(0xCA000109);
+}
+    9e80fd58:	d65f03c0 	ret
+
+000000009e80fd5c <uart0_wait>:
+static void uart0_wait(void)
+{
+	unsigned int lsr = 0;
+
+	while (!lsr) {
+		lsr = UART0_REG->lsr;
+    9e80fd5c:	d2812001 	mov	x1, #0x900                 	// #2304
+    9e80fd60:	f2b38001 	movk	x1, #0x9c00, lsl #16
+    9e80fd64:	b9400420 	ldr	w0, [x1, #4]
+	while (!lsr) {
+    9e80fd68:	3607ffe0 	tbz	w0, #0, 9e80fd64 <uart0_wait+0x8>
+		lsr &= 1;
+	}
+}
+    9e80fd6c:	d65f03c0 	ret
+
+000000009e80fd70 <prn_string>:
+	uart0_wait();
+	UART0_REG->dr = c;
+}
+
+void prn_string(const char *str)
+{
+    9e80fd70:	aa0003e2 	mov	x2, x0
+	while (*str) {
+    9e80fd74:	39400000 	ldrb	w0, [x0]
+    9e80fd78:	d2812003 	mov	x3, #0x900                 	// #2304
+	UART0_REG->dr = c;
+    9e80fd7c:	528001a4 	mov	w4, #0xd                   	// #13
+	while (*str) {
+    9e80fd80:	f2b38003 	movk	x3, #0x9c00, lsl #16
+    9e80fd84:	35000040 	cbnz	w0, 9e80fd8c <prn_string+0x1c>
+    9e80fd88:	d65f03c0 	ret
+{
+    9e80fd8c:	a9bf7bfd 	stp	x29, x30, [sp, #-16]!
+    9e80fd90:	910003fd 	mov	x29, sp
+		if (*str == '\n')
+    9e80fd94:	7100281f 	cmp	w0, #0xa
+    9e80fd98:	54000061 	b.ne	9e80fda4 <prn_string+0x34>  // b.any
+	uart0_wait();
+    9e80fd9c:	97fffff0 	bl	9e80fd5c <uart0_wait>
+	UART0_REG->dr = c;
+    9e80fda0:	b9000064 	str	w4, [x3]
+			UART_put_byte('\r');
+		UART_put_byte(*str);
+    9e80fda4:	38401445 	ldrb	w5, [x2], #1
+	uart0_wait();
+    9e80fda8:	97ffffed 	bl	9e80fd5c <uart0_wait>
+	UART0_REG->dr = c;
+    9e80fdac:	b9000065 	str	w5, [x3]
+	while (*str) {
+    9e80fdb0:	39400040 	ldrb	w0, [x2]
+    9e80fdb4:	35ffff00 	cbnz	w0, 9e80fd94 <prn_string+0x24>
+		str++;
+	}
+}
+    9e80fdb8:	a8c17bfd 	ldp	x29, x30, [sp], #16
+    9e80fdbc:	d65f03c0 	ret
+
+000000009e80fdc0 <prn_dword0>:
+		UART_put_byte(c + 0x37);
+	UART_put_byte(' ');
+}
+
+void prn_dword0(unsigned int w)
+{
+    9e80fdc0:	2a0003e5 	mov	w5, w0
+    9e80fdc4:	a9bf7bfd 	stp	x29, x30, [sp, #-16]!
+    9e80fdc8:	910003fd 	mov	x29, sp
+	uart0_wait();
+    9e80fdcc:	97ffffe4 	bl	9e80fd5c <uart0_wait>
+	UART0_REG->dr = c;
+    9e80fdd0:	d2812003 	mov	x3, #0x900                 	// #2304
+    9e80fdd4:	52800600 	mov	w0, #0x30                  	// #48
+    9e80fdd8:	f2b38003 	movk	x3, #0x9c00, lsl #16
+    9e80fddc:	b9000060 	str	w0, [x3]
+	uart0_wait();
+    9e80fde0:	97ffffdf 	bl	9e80fd5c <uart0_wait>
+	UART0_REG->dr = c;
+    9e80fde4:	52800f00 	mov	w0, #0x78                  	// #120
+    9e80fde8:	52800384 	mov	w4, #0x1c                  	// #28
+    9e80fdec:	b9000060 	str	w0, [x3]
+	char c, i;
+
+	UART_put_byte('0');
+	UART_put_byte('x');
+	for (i = 1; i <= 8; i++) {
+		c = (w >> (32 - (i << 2))) & 0xF;
+    9e80fdf0:	1ac424a2 	lsr	w2, w5, w4
+    9e80fdf4:	12000c42 	and	w2, w2, #0xf
+		if (c < 0xA)
+    9e80fdf8:	7100245f 	cmp	w2, #0x9
+    9e80fdfc:	54000128 	b.hi	9e80fe20 <prn_dword0+0x60>  // b.pmore
+	uart0_wait();
+    9e80fe00:	97ffffd7 	bl	9e80fd5c <uart0_wait>
+	UART0_REG->dr = c;
+    9e80fe04:	1100c042 	add	w2, w2, #0x30
+    9e80fe08:	b9000062 	str	w2, [x3]
+	for (i = 1; i <= 8; i++) {
+    9e80fe0c:	51001084 	sub	w4, w4, #0x4
+    9e80fe10:	3100109f 	cmn	w4, #0x4
+    9e80fe14:	54fffee1 	b.ne	9e80fdf0 <prn_dword0+0x30>  // b.any
+			UART_put_byte(c + 0x30);
+		else
+			UART_put_byte(c + 0x37);
+	}
+}
+    9e80fe18:	a8c17bfd 	ldp	x29, x30, [sp], #16
+    9e80fe1c:	d65f03c0 	ret
+	uart0_wait();
+    9e80fe20:	97ffffcf 	bl	9e80fd5c <uart0_wait>
+	UART0_REG->dr = c;
+    9e80fe24:	1100dc42 	add	w2, w2, #0x37
+    9e80fe28:	17fffff8 	b	9e80fe08 <prn_dword0+0x48>
+
+000000009e80fe2c <prn_dword>:
+
+void prn_dword(unsigned int w)
+{
+    9e80fe2c:	a9bf7bfd 	stp	x29, x30, [sp, #-16]!
+    9e80fe30:	910003fd 	mov	x29, sp
+	prn_dword0(w);
+    9e80fe34:	97ffffe3 	bl	9e80fdc0 <prn_dword0>
+	prn_string("\n");
+}
+    9e80fe38:	a8c17bfd 	ldp	x29, x30, [sp], #16
+	prn_string("\n");
+    9e80fe3c:	90000000 	adrp	x0, 9e80f000 <__init_stack_N-0x7c0>
+    9e80fe40:	91396000 	add	x0, x0, #0xe58
+    9e80fe44:	17ffffcb 	b	9e80fd70 <prn_string>
+    9e80fe48:	6300534e 	.inst	0x6300534e ; undefined
+    9e80fe4c:	3065726f 	adr	x15, 9e8dac99 <__etext+0xcae3f>
+    9e80fe50:	452d0020 	sqshrunb	z0.b, z1.h, #3
+    9e80fe54:	0040004c 	.inst	0x0040004c ; undefined
+    9e80fe58:	Address 0x000000009e80fe58 is out of bounds.
+

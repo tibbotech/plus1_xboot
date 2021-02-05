@@ -119,3 +119,12 @@
 #endif
 
 #endif
+
+
+#if defined(PLATFORM_Q645)
+#define BL31_ADDR            0x200000
+#define BL31_LOAD_ADDR       (0x200000 - 0x40)
+#define SMP_CORES 4
+#endif
+
+

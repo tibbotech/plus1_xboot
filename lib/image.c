@@ -7,8 +7,20 @@ static uint32_t sum32(uint32_t sum, uint8_t *data, uint32_t len)
 {
         uint32_t val = 0, pos =0;
 
-        for (; pos + 4 <= len; pos += 4)
-                sum += *(uint32_t *)(data + pos);
+#ifdef CONFIG_BOOT_ON_ZEBU
+	prn_string("sum len=");
+	prn_decimal_ln(len);
+#endif
+
+	for (; pos + 4 <= len; pos += 4) {
+#ifdef CONFIG_BOOT_ON_ZEBU
+		/* print '.' per 64K */
+		if ((pos & 0xffff) == 0) {
+			prn_string(".");
+		}
+#endif
+		sum += *(uint32_t *)(data + pos);
+	}
 
         // word0: 3 2 1 0
         // word1: _ 6 5 4

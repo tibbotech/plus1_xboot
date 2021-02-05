@@ -6,6 +6,7 @@
 #include <config_xboot.h>
 #endif
 #include <types.h>
+#include <romvsr.h>
 #include <stc.h>
 #include <fat/fat.h>
 #ifdef CONFIG_HAVE_USB_DISK
@@ -139,6 +140,15 @@ union storage_buf {
 
 #define SB_FLAG_ENABLE    1
 
+#ifdef PLATFORM_Q645
+#define FLAG_SECURE_ENABLE       (1 << 0)
+#define FLAG_HSM_DISABLE         (1 << 8)
+#define IS_IC_SECURE_ENABLE()    (g_bootinfo.hw_security & FLAG_SECURE_ENABLE)
+#define IS_IC_HSM_DISABLE()      (g_bootinfo.hw_security & FLAG_HSM_DISABLE)
+
+#define IBOOT_FLAG_SILENT        (1 << 0)
+#define IS_IC_SILENT()           (g_bootinfo.iboot_flags & IBOOT_FLAG_SILENT)
+#endif
 struct bootinfo {
 	u32     bootrom_ver;         // iboot version
 	u32     hw_bootmode;         // hw boot mode (latched: auto, nand, usb_isp, sd_isp, etc)
@@ -150,6 +160,9 @@ struct bootinfo {
 	u32     mp_flag;             // mp machine flag
 	u32     bootcpu;             // 0: B, 1: A
 	u32     in_xboot;            // 0=in iboot, 1=in xboot
+#ifdef PLATFORM_Q645	
+	u32     hw_security;         // hw security
+#endif	
 	u32     sb_flag;             // secure boot flag, bit0=1(secure boot)
 
 	/*

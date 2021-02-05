@@ -17,8 +17,10 @@ choice
                 bool "I137"
         config PLATFORM_3502
                 bool "3502"
-config PLATFORM_I143
+	config PLATFORM_I143
 		bool "I143"
+	config PLATFORM_Q645
+		bool "Q645"
 endchoice
 
 config PLATFORM_IC_REV
@@ -170,11 +172,34 @@ menu "Power saving"
 		help
 			Don't power on A's core 2, 3.
 endmenu
+config USE_ROM_SHARE
+	bool "Use rom share"
+	default n
+	depends on PLATFORM_Q645
+
+config LOAD_BL31
+	bool "Load and run BL31 (Secure Monitor)"
+	default y
+	depends on PLATFORM_Q645
 
 menu "Experiments"
+	config A64_EL1
+		bool "Drop from EL3 to EL1 in xBoot"
+		default n
+		depends on PLATFORM_Q645
+		help
+		  By default, xboot is at EL3 AArch64.
+		  Select this option to drop xBoot to NS-EL1(default)
+		  or S-EL1(please modify SCR_VALUE).
+
 	config LOAD_LINUX
 		bool "Load and run Linux"
 		default n
+	config LOAD_DTB
+		bool "Load DTB (if Linux has no builtin DTB)"
+		depends on LOAD_LINUX && !ARCH_NDS
+		default n
+
 endmenu
 
 config SECURE_BOOT_SIGN

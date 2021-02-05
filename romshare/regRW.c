@@ -3,7 +3,15 @@
 #include <common.h>
 #include <cpu/cpu.h>
 
+#ifdef XBOOT_BUILD
 #define CMDLINE "XB> "
+#else
+#ifdef PLATFORM_SPIBAREMETAL
+#define CMDLINE "NOR> "
+#else
+#define CMDLINE "ROM> "
+#endif
+#endif
 
 #define UART_LSR_RX             (1 << 1)
 #define UART_RX_READY()        ((DBG_UART_REG->lsr) & UART_LSR_RX)

@@ -1,0 +1,162 @@
+#include "include/config.h"
+
+OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
+OUTPUT_ARCH(arm)
+ENTRY(_start)
+
+#if defined(PLATFORM_SPIBAREMETAL) && defined(CONFIG_TEST_SECURE)
+#define BOOT_ROM_SIZE       (128 * 1024)
+#else
+#define BOOT_ROM_SIZE       (64 * 1024)
+#endif
+
+/* ROM base */
+#ifdef PLATFORM_SPIBAREMETAL
+#define IBOOT_BASE 0x98000000	/* spi baremetal boot */
+#else
+#define IBOOT_BASE 0xffff0000	/* arm ROM address */
+#endif
+
+#ifdef CONFIG_PLATFORM_8269
+#define ROM_SKIP            512 /* skip n13 code */
+#else
+#define ROM_SKIP            0
+#endif
+
+#define ROM_INIT_SIZE       (1024 + 512 - ROM_SKIP - ROM_VSR_SIZE)
+#define ROM_VSR_SIZE        128
+#define ROM_SHARE_SIZE      (BOOT_ROM_SIZE - ROM_PGTBL_SIZE - ROM_VSR_SIZE - ROM_INIT_SIZE - ROM_SKIP)
+#define ROM_PGTBL_SIZE      8192
+
+#define ROM_INIT_START      (IBOOT_BASE + ROM_SKIP)
+#define ROM_VSR_START       (ROM_INIT_START + ROM_INIT_SIZE)
+#define ROM_SHARE_START     (ROM_VSR_START + ROM_VSR_SIZE)
+#define ROM_PGTBL_START     (ROM_SHARE_START + ROM_SHARE_SIZE)
+
+#if (IBOOT_BASE + BOOT_ROM_SIZE - ROM_PGTBL_SIZE) != ROM_PGTBL_START
+#error "ROM_PGTBL_START must be at last 8K"
+#endif
+
+/* RAM base */
+#define XBOOT_START0        (BOOT_RAM_BASE)
+#define STORAGE_BUF_START   (XBOOT_START0 + XBOOT_BUF_SIZE)
+#define BOOTINFO_START      (STORAGE_BUF_START + STORAGE_BUF_SIZE)
+#define GLOBAL_HEADER_START (BOOTINFO_START + BOOTINFO_SIZE)
+#define CDATA_START         (GLOBAL_HEADER_START + GLOBAL_HEADER_SIZE)
+#define STACK_START         (CDATA_START + CDATA_SIZE)
+#define BOOTCOMPT_START     (STACK_START + STACK_SIZE)
+#define SPACC_RAM_START     (BOOTCOMPT_START + BOOTCOMPT_SIZE)
+
+#ifdef CONFIG_USE_ZMEM
+#define XBOOT_START         (ZMEM_XBOOT_ADDR)  /* xboot @ DRAM */
+#else
+#define XBOOT_START         (XBOOT_START0)
+#endif
+
+MEMORY
+{
+	/* rom */
+	rom_boot     : ORIGIN = ROM_INIT_START   , LENGTH = ROM_INIT_SIZE         /* 1.5K - skip - vsr */
+	rom_vsr      : ORIGIN = ROM_VSR_START    , LENGTH = ROM_VSR_SIZE
+	rom_share    : ORIGIN = ROM_SHARE_START  , LENGTH = ROM_SHARE_SIZE        /* remaining ROM */
+	rom_pgtbl    : ORIGIN = ROM_PGTBL_START  , LENGTH = ROM_PGTBL_SIZE        /* 8K */
+	/* rom_ext : +4KB */
+
+                                                                                  /*    size @ offset  */
+	xboot_buf    : ORIGIN = XBOOT_START        , LENGTH = XBOOT_BUF_SIZE      /* 16K+28K @  0      */
+	storage_buf  : ORIGIN = STORAGE_BUF_START  , LENGTH = STORAGE_BUF_SIZE    /*      9K @ 44K     */
+	bootinfo     : ORIGIN = BOOTINFO_START     , LENGTH = BOOTINFO_SIZE       /*     512 @ 53K     */
+	boothead     : ORIGIN = GLOBAL_HEADER_START, LENGTH = GLOBAL_HEADER_SIZE  /*     512 @ 53K+512 */
+	cdata        : ORIGIN = CDATA_START        , LENGTH = CDATA_SIZE          /*      64 @ 54K     */
+	stack        : ORIGIN = STACK_START        , LENGTH = STACK_SIZE          /*  8K-128 @ 54K+64  */
+	bootcompat   : ORIGIN = BOOTCOMPT_START    , LENGTH = BOOTCOMPT_SIZE      /*      64 @ 62K-64  */
+	spacc_ram    : ORIGIN = SPACC_RAM_START    , LENGTH = SPACC_RAM_START     /*      1K @ 62K     */
+}
+
+SECTIONS
+{
+        /* ROM */
+        .rom_vsr : {
+                __rom_vsr_base = .;
+        } > rom_vsr
+
+	
+	/* RAM */
+	.xhdr (NOLOAD): {
+		*(xboot_header_sect)
+	} > xboot_buf
+
+	.text (XBOOT_START + 0x20) : {
+		arch/arm/q645/start.o (.text) ;
+		*(.text)
+		*(.text.*)
+		*(.rodata)
+		*(.rodata.*)
+
+		. = ALIGN(4);
+		__hsm_keys_s = .;
+#ifdef CONFIG_SECURE_BOOT_SIGN
+		KEEP(secure/hsm_keys/hsmk.o (.hsmk));
+#endif
+		__hsm_keys_e = .;
+
+		. = ALIGN(4);
+		__a64rom = .;
+		KEEP(arch/arm/q645/a64up/a64bin.o (.a64bin));
+		. = ALIGN(4);
+		__a64rom_end = .;
+
+		__etext = .;
+
+		__data = .;
+		*(.data*)
+		__edata = .;
+	} > xboot_buf
+
+        __DATA_ROM_START__ = __data;
+
+	.rom_pgtbl : {
+                __pgtbl_L1_high8K = .;
+                __pgtbl_L1_end = .;
+	} > rom_pgtbl
+
+	PROVIDE (_mmu_pgtable = __pgtbl_L1_high8K - (8 * 1024));
+
+	/* RAM */
+	.xboot_buf (NOLOAD): {
+		*(xboot_buf_sect)
+	} > xboot_buf
+
+	.bootinfo (NOLOAD): {
+		*(bootinfo_sect)
+	} > bootinfo
+
+	.boothead (NOLOAD): {
+		*(boothead_sect)
+	} > boothead
+
+	.storage_buf (NOLOAD): {
+		__storage_buf_beg = .;
+		*(storage_buf_sect)
+		__except_stack_top = __storage_buf_beg + STORAGE_BUF_SIZE ; /* borrow storage buf end */
+	} > storage_buf
+
+	.bss : {
+		__bss_start = .;
+		KEEP(*(.bss*));
+		KEEP(*(.sbss*));
+		KEEP(*(COMMON));
+		. = ALIGN(4);
+		__bss_end = .;
+		__bss_end__ = .;
+	} > cdata
+
+	.stack : {
+		__stack_base = .;
+		PROVIDE (__stack_top = __stack_base + STACK_SIZE);
+	} > stack
+
+	/DISCARD/ : {
+		*(.note.gnu.build-id)
+	}
+}

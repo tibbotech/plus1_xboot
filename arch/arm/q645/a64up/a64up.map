@@ -1,0 +1,126 @@
+
+Discarded input sections
+
+ .data          0x0000000000000000        0x0 start_a64.o
+ .bss           0x0000000000000000        0x0 start_a64.o
+ .text          0x0000000000000000        0x0 smp.o
+ .data          0x0000000000000000        0x0 smp.o
+ .bss           0x0000000000000000        0x0 smp.o
+ .eh_frame      0x0000000000000000       0x50 smp.o
+ .text          0x0000000000000000        0x0 diag_min.o
+ .data          0x0000000000000000        0x0 diag_min.o
+ .bss           0x0000000000000000        0x0 diag_min.o
+ .text.uart0_putc
+                0x0000000000000000       0x24 diag_min.o
+ .text.prn_byte
+                0x0000000000000000       0x78 diag_min.o
+ .eh_frame      0x0000000000000000       0xc8 diag_min.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+ram              0x000000009e80fc00 0x0000000000000400
+*default*        0x0000000000000000 0xffffffffffffffff
+
+Linker script and memory map
+
+LOAD start_a64.o
+LOAD smp.o
+LOAD diag_min.o
+LOAD /home/haiq.tang/new/crossgcc/gcc-arm-9.2-2019.12-x86_64-aarch64-none-linux-gnu/bin/../lib/gcc/aarch64-none-linux-gnu/9.2.1/libgcc.a
+
+.stext          0x000000009e80fc00      0x25a
+                0x000000009e80fc00                __stext = .
+ start_a64.o(.text)
+ .text          0x000000009e80fc00       0x60 start_a64.o
+                0x000000009e80fc00                _start_a64
+ *(.text*)
+ .text.boot_cpuN
+                0x000000009e80fc60       0xc8 smp.o
+                0x000000009e80fc60                boot_cpuN
+ .text.wake_cpuN
+                0x000000009e80fd28       0x34 smp.o
+                0x000000009e80fd28                wake_cpuN
+ .text.uart0_wait
+                0x000000009e80fd5c       0x14 diag_min.o
+ .text.prn_string
+                0x000000009e80fd70       0x50 diag_min.o
+                0x000000009e80fd70                prn_string
+ .text.prn_dword0
+                0x000000009e80fdc0       0x6c diag_min.o
+                0x000000009e80fdc0                prn_dword0
+ .text.prn_dword
+                0x000000009e80fe2c       0x1c diag_min.o
+                0x000000009e80fe2c                prn_dword
+ *(.rodata*)
+ .rodata.boot_cpuN.str1.1
+                0x000000009e80fe48       0x10 smp.o
+                                         0x12 (size before relaxing)
+ .rodata.prn_dword.str1.1
+                0x000000009e80fe58        0x2 diag_min.o
+                0x000000009e80fe5a                __etext = .
+                0x000000009e80f7c0                __init_stack_N = 0x9e80f7c0
+OUTPUT(.//a64up elf64-littleaarch64)
+
+.iplt           0x000000009e80fe5c        0x0
+ .iplt          0x000000009e80fe5c        0x0 start_a64.o
+
+.eh_frame_hdr   0x000000009e80fe5c        0x0
+ .eh_frame_hdr  0x000000009e80fe5c        0x0 smp.o
+
+.igot.plt       0x000000009e80fe60        0x0
+ .igot.plt      0x000000009e80fe60        0x0 start_a64.o
+
+.rela.dyn       0x000000009e80fe60        0x0
+ .rela.iplt     0x000000009e80fe60        0x0 start_a64.o
+ .rela.text     0x000000009e80fe60        0x0 start_a64.o
+
+.debug_line     0x0000000000000000      0x3b5
+ .debug_line    0x0000000000000000       0x4d start_a64.o
+ .debug_line    0x000000000000004d       0xf1 smp.o
+ .debug_line    0x000000000000013e      0x277 diag_min.o
+
+.debug_info     0x0000000000000000      0x822
+ .debug_info    0x0000000000000000       0x2e start_a64.o
+ .debug_info    0x000000000000002e      0x2aa smp.o
+ .debug_info    0x00000000000002d8      0x54a diag_min.o
+
+.debug_abbrev   0x0000000000000000      0x309
+ .debug_abbrev  0x0000000000000000       0x14 start_a64.o
+ .debug_abbrev  0x0000000000000014      0x160 smp.o
+ .debug_abbrev  0x0000000000000174      0x195 diag_min.o
+
+.debug_aranges  0x0000000000000000       0xf0
+ .debug_aranges
+                0x0000000000000000       0x30 start_a64.o
+ .debug_aranges
+                0x0000000000000030       0x40 smp.o
+ .debug_aranges
+                0x0000000000000070       0x80 diag_min.o
+
+.debug_str      0x0000000000000000      0x27b
+ .debug_str     0x0000000000000000       0x4d start_a64.o
+ .debug_str     0x000000000000004d      0x10d smp.o
+                                        0x164 (size before relaxing)
+ .debug_str     0x000000000000015a      0x121 diag_min.o
+                                        0x1b0 (size before relaxing)
+
+.debug_loc      0x0000000000000000      0x6a0
+ .debug_loc     0x0000000000000000      0x18d smp.o
+ .debug_loc     0x000000000000018d      0x513 diag_min.o
+
+.debug_ranges   0x0000000000000000      0x190
+ .debug_ranges  0x0000000000000000       0x30 smp.o
+ .debug_ranges  0x0000000000000030      0x160 diag_min.o
+
+.comment        0x0000000000000000       0x5a
+ .comment       0x0000000000000000       0x5a smp.o
+                                         0x5b (size before relaxing)
+ .comment       0x000000000000005a       0x5b diag_min.o
+
+.note.GNU-stack
+                0x0000000000000000        0x0
+ .note.GNU-stack
+                0x0000000000000000        0x0 smp.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 diag_min.o

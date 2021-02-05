@@ -1,12 +1,26 @@
 sinclude .config
 
+###########  ARCH CPU_PATH config ######################
 ifeq ($(CONFIG_ARCH_ARM), y)
 ARCH := arm
 else ifeq ($(CONFIG_ARCH_RISCV), y)
 ARCH := riscv
 endif
-# Toolchain path
-# Toolchain path v5
+
+CPU_PATH ?=
+ifeq ($(CONFIG_PLATFORM_Q628),y)
+CPU_PATH := arm/q628
+else ifeq ($(CONFIG_PLATFORM_Q645),y)
+CPU_PATH := arm/q645
+else ifeq ($(CONFIG_PLATFORM_I143),y)
+CPU_PATH := riscv/i143
+endif
+
+###########  Toolchain path ######################
+ifeq ($(CONFIG_PLATFORM_Q645),y)
+# for test 
+CROSS  := ../../crossgcc/gcc-arm-9.2-2019.12-x86_64-arm-none-eabi/bin/arm-none-eabi-
+endif
 ifneq ($(CROSS),)
 CC = $(CROSS)gcc
 CPP = $(CROSS)cpp
@@ -14,32 +28,48 @@ OBJCOPY = $(CROSS)objcopy
 OBJDUMP = $(CROSS)objdump
 endif
 
-BIN     := bin
-TARGET  := xboot
-CFLAGS   = -Os -Wall -g -nostdlib -fno-builtin -Iinclude -Iarch/$(ARCH)/include -I.
-CFLAGS += -ffunction-sections -fdata-sections
-CFLAGS += -fno-pie -fno-PIE -fno-pic -fno-PIC
-CFLAGS += -fno-partial-inlining -fno-jump-tables
-CFLAGS += -static
-LD_GEN   = arch/$(ARCH)/boot.ld
-LD_SRC   = arch/$(ARCH)/boot.ldi
+###########  LDFLAGS CONFIG ######################
+LD_GEN   = arch/$(CPU_PATH)/boot.ld
+LD_SRC   = arch/$(CPU_PATH)/boot.ldi
 LDFLAGS  = -L $(shell dirname `$(CC) -print-libgcc-file-name`) -lgcc
 #LDFLAGS += -Wl,--gc-sections,--print-gc-sections
 LDFLAGS += -Wl,--gc-sections
 LDFLAGS +=  -Wl,--build-id=none
 
+###########  CFLAGS CONFIG ######################
+CFLAGS   = -Os -Wall -g -nostdlib -fno-builtin -Iinclude -Iarch/$(CPU_PATH)/include -I.
+CFLAGS += -ffunction-sections -fdata-sections
+CFLAGS += -fno-pie -fno-PIE -fno-pic -fno-PIC
+CFLAGS += -fno-partial-inlining -fno-jump-tables
+CFLAGS += -static
+
 ifeq ($(ARCH),arm)
-CFLAGS  += -march=armv5te -mthumb -mthumb-interwork
+CFLAGS  += -mthumb -mthumb-interwork
 else
 CFLAGS	+= -march=rv64gc -mabi=lp64d -mcmodel=medany -msave-restore
 endif
+
+ifeq ($(CONFIG_PLATFORM_Q628),y)
+CFLAGS  += -march=armv5te
+endif
+
+ifeq ($(CONFIG_PLATFORM_Q645),y)
+CFLAGS  += -march=armv8-a -fno-delete-null-pointer-checks
+CFLAGS  += -mno-unaligned-access
+CFLAGS  += -ffunction-sections -fdata-sections
+CFLAGS  += -Wno-unused-function
+endif
+
+################## RISCV C+P config ##################
 ifeq ($(CONFIG_I143_C_P), y)
 CROSS_ARM   := ../../crossgcc/armv5-eabi--glibc--stable/bin/armv5-glibc-linux-
-CFLAGS_C_P   = -Os -Wall -g -nostdlib -fno-builtin -Iinclude -Iarch/arm/include -I. -ffunction-sections -fdata-sections -march=armv5te
+CFLAGS_C_P   = -Os -Wall -g -nostdlib -fno-builtin -Iinclude -Iarch/arm/q628/include -I. -ffunction-sections -fdata-sections -march=armv5te
 LDFLAGS_C_P  = -L $(shell dirname `$(CROSS_ARM)gcc -print-libgcc-file-name`) -lgcc -Wl,--gc-sections,--print-gc-sections
-TARGET_C_P	 = xboot_C_P
-START_C_P_PATH = arch/riscv/arm_ca7
+TARGET_C_P  = xboot_C_P
+START_C_P_PATH = arch/riscv/i143/arm_ca7
 endif
+
+################# xboot size config ################
 ifeq ($(CONFIG_PLATFORM_IC_REV),2)
 XBOOT_MAX := $$((26 * 1024))
 else
@@ -48,11 +78,19 @@ endif
 ifeq ($(ARCH),riscv)
 XBOOT_MAX = $$((38 * 1024))
 endif
+
+ifeq ($(CONFIG_PLATFORM_Q645),y)
+XBOOT_MAX =$$((44 * 1024))
+endif
+
+#################### make #######################
 .PHONY: release debug
 
 # default target
 release debug: all
 
+BIN     := bin
+TARGET  := xboot
 
 all:  $(TARGET)
 	@# 32-byte xboot header
@@ -106,10 +144,10 @@ build_draminit:
 	@echo ""
 
 # Boot up
-ASOURCES_START := arch/$(ARCH)/start.S
+ASOURCES_START := arch/$(CPU_PATH)/start.S
 ifeq ($(CONFIG_SECURE_BOOT_SIGN), y)
-ifeq ($(ARCH),arm)
-ASOURCES_V5 := arch/$(ARCH)/cpu/mmu_ops.S
+ifeq ($(CONFIG_PLATFORM_Q628),y)
+ASOURCES_V5 := arch/$(CPU_PATH)/cpu/mmu_ops.S
 endif
 endif
 #ASOURCES_V7 := v7_start.S
@@ -131,11 +169,11 @@ CSOURCES += common/common.c common/bootmain.c common/stc.c
 CSOURCES += common/string.c lib/image.c
 
 # ARM code
-CSOURCES += arch/$(ARCH)/cpu/cpu.c arch/$(ARCH)/cpu/interrupt.c lib/eabi_compat.c
+CSOURCES += arch/$(CPU_PATH)/cpu/cpu.c arch/$(CPU_PATH)/cpu/interrupt.c lib/eabi_compat.c
 ifeq ($(ARCH),arm)
 space :=
 space +=
-arch/$(ARCH)/cpu/cpu.o: CFLAGS:=$(subst -mthumb$(space),,$(CFLAGS))
+arch/$(CPU_PATH)/cpu/cpu.o: CFLAGS:=$(subst -mthumb$(space),,$(CFLAGS))
 endif
 
 # Generic Boot Device
@@ -184,16 +222,23 @@ CSOURCES += draminit/dram_test.c
 OBJS = $(ASOURCES:.S=.o) $(CSOURCES:.c=.o)
 
 $(OBJS): prepare
+
 ifeq ($(CONFIG_I143_C_P), y)
 $(TARGET): $(OBJS) I143_C_P
+else ifeq ($(CONFIG_PLATFORM_Q645),y)
+$(TARGET): $(OBJS) hsmk a64bin
 else
 $(TARGET): $(OBJS)
 endif
+
 	@echo ">>>>> Link $@  "
 	@$(CPP) -P $(CFLAGS) -x c $(LD_SRC) -o $(LD_GEN)
 	$(CC) $(CFLAGS) $(OBJS) $(DRAMINIT_OBJ) -T $(LD_GEN) $(LDFLAGS) -o $(BIN)/$(TARGET) -Wl,-Map,$(BIN)/$(TARGET).map
 	@$(OBJCOPY) -O binary -S $(BIN)/$(TARGET) $(BIN)/$(TARGET).bin
 	@$(OBJDUMP) -d -S $(BIN)/$(TARGET) > $(BIN)/$(TARGET).dis
+ifeq ($(CONFIG_PLATFORM_Q645),y)
+	@cd secure; ./build_xboot_sb.sh
+endif
 ifeq ($(CONFIG_I143_C_P), y)
 	@dd if=$(BIN)/$(TARGET_C_P).bin of=$(BIN)/$(TARGET).bin bs=1k seek=26 conv=notrunc 2>/dev/null
 endif
@@ -215,6 +260,25 @@ endif
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
+
+a64bin: prepare
+	@echo "Build a64 bin"
+	@$(MAKE) -C arch/arm/q645/a64up/
+	@$(CROSS)objcopy -I binary -O elf32-littlearm -B arm \
+                --rename-section .data=.a64bin arch/arm/q645/a64up/a64up.bin arch/arm/q645/a64up/a64bin.o
+
+HSMK_BIN=secure/hsm_keys/hsmk.bin
+HSMK_OBJ=secure/hsm_keys/hsmk.o
+hsmk:
+ifeq ($(CONFIG_SECURE_BOOT_SIGN), y)
+	@echo "Build hsm key obj"
+	@if [ ! -f $(HSMK_BIN) ];then \
+		echo "Not found hsm key bin: $(HSMK_BIN)" ; \
+		exit 1; \
+	 fi
+	@$(CROSS)objcopy -I binary -O elf32-littlearm -B arm \
+                --rename-section .data=.hsmk $(HSMK_BIN) $(HSMK_OBJ)
+endif
 
 I143_C_P: prepare
 	@echo "build arm ca7 !!!"

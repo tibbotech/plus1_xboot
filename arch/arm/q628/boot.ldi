@@ -58,7 +58,7 @@ SECTIONS
 	/* RAM */
 	.text (XBOOT_ADDR + 0x20) :
 	{
-		arch/arm/start.o (.text*)
+		arch/arm/q628/start.o (.text*)
 		*(.rodata*)
 		*(.text*)
 		__etext = .;

@@ -550,7 +550,7 @@ static void boot_uboot(void)
 		copy_bootinfo_to_0xfe809a00();
 		exit_bootROM(OPENSBI_RUN_ADDR);
 	}
-#else
+#elif defined(PLATFORM_Q628)
 	prn_string((const char *)image_get_name(hdr)); prn_string("\n");
 
 	boot_next_set_addr(UBOOT_RUN_ADDR);
@@ -580,7 +580,7 @@ static void boot_linux(void)
 {
 #ifdef PLATFORM_I143
 	exit_bootROM(OPENSBI_RUN_ADDR);
-#else
+#elif defined(PLATFORM_Q628)
 	__attribute__((unused)) int is_for_A = 0;
 	const struct image_header *hdr = (struct image_header *)LINUX_LOAD_ADDR;
 

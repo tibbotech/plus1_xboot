@@ -20,7 +20,7 @@ SECTIONS
 	.public :
 	{
 		__rom_base = .;
-		KEEP(arch/riscv/arm_ca7/start_c_p.o (.text));
+		KEEP(arch/riscv/i143/arm_ca7/start_c_p.o (.text));
 	} > public
 
 	.text :
