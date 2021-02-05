@@ -63,6 +63,9 @@ static void load_otp_pub_key(unsigned char *in_pub)
 
 int verify_uboot_signature(const struct image_header  *hdr)
 {
+#ifdef PLATFORM_Q645
+	return 1;
+#endif
 	int sig_size = 64;
 	int sig_flag_size = 8;
 	int ret = -1,mmu = 1;

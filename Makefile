@@ -94,8 +94,14 @@ TARGET  := xboot
 
 all:  $(TARGET)
 	@# 32-byte xboot header
+ifeq ($(CONFIG_SECURE_BOOT_SIGN), y)
+ifeq ($(CONFIG_PLATFORM_Q645),y)
+	@cd secure; ./build_xboot_sb.sh
+	@bash ./add_xhdr.sh secure/out/xboot_sb.bin $(BIN)/$(TARGET).img 1
+endif	
+else
 	@bash ./add_xhdr.sh $(BIN)/$(TARGET).bin $(BIN)/$(TARGET).img 0
-
+endif
 ifeq ($(CONFIG_STANDALONE_DRAMINIT), y)
 	@# print draminit.img size
 	@sz=`du -sb $(DRAMINIT_IMG) | cut -f1` ; \
@@ -236,9 +242,6 @@ endif
 	$(CC) $(CFLAGS) $(OBJS) $(DRAMINIT_OBJ) -T $(LD_GEN) $(LDFLAGS) -o $(BIN)/$(TARGET) -Wl,-Map,$(BIN)/$(TARGET).map
 	@$(OBJCOPY) -O binary -S $(BIN)/$(TARGET) $(BIN)/$(TARGET).bin
 	@$(OBJDUMP) -d -S $(BIN)/$(TARGET) > $(BIN)/$(TARGET).dis
-ifeq ($(CONFIG_PLATFORM_Q645),y)
-	@cd secure; ./build_xboot_sb.sh
-endif
 ifeq ($(CONFIG_I143_C_P), y)
 	@dd if=$(BIN)/$(TARGET_C_P).bin of=$(BIN)/$(TARGET).bin bs=1k seek=26 conv=notrunc 2>/dev/null
 endif
