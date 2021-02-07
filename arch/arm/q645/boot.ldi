@@ -4,31 +4,23 @@ OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
 OUTPUT_ARCH(arm)
 ENTRY(_start)
 
-#if defined(PLATFORM_SPIBAREMETAL) && defined(CONFIG_TEST_SECURE)
-#define BOOT_ROM_SIZE       (128 * 1024)
-#else
-#define BOOT_ROM_SIZE       (64 * 1024)
-#endif
+#define BOOT_ROM_SIZE       (96 * 1024)
 
 /* ROM base */
 #ifdef PLATFORM_SPIBAREMETAL
-#define IBOOT_BASE 0x98000000	/* spi baremetal boot */
+#define IBOOT_BASE SPI_FLASH_BASE	/* spi baremetal boot */
 #else
-#define IBOOT_BASE 0xffff0000	/* arm ROM address */
+#define IBOOT_BASE BOOT_ROM_BASE	/* arm ROM address */
 #endif
 
-#ifdef CONFIG_PLATFORM_8269
-#define ROM_SKIP            512 /* skip n13 code */
-#else
-#define ROM_SKIP            0
-#endif
-
-#define ROM_INIT_SIZE       (1024 + 512 - ROM_SKIP - ROM_VSR_SIZE)
+#define ROM_SHARE2_SIZE     (32 * 1024)
+#define ROM_INIT_SIZE       (1024 + 512 - ROM_VSR_SIZE)
 #define ROM_VSR_SIZE        128
-#define ROM_SHARE_SIZE      (BOOT_ROM_SIZE - ROM_PGTBL_SIZE - ROM_VSR_SIZE - ROM_INIT_SIZE - ROM_SKIP)
-#define ROM_PGTBL_SIZE      8192
+#define ROM_SHARE_SIZE      (BOOT_ROM_SIZE - ROM_SHARE2_SIZE - ROM_PGTBL_SIZE - ROM_VSR_SIZE - ROM_INIT_SIZE)
+#define ROM_PGTBL_SIZE      (8 * 1024)
 
-#define ROM_INIT_START      (IBOOT_BASE + ROM_SKIP)
+#define ROM_SHARE2_START    (IBOOT_BASE)
+#define ROM_INIT_START      (ROM_SHARE2_START + ROM_SHARE2_SIZE)
 #define ROM_VSR_START       (ROM_INIT_START + ROM_INIT_SIZE)
 #define ROM_SHARE_START     (ROM_VSR_START + ROM_VSR_SIZE)
 #define ROM_PGTBL_START     (ROM_SHARE_START + ROM_SHARE_SIZE)
@@ -38,49 +30,48 @@ ENTRY(_start)
 #endif
 
 /* RAM base */
-#define XBOOT_START0        (BOOT_RAM_BASE)
-#define STORAGE_BUF_START   (XBOOT_START0 + XBOOT_BUF_SIZE)
-#define BOOTINFO_START      (STORAGE_BUF_START + STORAGE_BUF_SIZE)
-#define GLOBAL_HEADER_START (BOOTINFO_START + BOOTINFO_SIZE)
-#define CDATA_START         (GLOBAL_HEADER_START + GLOBAL_HEADER_SIZE)
-#define STACK_START         (CDATA_START + CDATA_SIZE)
-#define BOOTCOMPT_START     (STACK_START + STACK_SIZE)
-#define SPACC_RAM_START     (BOOTCOMPT_START + BOOTCOMPT_SIZE)
-
 #ifdef CONFIG_USE_ZMEM
 #define XBOOT_START         (ZMEM_XBOOT_ADDR)  /* xboot @ DRAM */
 #else
-#define XBOOT_START         (XBOOT_START0)
+#define XBOOT_START         (BOOT_RAM_BASE)
 #endif
+
+#define BOOTINFO_START      (XBOOT_START + XBOOT_BUF_SIZE)
+#define GLOBAL_HEADER_START (BOOTINFO_START + BOOTINFO_SIZE)
+#define CDATA_START         (GLOBAL_HEADER_START + GLOBAL_HEADER_SIZE)
+#define STORAGE_BUF_START   (CDATA_START + CDATA_SIZE)
+#define SPACC_RAM_START     (STORAGE_BUF_START + STORAGE_BUF_SIZE)
+#define STACK_START         (SPACC_RAM_START + SPACC_RAM_SIZE)
+#define BOOTCOMPT_START     (STACK_START + STACK_SIZE)
 
 MEMORY
 {
 	/* rom */
-	rom_boot     : ORIGIN = ROM_INIT_START   , LENGTH = ROM_INIT_SIZE         /* 1.5K - skip - vsr */
-	rom_vsr      : ORIGIN = ROM_VSR_START    , LENGTH = ROM_VSR_SIZE
-	rom_share    : ORIGIN = ROM_SHARE_START  , LENGTH = ROM_SHARE_SIZE        /* remaining ROM */
-	rom_pgtbl    : ORIGIN = ROM_PGTBL_START  , LENGTH = ROM_PGTBL_SIZE        /* 8K */
+	rom_share2   : ORIGIN = ROM_SHARE2_START,    LENGTH = ROM_SHARE2_SIZE     /* 32K */
+	rom_boot     : ORIGIN = ROM_INIT_START,      LENGTH = ROM_INIT_SIZE       /* 1.5K - skip - vsr */
+	rom_vsr      : ORIGIN = ROM_VSR_START,       LENGTH = ROM_VSR_SIZE
+	rom_share    : ORIGIN = ROM_SHARE_START,     LENGTH = ROM_SHARE_SIZE      /* remaining ROM */
+	rom_pgtbl    : ORIGIN = ROM_PGTBL_START,     LENGTH = ROM_PGTBL_SIZE      /* 8K */
 	/* rom_ext : +4KB */
 
-                                                                                  /*    size @ offset  */
-	xboot_buf    : ORIGIN = XBOOT_START        , LENGTH = XBOOT_BUF_SIZE      /* 16K+28K @  0      */
-	storage_buf  : ORIGIN = STORAGE_BUF_START  , LENGTH = STORAGE_BUF_SIZE    /*      9K @ 44K     */
-	bootinfo     : ORIGIN = BOOTINFO_START     , LENGTH = BOOTINFO_SIZE       /*     512 @ 53K     */
-	boothead     : ORIGIN = GLOBAL_HEADER_START, LENGTH = GLOBAL_HEADER_SIZE  /*     512 @ 53K+512 */
-	cdata        : ORIGIN = CDATA_START        , LENGTH = CDATA_SIZE          /*      64 @ 54K     */
-	stack        : ORIGIN = STACK_START        , LENGTH = STACK_SIZE          /*  8K-128 @ 54K+64  */
-	bootcompat   : ORIGIN = BOOTCOMPT_START    , LENGTH = BOOTCOMPT_SIZE      /*      64 @ 62K-64  */
-	spacc_ram    : ORIGIN = SPACC_RAM_START    , LENGTH = SPACC_RAM_START     /*      1K @ 62K     */
+	                                                                          /*    size @ offset  */
+	xboot_buf    : ORIGIN = XBOOT_START,         LENGTH = XBOOT_BUF_SIZE      /*     96K @  0      */
+	bootinfo     : ORIGIN = BOOTINFO_START,      LENGTH = BOOTINFO_SIZE       /*     512 @ 96K     */
+	boothead     : ORIGIN = GLOBAL_HEADER_START, LENGTH = GLOBAL_HEADER_SIZE  /*     512 @ 96K+512 */
+	cdata        : ORIGIN = CDATA_START,         LENGTH = CDATA_SIZE          /*     31k @ 97K     */
+	storage_buf  : ORIGIN = STORAGE_BUF_START,   LENGTH = STORAGE_BUF_SIZE    /*     32K @ 128K    */
+	spacc_ram    : ORIGIN = SPACC_RAM_START,     LENGTH = SPACC_RAM_START     /*      4K @ 160K    */
+	stack        : ORIGIN = STACK_START,         LENGTH = STACK_SIZE          /*  92K-64 @ 164K    */
+	bootcompat   : ORIGIN = BOOTCOMPT_START,     LENGTH = BOOTCOMPT_SIZE      /*      64 @ 256K-64 */
 }
 
 SECTIONS
 {
-        /* ROM */
-        .rom_vsr : {
-                __rom_vsr_base = .;
-        } > rom_vsr
+	/* ROM */
+	.rom_vsr : {
+		__rom_vsr_base = .;
+	} > rom_vsr
 
-	
 	/* RAM */
 	.xhdr (NOLOAD): {
 		*(xboot_header_sect)
@@ -113,11 +104,11 @@ SECTIONS
 		__edata = .;
 	} > xboot_buf
 
-        __DATA_ROM_START__ = __data;
+	__DATA_ROM_START__ = __data;
 
 	.rom_pgtbl : {
-                __pgtbl_L1_high8K = .;
-                __pgtbl_L1_end = .;
+		__pgtbl_L1_high8K = .;
+		__pgtbl_L1_end = .;
 	} > rom_pgtbl
 
 	PROVIDE (_mmu_pgtable = __pgtbl_L1_high8K - (8 * 1024));

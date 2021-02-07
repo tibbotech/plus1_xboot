@@ -21,9 +21,9 @@
 #endif
 
 /* Emulation */
-#ifdef CONFIG_PLATFORM_Q628
+#if defined(CONFIG_PLATFORM_Q628)
 #define PLATFORM_Q628                   /* Build for Q628 */
-#elif CONFIG_PLATFORM_Q645
+#elif defined(CONFIG_PLATFORM_Q645)
 #define PLATFORM_Q645                   /* Build for Q645 */
 #elif defined(CONFIG_PLATFORM_I143)
 #define PLATFORM_I143                   /* Build for I143 */
@@ -94,7 +94,26 @@
 #define HW_CFG_MASK_VAL         0x1F
 #define HW_CFG_MASK             (HW_CFG_MASK_VAL << HW_CFG_SHIFT)
 
-#ifdef PLATFORM_I143
+#if defined(PLATFORM_Q645)
+#define EMMC_BOOT               0x1F
+#define SPINAND_BOOT            0x1D
+#define USB_ISP                 0x1B
+#define SDCARD_ISP              0x19
+#define SPI_NOR_BOOT            0x17
+#define UART_ISP                0x15
+#define EXT_BOOT1               0x13
+#define AUTO_SCAN               0x11
+#define EXT_EMMC_BOOT           0x0F
+#define EXT_SPINAND_BOOT        0x0D
+#define EXT_USB_ISP             0x0B
+#define EXT_SDCARD_ISP          0x09
+#define EXT_SPI_NOR_BOOT        0x07
+#define EXT_UART_ISP            0x05
+#define EXT_BOOT2               0x03
+#define EXT_AUTO_SCAN           0x01
+#define SDCARD_BOOT             0xfe
+#define NAND_LARGE_BOOT         0xff
+#elif defined(PLATFORM_I143)
 #define AUTO_SCAN               0x01
 #define EMMC_BOOT               0x05
 #define SPI_NOR_BOOT            0x07
@@ -156,33 +175,47 @@
 /**********************
  * ROM
  *********************/
+#if defined(PLATFORM_Q645)
+#define BOOT_ROM_BASE       0xfa0e8000
+#else
 #define BOOT_ROM_BASE       0xffff0000
+#endif
 #define PROTECT_STA_ADDR    0xd000 /* ROM private section */
 #define PROTECT_END_ADDR    0xffff /* ROM end */
 
 /**********************
  * SPI
  *********************/
-#ifdef PLATFORM_I143
+#if defined(PLATFORM_Q645)
+#define SPI_FLASH_BASE      0xF0000000
+#elif defined(PLATFORM_I143)
 #define SPI_FLASH_BASE      0xF8000000
 #else
 #define SPI_FLASH_BASE      0x98000000
 #endif
 #define SPI_IBOOT_OFFSET    ( 0 * 1024)
+#if defined(PLATFORM_Q645)
+#define SPI_XBOOT_OFFSET    (96 * 1024)
+#else
 #define SPI_XBOOT_OFFSET    (64 * 1024)
+#endif
 
 #define MAGIC_NUM_SPI_BAREMETAL 0x6D622B52
 
 /**********************
  * SRAM
  *********************/
-#if defined(PLATFORM_I143)
+#if defined(PLATFORM_Q645)
+#define SRAM0_SIZE          (256 * 1024)
+#elif defined(PLATFORM_I143)
 #define SRAM0_SIZE          (64 * 1024)
 #else
 #define SRAM0_SIZE          (40 * 1024)
 #endif
 
-#ifdef PLATFORM_I143
+#if defined(PLATFORM_Q645)
+#define SRAM0_BASE          0xFA200000
+#elif defined(PLATFORM_I143)
 #define SRAM0_BASE          0xFE800000
 #else
 #define SRAM0_BASE          0x9E800000
@@ -208,7 +241,15 @@
 #define A_WORK_MEM_END      (A_WORK_MEM_BASE + A_WORK_MEM_SIZE)
 
 /* SRAM layout: must match with boot.ldi */
-#if defined(PLATFORM_I143)
+#if defined(PLATFORM_Q645)
+#define XBOOT_BUF_SIZE      (96 * 1024)
+#define STORAGE_BUF_SIZE    (32 * 1024)
+#define BOOTINFO_SIZE       (512)
+#define GLOBAL_HEADER_SIZE  (512)
+#define CDATA_SIZE          (31 * 1024)
+#define SPACC_RAM_SIZE      (4 * 1024)
+#define STACK_SIZE          (96 * 1024 - 64)
+#elif defined(PLATFORM_I143)
 #if defined(CONFIG_HAVE_SNPS_USB3_DISK)
 #define XBOOT_BUF_SIZE      (37 * 1024)
 #define STORAGE_BUF_SIZE    (23 * 1024)
@@ -246,9 +287,9 @@
 #define DSB()    do { asm volatile ("dsb"); } while (0)
 #endif
 
-#define BOOT_RAM_BASE		SRAM0_BASE
-#define XBOOT_A64_ADDR      (BOOT_RAM_BASE + (63 * 1024))
-#define BOOTCOMPT_SIZE	64	
+#define BOOT_RAM_BASE          SRAM0_BASE
+#define XBOOT_A64_ADDR         (BOOT_RAM_BASE + (0 * 1024))
+#define BOOTCOMPT_SIZE         64
 
 #endif
 
@@ -258,10 +299,10 @@
 #ifdef PLATFORM_Q645
 #define CPU_WAIT_A64_VAL    	 	0xfffffffe
 #define CORE_CPU_START_POS(core_id)  (CORE0_CPU_START_POS - ((core_id) * 4))
-#define CORE3_CPU_START_POS          (0x9e810000 - 0x18)  // core3 wait 9e80_ffe8
-#define CORE2_CPU_START_POS          (0x9e810000 - 0x14)  // core2 wait 9e80_ffec
-#define CORE1_CPU_START_POS          (0x9e810000 - 0x10)  // core1 wait 9e80_fff0
-#define CORE0_CPU_START_POS          (0x9e810000 - 0xc)   // core0 wait 9e80_fff4
+#define CORE3_CPU_START_POS          (0xfa240000 - 0x18)  // core3 wait fa23_ffe8
+#define CORE2_CPU_START_POS          (0xfa240000 - 0x14)  // core2 wait fa23_ffec
+#define CORE1_CPU_START_POS          (0xfa240000 - 0x10)  // core1 wait fa23_fff0
+#define CORE0_CPU_START_POS          (0xfa240000 - 0xc)   // core0 wait fa23_fff4
 #endif
 
 #define CPU_WAIT_INIT_VAL        0xffffffff
@@ -269,14 +310,18 @@
 #define B_START_POS              (SRAM0_END - 0x8)       // 9e809ff8
 #define BOOT_ANOTHER_POS         (SRAM0_END - 0x4)       // 9e809ffc
 
-#ifdef PLATFORM_Q628
+#if defined(PLATFORM_Q628)
+#define A_START_POS_B_VIEW       (SRAM0_END - 0xc)
+#define A_START_POS_A_VIEW       A_START_POS_B_VIEW
+#define BOOT_ANOTHER_POS_A_VIEW  BOOT_ANOTHER_POS
+#elif defined(PLATFORM_Q628)
 /* B can access A sram */
 #define A_START_POS_B_VIEW        (A_WORK_MEM_END - 0xc) // 9ea7fff4 - (core * 4)
 #define A_START_POS_A_VIEW        A_START_POS_B_VIEW
 #define BOOT_ANOTHER_POS_A_VIEW   BOOT_ANOTHER_POS
 #elif defined(PLATFORM_I143)
-#define A_BOOT_POS_A_VIEW         0x9e809ffc       // remap to BOOT_ANOTHER_POS
-#define A_START_POS_B_VIEW        0x6ea7fff4 // 6ea7fff4 - (core * 4)
+#define A_BOOT_POS_A_VIEW         0x9e809ffc             // remap to BOOT_ANOTHER_POS
+#define A_START_POS_B_VIEW        0x6ea7fff4             // 6ea7fff4 - (core * 4)
 #define A_START_POS_A_VIEW        A_START_POS_B_VIEW
 #define BOOT_ANOTHER_POS_A_VIEW   BOOT_ANOTHER_POS
 #else

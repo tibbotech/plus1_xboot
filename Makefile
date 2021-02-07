@@ -80,7 +80,7 @@ XBOOT_MAX = $$((38 * 1024))
 endif
 
 ifeq ($(CONFIG_PLATFORM_Q645),y)
-XBOOT_MAX =$$((44 * 1024))
+XBOOT_MAX =$$((96 * 1024))
 endif
 
 #################### make #######################
