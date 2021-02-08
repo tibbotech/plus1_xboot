@@ -1,4 +1,5 @@
 #include <config.h>
+#include <types.h>
 #include <config_xboot.h>
 #include <regmap.h>
 
