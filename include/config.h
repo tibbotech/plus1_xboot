@@ -310,7 +310,7 @@
 #define B_START_POS              (SRAM0_END - 0x8)       // 9e809ff8
 #define BOOT_ANOTHER_POS         (SRAM0_END - 0x4)       // 9e809ffc
 
-#if defined(PLATFORM_Q628)
+#if defined(PLATFORM_Q645)
 #define A_START_POS_B_VIEW       (SRAM0_END - 0xc)
 #define A_START_POS_A_VIEW       A_START_POS_B_VIEW
 #define BOOT_ANOTHER_POS_A_VIEW  BOOT_ANOTHER_POS
