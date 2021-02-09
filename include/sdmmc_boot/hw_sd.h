@@ -3,6 +3,8 @@
 
 #ifdef PLATFORM_I143
 #include "hw_sd_143.h"
+#elif PLATFORM_645
+#include "hw_sd_645.h"
 #else
 #include "hw_sd_628.h"
 #endif
