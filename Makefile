@@ -102,6 +102,13 @@ endif
 else
 	@bash ./add_xhdr.sh $(BIN)/$(TARGET).bin $(BIN)/$(TARGET).img 0
 endif
+ifeq ($(CONFIG_PLATFORM_Q645),y)
+	@bash ./add_lpddr4hdr.sh ../draminit/firmware/lpddr4_pmu_train_imem.bin $(BIN)/lpddr4_pmu_train_imem.img 0 im1d
+	@bash ./add_lpddr4hdr.sh ../draminit/firmware/lpddr4_pmu_train_dmem.bin $(BIN)/lpddr4_pmu_train_dmem.img 0 dm1d
+	@bash ./add_lpddr4hdr.sh ../draminit/firmware/lpddr4_2d_pmu_train_imem.bin $(BIN)/lpddr4_2d_pmu_train_imem.img 0 im2d
+	@bash ./add_lpddr4hdr.sh ../draminit/firmware/lpddr4_2d_pmu_train_dmem.bin $(BIN)/lpddr4_2d_pmu_train_dmem.img 0 dm2d
+endif	
+
 ifeq ($(CONFIG_STANDALONE_DRAMINIT), y)
 	@# print draminit.img size
 	@sz=`du -sb $(DRAMINIT_IMG) | cut -f1` ; \
