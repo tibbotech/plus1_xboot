@@ -13,3 +13,8 @@ arch/arm/q645/a64up/a64up.dis
 arch/arm/q645/a64up/a64up.map
 arch/arm/q645/a64up/boot_a64.ld
 tools/keys/
+secure/build_keys/
+secure/otp_Device_keys/
+secure/otp_Sb_keys/
+secure/hsm_keys/
+secure/out/
