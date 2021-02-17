@@ -3,6 +3,7 @@
 # $1: val
 # $2: 1=no reverse
 # $3: 1=have secure boot signature
+# $4: header name
 
 function gen_bin_tmp
 {
@@ -15,7 +16,7 @@ function gen_bin_tmp
 	#hexdump -C tmp
 }
 
-if [ $# != 3 ];then
+if [ $# -lt 3 ];then
 	echo "Error: $0 missed arguments"
 	exit 1
 fi
@@ -23,6 +24,9 @@ fi
 input=$1
 output=$2
 img_flag=$3
+header_name=$4
+ 
+
 
 sz=`stat -c%s $1`
 finalsz=$((64 + sz))
@@ -40,7 +44,17 @@ dd if=/dev/zero of=$output bs=1 count=32 2>/dev/null
 
 ##############
 # 4-byte magic
-val=$((0x54554258)) # XBUT (X=58h)
+if [ "$4" = "im1d" ];then
+	val=$((0x64316d69)) # im1d (i=69h)
+elif [ "$4" = "dm1d" ];then
+	val=$((0x64316d64)) # dm1d (d=64h)
+elif [ "$4" = "im2d" ];then
+	val=$((0x64326d69)) # im2d (i=69h)
+elif [ "$4" = "dm2d" ];then
+	val=$((0x64326d64)) # dm2d (d=64h)
+else
+	val=$((0x54554258)) # XBUT (X=58h)
+fi
 gen_bin_tmp $val
 dd if=tmp of=$output conv=notrunc bs=1 count=4 seek=0 2>/dev/null
 
