@@ -47,22 +47,21 @@ ENTRY(_start)
 MEMORY
 {
 	/* rom */
-	rom_share2   : ORIGIN = ROM_SHARE2_START,    LENGTH = ROM_SHARE2_SIZE     /* 32K */
-	rom_boot     : ORIGIN = ROM_INIT_START,      LENGTH = ROM_INIT_SIZE       /* 1.5K - skip - vsr */
-	rom_vsr      : ORIGIN = ROM_VSR_START,       LENGTH = ROM_VSR_SIZE
-	rom_share    : ORIGIN = ROM_SHARE_START,     LENGTH = ROM_SHARE_SIZE      /* remaining ROM */
-	rom_pgtbl    : ORIGIN = ROM_PGTBL_START,     LENGTH = ROM_PGTBL_SIZE      /* 8K */
-	/* rom_ext : +4KB */
+	rom_share2   : ORIGIN = ROM_SHARE2_START,    LENGTH = ROM_SHARE2_SIZE     /* 32K               */
+	rom_boot     : ORIGIN = ROM_INIT_START,      LENGTH = ROM_INIT_SIZE       /* 1.5K - vsr        */
+	rom_vsr      : ORIGIN = ROM_VSR_START,       LENGTH = ROM_VSR_SIZE        /* 128               */
+	rom_share    : ORIGIN = ROM_SHARE_START,     LENGTH = ROM_SHARE_SIZE      /* remaining ROM     */
+	rom_pgtbl    : ORIGIN = ROM_PGTBL_START,     LENGTH = ROM_PGTBL_SIZE      /* 8K                */
 
 	                                                                          /*    size @ offset  */
 	xboot_buf    : ORIGIN = XBOOT_START,         LENGTH = XBOOT_BUF_SIZE      /*     96K @  0      */
 	bootinfo     : ORIGIN = BOOTINFO_START,      LENGTH = BOOTINFO_SIZE       /*     512 @ 96K     */
 	boothead     : ORIGIN = GLOBAL_HEADER_START, LENGTH = GLOBAL_HEADER_SIZE  /*     512 @ 96K+512 */
-	cdata        : ORIGIN = CDATA_START,         LENGTH = CDATA_SIZE          /*     31k @ 97K     */
+	cdata        : ORIGIN = CDATA_START,         LENGTH = CDATA_SIZE          /*     31K @ 97K     */
 	storage_buf  : ORIGIN = STORAGE_BUF_START,   LENGTH = STORAGE_BUF_SIZE    /*     32K @ 128K    */
-	spacc_ram    : ORIGIN = SPACC_RAM_START,     LENGTH = SPACC_RAM_START     /*      4K @ 160K    */
-	stack        : ORIGIN = STACK_START,         LENGTH = STACK_SIZE          /*  92K-64 @ 164K    */
-	bootcompat   : ORIGIN = BOOTCOMPT_START,     LENGTH = BOOTCOMPT_SIZE      /*      64 @ 256K-64 */
+	stack        : ORIGIN = STACK_START,         LENGTH = STACK_SIZE          /*  95K-64 @ 160K    */
+	bootcompat   : ORIGIN = BOOTCOMPT_START,     LENGTH = BOOTCOMPT_SIZE      /*      64 @ 255K-64 */
+	spacc_ram    : ORIGIN = SPACC_RAM_START,     LENGTH = SPACC_RAM_START     /*      1K @ 255K    */
 }
 
 SECTIONS

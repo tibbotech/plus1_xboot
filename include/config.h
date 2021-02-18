@@ -247,8 +247,9 @@
 #define BOOTINFO_SIZE       (512)
 #define GLOBAL_HEADER_SIZE  (512)
 #define CDATA_SIZE          (31 * 1024)
-#define SPACC_RAM_SIZE      (4 * 1024)
-#define STACK_SIZE          (96 * 1024 - 64)
+#define STACK_SIZE          (95 * 1024 - 64)
+#define BOOTCOMPT_SIZE      (64)
+#define SPACC_RAM_SIZE      (1 * 1024)
 #elif defined(PLATFORM_I143)
 #if defined(CONFIG_HAVE_SNPS_USB3_DISK)
 #define XBOOT_BUF_SIZE      (37 * 1024)
@@ -289,7 +290,6 @@
 
 #define BOOT_RAM_BASE          SRAM0_BASE
 #define XBOOT_A64_ADDR         (BOOT_RAM_BASE + (0 * 1024))
-#define BOOTCOMPT_SIZE         64
 
 #endif
 
