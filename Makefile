@@ -90,14 +90,7 @@ TARGET  := xboot
 
 all:  $(TARGET)
 	@# 32-byte xboot header
-ifeq ($(CONFIG_SECURE_BOOT_SIGN), y)
-ifeq ($(CONFIG_PLATFORM_Q645),y)
-	@cd secure; ./build_xboot_sb.sh
-	@bash ./add_xhdr.sh secure/out/xboot_sb.bin $(BIN)/$(TARGET).img 1
-endif	
-else
-	@bash ./add_xhdr.sh $(BIN)/$(TARGET).bin $(BIN)/$(TARGET).img 0
-endif
+
 ifeq ($(CONFIG_PLATFORM_Q645),y)
 	@bash ./add_xhdr.sh ../draminit/firmware/lpddr4_pmu_train_imem.bin $(BIN)/lpddr4_pmu_train_imem.img 0 im1d
 	@bash ./add_xhdr.sh ../draminit/firmware/lpddr4_pmu_train_dmem.bin $(BIN)/lpddr4_pmu_train_dmem.img 0 dm1d
