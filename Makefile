@@ -17,10 +17,6 @@ CPU_PATH := riscv/i143
 endif
 
 ###########  Toolchain path ######################
-ifeq ($(CONFIG_PLATFORM_Q645),y)
-# for test 
-CROSS  := ../../crossgcc/gcc-arm-9.2-2019.12-x86_64-arm-none-eabi/bin/arm-none-eabi-
-endif
 ifneq ($(CROSS),)
 CC = $(CROSS)gcc
 CPP = $(CROSS)cpp

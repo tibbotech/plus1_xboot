@@ -279,7 +279,7 @@
 #endif
 
 #ifdef PLATFORM_Q645
-#define DSB()    do { asm volatile ("dsb"); } while (0)
+
 #if defined(__aarch64__)
 #define ISB()    do { asm volatile ("isb"); } while (0)
 #define DSB()    do { asm volatile ("dsb sy"); } while (0)
