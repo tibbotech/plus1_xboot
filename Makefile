@@ -128,7 +128,19 @@ ifeq ($(CONFIG_STANDALONE_DRAMINIT), y)
 DRAMINIT_IMG := ../draminit/bin/draminit.img
 else
 # Otherwise, link xboot with plf_dram.o
+ifeq ($(CONFIG_PLATFORM_Q645),y)
+DWC_SRC_DIR = ../draminit/dwc/software/lpddr4/src
+DWC_USER_DIR = ../draminit/dwc/software/lpddr4/userCustom
+DWC = dwc_ddrphy_phyinit_
+DWC_USER = dwc_ddrphy_phyinit_userCustom_
+DRAMINIT_OBJ := ../draminit/dwc_dram.o
+DRAMINIT_OBJ +=	$(DWC_SRC_DIR)/$(DWC)print.o $(DWC_SRC_DIR)/$(DWC)cmnt.o $(DWC_USER_DIR)/$(DWC_USER)A_bringupPower.o
+DRAMINIT_OBJ +=	$(DWC_USER_DIR)/$(DWC_USER)B_startClockResetPhy.o $(DWC_USER_DIR)/$(DWC_USER)E_setDfiClk.o 
+DRAMINIT_OBJ +=	$(DWC_USER_DIR)/$(DWC_USER)G_waitFwDone.o $(DWC_USER_DIR)/$(DWC_USER)H_readMsgBlock.o $(DWC_USER_DIR)/$(DWC_USER)customPostTrain.o  
+DRAMINIT_OBJ +=	$(DWC_USER_DIR)/$(DWC_USER)overrideUserInput.o $(DWC_USER_DIR)/$(DWC_USER)J_enterMissionMode.o 
+else 
 DRAMINIT_OBJ := ../draminit/plf_dram.o
+endif
 # Use prebuilt obj if provided
 CONFIG_PREBUILT_DRAMINIT_OBJ := $(shell echo $(CONFIG_PREBUILT_DRAMINIT_OBJ))
 ifneq ($(CONFIG_PREBUILT_DRAMINIT_OBJ),)
@@ -144,7 +156,13 @@ build_draminit:
 	$(MAKE) -C ../draminit $(DRAMINIT_TARGET) ARCH=$(ARCH) CROSS=$(CROSS) MKIMAGE=$(MKIMAGE)
 	@echo ">>>>>>>>>>> Build draminit (done)"
 	@echo ""
-
+ifeq ($(CONFIG_PLATFORM_Q645),y)
+dwc:
+	@echo ">>>>>>>>>>> Build dwc obj"
+	$(MAKE) -C ../draminit/dwc ARCH=$(ARCH) CROSS=$(CROSS)
+	@echo ">>>>>>>>>>> Build dwc obj (done)"
+	@echo ""
+endif
 # Boot up
 ASOURCES_START := arch/$(CPU_PATH)/start.S
 ifeq ($(CONFIG_SECURE_BOOT_SIGN), y)
@@ -315,7 +333,11 @@ distclean: clean
 #################
 # configurations
 .PHONY: prepare
+ifeq ($(CONFIG_PLATFORM_Q645),y)
+prepare: auto_config build_draminit dwc
+else
 prepare: auto_config build_draminit
+endif
 	@mkdir -p $(BIN)
 
 AUTOCONFH=tools/auto_config/auto_config_h

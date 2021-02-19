@@ -246,7 +246,7 @@
 #define STORAGE_BUF_SIZE    (32 * 1024)
 #define BOOTINFO_SIZE       (512)
 #define GLOBAL_HEADER_SIZE  (512)
-#define CDATA_SIZE          (31 * 1024)
+#define CDATA_SIZE          (50 * 1024)
 #define STACK_SIZE          (95 * 1024 - 64)
 #define BOOTCOMPT_SIZE      (64)
 #define SPACC_RAM_SIZE      (1 * 1024)
