@@ -134,10 +134,10 @@ DWC_USER_DIR = ../draminit/dwc/software/lpddr4/userCustom
 DWC = dwc_ddrphy_phyinit_
 DWC_USER = dwc_ddrphy_phyinit_userCustom_
 DRAMINIT_OBJ := ../draminit/dwc_dram.o
-DRAMINIT_OBJ +=	$(DWC_SRC_DIR)/$(DWC)print.o $(DWC_SRC_DIR)/$(DWC)cmnt.o $(DWC_USER_DIR)/$(DWC_USER)A_bringupPower.o
-DRAMINIT_OBJ +=	$(DWC_USER_DIR)/$(DWC_USER)B_startClockResetPhy.o $(DWC_USER_DIR)/$(DWC_USER)E_setDfiClk.o 
-DRAMINIT_OBJ +=	$(DWC_USER_DIR)/$(DWC_USER)G_waitFwDone.o $(DWC_USER_DIR)/$(DWC_USER)H_readMsgBlock.o $(DWC_USER_DIR)/$(DWC_USER)customPostTrain.o  
-DRAMINIT_OBJ +=	$(DWC_USER_DIR)/$(DWC_USER)overrideUserInput.o $(DWC_USER_DIR)/$(DWC_USER)J_enterMissionMode.o 
+DRAMINIT_OBJ += $(DWC_SRC_DIR)/$(DWC)print.o $(DWC_SRC_DIR)/$(DWC)cmnt.o $(DWC_USER_DIR)/$(DWC_USER)A_bringupPower.o
+DRAMINIT_OBJ += $(DWC_USER_DIR)/$(DWC_USER)B_startClockResetPhy.o $(DWC_USER_DIR)/$(DWC_USER)E_setDfiClk.o
+DRAMINIT_OBJ += $(DWC_USER_DIR)/$(DWC_USER)G_waitFwDone.o $(DWC_USER_DIR)/$(DWC_USER)H_readMsgBlock.o $(DWC_USER_DIR)/$(DWC_USER)customPostTrain.o
+DRAMINIT_OBJ += $(DWC_USER_DIR)/$(DWC_USER)overrideUserInput.o $(DWC_USER_DIR)/$(DWC_USER)J_enterMissionMode.o
 else 
 DRAMINIT_OBJ := ../draminit/plf_dram.o
 endif
@@ -250,7 +250,6 @@ $(TARGET): $(OBJS) hsmk a64bin
 else
 $(TARGET): $(OBJS)
 endif
-
 	@echo ">>>>> Link $@  "
 	@$(CPP) -P $(CFLAGS) -x c $(LD_SRC) -o $(LD_GEN)
 	$(CC) $(CFLAGS) $(OBJS) $(DRAMINIT_OBJ) -T $(LD_GEN) $(LDFLAGS) -o $(BIN)/$(TARGET) -Wl,-Map,$(BIN)/$(TARGET).map
@@ -281,11 +280,10 @@ endif
 a64bin: prepare
 	@echo "Build a64 bin"
 	@$(MAKE) -C arch/arm/q645/a64up/
-	@$(CROSS)objcopy -I binary -O elf32-littlearm -B arm \
-                --rename-section .data=.a64bin arch/arm/q645/a64up/a64up.bin arch/arm/q645/a64up/a64bin.o
+	@$(CROSS)objcopy -I binary -O elf32-littlearm -B arm --rename-section .data=.a64bin arch/arm/q645/a64up/a64up.bin arch/arm/q645/a64up/a64bin.o
 
-HSMK_BIN=secure/hsm_keys/hsmk.bin
-HSMK_OBJ=secure/hsm_keys/hsmk.o
+HSMK_BIN=../../build/tools/secure_hsm/secure/hsm_keys/hsmk.bin
+HSMK_OBJ=../../build/tools/secure_hsm/secure/hsm_keys/hsmk.o
 hsmk:
 ifeq ($(CONFIG_SECURE_BOOT_SIGN), y)
 	@echo "Build hsm key obj"
@@ -293,8 +291,7 @@ ifeq ($(CONFIG_SECURE_BOOT_SIGN), y)
 		echo "Not found hsm key bin: $(HSMK_BIN)" ; \
 		exit 1; \
 	 fi
-	@$(CROSS)objcopy -I binary -O elf32-littlearm -B arm \
-                --rename-section .data=.hsmk $(HSMK_BIN) $(HSMK_OBJ)
+	@$(CROSS)objcopy -I binary -O elf32-littlearm -B arm --rename-section .data=.hsmk $(HSMK_BIN) $(HSMK_OBJ)
 endif
 
 I143_C_P: prepare
@@ -319,8 +316,7 @@ clean:
 	@$(MAKE) -C ../draminit $(DRAMINIT_TARGET) ARCH=$(ARCH) CROSS=$(CROSS) $@
 	@rm -rf .depend $(LD_GEN) $(OBJS) *.o *.d>/dev/null
 	@if [ -d $(BIN) ];then \
-		cd $(BIN) && rm -rf $(TARGET) $(TARGET).bin $(TARGET).map $(TARGET).dis \
-			$(TARGET).img $(TARGET).img.orig $(TARGET).sig >/dev/null ;\
+		cd $(BIN) && rm -rf $(TARGET) $(TARGET).bin $(TARGET).map $(TARGET).dis $(TARGET).img $(TARGET).img.orig $(TARGET).sig >/dev/null ;\
 	 fi;
 	@echo "$@: done"
 

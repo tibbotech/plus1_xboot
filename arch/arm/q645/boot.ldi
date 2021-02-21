@@ -86,7 +86,7 @@ SECTIONS
 		. = ALIGN(4);
 		__hsm_keys_s = .;
 #ifdef CONFIG_SECURE_BOOT_SIGN
-		KEEP(secure/hsm_keys/hsmk.o (.hsmk));
+		KEEP(../../build/tools/secure_hsm/secure/hsm_keys/hsmk.o (.hsmk));
 #endif
 		__hsm_keys_e = .;
 
