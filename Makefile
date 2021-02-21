@@ -109,7 +109,9 @@ ifeq ($(CONFIG_STANDALONE_DRAMINIT), y)
 else
 	@echo "Linked with $(DRAMINIT_OBJ)"
 endif
+ifneq ($(CONFIG_PLATFORM_Q645),y)
 	@$(MAKE) size_check
+endif
 
 size_check:
 	@# print xboot size
