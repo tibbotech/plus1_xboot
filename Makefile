@@ -92,10 +92,10 @@ all:  $(TARGET)
 	@# 32-byte xboot header
 
 ifeq ($(CONFIG_PLATFORM_Q645),y)
-	@bash ./add_xhdr.sh ../draminit/firmware/lpddr4_pmu_train_imem.bin $(BIN)/lpddr4_pmu_train_imem.img 0 im1d
-	@bash ./add_xhdr.sh ../draminit/firmware/lpddr4_pmu_train_dmem.bin $(BIN)/lpddr4_pmu_train_dmem.img 0 dm1d
-	@bash ./add_xhdr.sh ../draminit/firmware/lpddr4_2d_pmu_train_imem.bin $(BIN)/lpddr4_2d_pmu_train_imem.img 0 im2d
-	@bash ./add_xhdr.sh ../draminit/firmware/lpddr4_2d_pmu_train_dmem.bin $(BIN)/lpddr4_2d_pmu_train_dmem.img 0 dm2d
+	@bash ./add_xhdr.sh ../draminit/dwc/firmware/lpddr4_pmu_train_imem.bin $(BIN)/lpddr4_pmu_train_imem.img 0 im1d
+	@bash ./add_xhdr.sh ../draminit/dwc/firmware/lpddr4_pmu_train_dmem.bin $(BIN)/lpddr4_pmu_train_dmem.img 0 dm1d
+	@bash ./add_xhdr.sh ../draminit/dwc/firmware/lpddr4_2d_pmu_train_imem.bin $(BIN)/lpddr4_2d_pmu_train_imem.img 0 im2d
+	@bash ./add_xhdr.sh ../draminit/dwc/firmware/lpddr4_2d_pmu_train_dmem.bin $(BIN)/lpddr4_2d_pmu_train_dmem.img 0 dm2d
 endif	
 
 ifeq ($(CONFIG_STANDALONE_DRAMINIT), y)
@@ -135,7 +135,7 @@ DWC_SRC_DIR = ../draminit/dwc/software/lpddr4/src
 DWC_USER_DIR = ../draminit/dwc/software/lpddr4/userCustom
 DWC = dwc_ddrphy_phyinit_
 DWC_USER = dwc_ddrphy_phyinit_userCustom_
-DRAMINIT_OBJ := ../draminit/dwc_dram.o
+DRAMINIT_OBJ := ../draminit/dwc/dwc_dram.o
 DRAMINIT_OBJ += $(DWC_SRC_DIR)/$(DWC)print.o $(DWC_SRC_DIR)/$(DWC)cmnt.o $(DWC_USER_DIR)/$(DWC_USER)A_bringupPower.o
 DRAMINIT_OBJ += $(DWC_USER_DIR)/$(DWC_USER)B_startClockResetPhy.o $(DWC_USER_DIR)/$(DWC_USER)E_setDfiClk.o
 DRAMINIT_OBJ += $(DWC_USER_DIR)/$(DWC_USER)G_waitFwDone.o $(DWC_USER_DIR)/$(DWC_USER)H_readMsgBlock.o $(DWC_USER_DIR)/$(DWC_USER)customPostTrain.o
@@ -332,7 +332,7 @@ distclean: clean
 # configurations
 .PHONY: prepare
 ifeq ($(CONFIG_PLATFORM_Q645),y)
-prepare: auto_config build_draminit dwc
+prepare: auto_config dwc
 else
 prepare: auto_config build_draminit
 endif
