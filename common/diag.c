@@ -140,6 +140,51 @@ void prn_dump_buffer(unsigned char *buf, int len)
 	prn_string("\n");
 }
 
+void prn_dword0_for_lpddr4(unsigned int w)
+{
+	char c, i;
+
+	if (g_bootinfo.mp_flag) {
+		return;
+	}
+
+	for(i=1; i<=8; i++) {
+		c = (w >> (32 - (i<<2)) ) & 0xF;
+		if(c < 0xA) UART_put_byte(c + 0x30);
+		else		UART_put_byte(c + 0x37);
+	}
+}
+
+
+void prn_string_for_lpddr4(const char *str, unsigned int a, unsigned int b)
+{
+	if (g_bootinfo.mp_flag) {
+		return;
+	}
+	while (*str) {
+		if (*str == '\n')
+			UART_put_byte('\r');
+		if (*str == '%')
+		{
+			str++;
+			if(*str == 'd')	
+			{
+				prn_decimal(a);
+			}
+			if(*str == 'x')
+			{
+				prn_dword0_for_lpddr4(b);
+			}
+		}
+		else
+		{
+			UART_put_byte(*str);
+		}
+		str++;
+	}
+}
+
+
 #if defined(HAVE_PRINTF) && (!defined(XBOOT_BUILD) || defined(CONFIG_DEBUG_WITH_2ND_UART))
 
 #include <stdarg.h>
