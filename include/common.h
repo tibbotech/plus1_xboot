@@ -17,7 +17,11 @@
 #endif
 #include <nand_boot/nfdriver.h>
 #include <nand_boot/nfdriver.h>
+#ifdef CONFIG_PLATFORM_Q645
+#include <spinand_boot/sp_spinand_q645.h>
+#else
 #include <spinand_boot/sp_spinand.h>
+#endif
 #include <sdmmc_boot/hal_sd_mmc.h>
 #include <romvsr.h>
 
