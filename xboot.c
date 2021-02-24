@@ -232,16 +232,14 @@ static void prn_A_setup(void)
 static void init_hw(void)
 {
 	int i;
+
+#if defined(PLATFORM_Q628)|| defined(PLATFORM_I143)
 	__attribute__((unused)) int is_A = 0;
 	dbg();
+
 	*(volatile unsigned int *) (0x9C000000 +0x2EC) = 0x01c30000;// set DC12_CTL_1(G5.27) to default,for DCIN_1.2V set.
-
-
-#if 0 /* experiment : slower b_sysclk  */
-	//MOON4_REG->pllsys = RF_MASK_V(0xf, 0xe); /* 202.5 (default) */
-	//MOON4_REG->pllsys = RF_MASK_V(0xf, 0xd); /* 189 */
-	MOON4_REG->pllsys = RF_MASK_V(0xf, 0x7); /* 108 */
 #endif
+
 
 #ifdef PLATFORM_Q628
 	if ((cpu_main_id() & 0xfff0) == 0x9260)
@@ -262,7 +260,7 @@ static void init_hw(void)
 	prn_clk_info(is_A);
 #endif
 
-#if defined(PLATFORM_Q628)|| defined(PLATFORM_I143)
+#if defined(PLATFORM_Q628)|| defined(PLATFORM_I143)||defined(PLATFORM_Q645)
 #ifdef CONFIG_PARTIAL_CLKEN
 	prn_string("partial clken\n");
 	/* power saving, provided by yuwen + CARD_CTL4 */

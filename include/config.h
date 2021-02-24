@@ -57,7 +57,12 @@
 /**********************
  * Register
  *********************/
-#define REG_BASE           0x9c000000
+#ifdef PLATFORM_Q645
+#define REG_BASE		0xF8000000
+#else
+#define REG_BASE        0x9c000000
+#endif
+
 #define RF_GRP(_grp, _reg) ((((_grp) * 32 + (_reg)) * 4) + REG_BASE)
 #define RF_AMBA(_grp, _reg) ((((_grp) * 1024 + (_reg)) * 4) + REG_BASE)
 

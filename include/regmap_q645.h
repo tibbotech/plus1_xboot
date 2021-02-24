@@ -3,10 +3,14 @@
 
 struct moon0_regs {
 	unsigned int stamp;            // 0.0
-	unsigned int clken[10];        // 0.1
-	unsigned int gclken[10];       // 0.11
-	unsigned int reset[10];        // 0.21
+	unsigned int clken[5];         // 0.1 - 0.5
+	unsigned int rsvd_1[5]; 	   	   // 0.6 - 0.10
+	unsigned int gclken[5];        // 0.11
+	unsigned int rsvd_2[5]; 	   	   // 0.16 - 0.20
+	unsigned int reset[5];         // 0.21
+	unsigned int rsvd_3[5];          // 0.26 - 030
 	unsigned int hw_cfg;           // 0.31
+
 };
 #define MOON0_REG ((volatile struct moon0_regs *)RF_GRP(0, 0))
 
