@@ -57,9 +57,9 @@ MEMORY
 	xboot_buf    : ORIGIN = XBOOT_START,         LENGTH = XBOOT_BUF_SIZE      /*     96K @  0      */
 	bootinfo     : ORIGIN = BOOTINFO_START,      LENGTH = BOOTINFO_SIZE       /*     512 @ 96K     */
 	boothead     : ORIGIN = GLOBAL_HEADER_START, LENGTH = GLOBAL_HEADER_SIZE  /*     512 @ 96K+512 */
-	cdata        : ORIGIN = CDATA_START,         LENGTH = CDATA_SIZE          /*     31K @ 97K     */
-	storage_buf  : ORIGIN = STORAGE_BUF_START,   LENGTH = STORAGE_BUF_SIZE    /*     32K @ 128K    */
-	stack        : ORIGIN = STACK_START,         LENGTH = STACK_SIZE          /*  95K-64 @ 160K    */
+	cdata        : ORIGIN = CDATA_START,         LENGTH = CDATA_SIZE          /*     63K @ 97K     */
+	storage_buf  : ORIGIN = STORAGE_BUF_START,   LENGTH = STORAGE_BUF_SIZE    /*     32K @ 160K    */
+	stack        : ORIGIN = STACK_START,         LENGTH = STACK_SIZE          /*  63K-64 @ 192K    */
 	bootcompat   : ORIGIN = BOOTCOMPT_START,     LENGTH = BOOTCOMPT_SIZE      /*      64 @ 255K-64 */
 	spacc_ram    : ORIGIN = SPACC_RAM_START,     LENGTH = SPACC_RAM_START     /*      1K @ 255K    */
 }
