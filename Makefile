@@ -136,10 +136,11 @@ DWC_USER_DIR = ../draminit/dwc/software/lpddr4/userCustom
 DWC = dwc_ddrphy_phyinit_
 DWC_USER = dwc_ddrphy_phyinit_userCustom_
 DRAMINIT_OBJ := ../draminit/dwc/dwc_dram.o
-DRAMINIT_OBJ += $(DWC_SRC_DIR)/$(DWC)print.o $(DWC_SRC_DIR)/$(DWC)cmnt.o $(DWC_USER_DIR)/$(DWC_USER)A_bringupPower.o
-DRAMINIT_OBJ += $(DWC_USER_DIR)/$(DWC_USER)B_startClockResetPhy.o $(DWC_USER_DIR)/$(DWC_USER)E_setDfiClk.o
-DRAMINIT_OBJ += $(DWC_USER_DIR)/$(DWC_USER)G_waitFwDone.o $(DWC_USER_DIR)/$(DWC_USER)H_readMsgBlock.o $(DWC_USER_DIR)/$(DWC_USER)customPostTrain.o
-DRAMINIT_OBJ += $(DWC_USER_DIR)/$(DWC_USER)overrideUserInput.o $(DWC_USER_DIR)/$(DWC_USER)J_enterMissionMode.o
+DRAMINIT_OBJ += ../draminit/dwc/dwc_umctrl2.o
+DRAMINIT_OBJ +=	$(DWC_SRC_DIR)/$(DWC)print.o $(DWC_SRC_DIR)/$(DWC)cmnt.o $(DWC_USER_DIR)/$(DWC_USER)A_bringupPower.o
+DRAMINIT_OBJ +=	$(DWC_USER_DIR)/$(DWC_USER)B_startClockResetPhy.o $(DWC_USER_DIR)/$(DWC_USER)E_setDfiClk.o 
+DRAMINIT_OBJ +=	$(DWC_USER_DIR)/$(DWC_USER)G_waitFwDone.o $(DWC_USER_DIR)/$(DWC_USER)H_readMsgBlock.o $(DWC_USER_DIR)/$(DWC_USER)customPostTrain.o  
+DRAMINIT_OBJ +=	$(DWC_USER_DIR)/$(DWC_USER)overrideUserInput.o $(DWC_USER_DIR)/$(DWC_USER)J_enterMissionMode.o  
 else 
 DRAMINIT_OBJ := ../draminit/plf_dram.o
 endif
@@ -328,6 +329,9 @@ clean:
 	@if [ -d $(BIN) ];then \
 		cd $(BIN) && rm -rf $(TARGET) $(TARGET).bin $(TARGET).map $(TARGET).dis $(TARGET).img $(TARGET).img.orig $(TARGET).sig >/dev/null ;\
 	 fi;
+	@echo "$@: done"
+	@$(MAKE) -C ../draminit/dwc $(DRAMINIT_TARGET) ARCH=$(ARCH) CROSS=$(CROSS) $@
+	@rm -rf $(OBJS) *.o *.d>/dev/null
 	@echo "$@: done"
 
 distclean: clean
