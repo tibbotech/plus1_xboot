@@ -22,5 +22,5 @@ SECTIONS
 	} > ram
 
 	// borrow life-ended aarch32 xboot's stack
-	__init_stack_N = (BOOT_RAM_BASE + (255K * 1024) - 64);
+	__init_stack_N = (BOOT_RAM_BASE + (255 * 1024) - 64);
 }
