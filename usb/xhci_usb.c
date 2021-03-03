@@ -6,7 +6,7 @@
 #ifdef FPGA
 #define XHCI_DEBUG
 #endif
-
+//#define XHCI_DEBUG
 #ifdef XBOOT_BUILD
 #define USB_DBG()
 #else
@@ -18,8 +18,6 @@ void USB_vendorCmd(u8 bReq, u8 bCmd, u16 wValue, u16 wIndex, u16 wLen);
 int stor_BBB_transport(u32 datalen, u32 cmdlen, u8 dir_in, u8 *buf);
 extern void _delay_1ms(UINT32 period); // force delay even in CSIM
 extern void boot_reset(void);
-
-#define MAX_TEST_UNIT_READY_TRY   5
 
 // UPHY 2 & 3 init (dh_feng)
 #if defined(PLATFORM_I143)
@@ -79,9 +77,19 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[113] = 0x0;
 	UPHY3_U3_REG->cfg[114] = 0x1;
 	UPHY3_U3_REG->cfg[115] = 0x0;
+	UPHY3_U3_REG->cfg[128] = 0x9;	
+	//U3 phy settings
+	UPHY3_U3_REG->cfg[0]   = 0x43;
+	UPHY3_U3_REG->cfg[11]  = 0x21;
+	UPHY3_U3_REG->cfg[13]  = 0x5;
+	UPHY3_U3_REG->cfg[17]  = 0x1f;
+	UPHY3_U3_REG->cfg[18]  = 0x0;
+	UPHY3_U3_REG->cfg[95]  = 0x33;
+	UPHY3_U3_REG->cfg[112] = 0x11;
+	UPHY3_U3_REG->cfg[113] = 0x0;
+	UPHY3_U3_REG->cfg[114] = 0x1;
+	UPHY3_U3_REG->cfg[115] = 0x0;
 	UPHY3_U3_REG->cfg[128] = 0x9;
-
-	#ifdef CONFIG_HAVE_USB3_HUB
 	//eq settings
 	UPHY3_U3_REG->cfg[75]  = 0x0;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -89,7 +97,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0x1f;
 	UPHY3_U3_REG->cfg[79]  = 0x0e;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x1;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -97,7 +105,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0x1f;
 	UPHY3_U3_REG->cfg[79]  = 0x0e;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x2;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -105,7 +113,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0x4f;
 	UPHY3_U3_REG->cfg[79]  = 0x0e;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x3;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -113,7 +121,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0x4f;
 	UPHY3_U3_REG->cfg[79]  = 0x0e;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x4;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -121,7 +129,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0x7f;
 	UPHY3_U3_REG->cfg[79]  = 0x0e;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x5;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -129,7 +137,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0x7f;
 	UPHY3_U3_REG->cfg[79]  = 0x0e;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x6;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -137,7 +145,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xaf;
 	UPHY3_U3_REG->cfg[79]  = 0x0e;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x7;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -145,7 +153,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xaf;
 	UPHY3_U3_REG->cfg[79]  = 0x0e;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x8;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -153,7 +161,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xdf;
 	UPHY3_U3_REG->cfg[79]  = 0x0e;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x9;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -161,7 +169,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xdf;
 	UPHY3_U3_REG->cfg[79]  = 0x0e;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0xa;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -169,7 +177,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0x0f;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0xb;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -177,7 +185,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0x0f;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0xc;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -185,7 +193,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0x3f;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0xd;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -193,7 +201,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0x3f;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0xe;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -201,7 +209,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0x6f;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0xf;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -209,7 +217,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0x6f;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x10;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -217,7 +225,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0x9f;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x11;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -225,7 +233,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0x9f;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x12;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -233,7 +241,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xcf;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x13;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -241,7 +249,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xcf;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x14;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -249,7 +257,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xef;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x15;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -257,7 +265,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xef;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x16;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -265,7 +273,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xef;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x17;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -273,7 +281,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xef;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x18;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -281,7 +289,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xee;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x19;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -289,7 +297,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xee;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x1a;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -297,7 +305,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xed;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x1b;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -305,7 +313,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xed;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x1c;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -313,7 +321,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xec;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x1d;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -321,7 +329,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xec;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x1e;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -329,7 +337,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xec;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x1f;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -337,7 +345,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xec;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x20;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -345,7 +353,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xeb;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x21;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -353,7 +361,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xeb;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x22;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -361,7 +369,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xea;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x23;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -369,7 +377,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xea;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x24;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -377,7 +385,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xe9;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x25;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -385,7 +393,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xe9;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x26;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -393,7 +401,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xe9;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x27;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -401,7 +409,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xe9;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x28;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -409,7 +417,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xe8;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x29;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -417,7 +425,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xe8;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x2a;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -425,7 +433,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xe7;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x2b;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -433,7 +441,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xe7;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x2c;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -441,7 +449,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xe6;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x2d;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -449,7 +457,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xe6;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x2e;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -457,7 +465,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xe6;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x2f;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -465,7 +473,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xe6;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x30;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -473,7 +481,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xe5;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x31;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -481,7 +489,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xe5;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x32;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -489,7 +497,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xe4;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x33;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -497,7 +505,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xe4;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x34;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -505,7 +513,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xe3;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x35;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -513,7 +521,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xe3;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x36;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -521,7 +529,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xe3;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x37;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -529,7 +537,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xe3;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x38;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -537,7 +545,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xe2;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x39;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -545,7 +553,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xe2;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x3a;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -553,7 +561,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xe1;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x3b;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -561,7 +569,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xe1;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x3c;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -569,7 +577,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xe0;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x3d;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -577,7 +585,7 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xe0;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x3e;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
@@ -585,15 +593,14 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[78]  = 0xe0;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
 	UPHY3_U3_REG->cfg[80]  = 0x01;
-
+	
 	UPHY3_U3_REG->cfg[80]  = 0x00;
 	UPHY3_U3_REG->cfg[75]  = 0x3f;
 	UPHY3_U3_REG->cfg[76]  = 0xbe;
 	UPHY3_U3_REG->cfg[77]  = 0x30;
 	UPHY3_U3_REG->cfg[78]  = 0xe0;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
-	UPHY3_U3_REG->cfg[80]  = 0x01;
-#endif
+	UPHY3_U3_REG->cfg[80]  = 0x01;	
 }
 #endif
 
@@ -634,6 +641,25 @@ void handshake(volatile u32 *ptr, u32 mask, u32 done, int usec)
 		prn_string("\n  	ERR 1 ");
 }
 
+u32 xhci_v1_0_td_remainder(int running_total, int trb_buff_len, unsigned int total_packet_count, int maxpacketsize, unsigned int num_trbs_left)
+{
+	int packets_transferred;
+
+	/* One TRB with a zero-length data packet. */
+	if (num_trbs_left == 0 || (running_total == 0 && trb_buff_len == 0))
+		return 0;
+
+	/*
+	 * All the TRB queueing functions don't count the current TRB in
+	 * running_total.
+	 */
+	packets_transferred = (running_total + trb_buff_len) / maxpacketsize;
+
+	if ((total_packet_count - packets_transferred) > 31)
+		return 31 << 17;
+	return (total_packet_count - packets_transferred) << 17;
+}
+
 u32 xhci_td_remainder(unsigned int remainder)
 {
 	u32 max = (1 << (21 - 17 + 1)) - 1;
@@ -646,11 +672,9 @@ u32 xhci_td_remainder(unsigned int remainder)
 
 struct xhci_ring *xhci_ring_alloc(int link_trbs, int no)
 {
-	struct xhci_ring *tmpring;
-	u32 ringtmp;
-	u64 ringtmp_64;
-#ifdef XHCI_DEBUG	
-	prn_string("\n*ring setting no "); prn_dword(no);
+	struct xhci_ring *tmpring;	
+#ifdef XHCI_DEBUG
+	prn_string("\n  	*ring setting no  "); prn_dword(no);
 #endif
 	if (no == 0x10) {
 		//memset32(g_io_buf.usb.xhci.pcmdtrb, 0, sizeof(g_io_buf.usb.xhci.pcmdtrb));
@@ -660,43 +684,68 @@ struct xhci_ring *xhci_ring_alloc(int link_trbs, int no)
 		tmpring->first_seg->next = NULL;
 		tmpring->first_seg->next = tmpring->first_seg;
 	} else if (no == 0x11) {
+		u8 temp = 0;
+		struct xhci_segment *prev;
+		
 		tmpring = &g_io_buf.usb.xhci.pevent_ring;
-		tmpring->first_seg = &g_io_buf.usb.xhci.pevent_ring_first_seg;
-		tmpring->first_seg->trbs = g_io_buf.usb.xhci.peventtrb;
+		tmpring->first_seg = g_io_buf.usb.xhci.pevent_ring_first_seg;
+		tmpring->first_seg->trbs = &g_io_buf.usb.xhci.peventtrb[temp][0];
 		tmpring->first_seg->next = NULL;
-		tmpring->first_seg->next = tmpring->first_seg;
-	} else if (no == 0) {
-		tmpring = &g_io_buf.usb.xhci.pep0_ring;
-		tmpring->first_seg = &g_io_buf.usb.xhci.pep0_ring_first_seg;
-		tmpring->first_seg->trbs = g_io_buf.usb.xhci.pep0trb;
-		tmpring->first_seg->next = NULL;
-		tmpring->first_seg->next = tmpring->first_seg;
-	} else if ((no <= 2)) {
-		tmpring = &g_io_buf.usb.xhci.pep1_ring;
-		tmpring->first_seg = &g_io_buf.usb.xhci.pep1_ring_first_seg;
-		tmpring->first_seg->trbs = g_io_buf.usb.xhci.pep1trb;
-		tmpring->first_seg->next = NULL;
-		tmpring->first_seg->next = tmpring->first_seg;
-	} else if ((no <= 4)) {
-		tmpring = &g_io_buf.usb.xhci.pep2_ring;
-		tmpring->first_seg = &g_io_buf.usb.xhci.pep2_ring_first_seg;
-		tmpring->first_seg->trbs = g_io_buf.usb.xhci.pep2trb;
-		tmpring->first_seg->next = NULL;
-		tmpring->first_seg->next = tmpring->first_seg;
-	} else if (no <= 6) {
-		tmpring = &g_io_buf.usb.xhci.pep3_ring;
-		tmpring->first_seg = &g_io_buf.usb.xhci.pep3_ring_first_seg;
-		tmpring->first_seg->trbs = g_io_buf.usb.xhci.pep3trb;
-		tmpring->first_seg->next = NULL;
-		tmpring->first_seg->next = tmpring->first_seg;
-	} else {
-#ifdef XHCI_DEBUG
-		prn_string("\n!!!!!ring no overflow!!!!! ");
+		//temp++;
+		
+		prev = tmpring->first_seg;
+		while (++temp < ERST_NUM_SEGS)
+		{
+			struct xhci_segment *next;
+
+#ifdef XHCI_DEBUG			
+			prn_string("  	ERST_NUM_SEGS "); prn_dword((intptr_t)prev->trbs);
 #endif
-		return NULL;
-	}
+			next = &g_io_buf.usb.xhci.pevent_ring_first_seg[temp];
+			next->trbs = &g_io_buf.usb.xhci.peventtrb[temp][0];
+			next->next = NULL;
+			//xhci_link_segments
+			prev->next = next;
+			
+			prev = next;
+		}
+		prev->next = tmpring->first_seg;
+	} else {
+		if (no == 0x12) {
+			no = ep_num - 1;
+			memset((u8 *)&g_io_buf.usb.xhci.pep_ring[no], 0, sizeof(g_io_buf.usb.xhci.pep_ring)/ep_num);
+			memset((u8 *)&g_io_buf.usb.xhci.pep_ring_first_seg[no], 0, sizeof(g_io_buf.usb.xhci.pep_ring_first_seg)/ep_num);
+			memset((u8 *)&g_io_buf.usb.xhci.peptrb[no][0], 0, sizeof(g_io_buf.usb.xhci.peptrb)/ep_num);
+			tmpring = &g_io_buf.usb.xhci.pep_ring[no];
+			tmpring->first_seg = &g_io_buf.usb.xhci.pep_ring_first_seg[no];
+			tmpring->first_seg->trbs = &g_io_buf.usb.xhci.peptrb[no][0];
+			tmpring->first_seg->next = NULL;
+			tmpring->first_seg->next = tmpring->first_seg;
+		
+		} else if (no < (ep_num * 2 - 1)) {
+			no = (no + 1) / 2;
+			//prn_string("\n  	*ring setting no  "); prn_dword(no);
+			memset((u8 *)&g_io_buf.usb.xhci.pep_ring[no], 0, sizeof(g_io_buf.usb.xhci.pep_ring)/ep_num);
+			memset((u8 *)&g_io_buf.usb.xhci.pep_ring_first_seg[no], 0, sizeof(g_io_buf.usb.xhci.pep_ring_first_seg)/ep_num);
+			memset((u8 *)&g_io_buf.usb.xhci.peptrb[no][0], 0, sizeof(g_io_buf.usb.xhci.peptrb)/ep_num);
+			tmpring = &g_io_buf.usb.xhci.pep_ring[no];
+			tmpring->first_seg = &g_io_buf.usb.xhci.pep_ring_first_seg[no];
+			tmpring->first_seg->trbs = &g_io_buf.usb.xhci.peptrb[no][0];
+			tmpring->first_seg->next = NULL;
+			tmpring->first_seg->next = tmpring->first_seg;
+		} else {
+#ifdef XHCI_DEBUG
+			prn_string("\n!!!!!ring no overflow!!!!! ");
+#endif
+			return NULL;
+		}
+	} 
+
 	// link = true
 	if (link_trbs) {
+		u32 ringtmp;
+		u64 ringtmp_64;
+	
 		ringtmp_64 = (intptr_t) tmpring->first_seg->trbs;
 		tmpring->first_seg->trbs[TRBS_PER_SEGMENT-1].link.segment_ptr = ringtmp_64;
 		//prn_string("\n  *ringtmp_64 "); prn_dword(ringtmp_64);
@@ -722,8 +771,133 @@ struct xhci_ring *xhci_ring_alloc(int link_trbs, int no)
 	prn_string("  	*tmpring->first_seg->trbs[TRBS_PER_SEGMENT-1].link.control "); prn_dword(tmpring->first_seg->trbs[TRBS_PER_SEGMENT-1].link.control);
 	prn_string("  	*tmpring.enqueue "); prn_dword((intptr_t)tmpring->enqueue);
 	prn_string("  	*tmpring->first_seg->trbs[TRBS_PER_SEGMENT-1] "); prn_dword((intptr_t)&tmpring->first_seg->trbs[TRBS_PER_SEGMENT-1]);
+	prn_string("  	*tmpring->first_seg "); prn_dword((intptr_t)&tmpring->first_seg);
 #endif
 	return tmpring;
+}
+
+//xhci_mem_init
+void xhci_mem_init()
+{
+	u64 tmp1_64, tmp2_64, deq;
+	struct xhci_segment *seg = NULL;
+	//u64 deq;
+
+#ifdef XHCI_DEBUG
+	prn_string("\nxhci_mem_init ");
+#endif
+	g_io_buf.usb.xhci.dcbaa = (struct xhci_device_context_array *) g_io_buf.usb.xhci.dev_context_ptrs;
+	g_io_buf.usb.xhci.hcor->or_dcbaap = (intptr_t)g_io_buf.usb.xhci.dev_context_ptrs;
+
+	g_io_buf.usb.xhci.cmd_ring = xhci_ring_alloc(1, 0x10);	
+		
+	tmp1_64 = (u64)g_io_buf.usb.xhci.hcor->or_crcr; //need to check
+	tmp2_64 = (intptr_t)g_io_buf.usb.xhci.cmd_ring->first_seg->trbs;
+
+	tmp1_64 = (tmp1_64 & (u64) CMD_RING_RSVD_BITS) | (tmp2_64 & (u64) ~CMD_RING_RSVD_BITS) |
+		  g_io_buf.usb.xhci.cmd_ring->cycle_state;
+
+	g_io_buf.usb.xhci.hcor->or_crcr = tmp1_64;
+	
+	// write the address of db register
+	tmp1_64 = g_io_buf.usb.xhci.hccr->cr_dboff;
+	tmp1_64 &= DBOFF_MASK;
+	g_io_buf.usb.xhci.dba = (struct xhci_doorbell_array *)((char *)g_io_buf.usb.xhci.hccr + tmp1_64);
+	
+	// write the address of runtime register 
+	tmp1_64 = g_io_buf.usb.xhci.hccr->cr_rtsoff;
+	tmp1_64 &= RTSOFF_MASK;
+	g_io_buf.usb.xhci.run_regs = (struct xhci_run_regs *)((char *)g_io_buf.usb.xhci.hccr + tmp1_64);
+
+	// writting the address of ir_set structure 
+	g_io_buf.usb.xhci.ir_set = &g_io_buf.usb.xhci.run_regs->ir_set[0];
+#ifdef XHCI_DEBUG
+	prn_string("\n  	#g_io_buf.usb.xhci.dba "); prn_dword((intptr_t)g_io_buf.usb.xhci.dba);
+	prn_string("  	#g_io_buf.usb.xhci.run_regs "); prn_dword((intptr_t)g_io_buf.usb.xhci.run_regs);
+	prn_string("  	#g_io_buf.usb.xhci.ir_set "); prn_dword((intptr_t)g_io_buf.usb.xhci.ir_set);
+#endif
+
+	// Event ring does not maintain link TRB 
+	g_io_buf.usb.xhci.event_ring = xhci_ring_alloc(0, 0x11);
+ 
+	seg = g_io_buf.usb.xhci.event_ring->first_seg;
+	deq = (intptr_t) g_io_buf.usb.xhci.event_ring->dequeue;
+		
+	memset32((u32 *)g_io_buf.usb.xhci.pentries, 0, sizeof(struct xhci_erst_entry) * ERST_NUM_SEGS / 4);
+
+	g_io_buf.usb.xhci.erst.entries = g_io_buf.usb.xhci.pentries;
+
+	g_io_buf.usb.xhci.erst.num_entries = ERST_NUM_SEGS;
+	//seg = g_io_buf.usb.xhci.event_ring->first_seg;
+	for (tmp1_64 = 0; tmp1_64 < ERST_NUM_SEGS; tmp1_64++) {
+		tmp2_64 = (intptr_t)seg->trbs;
+		g_io_buf.usb.xhci.erst.entries[tmp1_64].seg_addr = tmp2_64;
+		g_io_buf.usb.xhci.erst.entries[tmp1_64].seg_size = TRBS_PER_SEGMENT;
+		g_io_buf.usb.xhci.erst.entries[tmp1_64].rsvd = 0;
+		seg = seg->next;
+		//prn_string("\ntmp1_64 "); prn_dword(tmp1_64);
+		//prn_string("tmp2_64 "); prn_dword(tmp2_64);
+		//prn_string("addr "); prn_dword((intptr_t)&g_io_buf.usb.xhci.erst.entries[tmp1_64]);
+		//prn_string("result "); prn_dword(g_io_buf.usb.xhci.erst.entries[tmp1_64].seg_addr);
+	}
+
+	// Event ring does not maintain link TRB	
+	//tmp1_64 = (intptr_t) g_io_buf.usb.xhci.event_ring->dequeue;
+
+	// Update HC event ring dequeue pointer 
+	g_io_buf.usb.xhci.ir_set->erst_dequeue = (u64)deq & (u64)~ERST_PTR_MASK;
+	// set ERST count with the number of entries in the segment table 
+
+	tmp1_64 = g_io_buf.usb.xhci.ir_set->erst_size;
+	tmp1_64 &= ERST_SIZE_MASK;
+	tmp1_64 |= ERST_NUM_SEGS;
+	g_io_buf.usb.xhci.ir_set->erst_size = tmp1_64;
+
+	// this is the event ring segment table pointer 
+	tmp1_64 = g_io_buf.usb.xhci.ir_set->erst_base;//need to check
+
+	tmp1_64 &= ERST_PTR_MASK;
+	tmp1_64 |= ((intptr_t)(g_io_buf.usb.xhci.erst.entries) & ~ERST_PTR_MASK);
+
+	g_io_buf.usb.xhci.ir_set->erst_base = tmp1_64;//need to check
+
+	// xhci_scratchpad_alloc
+	//tmp1_64 = HCS_MAX_SCRATCHPAD(g_io_buf.usb.xhci.hccr->cr_hcsparams2);	
+#ifdef XHCI_DEBUG
+	prn_string("\n  	#num_sp "); prn_dword(HCS_MAX_SCRATCHPAD(g_io_buf.usb.xhci.hccr->cr_hcsparams2));
+	prn_string("  	#hcor->or_pagesize "); prn_dword(g_io_buf.usb.xhci.hcor->or_pagesize);
+#endif
+	tmp1_64 = g_io_buf.usb.xhci.hcor->or_pagesize & 0xffff;
+	for (tmp2_64 = 0; tmp2_64 < 16; tmp2_64++) {
+		if ((0x1 & tmp1_64) != 0)
+			break;
+		tmp1_64 = tmp1_64 >> 1;
+	}
+	tmp1_64 = 1 << (tmp2_64 + 12);
+	
+	for (tmp2_64 = 0; tmp2_64 < HCS_MAX_SCRATCHPAD(g_io_buf.usb.xhci.hccr->cr_hcsparams2); tmp2_64++) {
+		g_io_buf.usb.xhci.sparray[tmp2_64] = (intptr_t)(g_io_buf.usb.xhci.sparraybuf + tmp2_64 * tmp1_64);
+	}
+	g_io_buf.usb.xhci.pscratchpad.sp_array = g_io_buf.usb.xhci.sparray;
+	
+	g_io_buf.usb.xhci.scratchpad = &g_io_buf.usb.xhci.pscratchpad;
+	
+	g_io_buf.usb.xhci.dcbaa->dev_context_ptrs[0] = (intptr_t)g_io_buf.usb.xhci.pscratchpad.sp_array;
+
+	//prn_string("  g_io_buf.usb.xhci.scratchpad->sp_array "); prn_dword((intptr_t)g_io_buf.usb.xhci.scratchpad->sp_array);
+	//prn_string("  *g_io_buf.usb.xhci.scratchpad->sp_array "); prn_dword(*g_io_buf.usb.xhci.scratchpad->sp_array);
+	//prn_string("  dev_context_ptrs[0] "); prn_dword((intptr_t)g_io_buf.usb.xhci.scratchpad->sp_array);	
+	//initializing the virtual devices to NULL
+	for (tmp2_64 = 0; tmp2_64 < MAX_HC_SLOTS; ++tmp2_64)
+		g_io_buf.usb.xhci.devs[tmp2_64] = NULL;
+
+	/*
+	 * Just Zero'ing this register completely,
+	 * or some spurious Device Notification Events
+	 * might screw things here.
+	 */
+	g_io_buf.usb.xhci.hcor->or_dnctrl = 0x0;
+	//end of xhci_mem_init
 }
 
 void giveback_first_trb(int ep_index, int start_cycle, struct xhci_generic_trb *start_trb)
@@ -739,8 +913,6 @@ void giveback_first_trb(int ep_index, int start_cycle, struct xhci_generic_trb *
 
 	/* Ringing EP doorbell here */
 	g_io_buf.usb.xhci.dba->doorbell[g_io_buf.usb.xhci.udev.slot_id] = DB_VALUE(ep_index, 0);
-	//xhci_writel(&ctrl->dba->doorbell[udev->slot_id], DB_VALUE(ep_index, 0));
-
 }
 
 int last_trb_on_last_seg(struct xhci_ring *ring, struct xhci_segment *seg, union xhci_trb *trb)
@@ -942,17 +1114,20 @@ union xhci_trb *wait_for_event(trb_type expected)
 {
 	trb_type type;
 	u32 timeout = 0;
+	union xhci_trb *event;
 	
 	do {
-		union xhci_trb *event = g_io_buf.usb.xhci.event_ring->dequeue;
+		//union xhci_trb *event = g_io_buf.usb.xhci.event_ring->dequeue;
+		event = g_io_buf.usb.xhci.event_ring->dequeue;
 				
                 //prn_string("\n  	*xhci_wait_for_event "); prn_dword((u64)g_io_buf.usb.xhci.event_ring->dequeue);
 		if ((event->event_cmd.flags & TRB_CYCLE) != g_io_buf.usb.xhci.event_ring->cycle_state)
 			continue;
 
 		type = TRB_FIELD_TO_TYPE(event->event_cmd.flags);
-		if (type == expected) 
+		if (type == expected) {	
 			return event;
+		}
 
 		//xhci_acknowledge_event(ctrl);
 		acknowledge_event();
@@ -983,9 +1158,138 @@ struct xhci_ep_ctx *get_ep_ctx(xhci_usb *ctrl, struct xhci_container_ctx *ctx, i
         //prn_string("\n  *epCTX_SIZE "); prn_dword(ctrl->hccr->cr_hccparams);
 	return (struct xhci_ep_ctx *) (ctx->bytes + (ep_index * CTX_SIZE(ctrl->hccr->cr_hccparams)));
 }
-//usb_set_address
-void set_address(unsigned int slot_id, u16 addr)
+//xhci_submit_root
+void submit_root(struct devrequest *req, void *buf)
 {
+	u16 typeReq;
+	u32 reg, tmpreg = 0;
+
+	typeReq = req->request | req->requesttype << 8;
+	switch (typeReq) {	
+		case USB_REQ_GET_STATUS | ((0x23 | USB_DIR_IN) << 8):
+			reg = g_io_buf.usb.xhci.hcor->portregs[req->index - 1].or_portsc;
+			if (reg & 0x1) {
+				tmpreg |= USB_PORT_STAT_CONNECTION;
+				switch (reg & DEV_SPEED_MASK) {
+					case XDEV_FS:					 
+						//prn_string("  	SPEED = FULLSPEED\n");
+						break;
+					case XDEV_LS:
+						tmpreg |= USB_PORT_STAT_LOW_SPEED;
+						//prn_string("  	SPEED = LOWSPEED\n");
+						break;
+					case XDEV_HS:
+						tmpreg |= USB_PORT_STAT_HIGH_SPEED;
+						//prn_string("  	SPEED = HIGHSPEED\n");
+						break;
+					case XDEV_SS:
+						tmpreg |= USB_PORT_STAT_SUPER_SPEED;
+						//prn_string("  	SPEED = SUPERSPEED\n");
+						break;
+				}
+			}
+			if (reg & PORT_PE)
+				tmpreg |= USB_PORT_STAT_ENABLE;
+			if ((reg & PORT_PLS_MASK) == XDEV_U3)
+				tmpreg |= USB_PORT_STAT_SUSPEND;
+			if (reg & PORT_OC)
+				tmpreg |= USB_PORT_STAT_OVERCURRENT;
+			if (reg & PORT_RESET)
+				tmpreg |= USB_PORT_STAT_RESET;
+			if (reg & PORT_POWER)
+				/*
+			 	* XXX: This Port power bit (for USB 3.0 hub)
+			 	* we are faking in USB 2.0 hub port status;
+			 	* since there's a change in bit positions in
+			 	* two:
+			 	* USB 2.0 port status PP is at position[8]
+			 	* USB 3.0 port status PP is at position[9]
+			 	* So, we are still keeping it at position [8]
+			 	*/
+				tmpreg |= USB_PORT_STAT_POWER;
+				
+			if (reg & PORT_CSC)
+				tmpreg |= PORT_CSC>> 1;//(USB_PORT_STAT_C_CONNECTION << 16);
+			if (reg & PORT_PEC)
+				tmpreg |= PORT_PEC >> 1;//(USB_PORT_STAT_C_ENABLE << 16);
+			if (reg & PORT_OCC)
+				tmpreg |= PORT_OCC >> 1;//(USB_PORT_STAT_C_OVERCURRENT << 16);
+			if (reg & PORT_RC)
+				tmpreg |= PORT_RC >> 1;//(USB_PORT_STAT_C_RESET << 16);			
+			break;
+		case USB_REQ_SET_FEATURE | ((USB_DIR_OUT | 0x23) << 8):
+			reg = g_io_buf.usb.xhci.hcor->portregs[req->index - 1].or_portsc;
+			reg = (reg & XHCI_PORT_RO) | (reg & XHCI_PORT_RWS);
+			switch (req->value) {
+				case 0x1://USB_PORT_FEAT_ENABLE:
+					reg |= PORT_PE;
+					break;
+				case 0x8://USB_PORT_FEAT_POWER:
+					reg |= PORT_POWER;
+					break;
+				case 0x4://USB_PORT_FEAT_RESET:
+					reg |= PORT_RESET;
+					break;
+				default:
+					prn_string("\n!!!!!unknown feature");
+					return;
+			}
+			g_io_buf.usb.xhci.hcor->portregs[req->index - 1].or_portsc = reg;
+			tmpreg = g_io_buf.usb.xhci.hcor->portregs[req->index - 1].or_portsc;
+			break;
+		case USB_REQ_CLEAR_FEATURE | ((USB_DIR_OUT | 0x23) << 8):
+			reg = g_io_buf.usb.xhci.hcor->portregs[req->index - 1].or_portsc;			
+			reg = (reg & XHCI_PORT_RO) | (reg & XHCI_PORT_RWS);
+			tmpreg = reg;
+			switch (req->value) {
+				case 0x1://USB_PORT_FEAT_ENABLE:
+					tmpreg &= ~PORT_PE;
+					break;
+				case 0x8://USB_PORT_FEAT_POWER:
+					tmpreg &= ~PORT_POWER;
+					break;
+				case 0x14://USB_PORT_FEAT_C_RESET:
+				case 0x10://USB_PORT_FEAT_C_CONNECTION:
+				//case 0x13://USB_PORT_FEAT_C_OVER_CURRENT:
+				//case 0x11://USB_PORT_FEAT_C_ENABLE:
+					switch (req->value) {
+						case 0x14://USB_PORT_FEAT_C_RESET:
+							tmpreg |= PORT_RC;
+							break;
+						case 0x10://USB_PORT_FEAT_C_CONNECTION:
+							tmpreg |= PORT_CSC;
+							break;
+						//case 0x13://USB_PORT_FEAT_C_OVER_CURRENT:
+						//	tmpreg |= PORT_OCC;
+						//	break;
+						//case 0x11://USB_PORT_FEAT_C_ENABLE:
+						//	tmpreg |= PORT_PEC;
+						//	break;
+						//case 0x12://USB_PORT_FEAT_C_SUSPEND:
+						//	tmpreg |= PORT_PLC;
+						//	break;
+						default:
+							prn_string("\n!!!!!unknown feature");
+							return;
+					}
+					g_io_buf.usb.xhci.hcor->portregs[req->index - 1].or_portsc = tmpreg;
+					break;
+				default:
+					prn_string("\n!!!!!unknown feature");
+					break;
+			}
+			g_io_buf.usb.xhci.hcor->portregs[req->index - 1].or_portsc = reg;
+			tmpreg = g_io_buf.usb.xhci.hcor->portregs[req->index - 1].or_portsc;
+			break;
+		default:
+			prn_string("Unknown request\n");
+			return;
+	}
+	memcpy(buf, (u8 *)&tmpreg, 4);
+}
+//usb_set_address
+void set_address(xhci_usb *xusb)
+{	
 	struct xhci_input_control_ctx *ctrl_ctx;
         struct xhci_virt_device *virt_dev;
 	// xhci_setup_addressable_virt_dev
@@ -993,41 +1297,48 @@ void set_address(unsigned int slot_id, u16 addr)
 	struct xhci_slot_ctx *slot_ctx;
 	union xhci_trb *pevent;
 	u64 tmp_64;
-
-	virt_dev = g_io_buf.usb.xhci.devs[slot_id];
+	int port_num, route = 0;
+	
+	virt_dev = xusb->devs[xusb->udev.slot_id];
 //xhci_setup_addressable_virt_dev
 	//xhci_get_ep_ctx
-	ep0_ctx = get_ep_ctx(&g_io_buf.usb.xhci, virt_dev->in_ctx, 0);
+	ep0_ctx = get_ep_ctx(xusb, virt_dev->in_ctx, 0);
 	// xhci_get_slot_ctx
-	slot_ctx = get_slot_ctx(&g_io_buf.usb.xhci, virt_dev->in_ctx);
-
+	slot_ctx = get_slot_ctx(xusb, virt_dev->in_ctx);
 	slot_ctx->dev_info |= LAST_CTX(1);
+	
+	tmp_64 = xusb->udev.devnum;
+	port_num = xusb->udev.portnr[tmp_64];
+	
+	while(tmp_64 > 2) {		
+		if (port_num > 15)
+			port_num = 15;
+		route |= port_num << (xusb->udev.depth * 4);
+		tmp_64--;
+		port_num = xusb->udev.portnr[tmp_64];
+	}
 
-	if (addr == DEVICE_ADDRESS)
-		slot_ctx->dev_info |= 0;//route;
-	else
-		slot_ctx->dev_info |= 1;//route;
-
-	slot_ctx->dev_info2 |= (g_io_buf.usb.xhci.udev.portnr & ROOT_HUB_PORT_MASK) << ROOT_HUB_PORT_SHIFT;//(port_num & ROOT_HUB_PORT_MASK) << ROOT_HUB_PORT_SHIFT;
+	slot_ctx->dev_info |= route;
+	slot_ctx->dev_info2 |= (xusb->udev.portnr[2] & ROOT_HUB_PORT_MASK) << ROOT_HUB_PORT_SHIFT;//(port_num & ROOT_HUB_PORT_MASK) << ROOT_HUB_PORT_SHIFT;
 	ep0_ctx->ep_info2 = CTRL_EP << EP_TYPE_SHIFT;
-	if (g_io_buf.usb.xhci.udev.speed == USB_SPEED_SUPER) {
-		slot_ctx->dev_info |= SLOT_SPEED_SS;
-#ifdef XHCI_DEBUG
-		prn_string("\n  	slot_ctx->dev_info "); prn_dword(slot_ctx->dev_info);
-#endif		
+	if (xusb->udev.speed == USB_SPEED_SUPER) {
+		slot_ctx->dev_info |= SLOT_SPEED_SS;	
 		ep0_ctx->ep_info2 |= ((512 & MAX_PACKET_MASK) << MAX_PACKET_SHIFT);
-	} else if (g_io_buf.usb.xhci.udev.speed == USB_SPEED_HIGH) {
+	} else if (xusb->udev.speed == USB_SPEED_HIGH) {
 		slot_ctx->dev_info |= SLOT_SPEED_HS;
-#ifdef XHCI_DEBUG
-		prn_string("\n  	slot_ctx->dev_info "); prn_dword(slot_ctx->dev_info);
-#endif
 		ep0_ctx->ep_info2 |= ((64 & MAX_PACKET_MASK) << MAX_PACKET_SHIFT);
 	} else {
 #ifdef XHCI_DEBUG
-		prn_string("\n  	unknown speed "); prn_dword(g_io_buf.usb.xhci.udev.speed);
+		prn_string("\n  	unknown speed "); prn_dword(xusb->udev.speed);
 #endif
 	}
-			
+#ifdef XHCI_DEBUG
+	prn_string("  	g_io_buf.usb.xhci.udev.depth "); prn_dword(xusb->udev.depth);
+	prn_string("  	route "); prn_dword(route);
+	prn_string(" 	slot_ctx->dev_info "); prn_dword(slot_ctx->dev_info);
+	prn_string(" 	slot_ctx->dev_info2 "); prn_dword(slot_ctx->dev_info2);
+	prn_string(" 	ep0_ctx->dev_info2 "); prn_dword(ep0_ctx->ep_info2);	
+#endif			
 	ep0_ctx->ep_info2 |= ((0 & MAX_BURST_MASK) << MAX_BURST_SHIFT) | ((3 & ERROR_COUNT_MASK) << ERROR_COUNT_SHIFT);
 	
 	tmp_64 = (intptr_t)virt_dev->eps[0].ring->first_seg->trbs;
@@ -1041,19 +1352,21 @@ void set_address(unsigned int slot_id, u16 addr)
 	ctrl_ctx = (struct xhci_input_control_ctx *) virt_dev->in_ctx->bytes;
 	ctrl_ctx->add_flags = SLOT_FLAG | EP0_FLAG;
 	ctrl_ctx->drop_flags = 0;
-	
-	queue_command((void *)ctrl_ctx, slot_id, 0, TRB_ADDR_DEV);
+
+	queue_command((void *)ctrl_ctx, xusb->udev.slot_id, 0, TRB_ADDR_DEV);	
 	//even ring
 	pevent = wait_for_event(TRB_COMPLETION);
+
 	if (GET_COMP_CODE(pevent->event_cmd.status) != COMP_SUCCESS) {
 		prn_string("\n!!!!!set_address GET_COMP_CODE!!!!! "); prn_dword(GET_COMP_CODE(pevent->event_cmd.status));
 	}
+
 	acknowledge_event();
 //xhci_get_slot_ctx
 	_delay_1ms(20);
-	slot_ctx = get_slot_ctx(&g_io_buf.usb.xhci, virt_dev->out_ctx);
+	slot_ctx = get_slot_ctx(xusb, virt_dev->out_ctx);
 #ifdef XHCI_DEBUG
-	prn_string("  xHCI internal address is: "); prn_dword(slot_ctx->dev_state & DEV_ADDR_MASK);
+	prn_string("  	xHCI internal address is: "); prn_dword(slot_ctx->dev_state & DEV_ADDR_MASK);
 #endif
 }
 
@@ -1184,17 +1497,7 @@ int usb_parse_config(unsigned char *buffer, int cfgno)
 			/* found an endpoint */
 			if_desc->no_of_ep++;
 			memcpy((u8 *)&if_desc->ep_desc[epno], (u8 *)head, USB_DT_ENDPOINT_SIZE);
-			#if 0
-			ep_wMaxPacketSize = get_unaligned(&dev->config.\
-							if_desc[ifno].\
-							ep_desc[epno].\
-							wMaxPacketSize);
-			put_unaligned(le16_to_cpu(ep_wMaxPacketSize),
-					&dev->config.\
-					if_desc[ifno].\
-					ep_desc[epno].\
-					wMaxPacketSize);
-			#endif
+			
 #ifdef XHCI_DEBUG
 			prn_string("  	ifno "); prn_dword(ifno);
 			prn_string("  	epno "); prn_dword(epno);
@@ -1298,8 +1601,10 @@ int usb_set_maxpacket(usb_device *dev)
 #endif	
 	for (i = 0; i < g_io_buf.usb.xhci.udev.config.desc.bNumInterfaces; i++) {
 #ifdef XHCI_DEBUG
-		prn_string("\n  	config.if_desc[i].desc.bNumEndpoints "); prn_dword(dev->config.if_desc[i].desc.bNumEndpoints);
+		prn_string("  	config.if_desc[i].desc.bNumEndpoints "); prn_dword(dev->config.if_desc[i].desc.bNumEndpoints);
 #endif
+		dev->ep_dir[0] = 0;
+		dev->ep_dir[1] = 0;
 		for (ii = 0; ii < dev->config.if_desc[i].desc.bNumEndpoints; ii++)
 			usb_set_maxpacket_ep(dev, i, ii);
 	}
@@ -1577,8 +1882,8 @@ u32 xhci_get_endpoint_max_burst(usb_device *udev,
 
 	return 0;
 }
-
-int set_configuration(usb_device *dev, unsigned int slot_id)
+//xhci_set_configuration
+int set_configuration(xhci_usb *xdev)
 {
 	struct xhci_virt_device *virt_dev;
 	struct xhci_container_ctx *in_ctx;
@@ -1602,12 +1907,12 @@ int set_configuration(usb_device *dev, unsigned int slot_id)
 	u32 max_esit_payload;
 	u64 ptrb_64; 
 	
-	virt_dev = g_io_buf.usb.xhci.devs[slot_id];
+	virt_dev = xdev->devs[xdev->udev.slot_id];
 	out_ctx = virt_dev->out_ctx;
 	in_ctx = virt_dev->in_ctx;
 	
-	num_of_ep = dev->config.if_desc[0].no_of_ep;
-	ifdesc = &dev->config.if_desc[0];
+	num_of_ep = xdev->udev.config.if_desc[0].no_of_ep;
+	ifdesc = &xdev->udev.config.if_desc[0];
 	
 	ctrl_ctx = (struct xhci_input_control_ctx *) in_ctx->bytes;//xhci_get_input_control_ctx(in_ctx);
 	/* Initialize the input context control */
@@ -1627,41 +1932,14 @@ int set_configuration(usb_device *dev, unsigned int slot_id)
 	}
 	
 	slot_copy(in_ctx, out_ctx);
-	slot_ctx = get_slot_ctx(&g_io_buf.usb.xhci, in_ctx);
+	slot_ctx = get_slot_ctx(xdev, in_ctx);
+	
 	slot_ctx->dev_info &= ~(LAST_CTX_MASK);
 	slot_ctx->dev_info |= LAST_CTX(max_ep_flag + 1) | 0;
         
 	endpoint_copy(in_ctx, out_ctx, 0);
 	
 	/* filling up ep contexts */
-	#if 0 //hard code
-	ep_index = 1;
-	ep_ctx[ep_index] = get_ep_ctx(&g_io_buf.usb.xhci, in_ctx, ep_index);
-	virt_dev->eps[ep_index].ring = xhci_ring_alloc(1, ep_index);
-	ep_ctx[ep_index]->ep_info = 0;
-	ep_ctx[ep_index]->ep_info2 = 0x2000016;
-	ptrb_64 = (u64)virt_dev->eps[ep_index].ring->enqueue;
-	ep_ctx[ep_index]->deq = ptrb_64 | virt_dev->eps[ep_index].ring->cycle_state;
-	ep_ctx[ep_index]->tx_info = 0;
-	
-	ep_index = 4;
-	ep_ctx[ep_index] = get_ep_ctx(&g_io_buf.usb.xhci, in_ctx, ep_index);
-	virt_dev->eps[ep_index].ring = xhci_ring_alloc(1, ep_index);
-	ep_ctx[ep_index]->ep_info = 0;
-	ep_ctx[ep_index]->ep_info2 = 0x2000036;
-	ptrb_64 = (u64)virt_dev->eps[ep_index].ring->enqueue;
-	ep_ctx[ep_index]->deq = ptrb_64 | virt_dev->eps[ep_index].ring->cycle_state;
-	ep_ctx[ep_index]->tx_info = 0;
-	
-	ep_index = 6;
-	ep_ctx[ep_index] = get_ep_ctx(&g_io_buf.usb.xhci, in_ctx, ep_index);
-	virt_dev->eps[ep_index].ring = xhci_ring_alloc(1, ep_index);
-	ep_ctx[ep_index]->ep_info = 0x70000;
-	ep_ctx[ep_index]->ep_info2 = 0x40003e;
-	ptrb_64 = (u64)virt_dev->eps[ep_index].ring->enqueue;
-	ep_ctx[ep_index]->deq = ptrb_64 | virt_dev->eps[ep_index].ring->cycle_state;
-	ep_ctx[ep_index]->tx_info = 0x400040;
-	#else
 	for (cur_ep = 0; cur_ep < num_of_ep; cur_ep++) {
 		struct usb_endpoint_descriptor *endpt_desc = NULL;
 		struct usb_ss_ep_comp_descriptor *ss_ep_comp_desc = NULL;
@@ -1677,17 +1955,17 @@ int set_configuration(usb_device *dev, unsigned int slot_id)
 		 * size. For Isoc and Int, set it to max available.
 		 * See xHCI 1.1 spec 4.14.1.1 for details.
 		 */
-		max_esit_payload = xhci_get_max_esit_payload(dev, endpt_desc, ss_ep_comp_desc);
-		interval = xhci_get_endpoint_interval(dev, endpt_desc);
+		max_esit_payload = xhci_get_max_esit_payload(&xdev->udev, endpt_desc, ss_ep_comp_desc);
+		interval = xhci_get_endpoint_interval(&xdev->udev, endpt_desc);
 		//interval = 0;
 		//if (cur_ep == 2)
 		//	interval = 7;
-		mult = xhci_get_endpoint_mult(dev, endpt_desc, ss_ep_comp_desc);
-		max_burst = xhci_get_endpoint_max_burst(dev, endpt_desc, ss_ep_comp_desc);
+		mult = xhci_get_endpoint_mult(&xdev->udev, endpt_desc, ss_ep_comp_desc);
+		max_burst = xhci_get_endpoint_max_burst(&xdev->udev, endpt_desc, ss_ep_comp_desc);
 		avg_trb_len = max_esit_payload;
 
 		ep_index = xhci_get_ep_index(endpt_desc);
-		ep_ctx[ep_index] = get_ep_ctx(&g_io_buf.usb.xhci, in_ctx, ep_index);
+		ep_ctx[ep_index] = get_ep_ctx(xdev, in_ctx, ep_index);
 
 		/* Allocate the ep rings */
 		//virt_dev->eps[ep_index].ring = xhci_ring_alloc(1, true);
@@ -1725,9 +2003,113 @@ int set_configuration(usb_device *dev, unsigned int slot_id)
 #endif
 		
 	}
-	#endif
-	return configure_endpoints(g_io_buf.usb.xhci.udev.slot_id, 0);
+
+	return configure_endpoints(xdev->udev.slot_id, 0);
 }
+#if defined(CONFIG_HAVE_USB3_HUB)
+//xhci_update_hub_device
+void update_hub_device(xhci_usb *xdev, pUSB_DevDesc pDev, struct usb_hub_descriptor *pHub)
+{
+	//struct usb_hub_device *hub = dev_get_uclass_priv(udev->dev);
+	struct xhci_virt_device *virt_dev;
+	struct xhci_input_control_ctx *ctrl_ctx;
+	struct xhci_container_ctx *out_ctx;
+	struct xhci_container_ctx *in_ctx;
+	struct xhci_slot_ctx *slot_ctx;
+	unsigned think_time;
+	u32 temp, tmp_portnr;
+
+	if (pDev->bDeviceProtocol == 3) //super speed
+		temp = 0x2a;//USB_DT_SS_HUB
+	else 
+		temp = 0x29;//USB_DT_HUB
+				
+	//usb_get_hub_descriptor
+	USB_vendorCmd(0xa0, USB_REQ_GET_DESCRIPTOR, temp << 8, 0, 4);//0xa0 = USB_DIR_IN | USB_RT_HUB
+	if (pHub->bLength > sizeof(struct usb_hub_descriptor))
+		pHub->bLength = sizeof(struct usb_hub_descriptor);
+	//usb_get_hub_descriptor
+	USB_vendorCmd(0xa0, USB_REQ_GET_DESCRIPTOR, temp << 8, 0, pHub->bLength);//0xa0 = USB_DIR_IN | USB_RT_HUB
+	tmp_portnr = pHub->bNbrPorts;
+	if (pDev->bDeviceProtocol == 2)
+		USB_vendorCmd(0x1, USB_REQ_SET_INTERFACE, 1, 0, 0);
+	//usb_get_hub_status
+	USB_vendorCmd(0xa0, USB_REQ_GET_STATUS, 0, 0, 4);//0xa0 = USB_DIR_IN | USB_RT_HUB
+#ifdef XHCI_DEBUG
+	prn_string("  	!!!!!sts "); prn_dword(USB_dataBuf[0] | (USB_dataBuf[1]<<8) | (USB_dataBuf[2]<<16) | (USB_dataBuf[3]<<24));
+#endif
+	//memcpy((u8 *)&portst, USB_dataBuf, 4);
+/////				
+	virt_dev = xdev->devs[xdev->udev.slot_id];
+
+	out_ctx = virt_dev->out_ctx;
+	in_ctx = virt_dev->in_ctx;
+
+	ctrl_ctx = (struct xhci_input_control_ctx *) in_ctx->bytes;//xhci_get_input_control_ctx(in_ctx);
+	/* Initialize the input context control */
+	ctrl_ctx->add_flags = SLOT_FLAG;
+	ctrl_ctx->drop_flags = 0;
+
+	/* slot context */
+	slot_copy(in_ctx, out_ctx);
+	slot_ctx = get_slot_ctx(xdev, in_ctx);
+	
+	/* Update hub related fields */
+	slot_ctx->dev_info |= DEV_HUB;
+	/*
+	 * refer to section 6.2.2: MTT should be 0 for full speed hub,
+	 * but it may be already set to 1 when setup an xHCI virtual
+	 * device, so clear it anyway.
+	 */
+	//if (hub->tt.multi)????
+	//	slot_ctx->dev_info |= DEV_MTT;
+	//else if (udev->speed == USB_SPEED_FULL)
+	//	slot_ctx->dev_info &= cpu_to_le32(~DEV_MTT);
+	slot_ctx->dev_info2 |= XHCI_MAX_PORTS(tmp_portnr);//udev->maxchild);
+	/*
+	 * Set TT think time - convert from ns to FS bit times.
+	 * Note 8 FS bit times == (8 bits / 12000000 bps) ~= 666ns
+	 *
+	 * 0 =  8 FS bit times, 1 = 16 FS bit times,
+	 * 2 = 24 FS bit times, 3 = 32 FS bit times.
+	 *
+	 * This field shall be 0 if the device is not a high-spped hub.
+	 */
+	think_time = 666;//hub->tt.think_time;
+	if (think_time != 0)
+		think_time = (think_time / 666) - 1;
+	if (g_io_buf.usb.xhci.udev.speed == USB_SPEED_HIGH)
+		slot_ctx->tt_info |= TT_THINK_TIME(think_time);
+	slot_ctx->dev_state = 0;
+#ifdef XHCI_DEBUG
+	prn_string("\n  	update_hub_device dev_info "); prn_dword(slot_ctx->dev_info);
+	prn_string("  	dev_info2 "); prn_dword(slot_ctx->dev_info2);
+	prn_string("  	slot_ctx->tt_info "); prn_dword(slot_ctx->tt_info);
+#endif
+	configure_endpoints(xdev->udev.slot_id, 0);
+/////
+	temp = g_io_buf.usb.xhci.udev.devnum;
+	if (temp < 2)
+		g_io_buf.usb.xhci.udev.depth = -1; 
+	else {			
+		g_io_buf.usb.xhci.udev.depth = 0;
+		while ((temp--) > 2) {
+			g_io_buf.usb.xhci.udev.depth++;
+		}
+		if (pDev->bDeviceProtocol == 3) {
+			//debug("set hub (%p) depth to %d\n", dev, depth);
+			/*
+			 * This request sets the value that the hub uses to
+			 * determine the index into the 'route string index'
+			 * for this hub.
+			 */
+			USB_vendorCmd(0x20, 0x0c, g_io_buf.usb.xhci.udev.depth, 0, 0);//usb_set_hub_depth(dev, depth);
+		}
+	}
+	xdev->udev.Hub_NbrPorts = tmp_portnr;
+}
+#endif
+#if 0
 //abort_td
 void abort_td(unsigned int slot_id, int ep_index)
 {
@@ -1770,7 +2152,7 @@ void abort_td(unsigned int slot_id, int ep_index)
 	}
 	acknowledge_event();
 }
-
+#endif
 void ctrl_tx(struct devrequest *req, int length, void *buffer, u32 pipe)
 {
 	struct xhci_ring *ep_ring;
@@ -1786,13 +2168,13 @@ void ctrl_tx(struct devrequest *req, int length, void *buffer, u32 pipe)
 	u32 length_field;
 	
 	ep_index = usb_pipe_ep_index(pipe);
-	//prn_string("\n  g_io_buf.usb.xhci.devs[1]->eps[ep_index].ring "); prn_dword(g_io_buf.usb.xhci.devs[1]->eps[ep_index].ring);
+	//prn_string("\n  g_io_buf.usb.xhci.devs[g_io_buf.usb.xhci.udev.slot_id]->eps[ep_index].ring "); prn_dword(g_io_buf.usb.xhci.devs[g_io_buf.usb.xhci.udev.slot_id]->eps[ep_index].ring);
 #ifdef XHCI_DEBUG
 	prn_string("\n  	*pipe "); prn_dword(pipe);
-	prn_string("  	*ep_index "); prn_dword(ep_index);
+	//prn_string("  	*ep_index "); prn_dword(ep_index);
 #endif
-	ep_ring = g_io_buf.usb.xhci.devs[1]->eps[ep_index].ring;
-	//ep_ctx = g_io_buf.usb.xhci.devs[1]->out_ctx->bytes + CTX_SIZE(g_io_buf.usb.xhci.hccr->cr_hccparams);
+	ep_ring = g_io_buf.usb.xhci.devs[g_io_buf.usb.xhci.udev.slot_id]->eps[ep_index].ring;
+	//ep_ctx = g_io_buf.usb.xhci.devs[g_io_buf.usb.xhci.udev.slot_id]->out_ctx->bytes + CTX_SIZE(g_io_buf.usb.xhci.hccr->cr_hccparams);
 	if (length > 0) 
 		num_trbs++;
 	
@@ -1906,26 +2288,24 @@ int bulk_tx(u32 pipe, int length, void *buffer)
 	u32 length_field = 0;
 	int ep_index;
 	struct xhci_virt_device *virt_dev;
-	//struct xhci_ep_ctx *ep_ctx; 
 	struct xhci_ring *ring;
-	union xhci_trb *pevent;
-	
-	int running_total, trb_buff_len;
-	//unsigned int total_packet_count;
-	//int maxpacketsize;
+	union xhci_trb *pevent;	
+	int running_total, trb_buff_len, maxpacketsize;
+	unsigned int total_packet_count;
 	u64 addr;
 	u32 trb_fields[4];
 	u64 pval_64 = (intptr_t)buffer;
 	
+	
 	ep_index = usb_pipe_ep_index(pipe);
 	virt_dev = g_io_buf.usb.xhci.devs[g_io_buf.usb.xhci.udev.slot_id];
 	//prn_string("\n		*pipe "); prn_dword(pipe);
-	//prn_string("\n		*ep_index "); prn_dword(ep_index);
+	//prn_string("		*ep_index "); prn_dword(ep_index);
 	//prn_string("\n		*g_io_buf.usb.xhci.udev.slot_id "); prn_dword(g_io_buf.usb.xhci.udev.slot_id);
   
 	//ep_ctx = xhci_get_ep_ctx(ctrl, virt_dev->out_ctx, ep_index);
 	//ep_ctx = virt_dev->out_ctx->bytes + CTX_SIZE(g_io_buf.usb.xhci.hccr->cr_hccparams);
-
+	
 	ring = virt_dev->eps[ep_index].ring;
 	/*
 	 * How much data is (potentially) left before the 64KB boundary?
@@ -1939,18 +2319,21 @@ int bulk_tx(u32 pipe, int length, void *buffer)
 	//prn_string("\n		*running_total "); prn_dword(running_total);
 	//prn_string("\n		*trb_buff_len "); prn_dword(trb_buff_len);
 	//prn_string("\n		*pval_64 H "); prn_dword(pval_64>>32);
-	//prn_string("\n		*pval_64 L "); prn_dword(pval_64);
+	//prn_string("		*pval_64 L "); prn_dword(pval_64);
+	//prn_string("		length "); prn_dword(length);
 	/*
 	 * If there's some data on this 64KB chunk, or we have to send a
 	 * zero-length transfer, we need at least one TRB
 	 */
 	if (running_total != 0 || length == 0)
 		num_trbs++;
+		
 	/* How many more 64KB chunks to transfer, how many more TRBs? */
 	while (running_total < length) {
 		num_trbs++;
 		running_total += TRB_MAX_BUFF_SIZE;
 	}
+	
 	/*
 	 * XXX: Calling routine prepare_ring() called in place of
 	 * prepare_trasfer() as there in 'Linux' since we are not
@@ -1960,14 +2343,19 @@ int bulk_tx(u32 pipe, int length, void *buffer)
 	
 	start_trb = &ring->enqueue->generic;
 	start_cycle = ring->cycle_state;
-	//prn_string("\n		start_trb "); prn_dword(start_trb);
+	//prn_string("\n		start_trb "); prn_dword((intptr_t)start_trb);
 	//prn_string("\n		start_cycle "); prn_dword(start_cycle);
-	running_total = 0;
 	
+	running_total = 0;
 	//maxpacketsize = usb_maxpacket(udev, pipe);
-	//maxpacketsize = 0x200;
+	if ((pipe & USB_DIR_IN) == 0)
+		maxpacketsize = g_io_buf.usb.xhci.udev.epmaxpacketout[((pipe>>15) & 0xf)];
+	else
+		maxpacketsize = g_io_buf.usb.xhci.udev.epmaxpacketin[((pipe>>15) & 0xf)];
 	//total_packet_count = DIV_ROUND_UP(length, maxpacketsize);
-	//total_packet_count = 1;
+	total_packet_count = (length + maxpacketsize - 1)/maxpacketsize;
+	//prn_string("\n		maxpacketsize "); prn_dword(maxpacketsize);
+	//prn_string("		total_packet_count "); prn_dword(total_packet_count);
 	/* How much data is in the first TRB? */
 	/*
 	 * How much data is (potentially) left before the 64KB boundary?
@@ -1984,6 +2372,7 @@ int bulk_tx(u32 pipe, int length, void *buffer)
 	/* Queue the first TRB, even if it's zero-length */
 	do {
 		u32 remainder = 0;
+		
 		field = 0;
 		/* Don't change the cycle bit of the first TRB until later */
 		if (first_trb) {
@@ -1993,7 +2382,6 @@ int bulk_tx(u32 pipe, int length, void *buffer)
 		} else {
 			field |= ring->cycle_state;
 		}
-
 		/*
 		 * Chain all the TRBs together; clear the chain bit in the last
 		 * TRB to indicate it's the last TRB in the chain.
@@ -2011,10 +2399,10 @@ int bulk_tx(u32 pipe, int length, void *buffer)
 		if (HC_VERSION(g_io_buf.usb.xhci.hccr->cr_capbase) < 0x100)
 			remainder = xhci_td_remainder(length - running_total);
 		else
-			remainder = 0;//xhci_v1_0_td_remainder(running_total, trb_buff_len, total_packet_count, maxpacketsize, num_trbs - 1);
-
+			remainder = xhci_v1_0_td_remainder(running_total, trb_buff_len, total_packet_count, maxpacketsize, num_trbs - 1);
+		//prn_string("		remainder "); prn_dword(remainder);
 		length_field = ((trb_buff_len & TRB_LEN_MASK) | remainder | ((0 & TRB_INTR_TARGET_MASK) << TRB_INTR_TARGET_SHIFT));
-
+		
 		trb_fields[0] = addr;
 		trb_fields[1] = addr >> 32;
 		trb_fields[2] = length_field;
@@ -2041,16 +2429,13 @@ int bulk_tx(u32 pipe, int length, void *buffer)
 	pevent = wait_for_event(TRB_TRANSFER);
 	if (!pevent) {
 		prn_string("\n!!!!!XHCI bulk transfer timed out, aborting...\n");
+#if 0
 		abort_td(g_io_buf.usb.xhci.udev.slot_id, ep_index);
+#endif
 		return -1;//ETIMEDOUT;
 	}
 	field = pevent->trans_event.flags;	
-	//BUG_ON(TRB_TO_SLOT_ID(field) != slot_id);
-	//BUG_ON(TRB_TO_EP_INDEX(field) != ep_index);
-	//BUG_ON(*(void **)(uintptr_t)le64_to_cpu(event->trans_event.buffer) -
-	//	buffer > (size_t)length);
-        //prn_string("\n		TRB_TO_SLOT_ID "); prn_dword(TRB_TO_SLOT_ID(field));
-	//prn_string("\n		TRB_TO_EP_INDEX "); prn_dword(TRB_TO_EP_INDEX(field));
+
 	//record_transfer_result(udev, event, length);
 	field = EVENT_TRB_LEN(pevent->trans_event.transfer_len);
 	if (field)
@@ -2058,14 +2443,15 @@ int bulk_tx(u32 pipe, int length, void *buffer)
 	else		
 		g_io_buf.usb.xhci.udev.act_len = length;
 
-	if (GET_COMP_CODE(pevent->trans_event.transfer_len) != 0x1) {
+	if ((GET_COMP_CODE(pevent->trans_event.transfer_len) != 0x1) &&
+	    (GET_COMP_CODE(pevent->trans_event.transfer_len) != 0xd)) {
 		prn_string("\n  !!!!!GET_COMP_CODE!!!!! "); prn_dword(GET_COMP_CODE(pevent->trans_event.transfer_len));
 		acknowledge_event();
 		return -GET_COMP_CODE(pevent->trans_event.transfer_len);
 	}
-
-	//prn_string("\n  	EVENT_TRB_LEN "); prn_dword(EVENT_TRB_LEN(pevent->trans_event.transfer_len));
-	//prn_string("\n  	g_io_buf.usb.xhci.udev.act_len "); prn_dword(g_io_buf.usb.xhci.udev.act_len);
+	if (g_io_buf.usb.xhci.udev.act_len != length)
+		prn_string("\n  !!!!!length != act_len!!!!! ");
+		
 	//xhci_acknowledge_event(ctrl);
 	acknowledge_event();
 	
@@ -2075,22 +2461,19 @@ int bulk_tx(u32 pipe, int length, void *buffer)
 void usb_string(int j, char *buf, int size)
 {
 	unsigned int u, idx, err;
-
 	
 	if (g_io_buf.usb.xhci.udev.string_langid == 0) {
 #ifdef XHCI_DEBUG
-		prn_string("\n    **<usb_get_string langid>**");
+		prn_string("\n**<usb_get_string langid>**");
 #endif
 		USB_vendorCmd(USB_DIR_IN, USB_REQ_GET_DESCRIPTOR, 0x300, 0, 0xff);
 		g_io_buf.usb.xhci.udev.string_langid = (g_io_buf.usb.cmd_buf[3]<<8)|g_io_buf.usb.cmd_buf[2];
 #ifdef XHCI_DEBUG
-		prn_string("\n    g_io_buf.usb.cmd_buf[0] "); prn_dword(g_io_buf.usb.cmd_buf[0]);
-		prn_string("\n    language ID "); prn_dword(g_io_buf.usb.xhci.udev.string_langid);
+		prn_string("\n  	g_io_buf.usb.cmd_buf[0] "); prn_dword(g_io_buf.usb.cmd_buf[0]);
+		prn_string("  	language ID "); prn_dword(g_io_buf.usb.xhci.udev.string_langid);
 #endif
 	}
-#ifdef XHCI_DEBUG	
-	prn_string("\n    **<usb_get_string>**");
-#endif
+	
 	USB_vendorCmd(USB_DIR_IN, USB_REQ_GET_DESCRIPTOR, 0x300 + j, g_io_buf.usb.xhci.udev.string_langid, 0xff);
 
 	err = 0xff - g_io_buf.usb.xhci.udev.act_len;
@@ -2110,23 +2493,24 @@ void usb_string(int j, char *buf, int size)
 //usb_inquiry
 void usb_inquiry(void)
 {
+	memset(g_io_buf.usb.xhci.reserved, 0, sizeof(g_io_buf.usb.xhci.reserved));
 	g_io_buf.usb.xhci.reserved[0] = SCSI_INQUIRY;
 	g_io_buf.usb.xhci.reserved[1] = g_io_buf.usb.xhci.udev.lun << 5;
 	g_io_buf.usb.xhci.reserved[4] = 36;
 	if (stor_BBB_transport(36, 12, 1, NULL) == 0) {
 #ifdef XHCI_DEBUG
-		prn_string("\nISO Vers "); prn_dword(g_io_buf.usb.cmd_buf[2]);
-		prn_string("Response Data "); prn_dword(g_io_buf.usb.cmd_buf[3]);
+		prn_string("\n  	ISO Vers "); prn_dword(g_io_buf.usb.cmd_buf[2]);
+		prn_string("  	Response Data "); prn_dword(g_io_buf.usb.cmd_buf[3]);
 #endif
-		memset(g_io_buf.usb.xhci.reserved, 0, 12);
 	} else 
-		prn_string(" =>usb_inquiry\n");
+		prn_string("=>usb_inquiry\n");
 }
 //usb_test_unit_ready
 void usb_test_unit_ready(void)
 {
 	int retry = 10;
 	
+	memset(g_io_buf.usb.xhci.reserved, 0, sizeof(g_io_buf.usb.xhci.reserved));
 	do 
 	{
 		g_io_buf.usb.xhci.reserved[0] = SCSICMD_TEST_UNIT_READY;
@@ -2135,7 +2519,7 @@ void usb_test_unit_ready(void)
 			return;
 		else
 			prn_string(" =>usb_test_unit_ready\n");
-		memset(g_io_buf.usb.xhci.reserved, 0, 12);
+		memset(g_io_buf.usb.xhci.reserved, 0, sizeof(g_io_buf.usb.xhci.reserved));
 		//usb_request_sense
 		g_io_buf.usb.xhci.reserved[0] = SCSICMD_REQUEST_SENSE;
 		g_io_buf.usb.xhci.reserved[1] = g_io_buf.usb.xhci.udev.lun << 5;
@@ -2145,7 +2529,7 @@ void usb_test_unit_ready(void)
 			prn_dword(g_io_buf.usb.cmd_buf[2]);
 			prn_dword(g_io_buf.usb.cmd_buf[12]);
 			prn_dword(g_io_buf.usb.cmd_buf[13]);
-			memset(g_io_buf.usb.xhci.reserved, 0, 12);
+			memset(g_io_buf.usb.xhci.reserved, 0, sizeof(g_io_buf.usb.xhci.reserved));
 			_delay_1ms(100);	
 		} else	
 			prn_string(" =>usb_request_sense\n");
@@ -2156,10 +2540,10 @@ void usb_test_unit_ready(void)
 //usb_read_capacity
 void usb_read_capacity(void)
 {
+	memset(g_io_buf.usb.xhci.reserved, 0, sizeof(g_io_buf.usb.xhci.reserved));
 	g_io_buf.usb.xhci.reserved[0] = SCSI_RD_CAPAC;
 	g_io_buf.usb.xhci.reserved[1] = g_io_buf.usb.xhci.udev.lun << 5;
 	stor_BBB_transport(8, 12, 1, NULL);
-	memset(g_io_buf.usb.xhci.reserved, 0, 12);
 	//prn_string("\n    g_io_buf.usb.cmd_buf[0] ");prn_dword((g_io_buf.usb.cmd_buf[1]<<8)|g_io_buf.usb.cmd_buf[0]);
 	//prn_string("\n    g_io_buf.usb.cmd_buf[2] ");prn_dword((g_io_buf.usb.cmd_buf[3]<<8)|g_io_buf.usb.cmd_buf[2]);
 }
@@ -2167,7 +2551,6 @@ void usb_read_capacity(void)
 void stor_BBB_clear_endpt_stall(u8 endpt)
 {
 	USB_vendorCmd(USB_RECIP_ENDPOINT, USB_REQ_CLEAR_FEATURE, 0, endpt, 0);
-	prn_string("\n  	endpt "); prn_dword(endpt);
 }
 //usb_stor_BBB_transport
 int stor_BBB_transport(u32 datalen, u32 cmdlen, u8 dir_in, u8 *buf)
@@ -2187,15 +2570,15 @@ int stor_BBB_transport(u32 datalen, u32 cmdlen, u8 dir_in, u8 *buf)
 #ifdef XHCI_DEBUG
 	prn_string("\n  	COMMAND phase==>");
 #endif
-	pcbw = (sCBW*)(&g_io_buf.usb.xhci.reserved[16]);
-        pcsw = (sCSW*)(&g_io_buf.usb.xhci.reserved[16]);
-        memset(g_io_buf.usb.cmd_buf, 0, 1024);
+	pcbw = (sCBW*)(&g_io_buf.usb.xhci.reserved[32]);
+        pcsw = (sCSW*)(&g_io_buf.usb.xhci.reserved[32]);
+        memset(g_io_buf.usb.cmd_buf, 0, sizeof(g_io_buf.usb.cmd_buf));
 
 	pcbw->dCBWSignature = CBWSignature;
 	pcbw->dCBWTag = g_io_buf.usb.xhci.udev.CBWTag++;
 	pcbw->dCBWDataTransferLength = datalen;
 	pcbw->bmCBWFlags = dir_in ? CBWFLAGS_IN : CBWFLAGS_OUT;
-	pcbw->bCBWLUN = 0;
+	pcbw->bCBWLUN = g_io_buf.usb.xhci.udev.lun;
 	pcbw->bCBWCBLength = cmdlen;
 	/* copy the command data into the CBW command data buffer */
 	/* DST SRC LEN!!! */  
@@ -2219,14 +2602,15 @@ int stor_BBB_transport(u32 datalen, u32 cmdlen, u8 dir_in, u8 *buf)
 		prn_string("\n  	DATA phase==>");
 #endif
 		//prn_string("\n  	pcbw->dCBWDataTransferLength "); prn_dword(pcbw->dCBWDataTransferLength);
-		if (buf == NULL) {
+		if (buf == NULL) //{
+			buf = g_io_buf.usb.cmd_buf;
 			//prn_string("\n  	buf = NULL ");
-			result = bulk_tx(ep_in, pcbw->dCBWDataTransferLength, g_io_buf.usb.cmd_buf);
+			//result = bulk_tx(ep_in, pcbw->dCBWDataTransferLength, g_io_buf.usb.cmd_buf);
 
-		} else {
+		//} else {
 			//prn_string("\n  	buf != NULL ");
-			result = bulk_tx(ep_in, pcbw->dCBWDataTransferLength, buf);			
-		}
+		result = bulk_tx(ep_in, pcbw->dCBWDataTransferLength, buf);			
+		//}
 		if (result == -6) {
 			stor_BBB_clear_endpt_stall(g_io_buf.usb.xhci.udev.ep_dir[0]);
 		}
@@ -2237,6 +2621,7 @@ int stor_BBB_transport(u32 datalen, u32 cmdlen, u8 dir_in, u8 *buf)
 #ifdef XHCI_DEBUG
 	prn_string("\n  	STATUS phase==>");
 #endif
+	memset((u8 *)pcsw, 0, UMASS_BBB_CSW_SIZE);
 	result = bulk_tx(ep_in, UMASS_BBB_CSW_SIZE, pcsw);
 	if (result == -6) {
 		stor_BBB_clear_endpt_stall(g_io_buf.usb.xhci.udev.ep_dir[0]);
@@ -2271,14 +2656,14 @@ int stor_BBB_transport(u32 datalen, u32 cmdlen, u8 dir_in, u8 *buf)
 		prn_string("\n!!!!! FAILED ");
 		return -1;//USB_STOR_TRANSPORT_FAILED;
 	}
-
+	
 	return 0;
 }
-
 //xhci_alloc_device
 void xhci_alloc_device(void)
 {
 	union xhci_trb *event; 
+	u8 tmp_index = 0;
 	
 	queue_command(NULL, 0, 0, TRB_ENABLE_SLOT);	
 	event = wait_for_event(TRB_COMPLETION);
@@ -2289,33 +2674,45 @@ void xhci_alloc_device(void)
 			
 	acknowledge_event();
         
+        if (g_io_buf.usb.xhci.udev.devnum == 2) {
+        	g_io_buf.usb.xhci.udev.r_slot_id = g_io_buf.usb.xhci.udev.slot_id;
+        	tmp_index = 0;
+        } else 
+        	tmp_index = 1;
 //xhci_alloc_virt_device
-        memset32((u32 *)&g_io_buf.usb.xhci.pdevs, 0, sizeof(g_io_buf.usb.xhci.pdevs));
-        //out ctx
+	memset((u8 *)&g_io_buf.usb.xhci.pdevs[tmp_index], 0, sizeof(g_io_buf.usb.xhci.pdevs)/2);
+        memset((u8 *)&g_io_buf.usb.xhci.pout_ctx[tmp_index], 0, sizeof(g_io_buf.usb.xhci.pout_ctx)/2);
+        memset((u8 *)&g_io_buf.usb.xhci.poutbyte[tmp_index][0], 0, sizeof(g_io_buf.usb.xhci.poutbyte)/2);
+        memset((u8 *)&g_io_buf.usb.xhci.pin_ctx[tmp_index], 0, sizeof(g_io_buf.usb.xhci.pin_ctx)/2);
+        memset((u8 *)&g_io_buf.usb.xhci.pinbyte[tmp_index][0], 0, sizeof(g_io_buf.usb.xhci.pinbyte)/2);
 #ifdef XHCI_DEBUG
-        prn_string("\n  slot id "); prn_dword(g_io_buf.usb.xhci.udev.slot_id);
+        prn_string("\n  	slot id "); prn_dword(g_io_buf.usb.xhci.udev.slot_id);
+       	prn_string("  	size of xhci_virt_device "); prn_dword(sizeof(struct xhci_virt_device));
+	prn_string("  	size of xhci_virt_device "); prn_dword(sizeof(g_io_buf.usb.xhci.pdevs));
+        prn_string("  	size of cr_hccparams "); prn_dword(CTX_SIZE(g_io_buf.usb.xhci.hccr->cr_hccparams));
+        prn_string("  	size of pinbyte "); prn_dword(sizeof(g_io_buf.usb.xhci.pinbyte));
 #endif
-        g_io_buf.usb.xhci.pout_ctx.type = (int)XHCI_CTX_TYPE_DEVICE;
-        g_io_buf.usb.xhci.pout_ctx.size = (MAX_EP_CTX_NUM + 1) *
-					    CTX_SIZE(g_io_buf.usb.xhci.hccr->cr_hccparams);        
-        g_io_buf.usb.xhci.pout_ctx.bytes = g_io_buf.usb.xhci.poutbyte;//???
-        g_io_buf.usb.xhci.pdevs.out_ctx = &g_io_buf.usb.xhci.pout_ctx;
+	g_io_buf.usb.xhci.pout_ctx[tmp_index].type = (int)XHCI_CTX_TYPE_DEVICE;
+        g_io_buf.usb.xhci.pout_ctx[tmp_index].size = (MAX_EP_CTX_NUM + 1) * CTX_SIZE(g_io_buf.usb.xhci.hccr->cr_hccparams);        
+        g_io_buf.usb.xhci.pout_ctx[tmp_index].bytes = &g_io_buf.usb.xhci.poutbyte[tmp_index][0];
+        g_io_buf.usb.xhci.pdevs[tmp_index].out_ctx = &g_io_buf.usb.xhci.pout_ctx[tmp_index];
         //in ctx
-        g_io_buf.usb.xhci.pin_ctx.type = (int)XHCI_CTX_TYPE_INPUT;
-        g_io_buf.usb.xhci.pin_ctx.size = (MAX_EP_CTX_NUM + 1) *
-					    CTX_SIZE(g_io_buf.usb.xhci.hccr->cr_hccparams);
-	g_io_buf.usb.xhci.pin_ctx.bytes = g_io_buf.usb.xhci.pinbyte;//???
-        g_io_buf.usb.xhci.pdevs.in_ctx = &g_io_buf.usb.xhci.pin_ctx;
-        //
-        g_io_buf.usb.xhci.pdevs.eps[0].ring = xhci_ring_alloc(1, 0);  
-        g_io_buf.usb.xhci.devs[g_io_buf.usb.xhci.udev.slot_id] = &g_io_buf.usb.xhci.pdevs;
+        g_io_buf.usb.xhci.pin_ctx[tmp_index].type = (int)XHCI_CTX_TYPE_INPUT;
+        g_io_buf.usb.xhci.pin_ctx[tmp_index].size = (MAX_EP_CTX_NUM + 1) * CTX_SIZE(g_io_buf.usb.xhci.hccr->cr_hccparams);
+        g_io_buf.usb.xhci.pin_ctx[tmp_index].size += CTX_SIZE(g_io_buf.usb.xhci.hccr->cr_hccparams);
+	g_io_buf.usb.xhci.pin_ctx[tmp_index].bytes = &g_io_buf.usb.xhci.pinbyte[tmp_index][0];
+        g_io_buf.usb.xhci.pdevs[tmp_index].in_ctx = &g_io_buf.usb.xhci.pin_ctx[tmp_index];
+        	
+        g_io_buf.usb.xhci.pdevs[tmp_index].eps[0].ring = xhci_ring_alloc(1, tmp_index == 0 ? 0x12:0);  
+        g_io_buf.usb.xhci.devs[g_io_buf.usb.xhci.udev.slot_id] = &g_io_buf.usb.xhci.pdevs[tmp_index];
 
-        g_io_buf.usb.xhci.dcbaa->dev_context_ptrs[g_io_buf.usb.xhci.udev.slot_id] = (intptr_t)g_io_buf.usb.xhci.devs[g_io_buf.usb.xhci.udev.slot_id]->out_ctx->bytes;
+	g_io_buf.usb.xhci.dcbaa->dev_context_ptrs[g_io_buf.usb.xhci.udev.slot_id] = (intptr_t)g_io_buf.usb.xhci.devs[g_io_buf.usb.xhci.udev.slot_id]->out_ctx->bytes;
 }
 
 void USB_vendorCmd(u8 bReq, u8 bCmd, u16 wValue, u16 wIndex, u16 wLen)
 {
-	struct devrequest psetup_packet;
+	struct devrequest psetup_packet \
+			  __attribute__ ((aligned(XHCI_ALIGNMENT)));
 	u32 pipe;
 	
 	psetup_packet.requesttype = bReq;
@@ -2329,12 +2726,17 @@ void USB_vendorCmd(u8 bReq, u8 bCmd, u16 wValue, u16 wIndex, u16 wLen)
 	else 
 		pipe = usb_sndctrlpipe(&g_io_buf.usb.xhci.udev, 0);
 		
+	if (g_io_buf.usb.xhci.udev.devnum < 2) {
+		submit_root(&psetup_packet, g_io_buf.usb.cmd_buf);
+		return;	
+	}
+		
 	if ((bCmd == USB_REQ_SET_ADDRESS) && (bReq == 0)){
-		set_address(g_io_buf.usb.xhci.udev.slot_id, wValue);
+		set_address(&g_io_buf.usb.xhci);
 		return;
 	}	
 	if (bCmd == USB_REQ_SET_CONFIGURATION)
-		set_configuration(&g_io_buf.usb.xhci.udev, g_io_buf.usb.xhci.udev.slot_id);
+		set_configuration(&g_io_buf.usb.xhci);
 	memset(g_io_buf.usb.cmd_buf, 0, 1024);
 	ctrl_tx(&psetup_packet, psetup_packet.length, g_io_buf.usb.cmd_buf, pipe);
 #ifdef XHCI_DEBUG
@@ -2343,753 +2745,38 @@ void USB_vendorCmd(u8 bReq, u8 bCmd, u16 wValue, u16 wIndex, u16 wLen)
 	}
 #endif
 }
-
-int usb_init(int port, int next_port_in_hub)
+//usb_get_port_status
+void usb_get_port_status(u32 port, void *result)
 {
-	UINT32 tmp1, tmp2, tmp3;
-        struct dwc3 *dwc3_reg;
-	u64 trb_64, val_64;
-#ifdef CONFIG_HAVE_USB3_HUB
-	UINT8 NumberOfPorts;
-	UINT8 port_num;
-	UINT8 power_good;
-	UINT8 hub_port[10];
-	UINT8 high_speed_port_num = 0;
-	unsigned int is_hub = 0;
-	unsigned int dev_dct_cnt;
-	#if 0
-	if (next_port_in_hub)
-		goto data_structure_init;
-	#endif
-#endif
-
-	CSTAMP(0xE5B00000);
-	dbg();
-
-	//memset32((u32 *)&g_io_buf.usb.ehci, 0, sizeof(g_io_buf.usb.ehci)/4);
-        memset32((u32 *)&g_io_buf.usb.xhci, 0, sizeof(g_io_buf.usb.xhci)/4);//need to check
-        dbg();
-#ifndef XHCI_DEBUG
-//tryagain:
-#endif
-	prn_string("\niboot usb_init \n");
-	CSTAMP(0xE5B00001);
-	uphy_init();	
-        
-	CSTAMP(0xE5B00002);
-	usb_power_init();
-
-/* usb-uclass.c/usb_init.c -> xhci-spdwc3.c/xhci_dwc3_probe*/               
-// xhci register base
-	//g_io_buf.usb.ehci.ehci_hcd_regs = port ? EHCI1_REG : EHCI0_REG;
-	g_io_buf.usb.xhci.hccr = (struct xhci_hccr *) XHCI_REG;
-	g_io_buf.usb.xhci.hcor = (struct xhci_hcor *)((char *)g_io_buf.usb.xhci.hccr +
-				  HC_LENGTH(g_io_buf.usb.xhci.hccr->cr_capbase));
-        dwc3_reg = (struct dwc3 *)((char *)(g_io_buf.usb.xhci.hccr) + DWC3_REG_OFFSET);
+	USB_vendorCmd(0xa3, USB_REQ_GET_STATUS, 0, port, 4);
 #ifdef XHCI_DEBUG
-        prn_string("\n#hccr "); prn_dword((intptr_t)g_io_buf.usb.xhci.hccr);
-        prn_string("#hcor "); prn_dword((intptr_t)g_io_buf.usb.xhci.hcor);
-        prn_string("#dwc3_reg "); prn_dword((intptr_t)dwc3_reg);
-        prn_string("g_io_buf.usb.xhci.hccr->cr_capbase "); prn_dword((u64)g_io_buf.usb.xhci.hccr->cr_capbase);
+	prn_string("  	!!!!!sts "); prn_dword(USB_dataBuf[0] | (USB_dataBuf[1]<<8) | (USB_dataBuf[2]<<16) | (USB_dataBuf[3]<<24));
 #endif
-	CSTAMP(0xE5B00003);
-// init DWC3
-//sunplus_dwc3_phy_setup
-	tmp1 = dwc3_reg->g_usb2phycfg[0];
-	tmp1 &= ~DWC3_GUSB2PHYCFG_SUSPHY;
-	tmp1 |= DWC3_GUSB2PHYCFG_PHYIF;
-	tmp1 &= ~DWC3_GUSB2PHYCFG_USBTRDTIM_MASK;
-	tmp1 |= DWC3_GUSB2PHYCFG_USBTRDTIM_16BIT;
-	dwc3_reg->g_usb2phycfg[0] = tmp1;
-#ifdef XHCI_DEBUG
-	prn_string("dwc3_reg->g_usb2phycfg[0] "); prn_dword(dwc3_reg->g_usb2phycfg[0]);
-	prn_string("dwc3_reg->g_usb2phycfg "); prn_dword(dwc3_reg->g_usb2phycfg);
-//dwc3_core_init
-	//prn_string("\ndwc3_reg->g_snpsid "); prn_dword(dwc3_reg->g_snpsid);
-	prn_string("\ndwc3/phy reset");
-#endif
-//dwc3_core_soft_reset	
-	dwc3_reg->g_ctl |= DWC3_GCTL_CORESOFTRESET; 
-	/*dwc3_phy_reset*/
-	dwc3_reg->g_usb3pipectl[0] |= DWC3_GUSB3PIPECTL_PHYSOFTRST;
-	dwc3_reg->g_usb2phycfg[0] |= DWC3_GUSB2PHYCFG_PHYSOFTRST;
-	_delay_1ms(100);
-	dwc3_reg->g_usb3pipectl[0] &= ~DWC3_GUSB3PIPECTL_PHYSOFTRST;
-	dwc3_reg->g_usb2phycfg[0] &= ~DWC3_GUSB2PHYCFG_PHYSOFTRST;
-	_delay_1ms(100);
-	dwc3_reg->g_ctl &= ~DWC3_GCTL_CORESOFTRESET;
-	
-	tmp1 = dwc3_reg->g_hwparams1;
-	tmp2 = dwc3_reg->g_ctl;
-	tmp2 &= ~DWC3_GCTL_SCALEDOWN_MASK;
-	tmp2 &= ~DWC3_GCTL_DISSCRAMBLE;
-	switch (DWC3_GHWPARAMS1_EN_PWROPT(tmp1)) {
-	case DWC3_GHWPARAMS1_EN_PWROPT_CLK:
-		tmp2 &= ~DWC3_GCTL_DSBLCLKGTNG;
-		break;
-	default:
-		prn_string("\n	No power optimization available\n");
-	}
-	tmp1 = dwc3_reg->g_snpsid;
-	if ((tmp1 & 0xffff) < 0x190a)//DWC3_REVISION_MASK
-		tmp2 |= DWC3_GCTL_U2RSTECN;
-	dwc3_reg->g_ctl = tmp2;
-	//prn_string("\ndwc3 reset end\n");
-//set dr mode
-	dwc3_reg->g_ctl &= ~DWC3_GCTL_PRTCAPDIR(DWC3_GCTL_PRTCAP_OTG);
-	dwc3_reg->g_ctl |= DWC3_GCTL_PRTCAPDIR(DWC3_GCTL_PRTCAP_HOST);
-#ifdef XHCI_DEBUG
-	prn_string("set dr mode end "); prn_dword(dwc3_reg->g_ctl);
-#endif
-//xhci_register
-	/*xhci reset*/
-#ifdef XHCI_DEBUG
-	prn_string("\nxhci reset");
-#endif
-	tmp1 = g_io_buf.usb.xhci.hcor->or_usbsts & STS_HALT;
-	if (!tmp1) {
-		tmp1 = g_io_buf.usb.xhci.hcor->or_usbcmd;
-		tmp1 &= ~CMD_RUN;
-#ifdef XHCI_DEBUG
-		prn_string("\n		or_usbcmd "); prn_dword(tmp1);
-#endif
-		g_io_buf.usb.xhci.hcor->or_usbcmd = tmp1;
-	}
-	//handshake
-	handshake(&g_io_buf.usb.xhci.hcor->or_usbsts, STS_HALT, STS_HALT, XHCI_MAX_HALT_USEC/1000);
-
-	tmp1 = g_io_buf.usb.xhci.hcor->or_usbcmd;
-	tmp1 |= CMD_RESET;
-	g_io_buf.usb.xhci.hcor->or_usbcmd = tmp1;
-	handshake(&g_io_buf.usb.xhci.hcor->or_usbcmd, CMD_RESET, 0, XHCI_MAX_HALT_USEC/1000);
-	handshake(&g_io_buf.usb.xhci.hcor->or_usbsts, STS_CNR, 0, XHCI_MAX_HALT_USEC/1000);
-
-	/*
-	 * Program the Number of Device Slots Enabled field in the CONFIG
-	 * register with the max value of slots the HC can handle.
-	 */
-	/*xhci_lowlevel_init*/
-	tmp1 = g_io_buf.usb.xhci.hccr->cr_hcsparams1 & HCS_SLOTS_MASK;
-	tmp2 = g_io_buf.usb.xhci.hcor->or_config;
-	tmp1 |= (tmp2 & ~HCS_SLOTS_MASK);
-	g_io_buf.usb.xhci.hcor->or_config = tmp1;
-#ifdef XHCI_DEBUG
-	prn_string("\n  or_config "); prn_dword(g_io_buf.usb.xhci.hcor->or_config);
-#endif
-	//xhci_mem_init	
-	g_io_buf.usb.xhci.dcbaa = (struct xhci_device_context_array *) g_io_buf.usb.xhci.dev_context_ptrs;
-	g_io_buf.usb.xhci.hcor->or_dcbaap = (intptr_t)g_io_buf.usb.xhci.dev_context_ptrs;
-
-	g_io_buf.usb.xhci.cmd_ring = xhci_ring_alloc(1, 0x10);	
-		
-	val_64 = (u64)g_io_buf.usb.xhci.hcor->or_crcr; //need to check
-	trb_64 = (intptr_t)g_io_buf.usb.xhci.cmd_ring->first_seg->trbs;
-
-	val_64 = (val_64 & (u64) CMD_RING_RSVD_BITS) | (trb_64 & (u64) ~CMD_RING_RSVD_BITS) |
-		  g_io_buf.usb.xhci.cmd_ring->cycle_state;
-
-	g_io_buf.usb.xhci.hcor->or_crcr = val_64;
-	
-	// write the address of db register
-	tmp1 = g_io_buf.usb.xhci.hccr->cr_dboff;
-	tmp1 &= DBOFF_MASK;
-	g_io_buf.usb.xhci.dba = (struct xhci_doorbell_array *)((char *)g_io_buf.usb.xhci.hccr + tmp1);
-#ifdef XHCI_DEBUG
-	prn_string("\n#g_io_buf.usb.xhci.dba "); prn_dword((intptr_t)g_io_buf.usb.xhci.dba);
-#endif
-	
-	// write the address of runtime register 
-	tmp1 = g_io_buf.usb.xhci.hccr->cr_rtsoff;
-	tmp1 &= RTSOFF_MASK;
-	g_io_buf.usb.xhci.run_regs = (struct xhci_run_regs *)((char *)g_io_buf.usb.xhci.hccr + tmp1);
-#ifdef XHCI_DEBUG
-	prn_string("#g_io_buf.usb.xhci.run_regs "); prn_dword((intptr_t)g_io_buf.usb.xhci.run_regs);
-#endif
-	// writting the address of ir_set structure 
-	g_io_buf.usb.xhci.ir_set = &g_io_buf.usb.xhci.run_regs->ir_set[0];
-#ifdef XHCI_DEBUG
-	prn_string("#g_io_buf.usb.xhci.ir_set "); prn_dword((intptr_t)g_io_buf.usb.xhci.ir_set);
-#endif
-
-	// Event ring does not maintain link TRB 
-	g_io_buf.usb.xhci.event_ring = xhci_ring_alloc(0, 0x11);
-			
-	memset32((u32 *)&g_io_buf.usb.xhci.pentries, 0, sizeof(g_io_buf.usb.xhci.pentries));
-	g_io_buf.usb.xhci.erst.entries = g_io_buf.usb.xhci.pentries;
-
-	g_io_buf.usb.xhci.erst.num_entries = ERST_NUM_SEGS;
-	
-	struct xhci_segment *seg;
-	for (tmp1 = 0, seg = g_io_buf.usb.xhci.event_ring->first_seg; tmp1 < ERST_NUM_SEGS; tmp1++) {
-		trb_64 = 0;
-		trb_64 = (intptr_t)seg->trbs;
-
-		g_io_buf.usb.xhci.erst.entries[tmp1].seg_addr = trb_64;
-		
-		g_io_buf.usb.xhci.erst.entries[tmp1].seg_size = TRBS_PER_SEGMENT;
-		g_io_buf.usb.xhci.erst.entries[tmp1].rsvd = 0;
-		seg = seg->next;
-	}
-	// Event ring does not maintain link TRB
-	
-	//
-	u64 deq;
-	deq = (intptr_t) g_io_buf.usb.xhci.event_ring->dequeue;
-
-	// Update HC event ring dequeue pointer 
-	g_io_buf.usb.xhci.ir_set->erst_dequeue = (u64)deq & (u64)~ERST_PTR_MASK;
-	// set ERST count with the number of entries in the segment table 
-	tmp1 = g_io_buf.usb.xhci.ir_set->erst_size;
-	tmp1 &= ERST_SIZE_MASK;
-	tmp1 |= ERST_NUM_SEGS;
-	g_io_buf.usb.xhci.ir_set->erst_size = tmp1;
-	// this is the event ring segment table pointer 
-	val_64 = g_io_buf.usb.xhci.ir_set->erst_base;//need to check
-
-	val_64 &= ERST_PTR_MASK;
-	val_64 |= ((intptr_t)(g_io_buf.usb.xhci.erst.entries) & ~ERST_PTR_MASK);
-
-	g_io_buf.usb.xhci.ir_set->erst_base = val_64;//need to check
-	
-	// xhci_scratchpad_alloc
-	val_64 = HCS_MAX_SCRATCHPAD(g_io_buf.usb.xhci.hccr->cr_hcsparams2);
-#ifdef XHCI_DEBUG
-	prn_string("\n  #num_sp "); prn_dword(val_64);
-#endif
-	tmp1 = g_io_buf.usb.xhci.hcor->or_pagesize & 0xffff;
-#ifdef XHCI_DEBUG
-	prn_string("  #hcor->or_pagesize "); prn_dword(g_io_buf.usb.xhci.hcor->or_pagesize);
-#endif
-	for (tmp2 = 0; tmp2 < 16; tmp2++) {
-		if ((0x1 & tmp1) != 0)
-			break;
-		tmp1 = tmp1 >> 1;
-	}
-	tmp1 = 1 << (tmp2 + 12);
-	
-	for (tmp2 = 0; tmp2 < val_64; tmp2++) {
-		g_io_buf.usb.xhci.sparray[tmp2] = (intptr_t)(g_io_buf.usb.xhci.sparraybuf + tmp2 * tmp1);
-	}
-	g_io_buf.usb.xhci.pscratchpad.sp_array = g_io_buf.usb.xhci.sparray;
-	
-	g_io_buf.usb.xhci.scratchpad = &g_io_buf.usb.xhci.pscratchpad;
-	
-	g_io_buf.usb.xhci.dcbaa->dev_context_ptrs[0] = (intptr_t)g_io_buf.usb.xhci.pscratchpad.sp_array;
-		
-	// initializing the virtual devices to NULL
-	for (tmp2 = 0; tmp2 < MAX_HC_SLOTS; ++tmp2)
-		g_io_buf.usb.xhci.devs[tmp2] = NULL;
-
-	/*
-	 * Just Zero'ing this register completely,
-	 * or some spurious Device Notification Events
-	 * might screw things here.
-	 */
-	g_io_buf.usb.xhci.hcor->or_dnctrl = 0x0;
-	//end of xhci_mem_init	
-	tmp1 = g_io_buf.usb.xhci.hccr->cr_hcsparams1;
-	//prn_string("\n hccr->cr_hcsparams1 "); prn_dword(tmp1);
-	//descriptor.hub.bNbrPorts = ((tmp1 & HCS_MAX_PORTS_MASK) >>
-	//					HCS_MAX_PORTS_SHIFT);
-						
-	// Port Indicators ????
-	tmp1 = g_io_buf.usb.xhci.hccr->cr_hccparams;
-#ifdef XHCI_DEBUG
-	prn_string("\n  #hccr->cr_hccparams "); prn_dword(tmp1);
-#endif
-	//if (HCS_INDICATOR(tmp1))
-	//	put_unaligned(get_unaligned(&descriptor.hub.wHubCharacteristics)
-	//			| 0x80, &descriptor.hub.wHubCharacteristics);
-
-	// Port Power Control ????
-	//if (HCC_PPC(tmp1))
-	//	put_unaligned(get_unaligned(&descriptor.hub.wHubCharacteristics)
-	//			| 0x01, &descriptor.hub.wHubCharacteristics);
-        
-	// xhci_start
-#ifdef XHCI_DEBUG
-	prn_string("\n**<xhci_start>**");
-#endif
-	tmp1 = g_io_buf.usb.xhci.hcor->or_usbcmd;
-	tmp1 |= (CMD_RUN);
-	g_io_buf.usb.xhci.hcor->or_usbcmd = tmp1;
-        handshake(&g_io_buf.usb.xhci.hcor->or_usbsts, STS_HALT, 0, XHCI_MAX_HALT_USEC/1000);
-        
-	/* Zero'ing IRQ control register and IRQ pending register */
-	g_io_buf.usb.xhci.ir_set->irq_control = 0x0;
-	g_io_buf.usb.xhci.ir_set->irq_pending = 0x0;
-
-	//reg = HC_VERSION(g_io_buf.usb.xhci.hccr->cr_capbase);
-	//prn_string("\n XHCI "); prn_dword(HC_VERSION(g_io_buf.usb.xhci.hccr->cr_capbase));
-//hub power on
-	tmp3 = 0;
-	do
-	{
-#ifdef XHCI_DEBUG
-		prn_string("\n**<hub port power on 1/2>**");
-#endif
-		#if 0
-		for (trb_64 = 0; trb_64 < 2; trb_64++) {
- 			tmp1 = g_io_buf.usb.xhci.hcor->portregs[trb_64].or_portsc;
-			prn_dword(g_io_buf.usb.xhci.hcor->portregs[trb_64].or_portsc);
-			tmp1 = (tmp1 & XHCI_PORT_RO) | (tmp1 & XHCI_PORT_RWS);
-			//prn_string("\n tmp1 "); prn_dword(tmp1);
-			tmp1 |= PORT_POWER;
-			g_io_buf.usb.xhci.hcor->portregs[trb_64].or_portsc = tmp1;
-			prn_string("af hub port 1/2 power on "); prn_dword(g_io_buf.usb.xhci.hcor->portregs[trb_64].or_portsc);
-		}
-		#endif
-		for (trb_64 = 0; trb_64 < 2; trb_64++) {
-#ifdef XHCI_DEBUG
-			prn_string("\n    port "); prn_dword((intptr_t)&g_io_buf.usb.xhci.hcor->portregs[trb_64]);
-#endif					
-			tmp1 = g_io_buf.usb.xhci.hcor->portregs[trb_64].or_portsc;
-			tmp1 = (tmp1 & XHCI_PORT_RO) | (tmp1 & XHCI_PORT_RWS);
-			tmp1 |= PORT_POWER;
-			g_io_buf.usb.xhci.hcor->portregs[trb_64].or_portsc = tmp1;
-//usb_get_port_status			
-			for (tmp2 = 0; tmp2 < 10; tmp2++) {
-				_delay_1ms(100);	
-				//_delay_1ms(20);		
-				tmp1 = g_io_buf.usb.xhci.hcor->portregs[trb_64].or_portsc;
-				if (!(tmp1 & USB_PORT_STAT_CONNECTION) && !((tmp1 >> 16) & USB_PORT_STAT_CONNECTION)) {
-					prn_string("!!!!!no connection port no "); prn_dword(trb_64);
-				} else
-					break;
-			}
-			if (tmp2 >= 10)
-				continue;
-			
-			if ((tmp1 >> 16) & USB_PORT_STAT_C_RESET) {
-				tmp2 = g_io_buf.usb.xhci.hcor->portregs[trb_64].or_portsc;
-				tmp2 = (tmp2 & XHCI_PORT_RO) | (tmp2 & XHCI_PORT_RWS);
-				tmp2 |= PORT_RC;
-				g_io_buf.usb.xhci.hcor->portregs[trb_64].or_portsc = tmp2;
-			}
-
-			//if (((tmp1 >> 16) & 0x20)) {// USB_SS_PORT_STAT_C_BH_RESET// && usb_hub_is_superspeed(dev)) {
-			//	usb_clear_port_feature(dev, i + 1, USB_SS_PORT_FEAT_C_BH_RESET);
-			//}
-			
-			tmp2 = g_io_buf.usb.xhci.hcor->portregs[trb_64].or_portsc;
-			tmp1 = tmp2;
-			tmp2 = (tmp2 & XHCI_PORT_RO) | (tmp2 & XHCI_PORT_RWS);
-			tmp2 |= PORT_CSC;
-			g_io_buf.usb.xhci.hcor->portregs[trb_64].or_portsc = tmp2;
-			//prn_string("\n    clear feature hcor->portregs[trb_64].or_portsc "); prn_dword(g_io_buf.usb.xhci.hcor->portregs[trb_64].or_portsc);
-			if ((!(tmp1 & USB_PORT_STAT_CONNECTION)) && (!(tmp1 & USB_PORT_STAT_ENABLE))) {
-				prn_string("!!!!!port no disconnect "); prn_dword(trb_64);
-				/* Return now if nothing is connected */
-				if (!(tmp1 & USB_PORT_STAT_CONNECTION)) {
-					continue;
-				}
-			}
-// Reset the port
-			val_64 = 0;
-			tmp2 = 20;	
-			do
-			{
-				tmp1 = g_io_buf.usb.xhci.hcor->portregs[trb_64].or_portsc;
-				tmp1 = (tmp1 & XHCI_PORT_RO) | (tmp1 & XHCI_PORT_RWS);
-				tmp1 |= XHCI_PORT_RESET;
-				g_io_buf.usb.xhci.hcor->portregs[trb_64].or_portsc = tmp1;
-				_delay_1ms(tmp2); //HUB_SHORT_RESET_TIME = 20
-				tmp1 = g_io_buf.usb.xhci.hcor->portregs[trb_64].or_portsc;
-				//prn_string("\n hcor->portregs[trb_64].or_portsc "); prn_dword(tmp1);
-				tmp2 = 200;
-				if (tmp1 & PORT_PE)
-					break;
-			} while ((val_64++) < 5);
-		
-			if (val_64 < 5)
-				break;
-			else {
-				prn_string("!!!!!port reset failed!!!!!");
-			}
-		} 
-		
-		if (trb_64 < 2)
-			break;
-		else {
-			for (trb_64 = 0; trb_64 < 2; trb_64++) {
- 				tmp1 = g_io_buf.usb.xhci.hcor->portregs[trb_64].or_portsc;
-				tmp1 = (tmp1 & XHCI_PORT_RO) | (tmp1 & XHCI_PORT_RWS);
-				//prn_string("\n tmp1 "); prn_dword(tmp1);
-				tmp1 &= ~PORT_POWER;
-				g_io_buf.usb.xhci.hcor->portregs[trb_64].or_portsc = tmp1;
-			}
-			_delay_1ms(100);
-		}
-	} while (tmp3++ < 2);
-	
-	if (tmp3 >= 2) {
-		prn_string("\n!!!!!NO USB CONNECTION!!!!!"); 
-		return -1;
-	}
-	
-	tmp2 = g_io_buf.usb.xhci.hcor->portregs[trb_64].or_portsc;
-	tmp2 = (tmp2 & XHCI_PORT_RO) | (tmp2 & XHCI_PORT_RWS);
-	tmp2 |= PORT_RC;
-	g_io_buf.usb.xhci.hcor->portregs[trb_64].or_portsc = tmp2;
-	//prn_string("\n port 1 Reset the port end "); prn_dword(g_io_buf.usb.xhci.hcor->portregs[0].or_portsc);
-#ifdef XHCI_DEBUG
-	prn_string("\n**<port 1/2 Reset the port end**> "); prn_dword(tmp1);
-#endif
-	g_io_buf.usb.xhci.udev.portnr = trb_64 + 1;
-	switch (tmp1 & DEV_SPEED_MASK) {
-		case XDEV_HS:
-			g_io_buf.usb.xhci.udev.speed = USB_SPEED_HIGH;
-			prn_string("\n#####HIGH speed "); 
-			break;
-		case XDEV_SS:
-			g_io_buf.usb.xhci.udev.speed = USB_SPEED_SUPER;
-			prn_string("\n#####SUPER speed ");
-			break;
-		default:
-			prn_string("\n#####UNKNOWN speed ");
-			break;
-	}
-	prn_dword(g_io_buf.usb.xhci.udev.speed);
-	prn_string("#####portnr "); prn_dword(g_io_buf.usb.xhci.udev.portnr);
-//_xhci_alloc_device
-#ifdef XHCI_DEBUG
-	prn_string("\n**<alloc_device>**");
-#endif
-	xhci_alloc_device();
-//usb_setup_descriptor
-	g_io_buf.usb.xhci.udev.maxpacketsize = 3;//PACKET_SIZE_64;
-	g_io_buf.usb.xhci.udev.epmaxpacketin[0] = 64;
-	g_io_buf.usb.xhci.udev.epmaxpacketout[0] = 64;	
-//set address    set_address(void)
-#ifdef XHCI_DEBUG
-        prn_string("\n**<set address>**");
-#endif
+	memcpy((u8 *)result, USB_dataBuf, 4);
+}
+//usb_select_config
+void usb_select_config(pUSB_DevDesc pDev)
+{
 	pUSB_CfgDesc pCfg = (pUSB_CfgDesc)(USB_dataBuf);
-
-#ifdef CONFIG_HAVE_USB3_HUB
-	pUSB_DevDesc pDev = (pUSB_DevDesc)(USB_dataBuf);
-	pUSB_HubDesc pHub = (pUSB_HubDesc)(USB_dataBuf);
-	pUSB_PortStatus pPortsts = (pUSB_PortStatus)(USB_dataBuf);
-
-	for (port_num = 0; port_num < 10; port_num++)
-		hub_port[port_num] = NO_USB_DEVICE;
-
-	#if 0
-	if (next_port_in_hub) {
-		is_hub = 1;
-		port_num = next_port_in_hub;
-		goto scan_device_on_port;
-	}
-	#endif
-
-	#ifdef XHCI_DEBUG
-	prn_string("set addr\n");
-	#endif
-	USB_vendorCmd(0, USB_REQ_SET_ADDRESS, DEVICE_ADDRESS, 0, 0);
-
-	#ifdef XHCI_DEBUG
-	prn_string("get dev desc (8)\n");
-	#endif
-	USB_vendorCmd(0x80, USB_REQ_GET_DESCRIPTOR, DESC_DEVICE, 0, 0x08);
-
-	#ifdef XHCI_DEBUG
-	prn_string("get dev desc ("); prn_decimal(pDev->bLength); prn_string(")\n");
-	#endif
-	USB_vendorCmd(0x80, USB_REQ_GET_DESCRIPTOR, DESC_DEVICE, 0, (pDev->bLength));
-
-	#ifdef XHCI_DEBUG
-	prn_string("get conf desc (18)\n");
-	#endif
-	USB_vendorCmd(0x80, USB_REQ_GET_DESCRIPTOR, DESC_CONFIGURATION, 0, 0x12);
-
-	if (USB_dataBuf[9+5] == USB_CLASS_MASS_STORAGE) {
-		prn_string("usb mass storage device found\n");
-		goto get_descriptor;
-	} else if (USB_dataBuf[9+5] == USB_CLASS_HUB) {
-		is_hub = 1;
-		prn_string("usb hub found\n");
-	} else {
-		return -1;
-	}
-
-	#ifdef XHCI_DEBUG
-	prn_string("set config "); prn_decimal(pCfg->bCV); prn_string("\n");
-	#endif
-	USB_vendorCmd(0, USB_REQ_SET_CONFIGURATION, (pCfg->bCV), 0, 0);
-
-	#ifdef XHCI_DEBUG
-	prn_string("get hub desc (9)\n");
-	#endif
-	USB_vendorCmd(0xA0, USB_REQ_GET_DESCRIPTOR, DESC_HUB, 0, 0x09);
-
-	NumberOfPorts = pHub->bNumPorts;
-	power_good = pHub->bPO2PG * 2;
-
-	for (port_num = 1; port_num <= NumberOfPorts; port_num++) {
-	#ifdef XHCI_DEBUG
-		prn_string("set feature (S_PORT"); prn_decimal(port_num); prn_string("_POWER) \n");
-	#endif
-		USB_vendorCmd(0x23, USB_REQ_SET_FEATURE, S_PORT_POWER, port_num, 0);
-		_delay_1ms(power_good);
-	}
-
-	for (port_num = 1; port_num <= NumberOfPorts; port_num++) {
-	#ifdef XHCI_DEBUG
-		prn_string("get port "); prn_decimal(port_num); prn_string(" status \n");
-	#endif
-		USB_vendorCmd(0xA3, USB_REQ_GET_STATUS, 0, port_num, 0x04);
-		_delay_1ms(10);
-
-	#ifdef XHCI_DEBUG
-		prn_string("port status :"); prn_dword(pPortsts->wPortStatus);
-		prn_string("port change :"); prn_dword(pPortsts->wPortChange);
-	#endif
-
-		if (pPortsts->wPortStatus & 0x1)
-			hub_port[port_num-1] = USB_DEVICE;
-	}
-
-	for (port_num = 1; port_num <= NumberOfPorts; port_num++) {
-		if (hub_port[port_num-1] == USB_DEVICE)
-			goto found_device_on_port;
-	}
-
-	#ifdef XHCI_DEBUG
-	prn_string("set feature (Device Remote Wakeup) \n");
-	#endif
-	USB_vendorCmd(0, USB_REQ_SET_FEATURE, DEVICE_REMOTE_WAKEUP, 0, 0);
-
-	#if 0
-	while (1) {
-		#ifdef XHCI_DEBUG
-		prn_string("get dev status (2)\n");
-		#endif
-		USB_vendorCmd(0x80, USB_REQ_GET_STATUS, 0, 0, 0x02);
-
-		if (pDevsts->wDevStatus & 0x02) // check remote-wakeup bit
-			break;
-
-		#ifdef XHCI_DEBUG
-		prn_string("set feature (Device Remote Wakeup) \n");
-		#endif
-		USB_vendorCmd(0, USB_REQ_SET_FEATURE, DEVICE_REMOTE_WAKEUP, 0, 0);
-	}
-	#endif
-
-	#ifdef XHCI_DEBUG
-	prn_string("clear feature (Device Remote Wakeup) \n");
-	#endif
-	USB_vendorCmd(0, USB_REQ_CLEAR_FEATURE, DEVICE_REMOTE_WAKEUP, 0, 0);
-
-	port_num = 1;
-
-scan_device_on_port:
-	#if 0
-	if (next_port_in_hub) {
-		prn_string("get hub desc (9)\n");
-		USB_vendorCmd(0xA0, USB_REQ_GET_DESCRIPTOR, DESC_HUB, 0, 0x09);
-		NumberOfPorts = pHub->bNumPorts;
-	}
-	#endif
-
-	while (port_num <= NumberOfPorts) {
-	#ifdef XHCI_DEBUG
-		prn_string("get port "); prn_decimal(port_num); prn_string(" status \n");
-	#endif
-		USB_vendorCmd(0xA3, USB_REQ_GET_STATUS, 0, port_num, 0x04);
-		_delay_1ms(10);
-
-	#ifdef XHCI_DEBUG
-		prn_string("port status :"); prn_dword(pPortsts->wPortStatus);
-		prn_string("port change :"); prn_dword(pPortsts->wPortChange);
-	#endif
-
-		if (pPortsts->wPortStatus & 0x1)
-			hub_port[port_num-1] = USB_DEVICE;
-
-		port_num++;
-	}
-
-	for (port_num = 1; port_num <= NumberOfPorts; port_num++) {
-		if (hub_port[port_num-1] == USB_DEVICE)
-			break;
-	}
-
-	dev_dct_cnt = 0;
-	if (port_num > NumberOfPorts) {
-		prn_string("No usb mass storage devices on ports of the hub\n");
-		while (dev_dct_cnt++ < 2500) {
-			_delay_1ms(1);
-
-			// print DOT every 100 ms
-			if (!(dev_dct_cnt % 100))
-				prn_string(".");
-		}
-
-		prn_string("\n");
-
-		return -1;
-	}
-
-found_device_on_port:
-	#ifdef XHCI_DEBUG
-	prn_string("clear feature (C_PORT"); prn_decimal(port_num); prn_string("_CONNECTION) \n");
-	#endif
-	USB_vendorCmd(0x23, USB_REQ_CLEAR_FEATURE, C_PORT_CONNECTION, port_num, 0);
-
-	#ifdef XHCI_DEBUG
-	prn_string("set feature (S_PORT"); prn_decimal(port_num); prn_string("_RESET) \n");
-	#endif
-	USB_vendorCmd(0x23, USB_REQ_SET_FEATURE, S_PORT_RESET, port_num, 0);
-
-	dev_dct_cnt = 0;
-	while (1) {
-	#ifdef XHCI_DEBUG
-		prn_string("get port "); prn_decimal(port_num); prn_string(" status \n");
-	#endif
-		USB_vendorCmd(0xA3, USB_REQ_GET_STATUS, 0, port_num, 0x04);
-		_delay_1ms(10);
-
-	#ifdef XHCI_DEBUG
-		prn_string("port status :"); prn_dword(pPortsts->wPortStatus);
-		prn_string("port change :"); prn_dword(pPortsts->wPortChange);
-	#endif
-
-		if (pPortsts->wPortStatus & 0x2)
-			break;
-
-		_delay_1ms(1);
-		dev_dct_cnt++;
-		if (dev_dct_cnt > 100) {	// 100ms
-			prn_string("port reset timeout \n");
-			break;
-		}
-	}
-
-	#ifdef XHCI_DEBUG
-	prn_string("clear feature (C_PORT"); prn_decimal(port_num); prn_string("_RESET) \n");
-	#endif
-	USB_vendorCmd(0x23, USB_REQ_CLEAR_FEATURE, C_PORT_RESET, port_num, 0);
-
-	port_num++;
-	while (port_num <= NumberOfPorts) {
-		if (hub_port[port_num-1] == USB_DEVICE)
-			break;
-
-		port_num++;
-	}
-
-	if (port_num <= NumberOfPorts)
-		goto found_device_on_port;
-
-	for (port_num = 1; port_num <= NumberOfPorts; port_num++) {
-		if (hub_port[port_num-1] == USB_DEVICE)
-			break;
-	}
-
-check_device_speed:
-	#ifdef XHCI_DEBUG
-	prn_string("get port "); prn_decimal(port_num); prn_string(" status \n");
-	#endif
-	USB_vendorCmd(0xA3, USB_REQ_GET_STATUS, 0, port_num, 0x04);
-	_delay_1ms(10);
-
-	#ifdef XHCI_DEBUG
-	prn_string("port status :"); prn_dword(pPortsts->wPortStatus);
-	prn_string("port change :"); prn_dword(pPortsts->wPortChange);
-	#endif
-
-	if (((pPortsts->wPortStatus & USB_SPEED_MASK) == USB_FULL_SPEED_DEVICE) ||
-	    ((pPortsts->wPortStatus & USB_SPEED_MASK) == USB_LOW_SPEED_DEVICE)) {
-		prn_string("skip usb low/full speed device found on port ");
-		prn_decimal(port_num); prn_string(" of the hub\n");
-		hub_port[port_num-1] = LOW_SPEED_DEVICE;
-	} else {
-		prn_string("usb high speed device found on port ");
-		prn_decimal(port_num); prn_string(" of the hub\n");
-		hub_port[port_num-1] = HIGH_SPEED_DEVICE;
-	}
-
-	port_num++;
-	while (port_num <= NumberOfPorts) {
-		if (hub_port[port_num-1] == USB_DEVICE)
-			break;
-
-		port_num++;
-	}
-
-	if (port_num <= NumberOfPorts)
-		goto check_device_speed;
-
-	port_num = 1;
-
-high_speed_device:
-	while (port_num <= NumberOfPorts) {
-		if (hub_port[port_num-1] == HIGH_SPEED_DEVICE) {
-			high_speed_port_num = port_num;
-
-			xhci_alloc_device();
-			CSTAMP(0xE5B00009);
-
-	#ifdef XHCI_DEBUG
-			prn_string("set addr\n");
-	#endif
-			USB_vendorCmd(0, USB_REQ_SET_ADDRESS, DEVICE_ADDRESS+port_num, 0, 0);
-			break;
-		}
-
-		port_num++;
-	}
-
-	if (port_num > NumberOfPorts)
-		goto scan_device_on_port;
-#else
-	USB_vendorCmd(0, USB_REQ_SET_ADDRESS, DEVICE_ADDRESS, 0, 0);
-#endif
-
-get_descriptor:
 //get_descriptor_len
 #ifdef XHCI_DEBUG
 	prn_string("\n**<get_descriptor_len>**");
 #endif
 	USB_vendorCmd(USB_DIR_IN, USB_REQ_GET_DESCRIPTOR, DESC_DEVICE, 0, 0x12);
+	memcpy(g_io_buf.usb.xhci.reserved, USB_dataBuf, 0x12);	
 	_delay_1ms(1);
 //usb_get_configuration_len
 #ifdef XHCI_DEBUG
 	prn_string("\n**<usb_get_configuration_len>**");
-#endif
-
-#ifdef XHCI_DEBUG
-	prn_string("get conf desc (44)\n");
-#endif
-	USB_vendorCmd(USB_DIR_IN, USB_REQ_GET_DESCRIPTOR, DESC_CONFIGURATION, 0, 0x2C);
-
-#ifdef CONFIG_HAVE_USB3_HUB
-	if (is_hub)
-#endif
-	{
-		if (USB_dataBuf[9+5] != USB_CLASS_MASS_STORAGE) {
-#ifdef CONFIG_HAVE_USB3_HUB
-			prn_string("not usb mass storage device\n");
-			port_num = high_speed_port_num + 1;
-			goto high_speed_device;
-#else
-			if (USB_dataBuf[9+5] == USB_CLASS_HUB)
-				prn_string("usb hub not supported\n");
-			else
-				prn_string("not usb mass storage device\n");
-
-			return -1;
-#endif
-		}
-	}
-
+#endif		
+	USB_vendorCmd(USB_DIR_IN, USB_REQ_GET_DESCRIPTOR, DESC_CONFIGURATION, 0, 0x9);	
+	
 //usb_get_configuration_no
 #ifdef XHCI_DEBUG
-	prn_string("\n**<usb_get_configuration_no>**");
+	prn_string("\n**<usb_get_configuration_no>**");	
 #endif
-	//pUSB_CfgDesc pCfg = (pUSB_CfgDesc)(USB_dataBuf);
 	USB_vendorCmd(USB_DIR_IN, USB_REQ_GET_DESCRIPTOR, DESC_CONFIGURATION, 0, pCfg->wLength);
+	
 	usb_parse_config(g_io_buf.usb.cmd_buf, 0);
 	usb_set_maxpacket(&g_io_buf.usb.xhci.udev);
 	//prn_string("\n    g_io_buf.usb.cmd_buf[0] "); prn_dword((g_io_buf.usb.cmd_buf[1]<<8)|g_io_buf.usb.cmd_buf[0]);
@@ -3097,66 +2784,45 @@ get_descriptor:
 	//prn_string("\n    pCfg->wLength "); prn_dword(pCfg->wLength);
 	//prn_string("\n    pCfg->bLength "); prn_dword(pCfg->bLength);
 	//prn_string("\n    pCfg->bNumIntf "); prn_dword(pCfg->bNumIntf);
-	//prn_string("\n    pCfg->bConfigurationValue "); prn_dword(pCfg->bCV);
-#if 0	
-	tmp1 = pCfg->bLength;
-	pCfg = (pUSB_CfgDesc)(&USB_dataBuf[tmp1]);
-	prn_string("\n    tmp1 "); prn_dword(tmp1);
-	prn_string("\n    pCfg->bType "); prn_dword(pCfg->bType);
-	
-	tmp1 += pCfg->bLength;
-	pCfg = (pUSB_CfgDesc)(&USB_dataBuf[tmp1]);
-
-	prn_string("\n    tmp1 0 "); prn_dword(tmp1);
-	prn_string("\n    pCfg->bType "); prn_dword(pCfg->bType);
-	prn_string("\n    pCfg->wMaxPacketSize "); prn_dword(((pCfg->bCV<<8) | pCfg->bNumIntf));
-	prn_string("\n    pCfg->bmAttributes "); prn_dword((pCfg->wLength & 0x300) >> 8);
-	prn_string("\n    pCfg->bEndpointAddress "); prn_dword(pCfg->wLength & 0xff);
-	tmp1 += pCfg->bLength;
-	pCfg = (pUSB_CfgDesc)(&USB_dataBuf[tmp1]);
-	prn_string("\n    tmp1 1 "); prn_dword(tmp1);
-	prn_string("\n    pCfg->bType "); prn_dword(pCfg->bType);
-	prn_string("\n    pCfg->wMaxPacketSize "); prn_dword(((pCfg->bCV<<8) | pCfg->bNumIntf));
-	prn_string("\n    pCfg->bmAttributes "); prn_dword((pCfg->wLength & 0x300) >> 8);
-	prn_string("\n    pCfg->bEndpointAddress "); prn_dword(pCfg->wLength & 0xff);
-	tmp1 += pCfg->bLength;
-	pCfg = (pUSB_CfgDesc)(&USB_dataBuf[tmp1]);
-	prn_string("\n    tmp1 2 "); prn_dword(tmp1);
-	prn_string("\n    pCfg->bType "); prn_dword(pCfg->bType);
-	prn_string("\n    pCfg->wMaxPacketSize "); prn_dword(((pCfg->bCV<<8) | pCfg->bNumIntf));
-	prn_string("\n    pCfg->bmAttributes "); prn_dword((pCfg->wLength & 0x300) >> 8);
-	prn_string("\n    pCfg->bEndpointAddress "); prn_dword(pCfg->wLength & 0xff);
+#ifdef XHCI_DEBUG
+	prn_string("\n  	pCfg->bConfigurationValue "); prn_dword(pCfg->bCV);
 #endif
+	
 //xhci_set_configuration
 #ifdef XHCI_DEBUG
 	prn_string("\n**<set_configuration>**");
 #endif
-	USB_vendorCmd(0, USB_REQ_SET_CONFIGURATION, pCfg->bCV, 0, 0);
+	USB_vendorCmd(0, USB_REQ_SET_CONFIGURATION, pCfg->bCV, 0, 0);	
 	_delay_1ms(10);
 //usb_string
-#ifdef XHCI_DEBUG
-	prn_string("\n**<usb_string>**");
+#ifdef XHCI_DEBUG	
+	prn_string("\n  	pDev->bDeviceClass "); prn_dword(pDev->bDeviceClass);
+	prn_string("  	pDev->bDeviceProtocol "); prn_dword(pDev->bDeviceProtocol);
+	prn_string("  	pDev->iManufacturer "); prn_dword(pDev->iManufacturer);
+	prn_string("  	pDev->iProduct "); prn_dword(pDev->iProduct);
+	prn_string("  	pDev->iSerialNumber "); prn_dword(pDev->iSerialNumber);
 #endif
 	g_io_buf.usb.xhci.udev.string_langid = 0;
-#ifndef CONFIG_HAVE_USB3_HUB
-	usb_string(1, g_io_buf.usb.xhci.udev.mf, sizeof(g_io_buf.usb.xhci.udev.mf));
-	usb_string(2, g_io_buf.usb.xhci.udev.prod, sizeof(g_io_buf.usb.xhci.udev.prod));
-	usb_string(3, g_io_buf.usb.xhci.udev.serial, sizeof(g_io_buf.usb.xhci.udev.serial));
-	prn_string("\n  mf     "); prn_string(g_io_buf.usb.xhci.udev.mf);
-	prn_string("\n  prod   "); prn_string(g_io_buf.usb.xhci.udev.prod);
-	prn_string("\n  serial "); prn_string(g_io_buf.usb.xhci.udev.serial);
-#endif
+	usb_string(pDev->iManufacturer, g_io_buf.usb.xhci.udev.mf, sizeof(g_io_buf.usb.xhci.udev.mf));
+	usb_string(pDev->iProduct, g_io_buf.usb.xhci.udev.prod, sizeof(g_io_buf.usb.xhci.udev.prod));
+	usb_string(pDev->iSerialNumber, g_io_buf.usb.xhci.udev.serial, sizeof(g_io_buf.usb.xhci.udev.serial));
+	prn_string("\n  	mf     "); prn_string(g_io_buf.usb.xhci.udev.mf);
+	prn_string("\n  	prod   "); prn_string(g_io_buf.usb.xhci.udev.prod);
+	prn_string("\n  	serial "); prn_string(g_io_buf.usb.xhci.udev.serial);
+}
 
+void usb_storage()
+{
+	//memset(g_io_buf.usb.xhci.reserved, 0, sizeof(g_io_buf.usb.xhci.reserved));
 //usb_get_max_lun
 #ifdef XHCI_DEBUG
-	prn_string("\n**<usb_get_max_lun>**");
+	prn_string("\n\n**<usb_get_max_lun>**");
 #endif
-
 	USB_vendorCmd(0xa1, 0xfe, 0, 0, 1);
-	g_io_buf.usb.xhci.udev.lun = g_io_buf.usb.cmd_buf[0];
-	//prn_string("\n  g_io_buf.usb.cmd_buf "); prn_dword(g_io_buf.usb.cmd_buf[0]);
+	g_io_buf.usb.xhci.udev.lun = g_io_buf.usb.cmd_buf[0];	
 //usb_inquiry
 #ifdef XHCI_DEBUG
+	prn_string("\n  	g_io_buf.usb.xhci.udev.lun "); prn_dword(g_io_buf.usb.xhci.udev.lun);
 	prn_string("\n**<usb_inquiry>**");
 #endif
 	usb_inquiry();
@@ -3170,8 +2836,360 @@ get_descriptor:
 	prn_string("\n**<usb_read_capacity>**");
 #endif
 	usb_read_capacity();
-	prn_string("\n#####end##### \n");	
-	return 0;
+}
+
+u32 port_test(u32 i)
+{
+	u32 val_64, tmp;
+	struct usb_port_status portst;
+	
+	prn_string("port "); prn_dword(i);
+	
+	usb_get_port_status(i, &portst);
+	if (!(portst.wPortStatus & USB_PORT_STAT_CONNECTION) && !(portst.wPortChange & USB_PORT_STAT_CONNECTION)) {
+#ifdef XHCI_DEBUG
+		prn_string("  	no connection port no "); prn_dword(i);
+#endif					
+		return 0;
+	} 
+							
+	if (portst.wPortChange & USB_PORT_STAT_C_RESET) {
+		USB_vendorCmd(0x23, USB_REQ_CLEAR_FEATURE, 20, i, 0);//USB_PORT_FEAT_C_RESET = 20
+	}
+
+	usb_get_port_status(i, &portst);
+	USB_vendorCmd(0x23, USB_REQ_CLEAR_FEATURE, 16, i, 0);//USB_PORT_FEAT_C_CONNECTION = 16			
+// Reset the port
+	val_64 = 0;
+	tmp = 20;	
+	do
+	{
+		USB_vendorCmd(0x23, USB_REQ_SET_FEATURE, 4, i, 0);//USB_PORT_FEAT_RESET = 4
+		_delay_1ms(tmp); //HUB_SHORT_RESET_TIME = 20
+		usb_get_port_status(i, &portst);
+		//prn_string("\n hcor->portregs[trb_64].or_portsc "); prn_dword(tmp1);
+		tmp = 200;
+		if (portst.wPortStatus & PORT_PE)
+			break;
+	} while ((val_64++) < 5);
+	
+	if (val_64 < 5) {
+		if ((portst.wPortStatus & (USB_PORT_STAT_LOW_SPEED | USB_PORT_STAT_HIGH_SPEED)) >= USB_PORT_STAT_HIGH_SPEED) {
+			USB_vendorCmd(0x23, USB_REQ_CLEAR_FEATURE, 20, i, 0);
+			//prn_string("\n port 1 Reset the port end "); prn_dword(g_io_buf.usb.xhci.hcor->portregs[0].or_portsc);
+#ifdef XHCI_DEBUG
+			prn_string("\n**<port 1/2 Reset the port end**> "); 
+#endif
+			g_io_buf.usb.xhci.udev.devnum++; //new device start, devnum 1 is root hub.
+			g_io_buf.usb.xhci.udev.portnr[g_io_buf.usb.xhci.udev.devnum] = i;
+			switch (portst.wPortStatus & (USB_PORT_STAT_LOW_SPEED | USB_PORT_STAT_HIGH_SPEED)) {
+				case USB_PORT_STAT_HIGH_SPEED:
+					g_io_buf.usb.xhci.udev.speed = USB_SPEED_HIGH;
+#ifdef XHCI_DEBUG
+					prn_string("\n#####HIGH speed ");
+#endif 
+					break;
+				case USB_PORT_STAT_SUPER_SPEED:
+					g_io_buf.usb.xhci.udev.speed = USB_SPEED_SUPER;
+#ifdef XHCI_DEBUG
+					prn_string("\n#####SUPER speed ");
+#endif
+					break;
+				default:
+					prn_string("\n#####no support speed ");
+					break;
+			}
+#ifdef XHCI_DEBUG
+			prn_dword(g_io_buf.usb.xhci.udev.speed);
+#endif
+			return 1;
+		} else {
+#ifdef XHCI_DEBUG
+			prn_string("==> un support speed");
+#endif
+			return 0;
+		}
+	} else {
+#ifdef XHCI_DEBUG
+		prn_string("==> reset failed");
+#endif
+		return 0;
+	}	
+}
+
+int usb_init(int port, int next_port_in_hub)
+{	      
+	u64 trb_64, val_64;
+	
+	CSTAMP(0xE5B00000);
+	dbg();
+	
+	if (next_port_in_hub == 0)
+	{
+		u32 tmp1, tmp2, i;
+		u8 Hub_NbrPorts_root;
+		struct dwc3 *dwc3_reg;	
+		
+        	memset32((u32 *)&g_io_buf.usb.xhci, 0, sizeof(g_io_buf.usb.xhci)/4);
+        	dbg();
+
+		prn_string("\nxboot usb_init \n");
+		//check merory address align 
+		if ((intptr_t) g_io_buf.usb.xhci.sparraybuf & 0xfff) {
+			prn_string("!!!!!g_io_buf.usb.xhci.sparraybuf addr not align "); prn_dword((intptr_t) g_io_buf.usb.xhci.sparraybuf);
+		}
+		for (i = 0; i < ERST_NUM_SEGS; i++) {
+			if ((intptr_t) &g_io_buf.usb.xhci.peventtrb[i][0] & 0x3f) {
+				prn_string("!!!!!g_io_buf.usb.xhci.peventtrb addr not align "); prn_dword((intptr_t) &g_io_buf.usb.xhci.peventtrb[i][0]);
+			}
+		}
+		for (i = 0; i < ep_num; i++) {
+			if ((intptr_t) &g_io_buf.usb.xhci.peptrb[i][0] & 0x3f) {
+				prn_string("!!!!!g_io_buf.usb.xhci.peptrb addr not align "); prn_dword((intptr_t) &g_io_buf.usb.xhci.peptrb[i][0]);
+			}
+		}
+		for (i = 0; i < 2; i++) {
+			if ((intptr_t) &g_io_buf.usb.xhci.poutbyte[i][0] & 0x3f) {
+				prn_string("!!!!!g_io_buf.usb.xhci.poutbyte addr not align "); prn_dword((intptr_t) &g_io_buf.usb.xhci.poutbyte[i][0]);
+			}
+			if ((intptr_t) &g_io_buf.usb.xhci.pinbyte[i][0] & 0x3f) {
+				prn_string("!!!!!g_io_buf.usb.xhci.pinbyte addr not align "); prn_dword((intptr_t) &g_io_buf.usb.xhci.pinbyte[i][0]);
+			}
+		}
+		//end
+		CSTAMP(0xE5B00001);
+		uphy_init();	
+
+		CSTAMP(0xE5B00002);
+		usb_power_init();
+
+/* usb-uclass.c/usb_init.c -> xhci-spdwc3.c/xhci_dwc3_probe*/               
+// xhci register base
+
+		g_io_buf.usb.xhci.hccr = (struct xhci_hccr *) XHCI_REG;
+		g_io_buf.usb.xhci.hcor = (struct xhci_hcor *)((char *)g_io_buf.usb.xhci.hccr +
+				  	HC_LENGTH(g_io_buf.usb.xhci.hccr->cr_capbase));
+        	dwc3_reg = (struct dwc3 *)((char *)(g_io_buf.usb.xhci.hccr) + DWC3_REG_OFFSET);
+#ifdef XHCI_DEBUG
+        	prn_string("\n#hccr "); prn_dword((intptr_t)g_io_buf.usb.xhci.hccr);
+       		prn_string("#hcor "); prn_dword((intptr_t)g_io_buf.usb.xhci.hcor);
+        	prn_string("#dwc3_reg "); prn_dword((intptr_t)dwc3_reg);
+        	prn_string("g_io_buf.usb.xhci.hccr->cr_capbase "); prn_dword((u64)g_io_buf.usb.xhci.hccr->cr_capbase);
+#endif
+		CSTAMP(0xE5B00003);
+//init DWC3
+//sunplus_dwc3_phy_setup
+		tmp1 = dwc3_reg->g_usb2phycfg[0];
+		tmp1 &= ~DWC3_GUSB2PHYCFG_SUSPHY;
+		tmp1 |= DWC3_GUSB2PHYCFG_PHYIF;
+		tmp1 &= ~DWC3_GUSB2PHYCFG_USBTRDTIM_MASK;
+		tmp1 |= DWC3_GUSB2PHYCFG_USBTRDTIM_16BIT;
+		dwc3_reg->g_usb2phycfg[0] = tmp1;
+#ifdef XHCI_DEBUG
+		prn_string("dwc3_reg->g_usb2phycfg[0] "); prn_dword(dwc3_reg->g_usb2phycfg[0]);
+//dwc3_core_init
+		//prn_string("\ndwc3_reg->g_snpsid "); prn_dword(dwc3_reg->g_snpsid);
+		prn_string("\ndwc3/phy reset");
+#endif
+//dwc3_core_soft_reset	
+		dwc3_reg->g_ctl |= DWC3_GCTL_CORESOFTRESET; 
+		/*dwc3_phy_reset*/
+		dwc3_reg->g_usb3pipectl[0] |= DWC3_GUSB3PIPECTL_PHYSOFTRST;
+		dwc3_reg->g_usb2phycfg[0] |= DWC3_GUSB2PHYCFG_PHYSOFTRST;
+		_delay_1ms(100);
+		dwc3_reg->g_usb3pipectl[0] &= ~DWC3_GUSB3PIPECTL_PHYSOFTRST;
+		dwc3_reg->g_usb2phycfg[0] &= ~DWC3_GUSB2PHYCFG_PHYSOFTRST;
+		_delay_1ms(100);
+		dwc3_reg->g_ctl &= ~DWC3_GCTL_CORESOFTRESET;
+	
+		tmp1 = dwc3_reg->g_hwparams1;
+		tmp2 = dwc3_reg->g_ctl;
+		tmp2 &= ~DWC3_GCTL_SCALEDOWN_MASK;
+		tmp2 &= ~DWC3_GCTL_DISSCRAMBLE;
+		switch (DWC3_GHWPARAMS1_EN_PWROPT(tmp1)) {
+		case DWC3_GHWPARAMS1_EN_PWROPT_CLK:
+			tmp2 &= ~DWC3_GCTL_DSBLCLKGTNG;
+			break;
+		default:
+			prn_string("\n!!!!!No power optimization available!!!!!\n");
+		}
+		tmp1 = dwc3_reg->g_snpsid;
+		if ((tmp1 & 0xffff) < 0x190a)//DWC3_REVISION_MASK
+			tmp2 |= DWC3_GCTL_U2RSTECN;
+		dwc3_reg->g_ctl = tmp2;
+
+//set dr mode
+		dwc3_reg->g_ctl &= ~DWC3_GCTL_PRTCAPDIR(DWC3_GCTL_PRTCAP_OTG);
+		dwc3_reg->g_ctl |= DWC3_GCTL_PRTCAPDIR(DWC3_GCTL_PRTCAP_HOST);
+#ifdef XHCI_DEBUG
+		prn_string("\nset dr mode end "); prn_dword(dwc3_reg->g_ctl);
+#endif
+//xhci_register
+	/*xhci reset*/
+#ifdef XHCI_DEBUG
+		prn_string("\nxhci reset");
+#endif
+		tmp1 = g_io_buf.usb.xhci.hcor->or_usbsts & STS_HALT;
+		if (!tmp1) {
+			tmp1 = g_io_buf.usb.xhci.hcor->or_usbcmd;
+			tmp1 &= ~CMD_RUN;
+#ifdef XHCI_DEBUG
+			prn_string("\n		or_usbcmd "); prn_dword(tmp1);
+#endif
+			g_io_buf.usb.xhci.hcor->or_usbcmd = tmp1;
+		}
+		//handshake
+		handshake(&g_io_buf.usb.xhci.hcor->or_usbsts, STS_HALT, STS_HALT, XHCI_MAX_HALT_USEC/1000);
+
+		tmp1 = g_io_buf.usb.xhci.hcor->or_usbcmd;
+		tmp1 |= CMD_RESET;
+		g_io_buf.usb.xhci.hcor->or_usbcmd = tmp1;
+		handshake(&g_io_buf.usb.xhci.hcor->or_usbcmd, CMD_RESET, 0, XHCI_MAX_HALT_USEC/1000);
+		handshake(&g_io_buf.usb.xhci.hcor->or_usbsts, STS_CNR, 0, XHCI_MAX_HALT_USEC/1000);
+
+		/*
+	 	* Program the Number of Device Slots Enabled field in the CONFIG
+	 	* register with the max value of slots the HC can handle.
+	 	*/
+		/*xhci_lowlevel_init*/
+		tmp1 = g_io_buf.usb.xhci.hccr->cr_hcsparams1 & HCS_SLOTS_MASK;
+		tmp2 = g_io_buf.usb.xhci.hcor->or_config;
+		tmp1 |= (tmp2 & ~HCS_SLOTS_MASK);
+		g_io_buf.usb.xhci.hcor->or_config = tmp1;
+#ifdef XHCI_DEBUG
+		prn_string("\n  	or_config "); prn_dword(g_io_buf.usb.xhci.hcor->or_config);
+#endif
+		//xhci_mem_init
+		xhci_mem_init();	
+	
+		tmp1 = g_io_buf.usb.xhci.hccr->cr_hcsparams1;
+		Hub_NbrPorts_root = ((tmp1 & HCS_MAX_PORTS_MASK) >> HCS_MAX_PORTS_SHIFT);
+						
+		// Port Indicators ????
+		tmp1 = g_io_buf.usb.xhci.hccr->cr_hccparams;
+#ifdef XHCI_DEBUG
+		prn_string("\n  	#Hub_NbrPorts_root "); prn_dword(Hub_NbrPorts_root);
+		prn_string("  	#hccr->cr_hccparams "); prn_dword(tmp1);
+#endif
+		//if (HCS_INDICATOR(tmp1))
+		//	put_unaligned(get_unaligned(&descriptor.hub.wHubCharacteristics)
+		//			| 0x80, &descriptor.hub.wHubCharacteristics);
+
+		// Port Power Control ????
+		//if (HCC_PPC(tmp1))
+		//	put_unaligned(get_unaligned(&descriptor.hub.wHubCharacteristics)
+		//			| 0x01, &descriptor.hub.wHubCharacteristics);
+        
+// xhci_start
+#ifdef XHCI_DEBUG
+		prn_string("\n**<xhci_start>**");
+#endif
+		tmp1 = g_io_buf.usb.xhci.hcor->or_usbcmd;
+		tmp1 |= (CMD_RUN);
+		g_io_buf.usb.xhci.hcor->or_usbcmd = tmp1;
+        	handshake(&g_io_buf.usb.xhci.hcor->or_usbsts, STS_HALT, 0, XHCI_MAX_HALT_USEC/1000);
+        
+		/* Zero'ing IRQ control register and IRQ pending register */
+		g_io_buf.usb.xhci.ir_set->irq_control = 0x0;
+		g_io_buf.usb.xhci.ir_set->irq_pending = 0x0;
+
+		//reg = HC_VERSION(g_io_buf.usb.xhci.hccr->cr_capbase);
+		//prn_string("\n XHCI "); prn_dword(HC_VERSION(g_io_buf.usb.xhci.hccr->cr_capbase));
+	
+		pUSB_DevDesc pDev = (pUSB_DevDesc) g_io_buf.usb.xhci.reserved;
+#if defined(CONFIG_HAVE_USB3_HUB)	
+		struct usb_hub_descriptor *pHub = (struct usb_hub_descriptor *) USB_dataBuf;
+#endif		
+		g_io_buf.usb.xhci.udev.devnum = 1; //new device start, devnum 1 is root hub.
+	
+		for (trb_64 = 1; trb_64 <= Hub_NbrPorts_root; trb_64++) {
+ 			USB_vendorCmd(0x23, USB_REQ_SET_FEATURE, 8, trb_64, 0);//usb_hub_power_on, USB_PORT_FEAT_POWER = 8
+		}
+		_delay_1ms(200);
+
+		for (i = 1; i <= Hub_NbrPorts_root; i++) {
+			prn_string("\n#####root ");
+			val_64 = port_test(i);
+			if (val_64) {			
+//_xhci_alloc_device
+#ifdef XHCI_DEBUG
+				prn_string("\n**<alloc_device>**");
+#endif
+				xhci_alloc_device();
+//usb_setup_descriptor
+				g_io_buf.usb.xhci.udev.maxpacketsize = 3;//PACKET_SIZE_64;
+				g_io_buf.usb.xhci.udev.epmaxpacketin[0] = 64;
+				g_io_buf.usb.xhci.udev.epmaxpacketout[0] = 64;	
+//set address    set_address(void)
+#ifdef XHCI_DEBUG
+        			prn_string("\n**<set address>** "); prn_dword(g_io_buf.usb.xhci.udev.devnum);
+#endif
+				USB_vendorCmd(0, USB_REQ_SET_ADDRESS, g_io_buf.usb.xhci.udev.devnum, 0, 0);
+//usb_select_config
+				usb_select_config(pDev);
+				
+				if (pDev->bDeviceClass == 9) {
+#if defined(CONFIG_HAVE_USB3_HUB)
+					update_hub_device(&g_io_buf.usb.xhci, pDev, pHub);
+#ifdef XHCI_DEBUG
+					prn_string("  	pHub->bNbrPorts "); prn_dword(g_io_buf.usb.xhci.udev.Hub_NbrPorts);
+#endif		
+					for (trb_64 = 1; trb_64 <= g_io_buf.usb.xhci.udev.Hub_NbrPorts; trb_64++) {
+ 						USB_vendorCmd(0x23, USB_REQ_SET_FEATURE, 8, trb_64, 0);//usb_hub_power_on, USB_PORT_FEAT_POWER = 8
+					}
+					_delay_1ms(200);
+					next_port_in_hub++;
+					break;
+#endif
+				} else {
+					usb_storage();//usb_storage
+					//break;
+					prn_string("\n#####end##### \n");	
+					return 0;
+				}
+			}
+		}
+		if (i > Hub_NbrPorts_root) {
+			prn_string("\n#####root hub scan end ==> no device##### \n");
+			return -1;
+		}	
+	}
+#if defined(CONFIG_HAVE_USB3_HUB) 
+	pUSB_DevDesc pDev = (pUSB_DevDesc) g_io_buf.usb.xhci.reserved;
+	
+	for (trb_64 = next_port_in_hub; trb_64 <= g_io_buf.usb.xhci.udev.Hub_NbrPorts; trb_64++) {			
+		prn_string("\n###hub ");
+
+		g_io_buf.usb.xhci.udev.slot_id = g_io_buf.usb.xhci.udev.r_slot_id;
+		val_64 = port_test(trb_64);
+		if (val_64) {
+//_xhci_alloc_device
+#ifdef XHCI_DEBUG
+			prn_string("\n**<alloc_device>**");
+#endif
+			xhci_alloc_device();
+//usb_setup_descriptor
+			g_io_buf.usb.xhci.udev.maxpacketsize = 3;//PACKET_SIZE_64;
+			g_io_buf.usb.xhci.udev.epmaxpacketin[0] = 64;
+			g_io_buf.usb.xhci.udev.epmaxpacketout[0] = 64;	
+//set address    set_address(void)
+#ifdef XHCI_DEBUG
+        		prn_string("\n**<set address>** "); prn_dword(g_io_buf.usb.xhci.udev.devnum);
+#endif
+			USB_vendorCmd(0, USB_REQ_SET_ADDRESS, g_io_buf.usb.xhci.udev.devnum, 0, 0);
+//usb_select_config
+			usb_select_config(pDev);							
+									
+			if (pDev->bDeviceClass == 9) 
+				continue;
+			else 
+				usb_storage();//usb_storage	
+			return ++trb_64;						
+		} 	
+	}
+	prn_string("\n#####hub scan end ==> no device##### \n");
+#endif	
+	return -1;
 }
 
 /*
@@ -3183,9 +3201,7 @@ get_descriptor:
 int usb_readSector(u32 lba, u32 count, u32 *dest)
 {
 	CSTAMP(0xE5B00013);
-
-	USB_DBG();
-
+	
 	g_io_buf.usb.xhci.reserved[0] = SCSICMD_READ_10;
 	g_io_buf.usb.xhci.reserved[1] = g_io_buf.usb.xhci.udev.lun << 5;
 	g_io_buf.usb.xhci.reserved[2] = (u8)(lba >> 24) & 0xff;

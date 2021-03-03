@@ -46,29 +46,29 @@
 #define DWC3_GCTL_DSBLCLKGTNG			(1 << 0)
 
 /* xhci register bit operation */ 
-#define MAX_EP_CTX_NUM				31
+#define MAX_EP_CTX_NUM				15
 #define XHCI_ALIGNMENT				64
 /* Max number of USB devices for any host controller - limit in section 6.1 */
-#define MAX_HC_SLOTS            		2//256
+#define MAX_HC_SLOTS            		8//256
 /* Section 5.3.3 - MaxPorts */
 #define MAX_HC_PORTS            		2//255
 
 /* wPortStatus bits */
-#define USB_PORT_STAT_CONNECTION    0x0001
-#define USB_PORT_STAT_ENABLE        0x0002
-//#define USB_PORT_STAT_SUSPEND       0x0004
-//#define USB_PORT_STAT_OVERCURRENT   0x0008
-//#define USB_PORT_STAT_RESET         0x0010
-//#define USB_PORT_STAT_POWER         0x0100
-//#define USB_PORT_STAT_LOW_SPEED     0x0200
-//#define USB_PORT_STAT_HIGH_SPEED    0x0400	/* support for EHCI */
-//#define USB_PORT_STAT_SUPER_SPEED   0x0600	/* faking support to XHCI */
+#define USB_PORT_STAT_CONNECTION    		0x0001
+#define USB_PORT_STAT_ENABLE        		0x0002
+#define USB_PORT_STAT_SUSPEND       		0x0004
+#define USB_PORT_STAT_OVERCURRENT   		0x0008
+#define USB_PORT_STAT_RESET         		0x0010
+#define USB_PORT_STAT_POWER         		0x0100
+#define USB_PORT_STAT_LOW_SPEED     		0x0200
+#define USB_PORT_STAT_HIGH_SPEED    		0x0400	/* support for EHCI */
+#define USB_PORT_STAT_SUPER_SPEED   		0x0600	/* faking support to XHCI */
 /* wPortChange bits */
-#define USB_PORT_STAT_C_CONNECTION  0x0001
+//#define USB_PORT_STAT_C_CONNECTION  0x0001
 //#define USB_PORT_STAT_C_ENABLE      0x0002
 //#define USB_PORT_STAT_C_SUSPEND     0x0004
 //#define USB_PORT_STAT_C_OVERCURRENT 0x0008
-#define USB_PORT_STAT_C_RESET       0x0010
+#define USB_PORT_STAT_C_RESET       		0x0010
 
 /*
  * Changes to wPortChange bit fields in USB 3.0
@@ -113,16 +113,19 @@
 /* PORTSC - Port Status and Control Register - port_status_base bitmasks */
 /* true: port enabled */
 #define PORT_PE			(1 << 1)
+/* bit 2 reserved and zeroed */
+/* true: port has an over-current condition */
+#define PORT_OC			(1 << 3)
 /* true: port reset signaling asserted */
-#define XHCI_PORT_RESET		(1 << 4)
+#define PORT_RESET		(1 << 4)
 /* Port Link State - bits 5:8
  * A read gives the current link PM state of the port,
  * a write with Link State Write Strobe set sets the link state.
  */
-//#define PORT_PLS_MASK		(0xf << 5)
+#define PORT_PLS_MASK		(0xf << 5)
 //#define XDEV_U0			(0x0 << 5)
 //#define XDEV_U2			(0x2 << 5)
-//#define XDEV_U3			(0x3 << 5)
+#define XDEV_U3			(0x3 << 5)
 //#define XDEV_RESUME		(0xf << 5)
 /* true: port has power (see HCC_PPC) */
 #define PORT_POWER		(1 << 9)
@@ -146,6 +149,10 @@
 #define	SLOT_SPEED_SS		(XDEV_SS << 10)
 /* true: connect status change */
 #define PORT_CSC		(1 << 17)
+/* true: port enable change */
+#define PORT_PEC		(1 << 18)
+/* true: over-current change */
+#define PORT_OCC		(1 << 20)
 /* true: reset change - 1 to 0 transition of PORT_RESET */
 #define PORT_RC			(1 << 21)
 /* erst_size bitmasks */
@@ -176,6 +183,7 @@ struct xhci_slot_ctx {
 	/* offset 0x10 to 0x1f reserved for HC internal use */
 	u32	reserved[4];
 };
+#define DEV_HUB			(0x1 << 26)
 /* Index of the last valid endpoint context in this device context - 27:31 */
 #define LAST_CTX_MASK		(0x1f << 27)
 #define LAST_CTX(p)		((p) << 27)
@@ -186,8 +194,8 @@ struct xhci_slot_ctx {
 /* dev_info2 bitmasks */
 /* Root hub port number that is needed to access the USB device */
 //#define ROOT_HUB_PORT(p)		(((p) & 0xff) << 16)
-#define ROOT_HUB_PORT_MASK		(0xff)
-#define ROOT_HUB_PORT_SHIFT		(16)
+#define ROOT_HUB_PORT_MASK	(0xff)
+#define ROOT_HUB_PORT_SHIFT	(16)
 //#define DEVINFO_TO_ROOT_HUB_PORT(p)	(((p) >> 16) & 0xff)
 
 /* dev_state bitmasks */
@@ -376,27 +384,27 @@ typedef enum {
 } xhci_comp_code;
 
 /* control bitfields */
-#define LINK_TOGGLE 			(0x1 << 1)
+#define LINK_TOGGLE 		(0x1 << 1)
 
 
 /* flags bitmasks */
 /* bits 16:23 are the virtual function ID */
 /* bits 24:31 are the slot ID */
-#define	TRB_TO_SLOT_ID(p)		(((p) & (0xff << 24)) >> 24)
-#define	SLOT_ID_FOR_TRB(p)		(((p) & 0xff) << 24)
+#define	TRB_TO_SLOT_ID(p)	(((p) & (0xff << 24)) >> 24)
+#define	SLOT_ID_FOR_TRB(p)	(((p) & 0xff) << 24)
 
 /* Stop Endpoint TRB - ep_index to endpoint ID for this TRB */
-#define TRB_TO_EP_INDEX(p)		((((p) & (0x1f << 16)) >> 16) - 1)
-#define	EP_ID_FOR_TRB(p)		((((p) + 1) & 0x1f) << 16)
+#define TRB_TO_EP_INDEX(p)	((((p) & (0x1f << 16)) >> 16) - 1)
+#define	EP_ID_FOR_TRB(p)	((((p) + 1) & 0x1f) << 16)
 
 /* Normal TRB fields */
 /* transfer_len bitmasks - bits 0:16 */
-#define	TRB_LEN(p)			((p) & 0x1ffff)
-#define	TRB_LEN_MASK			(0x1ffff)
+#define	TRB_LEN(p)		((p) & 0x1ffff)
+#define	TRB_LEN_MASK		(0x1ffff)
 /* Interrupter Target - which MSI-X vector to target the completion event at */
-#define	TRB_INTR_TARGET_SHIFT		(22)
-#define	TRB_INTR_TARGET_MASK		(0x3ff)
-#define TRB_INTR_TARGET(p)		(((p) & 0x3ff) << 22)
+#define	TRB_INTR_TARGET_SHIFT	(22)
+#define	TRB_INTR_TARGET_MASK	(0x3ff)
+#define TRB_INTR_TARGET(p)	(((p) & 0x3ff) << 22)
 /* Cycle bit - indicates TRB ownership by HC or HCD */
 #define TRB_CYCLE		(1<<0)
 
@@ -501,7 +509,7 @@ typedef enum {
  * since the command ring is 64-byte aligned.
  * It must also be greater than 16.
  */
-#define TRBS_PER_SEGMENT	32
+#define TRBS_PER_SEGMENT	16
 /* Allow two commands + a link TRB, along with any reserved command TRBs */
 //#define MAX_RSVD_CMD_TRBS	(TRBS_PER_SEGMENT - 3)
 //#define SEGMENT_SIZE		(TRBS_PER_SEGMENT*16)
@@ -518,7 +526,7 @@ typedef enum {
  * (1K bytes * 8bytes/bit) / (4*32 bits) = 64 segment entries in the table,
  * meaning 64 ring segments.
  * Initial allocated size of the ERST, in number of entries */
-#define	ERST_NUM_SEGS		1
+#define	ERST_NUM_SEGS		4
 /* Initial number of event segment rings allocated */
 //#define	ERST_ENTRIES	1
 /* Initial allocated size of the ERST, in number of entries */
@@ -622,6 +630,30 @@ typedef struct
 	UINT8	bCSWStatus;
 }sCSW;
 
+#define USB_MAXCHILDREN 8
+/* Hub descriptor */
+struct usb_hub_descriptor {
+	u8  bLength;
+	u8  bDescriptorType;
+	u8  bNbrPorts;
+	u16 wHubCharacteristics;
+	u8  bPwrOn2PwrGood;
+	u8  bHubContrCurrent;
+	/* 2.0 and 3.0 hubs differ here */
+	union {
+		struct {
+			/* add 1 bit for hub status change; round to bytes */
+			u8 DeviceRemovable[(USB_MAXCHILDREN + 1 + 7) / 8];
+			u8 PortPowerCtrlMask[(USB_MAXCHILDREN + 1 + 7) / 8];
+		} __attribute__ ((packed)) hs;
+
+		struct {
+			u8 bHubHdrDecLat;
+			u16 wHubDelay;
+			u16 DeviceRemovable;
+		} __attribute__ ((packed)) ss;
+	} u;
+} __attribute__ ((packed));
 // Standard Device Descriptor
 typedef struct
 {
@@ -653,30 +685,6 @@ typedef struct
 	UINT8 	bAttr;
 	UINT8 	bMaxPower;
 }  __attribute__ ((packed)) *pUSB_CfgDesc;
-
-// Hub Device descriptor
-typedef struct
-{
-	UINT8 bLength;
-	UINT8 bType;
-	UINT8 bNumPorts;
-	UINT16 wHubChar;
-	UINT8 bPO2PG;
-	UINT8 bHubConCur;
-	UINT8 DevRmv;
-	UINT8 PortPwrPtrlMask;
-} *pUSB_HubDesc;
-
-typedef struct
-{
-	UINT16 wDevStatus;;
-} *pUSB_DevStatus;
-
-typedef struct
-{
-	UINT16 wPortStatus;
-	UINT16 wPortChange;
-} *pUSB_PortStatus;
 
 /* All standard descriptors have these 2 fields at the beginning */
 struct usb_descriptor_header {
@@ -740,11 +748,11 @@ struct usb_ss_ep_comp_descriptor {
 struct usb_interface {
 	struct usb_interface_descriptor desc;
 
-	u8	no_of_ep;
-	u8	num_altsetting;
-	u8	act_altsetting;
+	u8				no_of_ep;
+	u8				num_altsetting;
+	u8				act_altsetting;
 
-	struct usb_endpoint_descriptor ep_desc[USB_MAXENDPOINTS];
+	struct usb_endpoint_descriptor 	ep_desc[USB_MAXENDPOINTS];
 	/*
 	 * Super Speed Device will have Super Speed Endpoint
 	 * Companion Descriptor  (section 9.6.7 of usb 3.0 spec)
@@ -753,62 +761,64 @@ struct usb_interface {
 	struct usb_ss_ep_comp_descriptor ss_ep_comp_desc[USB_MAXENDPOINTS];
 } __attribute__ ((packed));
 
+struct usb_port_status {
+	u16 wPortStatus;
+	u16 wPortChange;
+} __attribute__ ((packed));
+
 /* Configuration information.. */
 struct usb_config {
-	struct usb_config_descriptor desc;
+	struct usb_config_descriptor 	desc;
 
-	u8	no_of_if;	/* number of interfaces */
-	struct usb_interface if_desc[USB_MAXINTERFACES];
+	u8				no_of_if;	/* number of interfaces */
+	struct usb_interface 		if_desc[USB_MAXINTERFACES];
 } __attribute__ ((packed));
 
 typedef struct {
-	//int	devnum;			/* Device number on USB bus */
-	int	speed;			/* full/low/high */
-	char	mf[32];			/* manufacturer */
-	char	prod[32];		/* product */
-	char	serial[32];		/* serial number */
+	int			devnum;			/* Device number on USB bus */
+	int			speed;			/* full/low/high */
+	char			mf[32];			/* manufacturer */
+	char			prod[32];		/* product */
+	char			serial[32];		/* serial number */
 
 	/* Maximum packet size; one of: PACKET_SIZE_* */
-	int 	maxpacketsize;
+	int 			maxpacketsize;
 	/* [0] = IN, [1] = OUT */
-	int     ep_dir[2];
-	int 	lun;
+	int     		ep_dir[2];
+	int 			lun;
 	/* one bit for each endpoint ([0] = IN, [1] = OUT) */
 	//unsigned int toggle[2];
 	/* endpoint halts; one bit per endpoint # & direction;
 	 * [0] = IN, [1] = OUT
 	 */
 	//unsigned int halted[2];
-	int 	epmaxpacketin[4];//[16];		/* INput endpoint specific maximums */
-	int 	epmaxpacketout[4];//[16];		/* OUTput endpoint specific maximums */
+	int 			epmaxpacketin[4];//[16];		/* INput endpoint specific maximums */
+	int 			epmaxpacketout[4];//[16];		/* OUTput endpoint specific maximums */
 
 	//int configno;			/* selected config number */
 	/* Device Descriptor */
 	//struct usb_device_descriptor descriptor
 	//	__attribute__((aligned(ARCH_DMA_MINALIGN)));
-	struct usb_config config; /* config descriptor */
+	struct usb_config 	config; /* config descriptor */
 
 	//int have_langid;		/* whether string_langid is valid yet */
-	int 	string_langid;		/* language ID for strings */
+	int 			string_langid;		/* language ID for strings */
 	
 	//unsigned long status;
-	int 	act_len;			/* transferred bytes */
-	int 	portnr;			/* Port number, 1=first */
-
+	int 			act_len;			/* transferred bytes */
+	int 			portnr[8];			/* Port number, 1=first */
+	int 			depth;
 	/* slot_id - for xHCI enabled devices */
-	unsigned int slot_id;
-	u32 	CBWTag;
+	unsigned int 		r_slot_id;
+	unsigned int 		slot_id;
+	u32 			CBWTag;
+	u8 			Hub_NbrPorts;
 } usb_device;
 ////////////////////////////////////////
-#define USB_RECIP_ENDPOINT		0x02
+#define USB_RECIP_ENDPOINT    		0x02
 
-//#define USB_DIR_OUT			0		/* to device */
+#define USB_DIR_OUT			0		/* to device */
 #define USB_DIR_IN			0x80		/* to host */
-
-#define NO_USB_DEVICE			0x00
-#define USB_DEVICE			0x01
-#define LOW_SPEED_DEVICE		0x02
-#define HIGH_SPEED_DEVICE		0x03
 
 #define USB_REQ_GET_STATUS		0x00
 #define USB_REQ_CLEAR_FEATURE		0x01
@@ -824,32 +834,9 @@ typedef struct {
 #define USB_REQ_SET_SEL			0x30
 #define USB_REQ_SET_ISOCH_DELAY		0x31
 
-// USB address
-#define DEVICE_ADDRESS			0x02
-
 // Enum cmd
 #define DESC_DEVICE                 	0x0100
 #define DESC_CONFIGURATION          	0x0200
-#define DESC_HUB			0x2900
-
-// Device feature selector
-#define DEVICE_REMOTE_WAKEUP		0x01
-
-// Hub class feature selector
-#define S_PORT_RESET			0x04
-#define S_PORT_POWER			0x08
-#define C_PORT_CONNECTION		0x10
-#define C_PORT_ENABLE			0x11
-#define C_PORT_RESET			0x14
-
-// USB class code
-#define USB_CLASS_MASS_STORAGE		0x08
-#define USB_CLASS_HUB			0x09
-
-// USB device
-#define USB_SPEED_MASK			(3 << 9)
-#define USB_FULL_SPEED_DEVICE		0x0000
-#define USB_LOW_SPEED_DEVICE		0x0200
 
 #define CBWFLAGS_OUT			0x00
 #define CBWFLAGS_IN			0x80
@@ -939,12 +926,19 @@ struct xhci_hccr {
 #define HCC_MAX_PSA(p)		(1 << ((((p) >> 12) & 0xf) + 1))
 /* Extended Capabilities pointer from PCI base - section 5.3.6 */
 //#define HCC_EXT_CAPS(p)		XHCI_HCC_EXT_CAPS(p)
-
+/* Maximum number of ports under a hub device */
+#define XHCI_MAX_PORTS(p)	(((p) & 0xff) << 24)
+/*
+ * The number of the downstream facing port of the high-speed hub
+ * '0' if the device is not low or full speed.
+ */
+//#define TT_PORT(p)		(((p) & 0xff) << 8)
+#define TT_THINK_TIME(p)	(((p) & 0x3) << 16)
 /* db_off bitmask - bits 0:1 reserved */
-#define	DBOFF_MASK	(~0x3)
+#define	DBOFF_MASK		(~0x3)
 
 /* run_regs_off bitmask - bits 0:4 reserved */
-#define	RTSOFF_MASK	(~0x1f)
+#define	RTSOFF_MASK		(~0x1f)
 };
 
 struct xhci_hcor_port_regs {
@@ -1055,8 +1049,8 @@ struct xhci_link_trb {
 };
 struct xhci_transfer_event {
 	/* 64-bit buffer address, or immediate data */
-	u64	buffer;
-	u32	transfer_len;
+	u64		buffer;
+	u32		transfer_len;
 	/* This field is interpreted differently based on the type of TRB */
 	volatile u32	flags;
 };
@@ -1125,16 +1119,16 @@ struct xhci_scratchpad {
  * memory used for the context (bytes).
  */
 struct xhci_container_ctx {
-	unsigned type;
+	unsigned 	type;
 #define XHCI_CTX_TYPE_DEVICE  0x1
 #define XHCI_CTX_TYPE_INPUT   0x2
 
-	int size;
-	u8 *bytes;
+	int 		size;
+	u8 		*bytes;
 };
 struct xhci_virt_ep {
-	struct xhci_ring		*ring;
-	unsigned int			ep_state;
+	struct xhci_ring	*ring;
+	unsigned int		ep_state;
 #define SET_DEQ_PENDING		(1 << 0)
 #define EP_HALTED		(1 << 1)	/* For stall handling */
 #define EP_HALT_PENDING		(1 << 2)	/* For URB cancellation */
@@ -1144,8 +1138,8 @@ struct xhci_virt_ep {
 /* Transitioning the endpoint to not using streams, don't enqueue URBs */
 #define EP_GETTING_NO_STREAMS	(1 << 5)
 };
+
 struct xhci_virt_device {
-	struct usb_device		*udev;
 	/*
 	 * Commands to the hardware are passed an "input context" that
 	 * tells the hardware what to change in its data structures.
@@ -1158,75 +1152,68 @@ struct xhci_virt_device {
 	/* Used for addressing devices and configuration changes */
 	struct xhci_container_ctx       *in_ctx;
 	/* Rings saved to ensure old alt settings can be re-instated */
-#define	XHCI_MAX_RINGS_CACHED		31
-	struct xhci_virt_ep		eps[31];
+//#define	XHCI_MAX_RINGS_CACHED		31
+	struct xhci_virt_ep		eps[MAX_EP_CTX_NUM];//eps[31];
 };
 
+#define ep_num				5
 typedef struct {
+	u8 				sparraybuf[4096]; //assume num_sp = 1, 1 * (1 << 12)
+		
+	union xhci_trb 			pcmdtrb[TRBS_PER_SEGMENT] \
+					__attribute__ ((aligned(XHCI_ALIGNMENT)));
+	
+	union xhci_trb 			peventtrb[ERST_NUM_SEGS][TRBS_PER_SEGMENT] \
+					__attribute__ ((aligned(XHCI_ALIGNMENT)));
+					
+	union xhci_trb 			peptrb[ep_num][TRBS_PER_SEGMENT] \
+					__attribute__ ((aligned(XHCI_ALIGNMENT)));
+					
+	u64				dev_context_ptrs[MAX_HC_SLOTS] \
+					__attribute__ ((aligned(XHCI_ALIGNMENT)));
+	u8 				reserved[64] \
+					__attribute__ ((aligned(XHCI_ALIGNMENT)));
+	//virt device
+	struct xhci_virt_device 	pdevs[2];	
+	struct xhci_container_ctx 	pout_ctx[2];	
+	u8 				poutbyte[2][(MAX_EP_CTX_NUM + 1) * 64] \
+					__attribute__ ((aligned(XHCI_ALIGNMENT))); // 32 * 64, (MAX_EP_CTX_NUM + 1) * CTX_SIZE(readl(&ctrl->hccr->cr_hccparams));
+	struct xhci_container_ctx 	pin_ctx[2];
+	u8 				pinbyte[2][(MAX_EP_CTX_NUM + 2) * 64] \
+					__attribute__ ((aligned(XHCI_ALIGNMENT)));
+	struct xhci_erst_entry 		pentries[ERST_NUM_SEGS] \
+					__attribute__ ((aligned(XHCI_ALIGNMENT)));
+	u64				sparray[8] \
+					__attribute__ ((aligned(XHCI_ALIGNMENT))); //assume num_sp = 1
+	struct xhci_device_context_array *dcbaa \
+					__attribute__ ((aligned(XHCI_ALIGNMENT)));
+									
 	struct xhci_hccr 		*hccr;	/* R/O registers, not need for volatile */
 	struct xhci_hcor 		*hcor;
 	struct xhci_doorbell_array 	*dba;
 	struct xhci_run_regs 		*run_regs;
-	struct xhci_device_context_array *dcbaa		\
-			__attribute__ ((aligned(32)));
+	
 	struct xhci_ring 		*event_ring;
 	struct xhci_ring 		*cmd_ring;
 	struct xhci_ring 		*transfer_ring;
-	struct xhci_segment 		*seg;
+	//struct xhci_segment 		*seg;
 	struct xhci_intr_reg 		*ir_set;
-	struct xhci_erst 		erst;
-	struct xhci_erst_entry 		entry[ERST_NUM_SEGS];
+	
 	struct xhci_scratchpad 		*scratchpad;
-	struct xhci_virt_device 	*devs[MAX_HC_SLOTS];	
-	//int rootdev;
-	u64				dev_context_ptrs[MAX_HC_SLOTS];
+	struct xhci_virt_device 	*devs[MAX_HC_SLOTS];
+	struct xhci_erst 		erst;	
+	//int rootdev;	
+	struct xhci_scratchpad 		pscratchpad;	
 	//cmd ring			
 	struct xhci_ring 		pcmd_ring;
 	struct xhci_segment 		pcmd_ring_first_seg;
-	union  xhci_trb pcmdtrb[TRBS_PER_SEGMENT] \
-			__attribute__ ((aligned(64)));	
 	//event ring	
 	struct xhci_ring 		pevent_ring;
-	struct xhci_segment 		pevent_ring_first_seg;
-	union xhci_trb peventtrb[TRBS_PER_SEGMENT] \
-			__attribute__ ((aligned(XHCI_ALIGNMENT)));
-	
-	struct xhci_erst_entry 		pentries[ERST_NUM_SEGS];
-	
-	struct xhci_scratchpad 		pscratchpad;
-	
-	//virt device
-	struct xhci_virt_device 	pdevs;
-	struct xhci_container_ctx 	pout_ctx;
-	struct xhci_container_ctx 	pin_ctx;
-	u8 				poutbyte[2048];
-	u8 				pinbyte[2048];
-	//ep[0] ring
-	struct xhci_ring 		pep0_ring;
-	struct xhci_segment 		pep0_ring_first_seg;
-	union  xhci_trb pep0trb[TRBS_PER_SEGMENT] \
-			__attribute__ ((aligned(XHCI_ALIGNMENT)));
-	//ep[1] ring
-	struct xhci_ring 		pep1_ring;
-	struct xhci_segment 		pep1_ring_first_seg;
-	union  xhci_trb pep1trb[TRBS_PER_SEGMENT] \
-			__attribute__ ((aligned(XHCI_ALIGNMENT)));
-	//ep[2] ring		
-	struct xhci_ring 		pep2_ring;
-	struct xhci_segment 		pep2_ring_first_seg;
-	union  xhci_trb pep2trb[TRBS_PER_SEGMENT] \
-			__attribute__ ((aligned(XHCI_ALIGNMENT)));
-	//ep[3] ring		
-	struct xhci_ring 		pep3_ring;
-	struct xhci_segment 		pep3_ring_first_seg;
-	union  xhci_trb pep3trb[TRBS_PER_SEGMENT] \
-			__attribute__ ((aligned(XHCI_ALIGNMENT)));
-			
-	//unsigned char ptmpbuf[512];
-	u64		sparray[1]; //assume num_sp = 1
-	u8 		sparraybuf[1][4096]; //assume num_sp = 1
-	UINT8 		reserved[64];
-	usb_device 	udev;		
+	struct xhci_segment 		pevent_ring_first_seg[ERST_NUM_SEGS];
+	//ep ring
+	struct xhci_ring 		pep_ring[ep_num];
+	struct xhci_segment 		pep_ring_first_seg[ep_num];
+	usb_device 			udev;		
 } xhci_usb;
 
 struct g_event_buffer {
@@ -1244,102 +1231,102 @@ struct d_physical_endpoint {
 };
 
 struct dwc3 {					/* offset: 0xC100 */
-	u32 g_sbuscfg0;
-	u32 g_sbuscfg1;
-	u32 g_txthrcfg;
-	u32 g_rxthrcfg;
-	u32 g_ctl;
+	u32 				g_sbuscfg0;
+	u32 				g_sbuscfg1;
+	u32 				g_txthrcfg;
+	u32 				g_rxthrcfg;
+	u32 				g_ctl;
 
-	u32 reserved1;
+	u32 				reserved1;
 
-	u32 g_sts;
+	u32 				g_sts;
 
-	u32 reserved2;
+	u32 				reserved2;
 
-	u32 g_snpsid;
-	u32 g_gpio;
-	u32 g_uid;
-	u32 g_uctl;
-	u64 g_buserraddr;
-	u64 g_prtbimap;
+	u32 				g_snpsid;
+	u32 				g_gpio;
+	u32 				g_uid;
+	u32 				g_uctl;
+	u64 				g_buserraddr;
+	u64 				g_prtbimap;
 
-	u32 g_hwparams0;
-	u32 g_hwparams1;
-	u32 g_hwparams2;
-	u32 g_hwparams3;
-	u32 g_hwparams4;
-	u32 g_hwparams5;
-	u32 g_hwparams6;
-	u32 g_hwparams7;
+	u32 				g_hwparams0;
+	u32 				g_hwparams1;
+	u32 				g_hwparams2;
+	u32 				g_hwparams3;
+	u32 				g_hwparams4;
+	u32 				g_hwparams5;
+	u32 				g_hwparams6;
+	u32 				g_hwparams7;
 
-	u32 g_dbgfifospace;
-	u32 g_dbgltssm;
-	u32 g_dbglnmcc;
-	u32 g_dbgbmu;
-	u32 g_dbglspmux;
-	u32 g_dbglsp;
-	u32 g_dbgepinfo0;
-	u32 g_dbgepinfo1;
+	u32 				g_dbgfifospace;
+	u32 				g_dbgltssm;
+	u32 				g_dbglnmcc;
+	u32 				g_dbgbmu;
+	u32 				g_dbglspmux;
+	u32 				g_dbglsp;
+	u32 				g_dbgepinfo0;
+	u32 				g_dbgepinfo1;
 
-	u64 g_prtbimap_hs;
-	u64 g_prtbimap_fs;
+	u64 				g_prtbimap_hs;
+	u64 				g_prtbimap_fs;
 
-	u32 reserved3[28];
+	u32 				reserved3[28];
 
-	u32 g_usb2phycfg[16];
-	u32 g_usb2i2cctl[16];
-	u32 g_usb2phyacc[16];
-	u32 g_usb3pipectl[16];
+	u32 				g_usb2phycfg[16];
+	u32 				g_usb2i2cctl[16];
+	u32 				g_usb2phyacc[16];
+	u32 				g_usb3pipectl[16];
 
-	u32 g_txfifosiz[32];
-	u32 g_rxfifosiz[32];
+	u32 				g_txfifosiz[32];
+	u32 				g_rxfifosiz[32];
 
-	struct g_event_buffer g_evnt_buf[32];
+	struct g_event_buffer 		g_evnt_buf[32];
 
-	u32 g_hwparams8;
+	u32 				g_hwparams8;
 
-	u32 reserved4[11];
+	u32 				reserved4[11];
 
-	u32 g_fladj;
+	u32 				g_fladj;
 
-	u32 reserved5[51];
+	u32 				reserved5[51];
 
-	u32 d_cfg;
-	u32 d_ctl;
-	u32 d_evten;
-	u32 d_sts;
-	u32 d_gcmdpar;
-	u32 d_gcmd;
+	u32 				d_cfg;
+	u32 				d_ctl;
+	u32 				d_evten;
+	u32 				d_sts;
+	u32 				d_gcmdpar;
+	u32 				d_gcmd;
 
-	u32 reserved6[2];
+	u32 				reserved6[2];
 
-	u32 d_alepena;
+	u32 				d_alepena;
 
-	u32 reserved7[55];
+	u32 				reserved7[55];
 
-	struct d_physical_endpoint d_phy_ep_cmd[32];
+	struct d_physical_endpoint 	d_phy_ep_cmd[32];
 
-	u32 reserved8[128];
+	u32 				reserved8[128];
 
-	u32 o_cfg;
-	u32 o_ctl;
-	u32 o_evt;
-	u32 o_evten;
-	u32 o_sts;
+	u32 				o_cfg;
+	u32 				o_ctl;
+	u32 				o_evt;
+	u32 				o_evten;
+	u32 				o_sts;
 
-	u32 reserved9[3];
+	u32 				reserved9[3];
 
-	u32 adp_cfg;
-	u32 adp_ctl;
-	u32 adp_evt;
-	u32 adp_evten;
+	u32 				adp_cfg;
+	u32 				adp_ctl;
+	u32 				adp_evt;
+	u32 				adp_evten;
 
-	u32 bc_cfg;
+	u32 				bc_cfg;
 
-	u32 reserved10;
+	u32 				reserved10;
 
-	u32 bc_evt;
-	u32 bc_evten;
+	u32 				bc_evt;
+	u32 				bc_evten;
 };
 ////////////////////////////////////////
 /*
@@ -1366,7 +1353,7 @@ struct dwc3 {					/* offset: 0xC100 */
 
 #define usb_pipe_ep_index(pipe)		usb_pipecontrol(pipe) ? (usb_pipeendpoint(pipe) * 2) : \
 			        	((usb_pipeendpoint(pipe) * 2) - (usb_pipein(pipe) ? 0 : 1))
-#define create_pipe(dev,endpoint) 	((2 << 8) | ((endpoint) << 15) | (dev)->maxpacketsize)
+#define create_pipe(dev,endpoint) 	(((dev)->devnum << 8) | ((endpoint) << 15) | (dev)->maxpacketsize)
 #define usb_sndctrlpipe(dev, endpoint)	((PIPE_CONTROL << 30) | create_pipe(dev, endpoint))
 #define usb_rcvctrlpipe(dev, endpoint)	((PIPE_CONTROL << 30) | create_pipe(dev, endpoint) | USB_DIR_IN)
 #define usb_sndbulkpipe(dev, endpoint)	((PIPE_BULK << 30) | create_pipe(dev, endpoint))
