@@ -89,6 +89,10 @@
 #define CSTAMP(value)      // empty
 #endif
 
+#define RID_PASS()         do { CSTAMP(0xabcddcba); } while (0)
+#define RID_FAIL()         do { CSTAMP(0xdeaddaed); } while (0)
+#define Z_DUMP_START()     do { CSTAMP(0xabcd1234); } while (0)
+
 /**********************
  * Boot Mode
  *********************/

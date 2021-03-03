@@ -296,12 +296,11 @@ static void init_hw(void)
 	}
 #endif
 
-#ifdef PLATFORM_I143
+#ifdef PLATFORM_Q645
 	*(volatile u32 *)ARM_TSGEN_WR_BASE = 3; //EN = 1 and HDBG = 1
 	*(volatile u32 *)(ARM_TSGEN_WR_BASE + 0x08) = 0; // CNTCV[31:0]
 	*(volatile u32 *)(ARM_TSGEN_WR_BASE + 0x0C) = 0; // CNTCV[63:32]
 #endif
-
 
 	dbg();
 }
