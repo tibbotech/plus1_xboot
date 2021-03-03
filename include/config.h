@@ -258,8 +258,8 @@
 #define SPACC_RAM_SIZE      (1 * 1024)
 #elif defined(PLATFORM_I143)
 #if defined(CONFIG_HAVE_SNPS_USB3_DISK)
-#define XBOOT_BUF_SIZE      (37 * 1024)
-#define STORAGE_BUF_SIZE    (23 * 1024)
+#define XBOOT_BUF_SIZE      (38 * 1024)
+#define STORAGE_BUF_SIZE    (22 * 1024)
 #else
 #define XBOOT_BUF_SIZE      (27 * 1024)
 #define STORAGE_BUF_SIZE    (9 * 1024)

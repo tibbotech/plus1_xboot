@@ -115,15 +115,17 @@ union storage_buf {
 
 	/* usb */
 	struct usb_io {
-		u8           draminit_tmp[7 * 1024];
-		u8           sect_buf[512];         /* for FAT data read,  sector-size buffer */
-		u8           cmd_buf[1024];         /* for USB_vendorCmd(), usb descriptors */
-#ifdef CONFIG_HAVE_USB_DISK
-		ehci_usb     ehci;                  /* for all usb transfer, 320 bytes */
-#endif
+		u8           cmd_buf[1024];         /* for USB_vendorCmd(), usb descriptors */	
 #ifdef CONFIG_HAVE_SNPS_USB3_DISK
 		xhci_usb     xhci;
 #endif
+		//u8           draminit_tmp[7 * 1024];
+		u8           sect_buf[512];         /* for FAT data read,  sector-size buffer */
+		
+#ifdef CONFIG_HAVE_USB_DISK
+		ehci_usb     ehci;                  /* for all usb transfer, 320 bytes */
+#endif
+
 	} usb;
 
 	/* uart bootstrap */
