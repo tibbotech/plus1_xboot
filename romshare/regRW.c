@@ -122,7 +122,6 @@ void mon_shell(void)
 	u32 value;
 	u32 group;
 	u32 reg;
-
 	while (1) {
 		mon_cmdline();
 		byte = uart_getc_show_char();

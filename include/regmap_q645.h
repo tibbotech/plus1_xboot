@@ -696,4 +696,12 @@ struct A_moon0_regs {
 };
 #define A_MOON0_REG ((volatile struct A_moon0_regs *)A_RF_GRP(0, 0))
 
+struct rgst_secure_regs {
+	unsigned int cfg[32];              // 502.0~31
+};
+#define RGST_SECURE_REG ((volatile struct rgst_secure_regs *)RF_GRP(502, 0))
+
+/* TSGEN Write/Read */
+#define ARM_TSGEN_WR_BASE  0x9c10a000
+
 #endif /* __INC_REGMAP_Q628_H */

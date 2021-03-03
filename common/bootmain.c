@@ -25,7 +25,12 @@ unsigned int getBootDevID(void)
 
 void set_spi_nor_pinmux(int pin_x)
 {
-	MOON1_REG->sft_cfg[1] = RF_MASK_V(0xf, (pin_x << 2) | pin_x);
+#ifdef PLATFORM_Q645
+		MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 0, pin_x << 0);
+#else
+		MOON1_REG->sft_cfg[1] = RF_MASK_V(0xf, (pin_x << 2) | pin_x);
+#endif
+
 }
 
 /* Return 1 = X1,SPI_NOR, 2 = X2,SPI_NOR */

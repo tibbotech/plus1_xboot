@@ -16,6 +16,7 @@
 #include <sdmmc_boot/drv_sd_mmc.h>    /* initDriver_SD */
 #include <part_efi.h>
 #endif
+#include <SECGRP1.h>
 
 #ifdef CONFIG_SECURE_BOOT_SIGN
 #define VERIFY_SIGN_MAGIC_DATA	(0x7369676E)
@@ -236,7 +237,6 @@ static void init_hw(void)
 #if defined(PLATFORM_Q628)|| defined(PLATFORM_I143)
 	__attribute__((unused)) int is_A = 0;
 	dbg();
-
 	*(volatile unsigned int *) (0x9C000000 +0x2EC) = 0x01c30000;// set DC12_CTL_1(G5.27) to default,for DCIN_1.2V set.
 #endif
 
@@ -295,6 +295,13 @@ static void init_hw(void)
 		A_release_cores();
 	}
 #endif
+
+#ifdef PLATFORM_I143
+	*(volatile u32 *)ARM_TSGEN_WR_BASE = 3; //EN = 1 and HDBG = 1
+	*(volatile u32 *)(ARM_TSGEN_WR_BASE + 0x08) = 0; // CNTCV[31:0]
+	*(volatile u32 *)(ARM_TSGEN_WR_BASE + 0x0C) = 0; // CNTCV[63:32]
+#endif
+
 
 	dbg();
 }
@@ -513,6 +520,107 @@ static void clear_uart_rx_buf(void)
 }
 #endif
 
+#ifdef CONFIG_PLATFORM_Q645
+
+//TODO: Tune SOC security
+// RD mnatis: http://psweb.sunplus.com/mantis_PD2/view.php?id=9092
+static void set_gemini_nonsecure(void)
+{
+	int i;
+
+	// Set RGST : allow access from non-secure
+	for (i = 0; i < 32; i++) {
+		RGST_SECURE_REG->cfg[i] = 0; // non-secure
+	}
+	// Set cbdma sram to be all non-secure
+	SET_CBDMA0_S01(0);		// [0  ,   0] secure
+	SET_CBDMA0_S02(0x00010000);	// [64K, 64K] secure
+	// Master IP : overwrite as secure(0) or non_secure(1)
+	// 16-bit mask
+	// 8-bit overwrite enable
+	// 8-bit secure(0)/non_secure(1)
+
+	//SECGRP1_MAIN_REG->G083_NIC_S01 = 0xFFFEFE00; // IP  7~0 , skip overwriting ca55
+	SECGRP1_MAIN_REG->G083_NIC_S01 = 0xFFFFFF00; // IP  7~0
+	SECGRP1_MAIN_REG->G083_NIC_S02 = 0xFFFFFF00; // IP 15~8
+	SECGRP1_MAIN_REG->G083_NIC_S03 = 0xFFFFFF00;
+	SECGRP1_MAIN_REG->G083_NIC_S04 = 0xFFFFFF00;
+	SECGRP1_MAIN_REG->G083_NIC_S05 = 0xFFFFFF00;
+	CSTAMP(0xCBDA0003);
+
+	SECGRP1_QII_REG->G084_NIC_S01  = 0xFFFFFF00;
+	SECGRP1_QII_REG->G084_NIC_S02  = 0xFFFFFF00;
+	SECGRP1_QII_REG->G084_NIC_S03  = 0xFFFFFF00;
+	SECGRP1_QII_REG->G084_NIC_S04  = 0xFFFFFF00;
+	SECGRP1_QII_REG->G084_NIC_S05  = 0xFFFFFF00;
+	CSTAMP(0xCBDA0004);
+	SECGRP1_QIII_REG->G085_NIC_S01 = 0xFFFFFF00;
+	SECGRP1_QIII_REG->G085_NIC_S02 = 0xFFFFFF00;
+	SECGRP1_QIII_REG->G085_NIC_S03 = 0xFFFFFF00;
+	SECGRP1_QIII_REG->G085_NIC_S04 = 0xFFFFFF00;
+	SECGRP1_QIII_REG->G085_NIC_S05 = 0xFFFFFF00;
+
+#if 0	// zebu no such ip
+	SECGRP1_QIV_REG->G086_NIC_S01  = 0xFFFFFF00;
+	SECGRP1_QIV_REG->G086_NIC_S02  = 0xFFFFFF00;
+	SECGRP1_QIV_REG->G086_NIC_S03  = 0xFFFFFF00;
+	SECGRP1_QIV_REG->G086_NIC_S04  = 0xFFFFFF00;
+	SECGRP1_QIV_REG->G086_NIC_S05  = 0xFFFFFF00;
+
+
+	SECGRP1_VIDEOIN_REG->G114_NIC_S01 = 0xFFFFFF00;
+	SECGRP1_VIDEOIN_REG->G114_NIC_S02 = 0xFFFFFF00;
+	SECGRP1_VIDEOIN_REG->G114_NIC_S03 = 0xFFFFFF00;
+	SECGRP1_DISP_REG->G113_NIC_S01 = 0xFFFFFF00;
+	SECGRP1_DISP_REG->G113_NIC_S02 = 0xFFFFFF00;
+#endif
+}
+
+/*
+ * Switch from aarch32 to aarch64.
+ */
+
+static void go_a32_to_a64(u32 ap_addr)
+{
+	extern void *__a64rom, *__a64rom_end;
+	void *beg = (void *)&__a64rom;
+	void *end = (void *)&__a64rom_end;
+	u32 start64_addr;
+
+	prn_string("32->64\n");
+
+#if 0  //hq.tang  SECGRP funciton is not ok.
+	set_gemini_nonsecure();
+#endif
+	// ap_addr will be used by BL31
+	*(volatile u32 *)CORE0_CPU_START_POS = ap_addr;
+
+	memcpy((void *)XBOOT_A64_ADDR, beg, end - beg);
+	start64_addr = (u32)XBOOT_A64_ADDR;
+
+	// xboot -> a64up -> BL31
+	prn_string("a64up@"); prn_dword(start64_addr);
+
+	// set aa64 boot address for all SMP cores
+	SECGRP1_MAIN_REG->G083_CA55_S01 = start64_addr;
+	SECGRP1_MAIN_REG->G083_CA55_S02 = start64_addr;
+	SECGRP1_MAIN_REG->G083_CA55_S03 = start64_addr;
+	SECGRP1_MAIN_REG->G083_CA55_S04 = start64_addr;
+
+
+	DSB();
+
+	// core 0 switches to AA64
+	asm volatile ("mcr p15, 0, %0, c12, c0, 2" : : "r"(0x03));	// RR=1 AA64=1
+
+	ISB();
+
+	while (1) {
+		asm volatile ("wfi");
+	}
+}
+#endif 
+
 /* Assume u-boot has been loaded */
 static void boot_uboot(void)
 {
@@ -581,6 +689,14 @@ static void boot_linux(void)
 {
 #ifdef PLATFORM_I143
 	exit_bootROM(OPENSBI_RUN_ADDR);
+
+#elif defined(PLATFORM_Q645)
+	CSTAMP(0x44556677);
+	prn_string("Run Linux@");
+	prn_dword(LINUX_RUN_ADDR);
+	/* boot aarch64 kernel */
+	go_a32_to_a64(LINUX_RUN_ADDR);
+
 #elif defined(PLATFORM_Q628)
 	__attribute__((unused)) int is_for_A = 0;
 	const struct image_header *hdr = (struct image_header *)LINUX_LOAD_ADDR;

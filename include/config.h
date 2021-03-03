@@ -181,7 +181,7 @@
  * ROM
  *********************/
 #if defined(PLATFORM_Q645)
-#define BOOT_ROM_BASE       0xfa0e8000
+#define BOOT_ROM_BASE       0xfffe8000
 #else
 #define BOOT_ROM_BASE       0xffff0000
 #endif
@@ -251,7 +251,8 @@
 #define STORAGE_BUF_SIZE    (32 * 1024)
 #define BOOTINFO_SIZE       (512)
 #define GLOBAL_HEADER_SIZE  (512)
-#define CDATA_SIZE          (63 * 1024)
+#define CDATA_SIZE          (62 * 1024)
+#define A64UP_SIZE          (1 * 1024)
 #define STACK_SIZE          (63 * 1024 - 64)
 #define BOOTCOMPT_SIZE      (64)
 #define SPACC_RAM_SIZE      (1 * 1024)
@@ -294,7 +295,7 @@
 #endif
 
 #define BOOT_RAM_BASE          SRAM0_BASE
-#define XBOOT_A64_ADDR         (BOOT_RAM_BASE + (0 * 1024))
+#define XBOOT_A64_ADDR         (BOOT_RAM_BASE + (159 * 1024))
 
 #endif
 
