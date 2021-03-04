@@ -2957,9 +2957,10 @@ int usb_init(int port, int next_port_in_hub)
 			}
 		}
 		//end
+#if defined(PLATFORM_I143)
 		CSTAMP(0xE5B00001);
 		uphy_init();	
-
+#endif
 		CSTAMP(0xE5B00002);
 		usb_power_init();
 

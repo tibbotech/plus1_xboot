@@ -186,6 +186,15 @@ struct uphy_rn_regs {
 #define UPHY0_RN_REG ((volatile struct uphy_rn_regs *)RF_GRP(149, 0))
 #define UPHY1_RN_REG ((volatile struct uphy_rn_regs *)RF_GRP(150, 0))
 
+/* start of xhci */
+struct uphy_u3_regs {
+	u32 cfg[160];		       // 265.0
+};
+
+#define UPHY3_U3_REG ((volatile struct uphy_u3_regs *)RF_AMBA(265, 0))
+#define XHCI_REG ((volatile struct xhci_hccr *)RF_AMBA(64, 0))
+/* end of xhci */
+
 /* usb host */
 struct ehci_regs {
 	unsigned int ehci_len_rev;
