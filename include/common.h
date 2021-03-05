@@ -9,6 +9,7 @@
 #include <romvsr.h>
 #include <stc.h>
 #include <fat/fat.h>
+#include <regmap.h>
 #ifdef CONFIG_HAVE_USB_DISK
 #include <usb/ehci_usb.h>
 #endif
