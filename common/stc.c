@@ -65,8 +65,13 @@ u32 AV1_GetStc32(void)
 
 void AV1_STC_init(void)
 {
+#ifdef PLATFORM_Q645
+	/* Clear STC_AV1_RESET */
+	MOON0_REG->reset[4] = RF_MASK_V_CLR(1 << 3);
+#else
 	/* Clear STC_AV1_RESET */
 	MOON0_REG->reset[1] = RF_MASK_V_CLR(1 << 6);
+#endif
 
 	STC_hw_init(BOOT_TIME_STC);
 }

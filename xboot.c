@@ -347,8 +347,13 @@ static int run_draminit(void)
 
 static inline void release_spi_ctrl(void)
 {
+#ifdef PLATFORM_Q645
+	// SPIFL no reset
+	MOON0_REG->reset[2] = RF_MASK_V_CLR(1 << 10); /* SPIFL_RESET=0 */
+#else
 	// SPIFL & SPI_COMBO no reset
 	MOON0_REG->reset[0] = RF_MASK_V_CLR(3 << 9); /* SPI_COMBO_RESET=0, SPIFL_RESET=0 */
+#endif
 }
 
 __attribute__((unused))
@@ -618,7 +623,7 @@ static void go_a32_to_a64(u32 ap_addr)
 		asm volatile ("wfi");
 	}
 }
-#endif 
+#endif
 
 /* Assume u-boot has been loaded */
 static void boot_uboot(void)

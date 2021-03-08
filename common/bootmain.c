@@ -25,10 +25,12 @@ unsigned int getBootDevID(void)
 
 void set_spi_nor_pinmux(int pin_x)
 {
-#ifdef PLATFORM_Q645
-		MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 0, pin_x << 0);
+#ifdef PLATFORM_I143
+	MOON1_REG->sft_cfg[1] = RF_MASK_V(0x3 << 0, pin_x << 0);
+#elif defined (PLATFORM_Q645)
+	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 0, pin_x << 0);
 #else
-		MOON1_REG->sft_cfg[1] = RF_MASK_V(0xf, (pin_x << 2) | pin_x);
+	MOON1_REG->sft_cfg[1] = RF_MASK_V(0xf, (pin_x << 2) | pin_x);
 #endif
 
 }
@@ -36,18 +38,28 @@ void set_spi_nor_pinmux(int pin_x)
 /* Return 1 = X1,SPI_NOR, 2 = X2,SPI_NOR */
 int get_spi_nor_pinmux(void)
 {
+#ifdef PLATFORM_Q645
+	return ((MOON1_REG->sft_cfg[1] >> 0) & 0x1);
+#else
 	return (MOON1_REG->sft_cfg[1] & 0x3);
+#endif
 }
 
 static inline void set_spi_nand_pinmux(int pin_x)
 {
+#ifdef PLATFORM_Q645
+	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 2, pin_x << 2);
+#else
 	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 4, pin_x << 4);
+#endif
 }
 
 static inline void set_emmc_pinmux(int pin_x)
 {
 #ifdef PLATFORM_I143
 	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 2, pin_x << 2);
+#elif defined (PLATFORM_Q645)
+	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 1, pin_x << 1);
 #else
 	// Q628 eMMC : X1,CARD0_SD
 	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 5, pin_x << 5);
@@ -58,6 +70,8 @@ static inline void set_sdcard1_pinmux(int pin_x)
 {
 #ifdef PLATFORM_I143
 	MOON1_REG->sft_cfg[4] = RF_MASK_V(1 << 0, pin_x << 0);
+#elif defined (PLATFORM_Q645)
+	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 3, pin_x << 3);
 #else
 	// Q628 SD_CARD : X1,CARD1_SD
 	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 6, pin_x << 6);
@@ -89,10 +103,10 @@ void SetBootDev(unsigned int bootdev, unsigned int pin_x, unsigned int dev_port)
 			break;
 		case DEVICE_USB_ISP:
 			g_bootinfo.gbootRom_boot_mode = USB_ISP;
-			break;	
+			break;
 		case DEVICE_UART_ISP:
 			g_bootinfo.gbootRom_boot_mode = UART_ISP;
-			break;	
+			break;
 		case DEVICE_SPI_NOR:
 			g_bootinfo.gbootRom_boot_mode = SPI_NOR_BOOT;
 			set_spi_nor_pinmux(pin_x);
