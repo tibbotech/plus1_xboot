@@ -34,7 +34,7 @@ void boot_cpuN(unsigned long scr_init)
 
 	// u-boot or linux
 	// core0 NS-EL1 @ address
-	#if 0
+
 	if (core == 0) {
 		prn_string("core0 ");
 		prn_string(scr_init & 1 ? "NS" : "S"); // bit0=SCR_NS in SCR_EL3
@@ -44,7 +44,6 @@ void boot_cpuN(unsigned long scr_init)
 		prn_string("@");
 		prn_dword((unsigned int)(unsigned long)fn);
 	}
-	#endif
 
 	CSTAMP(0xCA0100AA);
 	CSTAMP(core);

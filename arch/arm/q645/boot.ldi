@@ -107,13 +107,6 @@ SECTIONS
 
 	__DATA_ROM_START__ = __data;
 
-	.rom_pgtbl : {
-		__pgtbl_L1_high8K = .;
-		__pgtbl_L1_end = .;
-	} > rom_pgtbl
-
-	PROVIDE (_mmu_pgtable = __pgtbl_L1_high8K - (8 * 1024));
-
 	/* RAM */
 	.xboot_buf (NOLOAD): {
 		*(xboot_buf_sect)
