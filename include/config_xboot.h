@@ -44,17 +44,17 @@
 
 #if defined(PLATFORM_Q645)
 // u-boot
-#define UBOOT_LOAD_ADDR         0x200000
-#define UBOOT_RUN_ADDR          0x200040
-#define UBOOT_MAX_LEN           0x200000
+#define UBOOT_LOAD_ADDR         0x300000
+#define UBOOT_RUN_ADDR          (UBOOT_LOAD_ADDR + 0x40)
+#define UBOOT_MAX_LEN           0x100000
 
 #define BL31_ADDR               0x200000
-#define BL31_LOAD_ADDR          (0x200000 - 0x40)
+#define BL31_LOAD_ADDR          (BL31_ADDR - 0x40)
 #define SMP_CORES 4
 
 // DTB
-#define DTB_LOAD_ADDR           (0x300000 - 0x40)          /* dtb */
-#define DTB_RUN_ADDR            0x300000                   /* skip header */
+#define DTB_RUN_ADDR            0x400000                   /* skip header */
+#define DTB_LOAD_ADDR           (DTB_RUN_ADDR - 0x40)          /* dtb */
 
 // Linux
 #define LINUX_RUN_ADDR          0x480000                   /* vmlinux */
