@@ -60,6 +60,10 @@ $(A64_NAME): $(A64_OBJS)
 	@echo "  A64-CC $@"
 	@$(A64_CROSS)gcc $(A64_CFLAGS) -c -o $@ $<
 
+.depend: $(A64_ASRC) $(A64_CSRC)
+	@rm -f .depend >/dev/null
+	@$(A64_CROSS)gcc $(A64_CFLAGS) -MM $^ >> ./.depend
+sinclude .depend
 
 .PHONY:clean
 clean:
