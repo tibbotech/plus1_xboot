@@ -324,6 +324,9 @@ sinclude .depend
 # clean
 .PHONY:clean
 clean:
+ifeq ($(CONFIG_PLATFORM_Q645),y)
+	@$(MAKE) -C arch/arm/q645/a64up/ clean
+endif
 	@$(MAKE) -C ../draminit $(DRAMINIT_TARGET) ARCH=$(ARCH) CROSS=$(CROSS) $@
 	@rm -rf .depend $(LD_GEN) $(OBJS) *.o *.d>/dev/null
 	@if [ -d $(BIN) ];then \
