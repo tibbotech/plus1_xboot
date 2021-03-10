@@ -38,9 +38,9 @@ ENTRY(_start)
 
 #define BOOTINFO_START      (BOOT_RAM_BASE + XBOOT_BUF_SIZE)
 #define GLOBAL_HEADER_START (BOOTINFO_START + BOOTINFO_SIZE)
-#define CDATA_START         (GLOBAL_HEADER_START + GLOBAL_HEADER_SIZE)
-#define A64UP_START         (CDATA_START + CDATA_SIZE)
-#define STORAGE_BUF_START   (A64UP_START + A64UP_SIZE)
+#define A64UP_START         (GLOBAL_HEADER_START + GLOBAL_HEADER_SIZE)
+#define CDATA_START         (A64UP_START + A64UP_SIZE)
+#define STORAGE_BUF_START   (CDATA_START + CDATA_SIZE)
 #define SPACC_RAM_START     (STORAGE_BUF_START + STORAGE_BUF_SIZE)
 #define STACK_START         (SPACC_RAM_START + SPACC_RAM_SIZE)
 #define BOOTCOMPT_START     (STACK_START + STACK_SIZE)
@@ -58,8 +58,8 @@ MEMORY
 	xboot_buf    : ORIGIN = XBOOT_START,         LENGTH = XBOOT_BUF_SIZE      /*     96K @  0      */
 	bootinfo     : ORIGIN = BOOTINFO_START,      LENGTH = BOOTINFO_SIZE       /*     512 @ 96K     */
 	boothead     : ORIGIN = GLOBAL_HEADER_START, LENGTH = GLOBAL_HEADER_SIZE  /*     512 @ 96K+512 */
-	cdata        : ORIGIN = CDATA_START,         LENGTH = CDATA_SIZE          /*     62K @ 97K     */
-	a64up        : ORIGIN = A64UP_START,         LENGTH = A64UP_SIZE          /*     1K  @ 159K     */
+	a64up        : ORIGIN = A64UP_START,         LENGTH = A64UP_SIZE          /*     1K  @ 97K     */
+	cdata        : ORIGIN = CDATA_START,         LENGTH = CDATA_SIZE          /*     62K @ 98K     */
 	storage_buf  : ORIGIN = STORAGE_BUF_START,   LENGTH = STORAGE_BUF_SIZE    /*     32K @ 160K    */
 	stack        : ORIGIN = STACK_START,         LENGTH = STACK_SIZE          /*  63K-64 @ 192K    */
 	bootcompat   : ORIGIN = BOOTCOMPT_START,     LENGTH = BOOTCOMPT_SIZE      /*      64 @ 255K-64 */

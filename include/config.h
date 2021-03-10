@@ -58,24 +58,23 @@
  * Register
  *********************/
 #ifdef PLATFORM_Q645
-#define REG_BASE		0xF8000000
+#define REG_BASE           0xF8000000
 #else
-#define REG_BASE        0x9c000000
+#define REG_BASE           0x9c000000
 #endif
 
-#define RF_GRP(_grp, _reg) ((((_grp) * 32 + (_reg)) * 4) + REG_BASE)
-#define RF_AMBA(_grp, _reg) ((((_grp) * 1024 + (_reg)) * 4) + REG_BASE)
+#define RF_GRP(_grp, _reg)              ((((_grp) * 32 + (_reg)) * 4) + REG_BASE)
+#define RF_AMBA(_grp, _reg)             ((((_grp) * 1024 + (_reg)) * 4) + REG_BASE)
 
-#define AHB0_REG_BASE      0x9c100000
-#define AHB_GRP(_ahb_grp, _grp, _reg) \
-	((((_grp) * 32 + (_reg)) * 4) + ((_ahb_grp) * 0x1000) + AHB0_REG_BASE)
+#define AHB0_REG_BASE                   0x9c100000
+#define AHB_GRP(_ahb_grp, _grp, _reg)   ((((_grp) * 32 + (_reg)) * 4) + ((_ahb_grp) * 0x1000) + AHB0_REG_BASE)
 
-#define A_REG_BASE              0x9ec00000
-#define A_RF_GRP(_grp, _reg)    ((((_grp) * 32 + (_reg)) * 4) + A_REG_BASE)
+#define A_REG_BASE                      0x9ec00000
+#define A_RF_GRP(_grp, _reg)            ((((_grp) * 32 + (_reg)) * 4) + A_REG_BASE)
 
-#define RF_MASK_V(_mask, _val)       (((_mask) << 16) | (_val))
-#define RF_MASK_V_SET(_mask)         (((_mask) << 16) | (_mask))
-#define RF_MASK_V_CLR(_mask)         (((_mask) << 16) | 0)
+#define RF_MASK_V(_mask, _val)          (((_mask) << 16) | (_val))
+#define RF_MASK_V_SET(_mask)            (((_mask) << 16) | (_mask))
+#define RF_MASK_V_CLR(_mask)            (((_mask) << 16) | 0)
 
 /**********************
  * Debug STAMP
@@ -252,11 +251,11 @@
 /* SRAM layout: must match with boot.ldi */
 #if defined(PLATFORM_Q645)
 #define XBOOT_BUF_SIZE      (96 * 1024)
-#define STORAGE_BUF_SIZE    (32 * 1024)
 #define BOOTINFO_SIZE       (512)
 #define GLOBAL_HEADER_SIZE  (512)
-#define CDATA_SIZE          (62 * 1024)
 #define A64UP_SIZE          (1 * 1024)
+#define CDATA_SIZE          (62 * 1024)
+#define STORAGE_BUF_SIZE    (32 * 1024)
 #define STACK_SIZE          (63 * 1024 - 64)
 #define BOOTCOMPT_SIZE      (64)
 #define SPACC_RAM_SIZE      (1 * 1024)
@@ -299,7 +298,7 @@
 #endif
 
 #define BOOT_RAM_BASE          SRAM0_BASE
-#define XBOOT_A64_ADDR         (BOOT_RAM_BASE + (159 * 1024))
+#define XBOOT_A64_ADDR         (BOOT_RAM_BASE + (97 * 1024))
 
 #endif
 
@@ -307,7 +306,7 @@
  * CPU boot address
  *********************/
 #ifdef PLATFORM_Q645
-#define CPU_WAIT_A64_VAL    	 	0xfffffffe
+#define CPU_WAIT_A64_VAL             0xfffffffe
 #define CORE_CPU_START_POS(core_id)  (CORE0_CPU_START_POS - ((core_id) * 4))
 #define CORE3_CPU_START_POS          (0xfa240000 - 0x18)  // core3 wait fa23_ffe8
 #define CORE2_CPU_START_POS          (0xfa240000 - 0x14)  // core2 wait fa23_ffec
@@ -326,14 +325,14 @@
 #define BOOT_ANOTHER_POS_A_VIEW  BOOT_ANOTHER_POS
 #elif defined(PLATFORM_Q628)
 /* B can access A sram */
-#define A_START_POS_B_VIEW        (A_WORK_MEM_END - 0xc) // 9ea7fff4 - (core * 4)
-#define A_START_POS_A_VIEW        A_START_POS_B_VIEW
-#define BOOT_ANOTHER_POS_A_VIEW   BOOT_ANOTHER_POS
+#define A_START_POS_B_VIEW       (A_WORK_MEM_END - 0xc) // 9ea7fff4 - (core * 4)
+#define A_START_POS_A_VIEW       A_START_POS_B_VIEW
+#define BOOT_ANOTHER_POS_A_VIEW  BOOT_ANOTHER_POS
 #elif defined(PLATFORM_I143)
-#define A_BOOT_POS_A_VIEW         0x9e809ffc             // remap to BOOT_ANOTHER_POS
-#define A_START_POS_B_VIEW        0x6ea7fff4             // 6ea7fff4 - (core * 4)
-#define A_START_POS_A_VIEW        A_START_POS_B_VIEW
-#define BOOT_ANOTHER_POS_A_VIEW   BOOT_ANOTHER_POS
+#define A_BOOT_POS_A_VIEW        0x9e809ffc             // remap to BOOT_ANOTHER_POS
+#define A_START_POS_B_VIEW       0x6ea7fff4             // 6ea7fff4 - (core * 4)
+#define A_START_POS_A_VIEW       A_START_POS_B_VIEW
+#define BOOT_ANOTHER_POS_A_VIEW  BOOT_ANOTHER_POS
 #else
 /* no A sram */
 #define A_START_POS_B_VIEW       (SRAM0_END - 0xc)       // 9e809ff4
