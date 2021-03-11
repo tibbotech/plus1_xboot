@@ -139,7 +139,7 @@ DRAMINIT_OBJ := ../draminit/dwc/dwc_dram.o
 DRAMINIT_OBJ += ../draminit/dwc/dwc_umctl2.o
 DRAMINIT_OBJ +=	$(DWC_SRC_DIR)/$(DWC)print.o $(DWC_SRC_DIR)/$(DWC)cmnt.o $(DWC_USER_DIR)/$(DWC_USER)A_bringupPower.o
 DRAMINIT_OBJ +=	$(DWC_USER_DIR)/$(DWC_USER)B_startClockResetPhy.o $(DWC_USER_DIR)/$(DWC_USER)E_setDfiClk.o 
-DRAMINIT_OBJ +=	$(DWC_USER_DIR)/$(DWC_USER)G_waitFwDone.o $(DWC_USER_DIR)/$(DWC_USER)H_readMsgBlock.o $(DWC_USER_DIR)/$(DWC_USER)customPostTrain.o  
+DRAMINIT_OBJ +=	$(DWC_USER_DIR)/$(DWC_USER)H_readMsgBlock.o $(DWC_USER_DIR)/$(DWC_USER)customPostTrain.o  
 DRAMINIT_OBJ +=	$(DWC_USER_DIR)/$(DWC_USER)overrideUserInput.o $(DWC_USER_DIR)/$(DWC_USER)J_enterMissionMode.o  
 else 
 DRAMINIT_OBJ := ../draminit/plf_dram.o
