@@ -63,7 +63,7 @@ static u32 next_cluster(fat_info *info, u32 currentClus, u8 *buffer)
 /*
  * fat_read_file
  * @idx:	file number
- * @info:	fat_info structure 
+ * @info:	fat_info structure
  * @buffer	io buffer whose size is equal to sector size
  * @offset	start position of target file
  * @length	read length
@@ -169,7 +169,7 @@ u32 fat_read_file(u32 idx, fat_info *info, u8 *buffer, u32 offset, u32 length, u
 		cluster = next_cluster(info, cluster, (u8 *)buffer);
 	}
 
-#if (defined(CONFIG_HAVE_USB_DISK) || defined(CONFIG_HAVE_SNPS_USB3_DISK)) && defined(FAT_USB_4K_READ) 
+#if (defined(CONFIG_HAVE_USB_DISK) || defined(CONFIG_HAVE_SNPS_USB3_DISK)) && defined(FAT_USB_4K_READ)
 	/* USB: transfer clusters in 4K unit to speed up */
 	if (info->read_sector == usb_readSector && !(info->sectPerClus % 8)) {
 		txfer_sects = 8;
@@ -630,7 +630,11 @@ static u32 search_fat16_files(fat_info *info, u8 *buffer, u8 type)
 u8 fat_sdcard_check_boot_mode(fat_info *info)
 {
 
-	if(info->fileInfo[0].size != 0x10000) 
+#if defined (PLATFORM_Q645)
+	if(info->fileInfo[0].size > 0x28000)
+#else
+	if(info->fileInfo[0].size != 0x10000)
+#endif
 	{
 		dbg_info();
 		return FALSE;
