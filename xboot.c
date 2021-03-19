@@ -663,6 +663,8 @@ static void boot_uboot(void)
 		copy_bootinfo_to_0xfe809a00();
 		exit_bootROM(OPENSBI_RUN_ADDR);
 	}
+#elif defined(PLATFORM_Q645)
+	go_a32_to_a64(UBOOT_RUN_ADDR);
 #elif defined(PLATFORM_Q628)
 	prn_string((const char *)image_get_name(hdr)); prn_string("\n");
 
