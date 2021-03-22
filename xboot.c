@@ -531,6 +531,71 @@ static void clear_uart_rx_buf(void)
 }
 #endif
 
+#ifdef CONFIG_USE_ZMEM
+#ifdef LOAD_SPLIT_INITRAMFS
+static void zmem_check_initramfs(void)
+{
+	struct image_header *hdr;
+
+	prn_string("[zmem] chk initramfs\n");
+	hdr = (struct image_header *)INITRAMFS_LOAD_ADDR;
+	if (!image_check_magic(hdr)) {
+		prn_string("[zmem] no uhdr magic: "); prn_dword(image_get_magic(hdr));
+		mon_shell();
+	} else if (!image_check_hcrc(hdr)) {
+		prn_string("bad hcrc\n");
+		mon_shell();
+	}
+}
+#endif
+
+static void zmem_check_dtb(void)
+{
+	struct image_header *hdr;
+
+	prn_string("[zmem] chk dtb\n");
+	hdr = (struct image_header *)DTB_LOAD_ADDR;
+	if (!image_check_magic(hdr)) {
+		prn_string("[zmem] no uhdr magic: "); prn_dword(image_get_magic(hdr));
+		mon_shell();
+	} else if (!image_check_dcrc(hdr)) {
+		prn_string("corrupted\n");
+		mon_shell();
+	}
+}
+
+static void zmem_check_linux(void)
+{
+	struct image_header *hdr;
+
+	prn_string("[zmem] chk linux\n");
+	hdr = (struct image_header *)LINUX_LOAD_ADDR;
+	if (!image_check_magic(hdr)) {
+		prn_string("[zmem] no uhdr magic: "); prn_dword(image_get_magic(hdr));
+		mon_shell();
+	} else if (!image_check_hcrc(hdr)) {
+		prn_string("bad hcrc\n");
+		mon_shell();
+	}
+}
+
+static void zmem_check_uboot(void)
+{
+	struct image_header *hdr;
+	int len;
+
+	prn_string("[zmem] check uboot\n");
+	hdr = (struct image_header *)UBOOT_LOAD_ADDR;
+	if (!image_check_magic(hdr)) {
+		prn_string("[zmem] no uhdr magic: "); prn_dword(image_get_magic(hdr));
+		mon_shell();
+	} else {
+		len = image_get_size(hdr);
+		prn_string("[zmem] uboot len="); prn_dword(len);
+	}
+}
+#endif
+
 #ifdef CONFIG_PLATFORM_Q645
 
 //TODO: Tune SOC security
@@ -637,6 +702,7 @@ static void boot_uboot(void)
 {
 	__attribute__((unused)) int is_for_A = 0;
 	const struct image_header *hdr = (struct image_header *)UBOOT_LOAD_ADDR;
+
 #ifdef CONFIG_SECURE_BOOT_SIGN
 	prn_string(" start verify in xboot!!!!!\n");
 	int ret = verify_uboot_signature(hdr);
@@ -671,6 +737,7 @@ static void boot_uboot(void)
 		exit_bootROM(OPENSBI_RUN_ADDR);
 	}
 #elif defined(PLATFORM_Q645)
+	prn_string((const char *)image_get_name(hdr)); prn_string("\n");
 	prn_string("Run uboot@");prn_dword(UBOOT_RUN_ADDR);
 	/* boot aarch64 uboot */
 	copy_bootinfo_for_uboot();
@@ -741,38 +808,12 @@ static void boot_linux(void)
 
 static void spi_nor_linux(void)
 {
-	struct image_header *hdr;
-
 #ifdef CONFIG_USE_ZMEM
 #ifdef LOAD_SPLIT_INITRAMFS
-	prn_string("[zmem] chk initramfs\n");
-	hdr = (struct image_header *)INITRAMFS_LOAD_ADDR;
-	if (!image_check_magic(hdr)) {
-		prn_string("[zmem] no uhdr magic: "); prn_dword(image_get_magic(hdr));
-		mon_shell();
-	} else if (!image_check_hcrc(hdr)) {
-		prn_string("bad hcrc\n");
-		mon_shell();
-	}
+	zmem_check_initramfs();
 #endif
-	prn_string("[zmem] chk dtb\n");
-	hdr = (struct image_header *)DTB_LOAD_ADDR;
-	if (!image_check_magic(hdr)) {
-		prn_string("[zmem] no uhdr magic: "); prn_dword(image_get_magic(hdr));
-		mon_shell();
-	} else if (!image_check_dcrc(hdr)) {
-		prn_string("corrupted\n");
-		mon_shell();
-	}
-	prn_string("[zmem] chk linux\n");
-	hdr = (struct image_header *)LINUX_LOAD_ADDR;
-	if (!image_check_magic(hdr)) {
-		prn_string("[zmem] no uhdr magic: "); prn_dword(image_get_magic(hdr));
-		mon_shell();
-	} else if (!image_check_hcrc(hdr)) {
-		prn_string("bad hcrc\n");
-		mon_shell();
-	}
+	zmem_check_dtb();
+	zmem_check_linux();
 #else
 	int res;
 	int verify = 1;
@@ -814,21 +855,10 @@ static void spi_nor_linux(void)
 
 static void spi_nor_uboot(void)
 {
-	int len = 0;
-
 #ifdef CONFIG_USE_ZMEM
-	struct image_header *hdr;
-	hdr = (struct image_header *)UBOOT_LOAD_ADDR;
-	prn_string("[zmem] check uboot\n");
-	if (!image_check_magic(hdr)) {
-		prn_string("[zmem] no uhdr magic: "); prn_dword(image_get_magic(hdr));
-		mon_shell();
-	} else {
-		len = image_get_size(hdr);
-		prn_string("[zmem] uboot len="); prn_dword(len);
-	}
+	zmem_check_uboot();
 #else
-	len = nor_load_uhdr_image("uboot", (void *)UBOOT_LOAD_ADDR,
+	int len = nor_load_uhdr_image("uboot", (void *)UBOOT_LOAD_ADDR,
 			(void *)(SPI_FLASH_BASE + SPI_UBOOT_OFFSET), 1);
 	if (len <= 0) {
 		mon_shell();
@@ -991,11 +1021,15 @@ static void do_fat_boot(u32 type, u32 port)
 		type = SDCARD_BOOT;
 	}
 
+#ifdef CONFIG_USE_ZMEM
+	zmem_check_uboot();
+#else
 	/* load u-boot from usb */
 	if (fat_load_uhdr_image(&g_finfo, "uboot", (void *)UBOOT_LOAD_ADDR, ((type==SDCARD_BOOT)?0:ISP_IMG_OFF_UBOOT), UBOOT_MAX_LEN,type) <= 0) {
 		prn_string("failed to load uboot\n");
 		return;
 	}
+#endif
 
 	boot_uboot();
 }
@@ -1158,11 +1192,13 @@ int emmc_load_draminit(void *buf, int mmc_part)
 
 static void emmc_boot(void)
 {
+#ifndef CONFIG_USE_ZMEM
 	gpt_header *gpt_hdr;
 	gpt_entry *gpt_part;
 	u32 blk_start1 = -1, blk_start2 = -1;
 	int res, len = 0;
 	int i;
+#endif
 
 	prn_string("\n{{emmc_boot}}\n");
 
@@ -1180,6 +1216,9 @@ static void emmc_boot(void)
 		return;
 	}
 
+#ifdef CONFIG_USE_ZMEM
+	zmem_check_uboot();
+#else
 	if (initDriver_SD(EMMC_SLOT_NUM)) {
 		prn_string("init fail\n");
 		return;
@@ -1276,6 +1315,7 @@ static void emmc_boot(void)
 		prn_string("bad uboot\n");
 		return;
 	}
+#endif
 
 	boot_uboot();
 }
@@ -1487,6 +1527,7 @@ static int nand_load_uhdr_image(int type, const char *img_name, void *dst,
 
 static void nand_uboot(u32 type)
 {
+#ifndef CONFIG_USE_ZMEM
 	u32 blk_start = g_bootinfo.app_blk_start;
 	u32 blk_end = 0;
 	struct image_header *hdr = (struct image_header *)UBOOT_LOAD_ADDR;
@@ -1494,6 +1535,7 @@ static void nand_uboot(u32 type)
 	int len;
 	u32 sect_sz = GetNANDPageCount_1K60(g_bootinfo.sys_nand.u16PyldLen) * 1024;
 	u32 blk_use_sz = g_bootinfo.sys_nand.u16PageNoPerBlk * sect_sz;
+#endif
 
 #ifdef CONFIG_STANDALONE_DRAMINIT
 	if (ReadBootBlockDraminit((type == SPINAND_BOOT), (u8 *)DRAMINIT_LOAD_ADDR) < 0) {
@@ -1506,6 +1548,9 @@ static void nand_uboot(u32 type)
 		return;
 	}
 
+#ifdef CONFIG_USE_ZMEM
+	zmem_check_uboot();
+#else
 #ifndef HAVE_UBOOT2_IN_NAND
 	/* Load uboot1 from NAND */
 	len = nand_load_uhdr_image(type, "uboot", (void *)UBOOT_LOAD_ADDR,
@@ -1553,6 +1598,7 @@ static void nand_uboot(u32 type)
 		prn_string("not found good uboot\n");
 		return;
 	}
+#endif
 
 	boot_uboot();
 }

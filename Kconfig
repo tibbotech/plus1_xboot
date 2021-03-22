@@ -42,7 +42,7 @@ config BOOT_ON_CSIM
 	default n
 
 config BOOT_ON_ZEBU
-        bool "Boot on Zebug"
+        bool "Boot on Zebu"
         default n
         depends on BOOT_ON_CSIM
 
