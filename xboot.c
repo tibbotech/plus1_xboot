@@ -174,6 +174,13 @@ static void copy_bootinfo_to_0xfe809a00(void)
 }
 #endif
 
+#ifdef PLATFORM_Q645
+static void copy_bootinfo_for_uboot(void)
+{
+	memcpy((u8 *)BOOT_INFO_ADDR, (UINT8 *)&g_bootinfo, sizeof(struct bootinfo));
+}
+#endif
+
 #ifdef PLATFORM_Q628
 static void exit_xboot(const char *msg, u32 addr)
 {
@@ -664,6 +671,9 @@ static void boot_uboot(void)
 		exit_bootROM(OPENSBI_RUN_ADDR);
 	}
 #elif defined(PLATFORM_Q645)
+	prn_string("Run uboot@");prn_dword(UBOOT_RUN_ADDR);
+	/* boot aarch64 uboot */
+	copy_bootinfo_for_uboot();
 	go_a32_to_a64(UBOOT_RUN_ADDR);
 #elif defined(PLATFORM_Q628)
 	prn_string((const char *)image_get_name(hdr)); prn_string("\n");
