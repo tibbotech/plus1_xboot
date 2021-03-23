@@ -109,16 +109,8 @@
 #define SDCARD_ISP              0x19
 #define SPI_NOR_BOOT            0x17
 #define UART_ISP                0x15
-#define EXT_BOOT1               0x13
 #define AUTO_SCAN               0x11
-#define EXT_EMMC_BOOT           0x0F
-#define EXT_SPINAND_BOOT        0x0D
-#define EXT_USB_ISP             0x0B
-#define EXT_SDCARD_ISP          0x09
-#define EXT_SPI_NOR_BOOT        0x07
-#define EXT_UART_ISP            0x05
-#define EXT_BOOT2               0x03
-#define EXT_AUTO_SCAN           0x01
+#define USB_BOOT                0xfd
 #define SDCARD_BOOT             0xfe
 #define NAND_LARGE_BOOT         0xff
 #elif defined(PLATFORM_I143)

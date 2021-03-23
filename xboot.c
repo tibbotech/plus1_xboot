@@ -1015,11 +1015,21 @@ static void do_fat_boot(u32 type, u32 port)
 
 	run_draminit();
 
-	if(type==SDCARD_ISP && (fat_sdcard_check_boot_mode(&g_finfo)==TRUE))
-	{
-		prn_string("sdcard do boot mode !!!!!\n");
+#if defined(PLATFORM_Q645)
+	if (fat_sdcard_check_boot_mode(&g_finfo) == TRUE) {
+		if (type == SDCARD_ISP) {
+			g_bootinfo.gbootRom_boot_mode = SDCARD_BOOT;
+			type = SDCARD_BOOT;
+		} else if (type == USB_ISP) {
+			g_bootinfo.gbootRom_boot_mode = USB_BOOT;
+			type = SDCARD_BOOT;
+		}
+	}
+#else
+	if ((type==SDCARD_ISP) && (fat_sdcard_check_boot_mode(&g_finfo)==TRUE)) {
 		type = SDCARD_BOOT;
 	}
+#endif
 
 #ifdef CONFIG_USE_ZMEM
 	zmem_check_uboot();
