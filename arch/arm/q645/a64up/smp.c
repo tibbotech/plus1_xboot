@@ -30,7 +30,7 @@ void boot_cpuN(unsigned long scr_init)
 	char str[4] = { 0, ' ', 0 };
 	int core = cpu_core_id();
 	void (*fn)(void);
-	fn = (void (*)())BL31_ADDR;
+	fn = (void (*)())BL31_RUN_ADDR;
 
 	// u-boot or linux
 	// core0 NS-EL1 @ address

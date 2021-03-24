@@ -174,13 +174,6 @@ static void copy_bootinfo_to_0xfe809a00(void)
 }
 #endif
 
-#ifdef PLATFORM_Q645
-static void copy_bootinfo_for_uboot(void)
-{
-	memcpy((u8 *)BOOT_INFO_ADDR, (UINT8 *)&g_bootinfo, sizeof(struct bootinfo));
-}
-#endif
-
 #ifdef PLATFORM_Q628
 static void exit_xboot(const char *msg, u32 addr)
 {
@@ -598,6 +591,55 @@ static void zmem_check_uboot(void)
 
 #ifdef CONFIG_PLATFORM_Q645
 
+static void copy_bootinfo_for_uboot(void)
+{
+	memcpy((u8 *)BOOT_INFO_ADDR, (UINT8 *)&g_bootinfo, sizeof(struct bootinfo));
+}
+static int copy_bl31_from_uboot_img(void* dst,void* src)
+{
+	struct image_header *hdr;
+	int i,step,len=0;
+
+	prn_string("load BL31 \n");
+	memcpy32(dst, src, sizeof(*hdr)/4);
+
+	hdr = (struct image_header *)dst;
+	if (!image_check_magic(hdr)) {
+		prn_string("bad magic\n");
+		goto _error;
+	}
+
+	if (!image_check_hcrc(hdr)) {
+		prn_string("bad hcrc\n");
+		goto _error;
+	}
+	len = image_get_size(hdr);
+
+#ifdef CSIM_NEW
+	step = 2048;
+#else
+	step = 256 * 1024;
+#endif
+
+	for (i = 0; i < len; i += step) {
+		prn_string(".");
+		memcpy32(dst + sizeof(*hdr) + i, src + sizeof(*hdr) + i,
+				(len - i < step) ? (len - i + 3) / 4 : step / 4);
+	}
+
+	if (!image_check_dcrc(hdr)) {
+		prn_string("corrupted\n");
+		goto _error;
+	}
+	return 0;
+
+_error:
+	prn_string("load BL31 data fail,halt!!\n");
+	halt();
+	return -1;
+
+}
+
 //TODO: Tune SOC security
 // RD mnatis: http://psweb.sunplus.com/mantis_PD2/view.php?id=9092
 static void set_gemini_nonsecure(void)
@@ -740,6 +782,8 @@ static void boot_uboot(void)
 	prn_string((const char *)image_get_name(hdr)); prn_string("\n");
 	prn_string("Run uboot@");prn_dword(UBOOT_RUN_ADDR);
 	/* boot aarch64 uboot */
+	copy_bl31_from_uboot_img((void*)BL31_LOAD_ADDR,(void*)(UBOOT_LOAD_ADDR+BL31_OFFSET_UBOOT+0x40));
+
 	copy_bootinfo_for_uboot();
 	go_a32_to_a64(UBOOT_RUN_ADDR);
 #elif defined(PLATFORM_Q628)
