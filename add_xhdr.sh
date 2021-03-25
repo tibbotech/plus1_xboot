@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source ../../build/tools/secure_hsm/secure/sb_info.sh_inc
+
 # $1: val
 # $2: 1=no reverse
 # $3: 1=have secure boot signature
@@ -25,7 +27,7 @@ input=$1
 output=$2
 img_flag=$3
 header_name=$4
- 
+rel_id=$5 
 
 
 sz=`stat -c%s $1`
@@ -80,7 +82,22 @@ gen_bin_tmp $val 0
 dd if=tmp of=$output conv=notrunc bs=1 count=4 seek=16 2>/dev/null
 
 ##############
-# 12-byte reserved
+# 12-byte reserved => modification
+##############
+# 4-byte build_epoch
+val=$((`date+%s`))
+gen_bin_tmp $val 0
+dd if=tmp of=$output conv=notrunc bs=1 count=4 seek=20 2>/dev/null
+##############
+# 4-byte offs_sb
+val=$((sz - SB_INFO_SIZE)) #xboot.bin offset to sb_info
+gen_bin_tmp $val 0
+dd if=tmp of=$output conv=notrunc bs=1 count=4 seek=24 2>/dev/null
+##############
+# 4-byte project release ID
+val=$((rel_id)) 
+gen_bin_tmp $val 0
+dd if=tmp of=$output conv=notrunc bs=1 count=4 seek=28 2>/dev/null
 
 ##############
 # bin content
