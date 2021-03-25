@@ -595,48 +595,33 @@ static void copy_bootinfo_for_uboot(void)
 {
 	memcpy((u8 *)BOOT_INFO_ADDR, (UINT8 *)&g_bootinfo, sizeof(struct bootinfo));
 }
-static int copy_bl31_from_uboot_img(void* dst,void* src)
+static int copy_bl31_from_uboot_img(void* dst)
 {
-	struct image_header *hdr;
-	int i,step,len=0;
+	void* bl31_src;
+	int i,step;
+	int bl31_len,uboot_len;
+	struct image_header *bl31_hdr;
 
-	prn_string("load BL31 \n");
-	memcpy32(dst, src, sizeof(*hdr)/4);
+	prn_string("load BL31,len=");
 
-	hdr = (struct image_header *)dst;
-	if (!image_check_magic(hdr)) {
-		prn_string("bad magic\n");
-		goto _error;
-	}
+	const struct image_header *uboot_hdr = (struct image_header *)UBOOT_REAL_LOAD_ADDR;
+	uboot_len = image_get_size(uboot_hdr);
 
-	if (!image_check_hcrc(hdr)) {
-		prn_string("bad hcrc\n");
-		goto _error;
-	}
-	len = image_get_size(hdr);
-
+	bl31_src = (UINT32*)(UBOOT_REAL_LOAD_ADDR+uboot_len+sizeof(struct image_header));
+	bl31_hdr = (struct image_header *)bl31_src;
+	bl31_len = image_get_size(bl31_hdr);
+	prn_dword(bl31_len);
 #ifdef CSIM_NEW
 	step = 2048;
 #else
 	step = 256 * 1024;
 #endif
-
-	for (i = 0; i < len; i += step) {
+	for (i = 0; i < bl31_len; i += step) {
 		prn_string(".");
-		memcpy32(dst + sizeof(*hdr) + i, src + sizeof(*hdr) + i,
-				(len - i < step) ? (len - i + 3) / 4 : step / 4);
-	}
-
-	if (!image_check_dcrc(hdr)) {
-		prn_string("corrupted\n");
-		goto _error;
+		memcpy32(dst + sizeof(*bl31_hdr) + i, bl31_src + sizeof(*bl31_hdr) + i,
+				(bl31_len - i < step) ? (bl31_len - i + 3) / 4 : step / 4);
 	}
 	return 0;
-
-_error:
-	prn_string("load BL31 data fail,halt!!\n");
-	halt();
-	return -1;
 
 }
 
@@ -782,7 +767,7 @@ static void boot_uboot(void)
 	prn_string((const char *)image_get_name(hdr)); prn_string("\n");
 	prn_string("Run uboot@");prn_dword(UBOOT_RUN_ADDR);
 	/* boot aarch64 uboot */
-	copy_bl31_from_uboot_img((void*)BL31_LOAD_ADDR,(void*)(UBOOT_LOAD_ADDR+BL31_OFFSET_UBOOT+0x40));
+	copy_bl31_from_uboot_img((void*)BL31_LOAD_ADDR);
 
 	copy_bootinfo_for_uboot();
 	go_a32_to_a64(UBOOT_RUN_ADDR);

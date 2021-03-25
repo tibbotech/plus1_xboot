@@ -44,11 +44,11 @@
 
 #if defined(PLATFORM_Q645)
 // u-boot
-#define UBOOT_LOAD_ADDR         0x300000
-#define UBOOT_RUN_ADDR          (UBOOT_LOAD_ADDR + 0x40)
+#define UBOOT_REAL_LOAD_ADDR    0x300000 /*u-boot.img load addr*/
+#define UBOOT_LOAD_ADDR         (UBOOT_REAL_LOAD_ADDR - 0x40)  /* header(64) + u-boot.img(header+data) + BL31.img(header+data) + sign data */
+#define UBOOT_RUN_ADDR          (UBOOT_REAL_LOAD_ADDR + 0x40)
 #define UBOOT_MAX_LEN           0x100000
 
-#define BL31_OFFSET_UBOOT		(600*1024)
 #define BL31_RUN_ADDR           0x200000
 #define BL31_LOAD_ADDR          (BL31_RUN_ADDR - 0x40)
 #define SMP_CORES 4
