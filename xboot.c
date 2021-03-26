@@ -312,13 +312,21 @@ static int run_draminit(void)
 	prn_string("skip draminit\n");
 #else
 	int save_val;
+#if defined(PLATFORM_Q645)
+	int (*dram_init)(unsigned int);
+#else
 	int (*dram_init)(void);
+#endif 
 #ifdef CONFIG_STANDALONE_DRAMINIT
 	dram_init = (void *)DRAMINIT_RUN_ADDR;
 	prn_string("standalone draiminit\n");
 	dram_init = (void *)DRAMINIT_RUN_ADDR;
 #else
+#if defined(PLATFORM_Q645)
+	extern int dram_init_main(unsigned int);
+#else
 	extern int dram_init_main(void);
+#endif 
 	dram_init = (void *)dram_init_main;
 #endif
 
@@ -327,7 +335,11 @@ static int run_draminit(void)
 #ifdef PLATFORM_3502
 	g_bootinfo.mp_flag = 1;		/* mask prints */
 #endif
+#if defined(PLATFORM_Q645)
+	dram_init(g_bootinfo.gbootRom_boot_mode);
+#else
 	dram_init();
+#endif 
 	g_bootinfo.mp_flag = save_val;	/* restore prints */
 	prn_string("Done draiminit\n");
 #endif
