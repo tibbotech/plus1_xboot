@@ -85,7 +85,7 @@ dd if=tmp of=$output conv=notrunc bs=1 count=4 seek=16 2>/dev/null
 # 12-byte reserved => modification
 ##############
 # 4-byte build_epoch
-val=$((`date+%s`))
+val=$((`date +%s`))
 gen_bin_tmp $val 0
 dd if=tmp of=$output conv=notrunc bs=1 count=4 seek=20 2>/dev/null
 ##############
@@ -95,7 +95,7 @@ gen_bin_tmp $val 0
 dd if=tmp of=$output conv=notrunc bs=1 count=4 seek=24 2>/dev/null
 ##############
 # 4-byte project release ID
-val=$((rel_id)) 
+val=$((rel_id))
 gen_bin_tmp $val 0
 dd if=tmp of=$output conv=notrunc bs=1 count=4 seek=28 2>/dev/null
 
