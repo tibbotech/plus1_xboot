@@ -633,8 +633,8 @@ static int copy_bl31_from_uboot_img(void* dst)
 		memcpy32(dst + sizeof(*bl31_hdr) + i, bl31_src + sizeof(*bl31_hdr) + i,
 				(bl31_len - i < step) ? (bl31_len - i + 3) / 4 : step / 4);
 	}
+	prn_string("\n");
 	return 0;
-
 }
 
 //TODO: Tune SOC security
