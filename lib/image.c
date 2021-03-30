@@ -21,6 +21,9 @@ static uint32_t sum32(uint32_t sum, uint8_t *data, uint32_t len)
 #endif
 		sum += *(uint32_t *)(data + pos);
 	}
+#ifdef CONFIG_BOOT_ON_ZEBU
+	prn_string("\n");
+#endif
 
         // word0: 3 2 1 0
         // word1: _ 6 5 4
