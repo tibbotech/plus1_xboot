@@ -234,6 +234,14 @@ static void init_hw(void)
 {
 	int i;
 
+#ifdef PLATFORM_Q645
+	// enable CA55_SYS_TIMER
+	volatile u32 *r = (void *)0xf810a000;
+	r[2] = 0xfffffff0; // set cntl
+	r[3] = 0xf; // set cntu
+	r[0] = 0x3; // en=1 & hdbg=1
+#endif
+
 #if defined(PLATFORM_Q628)|| defined(PLATFORM_I143)
 	__attribute__((unused)) int is_A = 0;
 	dbg();
