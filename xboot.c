@@ -53,7 +53,7 @@ static void load_otp_pub_key(unsigned char *in_pub)
 	int i;
 	for (i = 0; i < 32; i++) {
 #ifdef CONFIG_HAVE_OTP
-		sunplus_otprx_read(i+64,(char *)&in_pub[i]);
+		otprx_read(HB_GP_REG,SP_OTPRX_REG,i+64,(char *)&in_pub[i]);
 #else
 		in_pub[i] = 0;
 #endif
@@ -1860,8 +1860,9 @@ static u32 read_mp_bit(void)
 {
 	char data = 0;
 	u32  mp_bit;
+
 #ifdef CONFIG_HAVE_OTP
-	sunplus_otprx_read(1, &data);
+	otprx_read(HB_GP_REG, SP_OTPRX_REG, 1, &data);
 #endif
 	mp_bit = (data >> 4) & 0x1;
 

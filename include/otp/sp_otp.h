@@ -5,18 +5,15 @@
 #include <types.h>
 
 /*
- * QAC628 OTP memory contains 8 banks with 4 32-bit words. Bank 0 starts
- * at offset 0 from the base.
+ * OTP memory
+ * Each bank contains 4 words (32 bits).
+ * Bank 0 starts at offset 0 from the base.
  *
  */
-#define QAC628_OTP_NUM_BANKS		   8
-#define QAC628_OTP_WORDS_PER_BANK	   4
-#define QAC628_OTP_WORD_SIZE		   sizeof(u32)
-#define QAC628_OTP_SIZE		           (QAC628_OTP_NUM_BANKS * \
-					            QAC628_OTP_WORDS_PER_BANK * \
-					            QAC628_OTP_WORD_SIZE)
-#define QAC628_OTP_BIT_ADDR_OF_BANK    (8 * QAC628_OTP_WORD_SIZE * \
-	                            QAC628_OTP_WORDS_PER_BANK)	                            
+#define OTP_WORDS_PER_BANK		4
+#define OTP_WORD_SIZE			sizeof(u32)
+#define OTP_BIT_ADDR_OF_BANK		(8 * OTP_WORD_SIZE * \
+						OTP_WORDS_PER_BANK)
 
 #define OTPRX2_BASE_ADR                 0x9C002800
 #define OTPRX_BASE_ADR                  0x9C00AF80
@@ -67,44 +64,7 @@
 #define OTP_READ_TIMEOUT                200
 #define OTP_WRITE_TIMEOUT               200
 
-struct otprx_sunplus {
-	u32 sw_trim;
-	u32 set_key;
-	u32 otp_rsv;
-	u32 otp_prog_ctl;
-	u32 otp_prog_addr;
-	u32 otp_prog_csb;
-	u32 otp_prog_strobe;
-	u32 otp_prog_load;
-	u32 otp_prog_pgenb;
-	u32 otp_prog_wr;
-	u32 otp_prog_reg25;
-	u32 otp_prog_state;
-	u32 otp_usb_phy_trim;
-	u32 otp_data2;
-	u32 otp_pro_ps;
-	u32 otp_rsv2;
-	u32 key_srst;
-	u32 otp_ctrl;
-	u32 otp_cmd;
-	u32 otp_cmd_status;
-	u32 otp_addr;
-	u32 otp_data;
-};
-
-struct sunplus_otp_priv {
-    struct otprx2_sunplus *regs;
-};
-
-struct hbgpio_sunplus {
-	u32 hb_gpio_rgst_bus32[13];
-};
-
-struct sunplus_hbgpio {
-    struct hbgpio_sunplus *otp_data;
-};
-
-int sunplus_otprx_read(int addr, char *value);
-int sunplus_otprx_write(int addr, char value);
+int otprx_read(volatile struct hb_gp_regs *otp_data, volatile struct otprx_regs *regs, int addr, char *value);
+int otprx_write(volatile struct hb_gp_regs *otp_data, volatile struct otprx_regs *regs, int addr, char value);
 
 #endif  //_SP_OTP

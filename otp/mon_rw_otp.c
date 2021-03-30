@@ -40,9 +40,8 @@ enum {
 #define UART_RX_READY()        ((DBG_UART_REG->lsr) & UART_LSR_RX)
 #define UART_GET_ERROR()       (((DBG_UART_REG->lsr) << 3) & 0xE0)
 
-extern int sunplus_otprx_read(int addr, char *value);
-extern int sunplus_otprx_write(int addr, char value);
-
+extern int otprx_read(volatile struct hb_gp_regs *otp_data, volatile struct otprx_regs *regs, int addr, char *value);
+extern int otprx_write(volatile struct hb_gp_regs *otp_data, volatile struct otprx_regs *regs, int addr, char value);
 
 static inline void reset_STC()
 {
@@ -229,7 +228,7 @@ static int write_otp_data(u16 startbyte,u16 endbyte,char *data)
 	int rlt = TRUE;
 	for(u16 address = startbyte;address<=endbyte;address++)
 	{
-		int writerlt = sunplus_otprx_write(address,data[address-startbyte]);
+		int writerlt = otprx_write(HB_GP_REG,SP_OTPRX_REG,address,data[address-startbyte]);
 		if(writerlt == -1)
 		{
 			rlt = FALSE;
@@ -245,8 +244,7 @@ static int read_otp_data(u16 startbyte,u16 endbyte,char *data)
 	int rlt = TRUE;
 	for(u16 address = startbyte;address<=endbyte;address++)
 	{
-	
-		int readrlt = sunplus_otprx_read(address,&data[address-startbyte]);
+		int readrlt = otprx_read(HB_GP_REG,SP_OTPRX_REG,address,&data[address-startbyte]);
 		if(readrlt == -1)
 		{
 			rlt = FALSE;

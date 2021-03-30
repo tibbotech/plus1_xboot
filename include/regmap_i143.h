@@ -71,6 +71,33 @@ struct hb_gp_regs {
 };
 #define HB_GP_REG ((volatile struct hb_gp_regs *)RF_GRP(350, 0))
 
+struct otprx_regs {
+	unsigned int sw_trim;          // 351.0
+	unsigned int set_key;          // 351.1
+	unsigned int reserved_2;       // 351.2
+	unsigned int otp_prog_ctl;     // 351.3
+	unsigned int otp_prog_addr;    // 351.4
+	unsigned int otp_prog_csb;     // 351.5
+	unsigned int otp_prog_strobe;  // 351.6
+	unsigned int otp_prog_load;    // 351.7
+	unsigned int otp_prog_pgenb;   // 351.8
+	unsigned int otp_prog_wr;      // 351.9
+	unsigned int otp_prog_reg25;   // 351.10
+	unsigned int otp_prog_state;   // 351.11
+	unsigned int otp_usb_phy_trim; // 351.12
+	unsigned int otp_data2;        // 351.13
+	unsigned int otp_prog_ps;      // 351.14
+	unsigned int otp_rsv2;         // 351.15
+	unsigned int key_srst;         // 351.16
+	unsigned int otp_ctrl;         // 351.17
+	unsigned int otp_cmd;          // 351.18
+	unsigned int otp_cmd_status;   // 351.19
+	unsigned int otp_addr;         // 351.20
+	unsigned int otp_data;         // 351.21
+	unsigned int reserved_22[10];  // 351.22
+};
+#define SP_OTPRX_REG    ((volatile struct otprx_regs *)RF_GRP(351, 0))
+
 struct uart_regs {
         unsigned int dr;  /* data register */
         unsigned int lsr; /* line status register */
