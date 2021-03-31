@@ -59,14 +59,15 @@
  *********************/
 #ifdef PLATFORM_Q645
 #define REG_BASE           0xF8000000
+#define AHB0_REG_BASE      0xF8100000
 #else
 #define REG_BASE           0x9c000000
+#define AHB0_REG_BASE      0x9c100000
 #endif
 
 #define RF_GRP(_grp, _reg)              ((((_grp) * 32 + (_reg)) * 4) + REG_BASE)
 #define RF_AMBA(_grp, _reg)             ((((_grp) * 1024 + (_reg)) * 4) + REG_BASE)
 
-#define AHB0_REG_BASE                   0x9c100000
 #define AHB_GRP(_ahb_grp, _grp, _reg)   ((((_grp) * 32 + (_reg)) * 4) + ((_ahb_grp) * 0x1000) + AHB0_REG_BASE)
 
 #define A_REG_BASE                      0x9ec00000

@@ -250,8 +250,8 @@ struct ehci_regs {
 	unsigned int ehci_sleep_cnt;
 	*/
 };
-#define EHCI0_REG ((volatile struct ehci_regs *)AHB_GRP(2, 2, 0)) // 0x9c102100
-#define EHCI1_REG ((volatile struct ehci_regs *)AHB_GRP(3, 2, 0)) // 0x9c103100
+#define EHCI0_REG ((volatile struct ehci_regs *)AHB_GRP(2, 2, 0)) // 0xf8102100
+#define EHCI1_REG ((volatile struct ehci_regs *)AHB_GRP(3, 2, 0)) // 0xf8103100
 
 struct usbh_sys_regs {
 	unsigned int uhversion;
@@ -264,8 +264,8 @@ struct usbh_sys_regs {
 	unsigned int uhe_fsm_st1;
 	unsigned int uhe_fsm_st2;
 };
-#define USBH0_SYS_REG ((volatile struct usbh_sys_regs *)AHB_GRP(2, 0, 0)) // 0x9c102000
-#define USBH1_SYS_REG ((volatile struct usbh_sys_regs *)AHB_GRP(3, 0, 0)) // 0x9c103000
+#define USBH0_SYS_REG ((volatile struct usbh_sys_regs *)AHB_GRP(2, 0, 0)) // 0xf8102000
+#define USBH1_SYS_REG ((volatile struct usbh_sys_regs *)AHB_GRP(3, 0, 0)) // 0xf8103000
 
 struct emmc_ctl_regs {
 	/*g0.0*/
@@ -670,69 +670,16 @@ struct card_dma_regs {
         unsigned int dma_hw_delay_num;     // 28
         unsigned int reserved29[3];        // 29
 };
-#
 
 
 /* NAND */
-#define NAND_S330_BASE           0x9C002B80
-#define BCH_S338_BASE_ADDRESS    0x9C101000
+#define NAND_S330_BASE           0xF8002B80
+#define BCH_S338_BASE_ADDRESS    0xF8101000
 
 /* SPI NAND */
 #define CONFIG_SP_SPINAND_BASE   ((volatile unsigned int *)RF_GRP(87, 0))
-#define SPI_NAND_DIRECT_MAP      0x9dff0000
+#define SPI_NAND_DIRECT_MAP      0xF4000000
 
-/* BIO */
-struct bio_ctl_regs {
-	unsigned int ch0_addr; // 0x9c10_5000
-	unsigned int ch0_ctrl; // 0x9c10_5004
-	unsigned int ch1_addr; // 0x9c10_5008
-	unsigned int ch1_ctrl; // 0x9c10_500c
-	unsigned int ch2_addr; // 0x9c10_5010
-	unsigned int ch2_ctrl; // 0x9c10_5014
-	unsigned int ch3_addr; // 0x9c10_5018
-	unsigned int ch3_ctrl; // 0x9c10_501c
-	unsigned int ch4_addr; // 0x9c10_5020
-	unsigned int ch4_ctrl; // 0x9c10_5024
-	unsigned int ch5_addr; // 0x9c10_5028
-	unsigned int ch5_ctrl; // 0x9c10_502c
-	unsigned int io_ctrl ; // 0x9c10_5030
-	unsigned int io_tctl ; // 0x9c10_5034
-	unsigned int macro_c0; // 0x9c10_5038
-	unsigned int macro_c1; // 0x9c10_503c
-	unsigned int macro_c2; // 0x9c10_5040
-	unsigned int io_tpctl; // 0x9c10_5044
-	unsigned int io_rpctl; // 0x9c10_5048
-	unsigned int boot_ra ; // 0x9c10_504c
-	unsigned int io_tdat0; // 0x9c10_5050
-	unsigned int reserved[11];
-};
-#define BIO_CTL_REG ((volatile struct bio_ctl_regs *)0x9c105000)
-
-struct A_moon0_regs {
-	unsigned int stamp;            // 0.0
-	unsigned int ca7_cfg;          // 0.1
-	unsigned int ca7_sw_rst;       // 0.2
-	unsigned int clk_cfg;          // 0.3
-	unsigned int aud_dsp_clk_cfg;  // 0.4
-	unsigned int pfcnt_sensor_reg[2]; // 0.5
-	unsigned int ca7_standbywfi;   // 0.7
-	unsigned int rst_b_0;          // 0.8
-	unsigned int clk_en0;          // 0.9
-	unsigned int gclk_en0;         // 0.10
-	unsigned int pll_ctl[2];       // 0.11
-	unsigned int pad_reg;          // 0.13
-	unsigned int pad_ds_cfg0;      // 0.14
-	unsigned int sys_sleep_div;    // 0.15
-	unsigned int pfcnt_ctl;        // 0.16
-	unsigned int pfcnt_sts;        // 0.17
-	unsigned int ioctrl_cfg;       // 0.18
-	unsigned int memctl_cfg;       // 0.19
-	unsigned int ca7_ctl_cfg;      // 0.20
-	unsigned int pllio_ctl[2];     // 0.21
-	unsigned int aud_dsp_otp_reg[2]; // 0.23
-	unsigned int rsv[7];           // 0.25
-};
-#define A_MOON0_REG ((volatile struct A_moon0_regs *)A_RF_GRP(0, 0))
 
 struct rgst_secure_regs {
 	unsigned int cfg[32];              // 502.0~31
@@ -740,6 +687,6 @@ struct rgst_secure_regs {
 #define RGST_SECURE_REG ((volatile struct rgst_secure_regs *)RF_GRP(502, 0))
 
 /* TSGEN Write/Read */
-#define ARM_TSGEN_WR_BASE  0x9c10a000
+#define ARM_TSGEN_WR_BASE  0xf810a000
 
-#endif /* __INC_REGMAP_Q628_H */
+#endif /* __INC_REGMAP_Q645_H */
