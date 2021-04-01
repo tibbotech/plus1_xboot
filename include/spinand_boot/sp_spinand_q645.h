@@ -13,7 +13,11 @@
 #define CONFIG_SPINAND_TRSMODE          SPINAND_TRS_DMA
 #define CONFIG_SPINAND_READ_BITMODE     SPINAND_1BIT_MODE
 #define CONFIG_SPINAND_CLK_DIV          1      /* 0~7 are allowed */
+#if 0 // For zebu sim, set SPI read timing to 0.
+#define CONFIG_SPINAND_READ_TIMING_SEL  0      /* 0~7 are allowed */
+#else
 #define CONFIG_SPINAND_READ_TIMING_SEL  2      /* 0~7 are allowed */
+#endif
 
 /*
  *  spi nand vendor ids
@@ -192,26 +196,29 @@ enum SPINAND_IO_MODE {
 #define DEVICE_FEATURE_ADDR     0xB0
 #define DEVICE_STATUS_ADDR      0xC0
 
+/* Q645 spi nand driver */
 struct sp_spinand_regs {
-	unsigned int spi_ctrl;       // 87.0
-	unsigned int spi_timing;     // 87.1
-	unsigned int spi_page_addr;  // 87.2
-	unsigned int spi_data;       // 87.3
-	unsigned int spi_status;     // 87.4
-	unsigned int spi_auto_cfg;   // 87.5
-	unsigned int spi_cfg[3];     // 87.6
-	unsigned int spi_data_64;    // 87.9
-	unsigned int spi_buf_addr;   // 87.10
-	unsigned int spi_statu_2;    // 87.11
-	unsigned int spi_err_status; // 87.12
-	unsigned int mem_data_addr;  // 87.13
-	unsigned int mem_parity_addr;// 87.14
-	unsigned int spi_col_addr;   // 87.15
-	unsigned int spi_bch;        // 87.16
-	unsigned int spi_intr_msk;   // 87.17
-	unsigned int spi_intr_sts;   // 87.18
-	unsigned int spi_page_size;  // 87.19
+	unsigned int spi_ctrl;              // 87.0
+	unsigned int spi_timing;            // 87.1
+	unsigned int spi_page_addr;         // 87.2
+	unsigned int spi_data;              // 87.3
+	unsigned int spi_status;            // 87.4
+	unsigned int spi_auto_cfg;          // 87.5
+	unsigned int spi_cfg[3];            // 87.6
+	unsigned int spi_data_64;           // 87.9
+	unsigned int spi_buf_addr;          // 87.10
+	unsigned int spi_statu_2;           // 87.11
+	unsigned int spi_err_status;        // 87.12
+	unsigned int mem_data_addr;         // 87.13
+	unsigned int mem_parity_addr;       // 87.14
+	unsigned int spi_col_addr;          // 87.15
+	unsigned int spi_bch;               // 87.16
+	unsigned int spi_intr_msk;          // 87.17
+	unsigned int spi_intr_sts;          // 87.18
+	unsigned int spi_page_size;         // 87.19
+	unsigned int device_parity_addr;    // 87.20
 };
+
 
 struct sp_spinand_info {
 	struct sp_spinand_regs *regs;

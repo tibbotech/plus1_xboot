@@ -671,10 +671,9 @@ struct card_dma_regs {
         unsigned int reserved29[3];        // 29
 };
 
-
 /* NAND */
-#define NAND_S330_BASE           0xF8002B80
-#define BCH_S338_BASE_ADDRESS    0xF8101000
+#define NAND_S330_BASE           0xF8002B80     // RG_GRP(87, 0)
+#define BCH_S338_BASE_ADDRESS    0xF8101000     // RG_AMBA(257, 0)
 
 /* SPI NAND */
 #define CONFIG_SP_SPINAND_BASE   ((volatile unsigned int *)RF_GRP(87, 0))
