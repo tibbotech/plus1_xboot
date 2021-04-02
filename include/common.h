@@ -26,6 +26,7 @@
 #include <sdmmc_boot/hal_sd_mmc.h>
 #include <romvsr.h>
 
+#include <image.h>
 /*
  * timer
  */
@@ -227,5 +228,6 @@ extern  u8                 g_boothead[GLOBAL_HEADER_SIZE];
 #define p_desc_comm               (g_bootinfo.nand_desc_comm)
 
 void boot_next_no_stack(void);
+int xboot_verify_uboot(const struct image_header  *hdr);
 
 #endif /* _COMMON_INC_ */

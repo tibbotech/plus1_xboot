@@ -54,6 +54,11 @@ CFLAGS  += -march=armv8-a -fno-delete-null-pointer-checks
 CFLAGS  += -mno-unaligned-access
 CFLAGS  += -ffunction-sections -fdata-sections
 CFLAGS  += -Wno-unused-function
+ifeq ($(SECURE),1)
+CFLAGS  += -DCONFIG_COMPILE_WITH_SECURE=1
+else
+CFLAGS  += -DCONFIG_COMPILE_WITH_SECURE=0
+endif
 endif
 
 ################## RISCV C+P config ##################
@@ -108,9 +113,6 @@ ifeq ($(CONFIG_STANDALONE_DRAMINIT), y)
 	@cat $(BIN)/$(TARGET).img.orig $(DRAMINIT_IMG) > $(BIN)/$(TARGET).img
 else
 	@echo "Linked with $(DRAMINIT_OBJ)"
-endif
-ifneq ($(CONFIG_PLATFORM_Q645),y)
-	@$(MAKE) size_check
 endif
 
 size_check:
@@ -207,6 +209,9 @@ else
 CSOURCES += nand/nandop.c nand/bch.c
 endif
 endif
+
+# Secure
+CSOURCES += common/verify_image.c
 
 # Parallel NAND
 ifeq ($(CONFIG_HAVE_PARA_NAND), y)

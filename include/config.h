@@ -293,6 +293,12 @@
 #define BOOT_RAM_BASE          SRAM0_BASE
 #define XBOOT_A64_ADDR         (BOOT_RAM_BASE + (97 * 1024))
 
+#ifdef CONFIG_USE_ZMEM
+#define XBOOT_ADDR       ZMEM_XBOOT_ADDR
+#else
+#define XBOOT_ADDR       BOOT_RAM_BASE
+#endif
+
 #endif
 
 /**********************
