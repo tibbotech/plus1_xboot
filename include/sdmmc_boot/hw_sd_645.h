@@ -65,6 +65,15 @@ enum SD_HANDLE_STATE {
 #define DMA_FLASH     			2
 
 /******************************************************************************
+*                        SD  MACRO Function Define
+*******************************************************************************/
+
+#define sd_config1(adrs)              (((volatile struct card_sd_regs *)ADDRESS_CONVERT(adrs+1*32*4))->sd_config1)
+
+
+
+
+/******************************************************************************
 *                     EMMC  MACRO Function Define
 *******************************************************************************/
 #define TO_EMMC_REG(adrs)				((volatile struct emmc_ctl_regs *)(adrs))
@@ -120,6 +129,8 @@ enum SD_HANDLE_STATE {
 /******************************************************************************
 *                SD AND EMMC MACRO Function Define
 *******************************************************************************/
+#define IS_EMMC_SLOT()    ((gDEV_SDCTRL_BASE_ADRS == (unsigned int)ADDRESS_CONVERT(CARD0_CTL_REG)) || (gDEV_SDCTRL_BASE_ADRS == (unsigned int)ADDRESS_CONVERT(CARD1_CTL_REG)))
+
 
 #define SD_WAIT_RSP_TIME_SET(x) \
 	do { \
@@ -391,6 +402,7 @@ enum SD_HANDLE_STATE {
 	})
 
 
+#define SD_CONFIG_SET(x)         sd_config1(gDEV_SDCTRL_BASE_ADRS) = (x)
 #define SD_CONFIG_GET() \
 	({ \
 		unsigned int ret; \

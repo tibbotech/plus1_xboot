@@ -392,6 +392,7 @@ struct emmc_ctl_regs {
 	/* g1.2 */
 	union {
 		struct {
+			unsigned int sdcmpen:1;
 			unsigned int sd_cmp:1;   //1
 			unsigned int sd_cmp_clr:1;   //2
 			unsigned int sdio_int_en:1;  //3
@@ -529,10 +530,16 @@ struct emmc_ctl_regs {
 		struct {
 			unsigned int sd_clk_dly_sel:3;
 			unsigned int reserved27:1;
-			unsigned int sd_wr_dly_sel:3;
+			unsigned int sd_wr_dat_dly_sel:3;
 			unsigned int reserved28:1;    
-			unsigned int sd_rd_dly_sel:3;
-			unsigned int reserved29:21;
+			unsigned int sd_wr_cmd_dly_sel:3;
+			unsigned int reserved28_1:1;
+			unsigned int sd_rd_rsp_dly_sel:3;
+			unsigned int reserved28_2:1;
+			unsigned int sd_rd_dat_dly_sel:3;
+			unsigned int reserved28_3:1;
+			unsigned int sd_rd_crc_dly_sel:3;
+			unsigned int reserved29:9;
 		}; 
 		unsigned int sd_timing_config;
 	};
@@ -566,49 +573,62 @@ struct emmc_ctl_regs {
 /* sd card regs */
 struct card_ctl_regs {
 	unsigned int card_mediatype;     // 0
-	unsigned int reserved;           // 1
-	unsigned int card_cpu_page_cnt;  // 2
-	unsigned int card_ctl_page_cnt;  // 3
-	unsigned int sdram_sector0_sz;   // 4
-	unsigned int ring_buf_on;        // 5
-	unsigned int card_gclk_disable;  // 6
-	unsigned int sdram_sector1_addr; // 7
-	unsigned int sdram_sector1_sz;   // 8
-	unsigned int sdram_sector2_addr; // 9
-	unsigned int sdram_sector2_sz;   // 10
-	unsigned int sdram_sector3_addr; // 11
-	unsigned int sdram_sector3_sz;   // 12
-	unsigned int sdram_sector4_addr; // 13
-	unsigned int sdram_sector4_sz;   // 14
-	unsigned int sdram_sector5_addr; // 15
-	unsigned int sdram_sector5_sz;   // 16
-	unsigned int sdram_sector6_addr; // 17
-	unsigned int sdram_sector6_sz;   // 18
-	unsigned int sdram_sector7_addr; // 19
-	unsigned int sdram_sector7_sz;   // 20
-	unsigned int sdram_sector_cnt;   // 21
-	unsigned int reserved2[10];      // 22
+	unsigned int card_cpu_page_cnt;      // 1
+	unsigned int sdram_sector0_sz;       // 2
+	unsigned int dma_base_addr;          // 3
+	unsigned int hw_dma_ctl;             // 4
+	unsigned int card_gclk_disable;      // 5
+	unsigned int sdram_sector1_addr;     // 6
+	unsigned int sdram_sector1_sz;       // 7
+	unsigned int sdram_sector2_addr;     // 8
+	unsigned int sdram_sector2_sz;       // 9
+	unsigned int sdram_sector3_addr;     // 10
+	unsigned int sdram_sector3_sz;       // 11
+	unsigned int sdram_sector4_addr;     // 12
+	unsigned int sdram_sector4_sz;       // 13
+	unsigned int sdram_sector5_addr;     // 14
+	unsigned int sdram_sector5_sz;       // 15
+	unsigned int sdram_sector6_addr;     // 16
+	unsigned int sdram_sector6_sz;       // 17
+	unsigned int sdram_sector7_addr;     // 18
+	unsigned int sdram_sector7_sz;       // 19
+	unsigned int sdram_sector_block_cnt; // 20
+  unsigned int dma_hw_page_addr0;      // 21
+  unsigned int dma_hw_page_addr1;      // 22
+  unsigned int dma_hw_page_addr2;      // 23
+  unsigned int dma_hw_page_addr3;      // 24	
+  unsigned int dma_hw_page_num0;       // 25
+  unsigned int dma_hw_page_num1;       // 26
+  unsigned int dma_hw_page_num2;       // 27
+  unsigned int dma_hw_page_num3;       // 28
+	unsigned int dma_hw_wait_num;        // 29  
+	unsigned int dma_hw_delay_num;       // 30
+	unsigned int dma_debug;              // 31
 };
 
 struct card_sd_regs {
-	unsigned int reserved[11];       // 0
-	unsigned int sd_vol_ctrl;        // 11
-	unsigned int sd_int;             // 12
-	unsigned int sd_page_num;        // 13
-	unsigned int sd_config0;         // 14
-	unsigned int sdio_ctrl;          // 15
-	unsigned int sd_rst;             // 16
-	unsigned int sd_config;          // 17
-	unsigned int sd_ctrl;            // 18
-	unsigned int sd_status;          // 19
-	unsigned int sd_state;           // 20
-	unsigned int sd_blocksize;       // 21
-	unsigned int sd_hwdma_config;    // 22
-	unsigned int sd_timing_config0;  // 23
-	unsigned int sd_timing_config1;  // 24
-	unsigned int sd_piodatatx;       // 25
-	unsigned int sd_piodatarx;       // 26
-	unsigned int sd_cmdbuf[5];       // 27
+	unsigned int boot_ctl;               // 0 
+	unsigned int sd_vol_ctrl;            // 1 
+	unsigned int sd_int;                 // 2 
+	unsigned int sd_page_num;            // 3 
+	unsigned int sd_config0;             // 4 
+	unsigned int sdio_ctrl;              // 5 
+	unsigned int sd_rst;                 // 6 
+	unsigned int sd_ctrl;                // 7 
+	unsigned int sd_status;              // 8 
+	unsigned int sd_state;               // 9 
+	unsigned int sd_hw_state;            // 10
+	unsigned int sd_blocksize;           // 11
+	unsigned int sd_config1;             // 12
+	unsigned int sd_timing_config0;      // 13
+	unsigned int sd_rx_data_tmr;         // 14
+	unsigned int sd_piodatatx;           // 15
+	unsigned int sd_piodatarx;           // 16
+	unsigned char sd_cmdbuf[5];          // 17
+	unsigned char reserved_char01[3];    // 18
+	unsigned int sd_rspbuf0_3;           // 19
+	unsigned int sd_rspbuf4_5;           // 20
+	unsigned int reserved35[11];         // 21
 };
 #define CARD0_SD_REG ((volatile struct card_sd_regs *)RF_GRP(119, 0))
 
