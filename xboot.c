@@ -148,6 +148,9 @@ static void init_hw(void)
 	r[2] = 0xfffffff0; // set cntl
 	r[3] = 0xf; // set cntu
 	r[0] = 0x3; // en=1 & hdbg=1
+
+	// Set SPI-NOR to non-secure mode (secure_enable=0).
+	*(volatile u32 *)(0xf8000b18) = *(volatile u32 *)(0xf8000b18) & 0xfffeffff;
 #endif
 
 #if defined(PLATFORM_Q628)|| defined(PLATFORM_I143)
@@ -232,7 +235,7 @@ static int run_draminit(void)
 	int (*dram_init)(unsigned int);
 #else
 	int (*dram_init)(void);
-#endif 
+#endif
 #ifdef CONFIG_STANDALONE_DRAMINIT
 	dram_init = (void *)DRAMINIT_RUN_ADDR;
 	prn_string("standalone draiminit\n");
@@ -242,7 +245,7 @@ static int run_draminit(void)
 	extern int dram_init_main(unsigned int);
 #else
 	extern int dram_init_main(void);
-#endif 
+#endif
 	dram_init = (void *)dram_init_main;
 #endif
 
@@ -255,7 +258,7 @@ static int run_draminit(void)
 	dram_init(g_bootinfo.gbootRom_boot_mode);
 #else
 	dram_init();
-#endif 
+#endif
 	g_bootinfo.mp_flag = save_val;	/* restore prints */
 	prn_string("Done draiminit\n");
 #endif
