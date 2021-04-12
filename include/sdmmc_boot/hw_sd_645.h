@@ -471,6 +471,11 @@ enum SD_HANDLE_STATE {
 		} \
 	} while (0)
 
+/* only sd card need this */
+#define DMA_SIZE_SET(x)					/* for compile warning*/
+#define SD_INT_CONTROL_SET(x)			/* for compile warning*/
+#define SD_INT_CONTROL_GET()			/* for compile warning*/
+
 #define SET_HW_DMA_BASE_ADDR(DRAMAddr) \
 	do{ \
 		(TO_EMMC_REG(gDEV_SDCTRL_BASE_ADRS)->dma_base_addr) = (UINT32)(DRAMAddr); \
