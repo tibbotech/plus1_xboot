@@ -151,6 +151,10 @@ static void init_hw(void)
 
 	// Set SPI-NOR to non-secure mode (secure_enable=0).
 	*(volatile u32 *)(0xf8000b18) = *(volatile u32 *)(0xf8000b18) & 0xfffeffff;
+
+	// Set CBDMA SRAM region to non-secure
+	*(volatile u32 *)0xf8002a24 = 0;
+	*(volatile u32 *)0xf8002a28 = 0xffffffff;
 #endif
 
 #if defined(PLATFORM_Q628)|| defined(PLATFORM_I143)
