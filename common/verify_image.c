@@ -185,9 +185,6 @@ static int q645_verify_uboot_signature(const struct image_header *hdr, struct sb
 		prn_dword(xsb->hash_Sb_Kpub);
 		return ret;
 	}
-	prn_dword0(*(u32 *)h_val);
-	prn_string(" != ");
-	prn_dword(xsb->hash_Sb_Kpub);
 
 	/* load signature from sb_info */
 	memcpy(sig, xsb->sb_signature, 64);
@@ -196,7 +193,7 @@ static int q645_verify_uboot_signature(const struct image_header *hdr, struct sb
 
 	/* data = bin + sb_info */
 	data = ((u8 *)hdr) + sizeof(struct image_header);
-	data_size = image_get_size(hdr) - SB_INFO_SIZE;
+	data_size = image_get_size(hdr);
 
 	/* ed25519 hash sequence */
 	//t1 = AV1_GetStc32();
@@ -411,7 +408,7 @@ sb_out:
 	/* disable mmu and dcache */
 	if (mmu) {
 		CSTAMP(0x23490101);
-		//hal_dcache_disable();
+		hal_dcache_disable();
 	}
 
 	CSTAMP(0x23490102);
@@ -515,7 +512,7 @@ int xboot_verify_uboot(const struct image_header  *hdr)
 #endif	
 	if(ret)
 	{
-		prn_string("\n uboot verify uboot fail !! \nhalt!");
+		prn_string("\n xboot verify uboot fail !! \nhalt!");
 	}
 	return ret;
 }
