@@ -116,13 +116,15 @@ struct uart_regs {
         unsigned int txr; /* tx residue */
         unsigned int rxr; /* rx residue */
         unsigned int thr; /* rx threshold */
+        unsigned int clk_src;
+        unsigned int smp_rate;
 };
 #define UART0_REG    ((volatile struct uart_regs *)RF_GRP(18, 0))
 #define UART1_REG    ((volatile struct uart_regs *)RF_GRP(19, 0))
 #define UART2_REG    ((volatile struct uart_regs *)RF_GRP(16, 0))
-#define UART3_REG    ((volatile struct uart_regs *)RF_GRP(17, 0))
-#define UART4_REG    ((volatile struct uart_regs *)RF_GRP(271, 0))
-#define UART5_REG    ((volatile struct uart_regs *)RF_GRP(272, 0))
+#define UART3_REG    ((volatile struct uart_regs *)RF_GRP(135, 0))
+#define UART4_REG    ((volatile struct uart_regs *)RF_GRP(17, 0))
+#define UADBG_REG    ((volatile struct uart_regs *)RF_GRP(498, 0))
 
 struct stc_regs {
 	unsigned int stc_15_0;       // 12.0

@@ -1700,10 +1700,17 @@ static void init_uart(void)
 {
 #ifndef CONFIG_DEBUG_WITH_2ND_UART
 #ifdef PLATFORM_Q628
-	/* uart1 pinmux : x1,UA0_TX, X2,UA1_RX */
+	/* uart1 pinmux : x1,UA1_TX, X2,UA1_RX */
 	MOON3_REG->sft_cfg[14] = RF_MASK_V((0x7f << 0), (1 << 0));
 	MOON3_REG->sft_cfg[14] = RF_MASK_V((0x7f << 8), (2 << 8));
 	MOON0_REG->reset[1] = RF_MASK_V_CLR(1 << 9); /* release UA1 */
+	UART1_REG->div_l = UART_BAUD_DIV_L(BAUDRATE, UART_SRC_CLK);
+	UART1_REG->div_h = UART_BAUD_DIV_H(BAUDRATE, UART_SRC_CLK);
+#endif
+#if 0//def PLATFORM_Q645 //TBD
+	/* uart1 pinmux : UA1_TX, UA1_RX */
+	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 8, 1 << 8); // [8]=1
+	MOON0_REG->reset[3] = RF_MASK_V_CLR(1 << 0); /* release UA1 */
 	UART1_REG->div_l = UART_BAUD_DIV_L(BAUDRATE, UART_SRC_CLK);
 	UART1_REG->div_h = UART_BAUD_DIV_H(BAUDRATE, UART_SRC_CLK);
 #endif
