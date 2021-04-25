@@ -196,8 +196,8 @@ CSOURCES += common/string.c lib/image.c
 # ARM code
 CSOURCES += arch/$(CPU_PATH)/cpu/cpu.c arch/$(CPU_PATH)/cpu/interrupt.c lib/eabi_compat.c
 ifeq ($(ARCH),arm)
-space :=
-space +=
+empty :=
+space += $(empty) $(empty)
 arch/$(CPU_PATH)/cpu/cpu.o: CFLAGS:=$(subst -mthumb$(space),,$(CFLAGS))
 endif
 
