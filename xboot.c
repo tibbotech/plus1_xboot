@@ -562,7 +562,7 @@ static int copy_bl31_from_uboot_img(void* dst)
 
 //TODO: Tune SOC security
 // RD mnatis: http://psweb.sunplus.com/mantis_PD2/view.php?id=9092
-static void set_gemini_nonsecure(void)
+static void set_module_nonsecure(void)
 {
 	int i;
 
@@ -572,40 +572,23 @@ static void set_gemini_nonsecure(void)
 	}
 	// Set cbdma sram to be all non-secure
 	SET_CBDMA0_S01(0);		// [0  ,   0] secure
-	SET_CBDMA0_S02(0x00010000);	// [64K, 64K] secure
+	SET_CBDMA0_S02(0x00040000);	// [256K, 256K] secure
 	// Master IP : overwrite as secure(0) or non_secure(1)
 	// 16-bit mask
 	// 8-bit overwrite enable
 	// 8-bit secure(0)/non_secure(1)
 
-	//SECGRP1_MAIN_REG->G083_NIC_S01 = 0xFFFEFE00; // IP  7~0 , skip overwriting ca55
 	SECGRP1_MAIN_REG->G083_NIC_S01 = 0xFFFFFF00; // IP  7~0
 	SECGRP1_MAIN_REG->G083_NIC_S02 = 0xFFFFFF00; // IP 15~8
-	SECGRP1_MAIN_REG->G083_NIC_S03 = 0xFFFFFF00;
-	SECGRP1_MAIN_REG->G083_NIC_S04 = 0xFFFFFF00;
-	SECGRP1_MAIN_REG->G083_NIC_S05 = 0xFFFFFF00;
 	CSTAMP(0xCBDA0003);
-
-	SECGRP1_QII_REG->G084_NIC_S01  = 0xFFFFFF00;
-	SECGRP1_QII_REG->G084_NIC_S02  = 0xFFFFFF00;
-	SECGRP1_QII_REG->G084_NIC_S03  = 0xFFFFFF00;
-	SECGRP1_QII_REG->G084_NIC_S04  = 0xFFFFFF00;
-	SECGRP1_QII_REG->G084_NIC_S05  = 0xFFFFFF00;
+	SECGRP1_PAI_REG->G084_NIC_S02  = 0xFFFFFF00;
+	SECGRP1_PAI_REG->G084_NIC_S03  = 0xFFFFFF00;
+	SECGRP1_PAI_REG->G084_NIC_S04  = 0xFFFFFF00;
 	CSTAMP(0xCBDA0004);
-	SECGRP1_QIII_REG->G085_NIC_S01 = 0xFFFFFF00;
-	SECGRP1_QIII_REG->G085_NIC_S02 = 0xFFFFFF00;
-	SECGRP1_QIII_REG->G085_NIC_S03 = 0xFFFFFF00;
-	SECGRP1_QIII_REG->G085_NIC_S04 = 0xFFFFFF00;
-	SECGRP1_QIII_REG->G085_NIC_S05 = 0xFFFFFF00;
-
+	SECGRP1_PAII_REG->G085_NIC_S04 = 0xFFFFFF00;
+	SECGRP1_PAII_REG->G085_NIC_S05 = 0xFFFFFF00;
+	SECGRP1_PAII_REG->G085_NIC_S06 = 0xFFFFFF00;
 #if 0	// zebu no such ip
-	SECGRP1_QIV_REG->G086_NIC_S01  = 0xFFFFFF00;
-	SECGRP1_QIV_REG->G086_NIC_S02  = 0xFFFFFF00;
-	SECGRP1_QIV_REG->G086_NIC_S03  = 0xFFFFFF00;
-	SECGRP1_QIV_REG->G086_NIC_S04  = 0xFFFFFF00;
-	SECGRP1_QIV_REG->G086_NIC_S05  = 0xFFFFFF00;
-
-
 	SECGRP1_VIDEOIN_REG->G114_NIC_S01 = 0xFFFFFF00;
 	SECGRP1_VIDEOIN_REG->G114_NIC_S02 = 0xFFFFFF00;
 	SECGRP1_VIDEOIN_REG->G114_NIC_S03 = 0xFFFFFF00;
@@ -628,7 +611,7 @@ static void go_a32_to_a64(u32 ap_addr)
 	prn_string("32->64\n");
 
 #if 0  //hq.tang  SECGRP funciton is not ok.
-	set_gemini_nonsecure();
+	set_module_nonsecure();
 #endif
 	// ap_addr will be used by BL31
 	*(volatile u32 *)CORE0_CPU_START_POS = ap_addr;
