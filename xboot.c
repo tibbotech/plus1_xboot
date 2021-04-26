@@ -45,6 +45,7 @@ __attribute__ ((section("storage_buf_sect")))    union storage_buf   g_io_buf;
 __attribute__ ((section("bootinfo_sect")))       struct bootinfo     g_bootinfo;
 __attribute__ ((section("boothead_sect")))       u8                  g_boothead[GLOBAL_HEADER_SIZE];
 __attribute__ ((section("xboot_header_sect")))   u8                  g_xboot_buf[32];
+fat_info g_finfo;
 
 static void halt(void)
 {
@@ -914,8 +915,7 @@ static int fat_load_uhdr_image(fat_info *finfo, const char *img_name, void *dst,
 static void do_fat_boot(u32 type, u32 port)
 {
 	u32 ret;
-	fat_info g_finfo;
-#ifdef CONFIG_STANDALONE_DRAMINIT
+	#ifdef CONFIG_STANDALONE_DRAMINIT
 	u8 *buf = (u8 *) g_io_buf.usb.draminit_tmp;
 	struct xboot_hdr *xhdr = (struct xboot_hdr *)buf;
 	int len;

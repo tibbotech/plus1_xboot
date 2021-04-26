@@ -13,6 +13,7 @@
 /********************************************************************************
  * FAT32 and short file name only
  ********************************************************************************/
+unsigned int xboot_start_secotr = 0;
 
 static const unsigned char FILENAMES[FAT_FILES][12] =
 {
@@ -220,6 +221,7 @@ u32 fat_read_file(u32 idx, fat_info *info, u8 *buffer, u32 offset, u32 length, u
 		dest += info->bytePerSect;
 		size -= info->bytePerSect;
 	}
+	xboot_start_secotr = sector;
 
 	if (size == 0) {
 		return PASS;
