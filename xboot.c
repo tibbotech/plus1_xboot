@@ -153,9 +153,6 @@ static void init_hw(void)
 	// Set SPI-NOR to non-secure mode (secure_enable=0).
 	*(volatile u32 *)(0xf8000b18) = *(volatile u32 *)(0xf8000b18) & 0xfffeffff;
 
-	// Set CBDMA SRAM region to non-secure
-	*(volatile u32 *)0xf8002a24 = 0;
-	*(volatile u32 *)0xf8002a28 = 0xffffffff;
 #endif
 
 #if defined(PLATFORM_Q628)|| defined(PLATFORM_I143)
@@ -573,12 +570,11 @@ static void set_module_nonsecure(void)
 	}
 	// Set cbdma sram to be all non-secure
 	SET_CBDMA0_S01(0);		// [0  ,   0] secure
-	SET_CBDMA0_S02(0x00040000);	// [256K, 256K] secure
+	SET_CBDMA0_S02(0xffffffff);	// [256K, 256K] secure
 	// Master IP : overwrite as secure(0) or non_secure(1)
 	// 16-bit mask
 	// 8-bit overwrite enable
 	// 8-bit secure(0)/non_secure(1)
-
 	SECGRP1_MAIN_REG->G083_NIC_S01 = 0xFFFFFF00; // IP  7~0
 	SECGRP1_MAIN_REG->G083_NIC_S02 = 0xFFFFFF00; // IP 15~8
 	CSTAMP(0xCBDA0003);
@@ -611,9 +607,8 @@ static void go_a32_to_a64(u32 ap_addr)
 
 	prn_string("32->64\n");
 
-#if 0  //hq.tang  SECGRP funciton is not ok.
 	set_module_nonsecure();
-#endif
+
 	// ap_addr will be used by BL31
 	*(volatile u32 *)CORE0_CPU_START_POS = ap_addr;
 
@@ -654,6 +649,7 @@ static void boot_uboot(void)
 	int ret = xboot_verify_uboot(hdr);
 	if(ret)
 	{
+		mon_shell();
 		halt();
 	}
 #endif
