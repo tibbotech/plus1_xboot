@@ -307,10 +307,10 @@
 #ifdef PLATFORM_Q645
 #define CPU_WAIT_A64_VAL             0xfffffffe
 #define CORE_CPU_START_POS(core_id)  (CORE0_CPU_START_POS - ((core_id) * 4))
-#define CORE3_CPU_START_POS          (0xfa240000 - 0x18)  // core3 wait fa23_ffe8
-#define CORE2_CPU_START_POS          (0xfa240000 - 0x14)  // core2 wait fa23_ffec
-#define CORE1_CPU_START_POS          (0xfa240000 - 0x10)  // core1 wait fa23_fff0
-#define CORE0_CPU_START_POS          (0xfa240000 - 0xc)   // core0 wait fa23_fff4
+#define CORE3_CPU_START_POS          (0xfa23fc00 - 0x18)  // core3 wait fa23_fbe8
+#define CORE2_CPU_START_POS          (0xfa23fc00 - 0x14)  // core2 wait fa23_fbec
+#define CORE1_CPU_START_POS          (0xfa23fc00 - 0x10)  // core1 wait fa23_fbf0
+#define CORE0_CPU_START_POS          (0xfa23fc00 - 0xc)   // core0 wait fa23_fbf4
 #endif
 
 #define CPU_WAIT_INIT_VAL        0xffffffff

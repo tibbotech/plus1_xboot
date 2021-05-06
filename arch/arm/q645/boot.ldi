@@ -59,7 +59,7 @@ MEMORY
 	storage_buf  : ORIGIN = STORAGE_BUF_START,   LENGTH = STORAGE_BUF_SIZE    /*     32K @ 160K    */
 	stack        : ORIGIN = STACK_START,         LENGTH = STACK_SIZE          /*  63K-64 @ 192K    */
 	bootcompat   : ORIGIN = BOOTCOMPT_START,     LENGTH = BOOTCOMPT_SIZE      /*      64 @ 255K-64 */
-	spacc_ram    : ORIGIN = SPACC_RAM_START,     LENGTH = SPACC_RAM_START     /*      1K @ 255K    */
+	spacc_ram    : ORIGIN = SPACC_RAM_START,     LENGTH = SPACC_RAM_SIZE      /*      1K @ 255K    */
 }
 
 SECTIONS
