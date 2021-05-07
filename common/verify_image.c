@@ -79,13 +79,15 @@ static int is_nonzero(const u8 *buf, int len)
 	return 0;
 }
 
-const uint8_t ed_pub_0[32] = { 0x5B, 0x1D, 0x18, 0x90, 0x04, 0x36, 0x70, 0x8B, 0x00, 0x8B, 0x2F, 0xB1, 0x12, 0x5F, 0xF6, 0xE8, 0xE6, 0x51, 0x24, 0x8C, 0x45, 0x59, 0x30, 0xCF, 0x2F, 0x46, 0x1C, 0x6A, 0x43, 0xB7, 0x6D, 0x48 };
+const uint8_t ed_pub_0[32] = { 0xA0, 0xD0, 0x0C, 0xB4, 0xA3, 0x48, 0x2C, 0x53, 0xC1, 0x32, 0xC9, 0x07, 0x9F, 0x92, 0xA4, 0x3E, 0x4F, 0x8B, 0xDA, 0x04, 0x62, 0xCA, 0x96, 0x1B, 0x9F, 0xBE, 0x06, 0xC8, 0xEC, 0x5D, 0x4F, 0x89 };
 static int q645_load_otp_Sb_pub_key(u8 in_pub[32])
 {
 	int ret = 0;
 
-#if 1//test code for use test-keys
+	prn_string("load OTP Sb_Kpub\n");
+#if 0 //test code for use test-keys
 	//#include "../secure/test-keys/ed_pub_0.inc"
+	//#include "../../../build/tools/secure_hsm/secure/otp_Sb_keys/ed_pub_0.inc"
 	memcpy(in_pub, ed_pub_0, 32);
 	prn_string("Test pub-key:\n");
 #else
@@ -103,14 +105,15 @@ static int q645_load_otp_Sb_pub_key(u8 in_pub[32])
 	return ret;
 }
 
+const uint8_t x_priv_0[32] = { 0x88, 0xD2, 0xFB, 0x65, 0xBF, 0xF7, 0xB9, 0x2D, 0xCF, 0x7A, 0x9B, 0x29, 0xBF, 0x49, 0xBC, 0xF7, 0xE9, 0x80, 0x56, 0x70, 0x28, 0xF7, 0x10, 0xD2, 0x0C, 0x0E, 0x61, 0x5A, 0xE3, 0x53, 0xA9, 0x7E };
 static int q645_load_otp_Device_priv_key(u8 in_priv[32])
 {
 	int ret = 0;
 
 	prn_string("load OTP Dev_Kpriv\n");
-
-#if 0//test code for use test-keys
-	#include "../secure/test-keys/x_priv_0.inc"
+#if 0 //test code for use test-keys
+	//#include "../secure/test-keys/x_priv_0.inc"
+	//#include "../../../build/tools/secure_hsm/secure/otp_Device_keys/ed_pub_0.inc"
 	memcpy(in_priv, x_priv_0, 32);
 	prn_string("Test priv-key:\n");
 #else
@@ -386,7 +389,8 @@ int q645_uboot_verify_decrypt(const struct image_header  *hdr)
 	/* Is encrypted ? */
 	if ((xsb->sb_flags & SB_FLAG_ENCRYPTED) == 0) {
 		prn_string("SB img: no encrypted flag, return ok \n");
-		return ROM_SUCCESS;
+		ret = ROM_SUCCESS;
+		goto sb_out;
 	}
 
 	/* Decrypt uboot */
