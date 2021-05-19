@@ -56,6 +56,7 @@ CFLAGS  += -ffunction-sections -fdata-sections
 CFLAGS  += -Wno-unused-function
 ifeq ($(SECURE),1)
 CFLAGS  += -DCONFIG_COMPILE_WITH_SECURE=1
+CFLAGS  += -DCONFIG_SECURE_BOOT_SIGN=1
 else
 CFLAGS  += -DCONFIG_COMPILE_WITH_SECURE=0
 endif
@@ -301,7 +302,7 @@ a64bin: prepare
 HSMK_BIN=../../build/tools/secure_hsm/secure/hsm_keys/hsmk.bin
 HSMK_OBJ=../../build/tools/secure_hsm/secure/hsm_keys/hsmk.o
 hsmk:
-ifeq ($(CONFIG_SECURE_BOOT_SIGN), y)
+ifeq ($(SECURE),1)
 	@echo "Build hsm key obj"
 	@if [ ! -f $(HSMK_BIN) ];then \
 		echo "Not found hsm key bin: $(HSMK_BIN)" ; \
