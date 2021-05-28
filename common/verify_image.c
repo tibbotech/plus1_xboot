@@ -92,7 +92,6 @@ static int q645_load_otp_Sb_pub_key(u8 in_pub[32])
 	prn_string("Test pub-key:\n");
 #else
 	CSTAMP(0xbbbbbbbb);
-	prn_string("load OTP Sb_Kpub\n");
 
 	ret = SC_key_otp_load(in_pub, 0, 32); // G779.0~7
 #endif
@@ -117,7 +116,6 @@ static int q645_load_otp_Device_priv_key(u8 in_priv[32])
 	memcpy(in_priv, x_priv_0, 32);
 	prn_string("Test priv-key:\n");
 #else
-	prn_string("load OTP Dev_Kpriv\n");
 
 	ret = SC_key_otp_load(in_priv, 32, 32); // G779.8~15
 #endif
