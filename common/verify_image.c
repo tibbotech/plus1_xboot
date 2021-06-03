@@ -386,7 +386,7 @@ int q645_uboot_verify_decrypt(const struct image_header  *hdr)
 	
 	/* Is encrypted ? */
 	if ((xsb->sb_flags & SB_FLAG_ENCRYPTED) == 0) {
-		prn_string("SB img: no encrypted flag, return ok \n");
+		prn_string("SB img: no encrypted flag\n");
 		ret = ROM_SUCCESS;
 		goto sb_out;
 	}
