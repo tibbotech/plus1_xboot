@@ -992,7 +992,7 @@ static void do_fat_boot(u32 type, u32 port)
 static void usb_isp(void)
 {
 	dbg();
-	prn_string("\n{{usb_isp}}\n");
+	prn_string("\n{{usb}}\n");
 	do_fat_boot(USB_ISP, g_bootinfo.bootdev_port);
 }
 #endif
@@ -1000,7 +1000,7 @@ static void usb_isp(void)
 #ifdef CONFIG_HAVE_SDCARD
 static void sdcard_isp(void)
 {
-	prn_string("\n{{sdcard_isp}}\n");
+	prn_string("\n{{sdcard}}\n");
 	do_fat_boot(SDCARD_ISP, 1);
 }
 #endif
