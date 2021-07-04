@@ -59,7 +59,7 @@ static inline void set_emmc_pinmux(int pin_x)
 #ifdef PLATFORM_I143
 	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 2, pin_x << 2);
 #elif defined (PLATFORM_Q645)
-	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 2, pin_x << 2);
+	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 3, pin_x << 3);
 #else
 	// Q628 eMMC : X1,CARD0_SD
 	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 5, pin_x << 5);
