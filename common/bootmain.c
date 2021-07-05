@@ -48,7 +48,7 @@ int get_spi_nor_pinmux(void)
 static inline void set_spi_nand_pinmux(int pin_x)
 {
 #ifdef PLATFORM_Q645
-	MOON1_REG->sft_cfg[1] = RF_MASK_V(0x3 << 3, pin_x << 3);
+	MOON1_REG->sft_cfg[1] = RF_MASK_V(0x3 << 4, pin_x << 4);
 #else
 	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 4, pin_x << 4);
 #endif
@@ -71,7 +71,7 @@ static inline void set_sdcard1_pinmux(int pin_x)
 #ifdef PLATFORM_I143
 	MOON1_REG->sft_cfg[4] = RF_MASK_V(1 << 0, pin_x << 0);
 #elif defined (PLATFORM_Q645)
-	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 5, pin_x << 5);
+	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 6, pin_x << 6);
 #else
 	// Q628 SD_CARD : X1,CARD1_SD
 	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 6, pin_x << 6);
@@ -98,48 +98,48 @@ void SetBootDev(unsigned int bootdev, unsigned int pin_x, unsigned int dev_port)
 	// * set gbootRom_boot_mode
 	// * configure pinmux
 	switch(bootdev) {
-		default:
-			prn_string("unknown type!\n");
-			break;
-		case DEVICE_USB_ISP:
-			g_bootinfo.gbootRom_boot_mode = USB_ISP;
-			break;
-		case DEVICE_UART_ISP:
-			g_bootinfo.gbootRom_boot_mode = UART_ISP;
-			break;
-		case DEVICE_SPI_NOR:
-			g_bootinfo.gbootRom_boot_mode = SPI_NOR_BOOT;
-			set_spi_nor_pinmux(pin_x);
-			break;
-		case DEVICE_SPI_NAND:
-			g_bootinfo.gbootRom_boot_mode = SPINAND_BOOT;
-			if (pin_x == 1 && get_spi_nor_pinmux() == 2) {
-				set_spi_nor_pinmux(0);   /* conflict: X2,SPI_NOR */
-			}
-			set_spi_nand_pinmux(pin_x);
-			break;
-		case DEVICE_PARA_NAND:
-			g_bootinfo.gbootRom_boot_mode = NAND_LARGE_BOOT;
-			break;
+	default:
+		prn_string("unknown type!\n");
+		break;
+	case DEVICE_USB_ISP:
+		g_bootinfo.gbootRom_boot_mode = USB_ISP;
+		break;
+	case DEVICE_UART_ISP:
+		g_bootinfo.gbootRom_boot_mode = UART_ISP;
+		break;
+	case DEVICE_SPI_NOR:
+		g_bootinfo.gbootRom_boot_mode = SPI_NOR_BOOT;
+		set_spi_nor_pinmux(pin_x);
+		break;
+	case DEVICE_SPI_NAND:
+		g_bootinfo.gbootRom_boot_mode = SPINAND_BOOT;
+		if (pin_x == 1 && get_spi_nor_pinmux() == 2) {
+			set_spi_nor_pinmux(0);   /* conflict: X2,SPI_NOR */
+		}
+		set_spi_nand_pinmux(pin_x);
+		break;
+	case DEVICE_PARA_NAND:
+		g_bootinfo.gbootRom_boot_mode = NAND_LARGE_BOOT;
+		break;
 #ifdef CONFIG_HAVE_EMMC
-		case DEVICE_EMMC:
-			g_bootinfo.gbootRom_boot_mode = EMMC_BOOT;
-			gDEV_SDCTRL_BASE_ADRS = (unsigned int)ADDRESS_CONVERT(CARD0_CTL_REG); /* eMMC is on SD0 */
-			if (pin_x == 1) {
-				set_spi_nand_pinmux(0);  /* conflict: X1,SPI_NAND */
-			}
-			if (pin_x == 1 && get_spi_nor_pinmux() == 2) {
-				set_spi_nor_pinmux(0);   /* conflict: X2,SPI_NOR */
-			}
-			set_emmc_pinmux(pin_x);
-			break;
+	case DEVICE_EMMC:
+		g_bootinfo.gbootRom_boot_mode = EMMC_BOOT;
+		gDEV_SDCTRL_BASE_ADRS = (unsigned int)ADDRESS_CONVERT(CARD0_CTL_REG); /* eMMC is on SD0 */
+		if (pin_x == 1) {
+			set_spi_nand_pinmux(0);  /* conflict: X1,SPI_NAND */
+		}
+		if (pin_x == 1 && get_spi_nor_pinmux() == 2) {
+			set_spi_nor_pinmux(0);   /* conflict: X2,SPI_NOR */
+		}
+		set_emmc_pinmux(pin_x);
+		break;
 #endif
 #ifdef CONFIG_HAVE_SDCARD
-		case DEVICE_SDCARD:
-			g_bootinfo.gbootRom_boot_mode = SDCARD_ISP;
-			gDEV_SDCTRL_BASE_ADRS = (unsigned int)ADDRESS_CONVERT(CARD1_CTL_REG);
-			set_sdcard1_pinmux(pin_x);
-			break;
+	case DEVICE_SDCARD:
+		g_bootinfo.gbootRom_boot_mode = SDCARD_ISP;
+		gDEV_SDCTRL_BASE_ADRS = (unsigned int)ADDRESS_CONVERT(CARD1_CTL_REG);
+		set_sdcard1_pinmux(pin_x);
+		break;
 #endif
 	}
 

@@ -152,7 +152,6 @@ static void init_hw(void)
 
 	// Set SPI-NOR to non-secure mode (secure_enable=0).
 	*(volatile u32 *)(0xf8000b18) = *(volatile u32 *)(0xf8000b18) & 0xfffeffff;
-
 #endif
 
 #if defined(PLATFORM_Q628)|| defined(PLATFORM_I143)
@@ -160,7 +159,6 @@ static void init_hw(void)
 	dbg();
 	*(volatile unsigned int *) (0x9C000000 +0x2EC) = 0x01c30000;// set DC12_CTL_1(G5.27) to default,for DCIN_1.2V set.
 #endif
-
 
 #ifdef PLATFORM_Q628
 	if ((cpu_main_id() & 0xfff0) == 0x9260)
@@ -205,8 +203,8 @@ static void init_hw(void)
 #endif
 
 #ifdef PLATFORM_I143
-      /* GPU driver (if not,all the date that gpu output to frame buffer is 0) by xt*/
-     MOON5_REG->sft_cfg[2] = RF_MASK_V_SET((1 << 0) | (1 << 1));
+	/* GPU driver (if not,all the date that gpu output to frame buffer is 0) by xt*/
+	MOON5_REG->sft_cfg[2] = RF_MASK_V_SET((1 << 0) | (1 << 1));
 #endif
 
 #if defined(PLATFORM_Q628) && !defined(CONFIG_DISABLE_CORE2_3)
@@ -552,7 +550,7 @@ static int copy_bl31_from_uboot_img(void* dst)
 	for (i = 0; i < bl31_len; i += step) {
 		prn_string(".");
 		memcpy32(dst + sizeof(*bl31_hdr) + i, bl31_src + sizeof(*bl31_hdr) + i,
-				(bl31_len - i < step) ? (bl31_len - i + 3) / 4 : step / 4);
+			 (bl31_len - i < step) ? (bl31_len - i + 3) / 4 : step / 4);
 	}
 	prn_string("\n");
 	return 0;
@@ -568,9 +566,11 @@ static void set_module_nonsecure(void)
 	for (i = 0; i < 32; i++) {
 		RGST_SECURE_REG->cfg[i] = 0; // non-secure
 	}
+
 	// Set cbdma sram to be all non-secure
 	SET_CBDMA0_S01(0);		// [0  ,   0] secure
 	SET_CBDMA0_S02(0xffffffff);	// [256K, 256K] secure
+
 	// Master IP : overwrite as secure(0) or non_secure(1)
 	// 16-bit mask
 	// 8-bit overwrite enable
@@ -585,6 +585,7 @@ static void set_module_nonsecure(void)
 	SECGRP1_PAII_REG->G085_NIC_S04 = 0xFFFFFF00;
 	SECGRP1_PAII_REG->G085_NIC_S05 = 0xFFFFFF00;
 	SECGRP1_PAII_REG->G085_NIC_S06 = 0xFFFFFF00;
+
 #if 0	// zebu no such ip
 	SECGRP1_VIDEOIN_REG->G114_NIC_S01 = 0xFFFFFF00;
 	SECGRP1_VIDEOIN_REG->G114_NIC_S02 = 0xFFFFFF00;
@@ -624,7 +625,6 @@ static void go_a32_to_a64(u32 ap_addr)
 	SECGRP1_MAIN_REG->G083_CA55_S03 = start64_addr;
 	SECGRP1_MAIN_REG->G083_CA55_S04 = start64_addr;
 
-
 	DSB();
 
 	// core 0 switches to AA64
@@ -647,8 +647,7 @@ static void boot_uboot(void)
 #ifdef CONFIG_SECURE_BOOT_SIGN
 	prn_string("start verify in xboot!\n");
 	int ret = xboot_verify_uboot(hdr);
-	if(ret)
-	{
+	if (ret) {
 		mon_shell();
 		halt();
 	}
@@ -663,12 +662,10 @@ static void boot_uboot(void)
 	clear_uart_rx_buf();
 
 	reg = (reg & HW_CFG_MASK) >> HW_CFG_SHIFT;
-	if(reg == INT_CA7_BOOT)
-	{
+	if (reg == INT_CA7_BOOT) {
 		prn_string("C+P mode,CA7(ARM) do uboot,wait CA7 ready\n");
 		boot_next_set_addr(UBOOT_RUN_ADDR_A_VIEW);
-		if(image_get_arch(hdr) == 0x1A)
-		{
+		if (image_get_arch(hdr) == 0x1A) {
 			prn_string("WARN: CA7 can't run riscv u-boot\n");
 			while(1);
 		}
@@ -776,7 +773,7 @@ static void spi_nor_linux(void)
 
 	verify = 1;
 	res = nor_load_uhdr_image("dtb", (void *)DTB_LOAD_ADDR,
-			(void *)(SPI_FLASH_BASE + SPI_DTB_OFFSET), verify);
+				  (void *)(SPI_FLASH_BASE + SPI_DTB_OFFSET), verify);
 	if (res <= 0) {
 		prn_string("No dtb\n");
 		return;
@@ -786,7 +783,7 @@ static void spi_nor_linux(void)
 	verify = 0; /* big image */
 #endif
 	res = nor_load_uhdr_image("linux", (void *)LINUX_LOAD_ADDR,
-			(void *)(SPI_FLASH_BASE + SPI_LINUX_OFFSET), verify);
+				  (void *)(SPI_FLASH_BASE + SPI_LINUX_OFFSET), verify);
 	if (res <= 0) {
 		prn_string("No linux\n");
 		return;
@@ -803,7 +800,7 @@ static void spi_nor_uboot(void)
 	zmem_check_uboot();
 #else
 	int len = nor_load_uhdr_image("uboot", (void *)UBOOT_LOAD_ADDR,
-			(void *)(SPI_FLASH_BASE + SPI_UBOOT_OFFSET), 1);
+				      (void *)(SPI_FLASH_BASE + SPI_UBOOT_OFFSET), 1);
 	if (len <= 0) {
 		mon_shell();
 		return;
@@ -1218,7 +1215,7 @@ static void emmc_boot(void)
 		prn_string(" LBA="); prn_dword(blk_start1);
 
 		len = emmc_load_uhdr_image("uboot", (void *)UBOOT_LOAD_ADDR, 0,
-				blk_start1, 0, UBOOT_MAX_LEN, MMC_USER_AREA);
+					   blk_start1, 0, UBOOT_MAX_LEN, MMC_USER_AREA);
 		if (len > 0)
 			break;
 	}
@@ -1237,7 +1234,7 @@ static void emmc_boot(void)
 			prn_string("part"); prn_decimal(1 + i);
 			prn_string(" LBA="); prn_dword(blk_start1);
 			len = emmc_load_uhdr_image("uboot", (void *)UBOOT_LOAD_ADDR, 0,
-					blk_start1, 1, 0x200, MMC_USER_AREA);
+						   blk_start1, 1, 0x200, MMC_USER_AREA);
 			if (len > 0)
 				prn_string("uboot1 hdr good\n");
 			else
@@ -1248,7 +1245,7 @@ static void emmc_boot(void)
 			prn_string("part"); prn_decimal(1 + i);
 			prn_string(" LBA="); prn_dword(blk_start2);
 			len = emmc_load_uhdr_image("uboot", (void *)UBOOT_LOAD_ADDR, 0,
-					blk_start2, 0, UBOOT_MAX_LEN, MMC_USER_AREA);
+						   blk_start2, 0, UBOOT_MAX_LEN, MMC_USER_AREA);
 			if (len > 0) {
 				prn_string("uboot2 good\n");
 				break; /* good uboot2 */
@@ -1387,7 +1384,6 @@ static int bblk_find_image(int type, const char *name, u8 *dst, u32 blk_off,
 
 	/* Block (blk_off + i) has image? */
 	for (i = 0; i < blk_cnt; i++) {
-
 		/* prn_string("bblk_find_image blk="); prn_decimal(blk_off + i); prn_string("\n"); */
 
 		res = bblk_read(type, dst, blk_off + i, 64, 50, NULL);
@@ -1627,47 +1623,47 @@ static void boot_flow(void)
 	while (retry-- > 0) {
 		/* Read boot mode */
 		switch (g_bootinfo.gbootRom_boot_mode) {
-			case UART_ISP:
+		case UART_ISP:
 #ifdef CONFIG_HAVE_UART_BOOTSTRAP
-				dbg();
-				uart_isp(1);
+			dbg();
+			uart_isp(1);
 #endif
-				break;
-			case USB_ISP:
+			break;
+		case USB_ISP:
 #if defined(CONFIG_HAVE_USB_DISK) || defined(CONFIG_HAVE_SNPS_USB3_DISK)
-				dbg();
-				usb_isp();
+			dbg();
+			usb_isp();
 #endif
-				break;
-			case SDCARD_ISP:
+			break;
+		case SDCARD_ISP:
 #ifdef CONFIG_HAVE_SDCARD
-				CSTAMP(0xC0DE000C);dbg();
-				sdcard_isp();
+			CSTAMP(0xC0DE000C);dbg();
+			sdcard_isp();
 #endif
-				break;
-			case SPI_NOR_BOOT:
+			break;
+		case SPI_NOR_BOOT:
 #ifdef CONFIG_HAVE_SPI_NOR
-				spi_nor_boot(g_bootinfo.bootdev_pinx);
+			spi_nor_boot(g_bootinfo.bootdev_pinx);
 #endif
-				break;
-			case SPINAND_BOOT:
+			break;
+		case SPINAND_BOOT:
 #ifdef CONFIG_HAVE_SPI_NAND
-				spi_nand_boot(g_bootinfo.bootdev_pinx);
+			spi_nand_boot(g_bootinfo.bootdev_pinx);
 #endif
-				break;
-			case NAND_LARGE_BOOT:
+			break;
+		case NAND_LARGE_BOOT:
 #ifdef CONFIG_HAVE_PARA_NAND
-				para_nand_boot(g_bootinfo.bootdev_pinx);
+			para_nand_boot(g_bootinfo.bootdev_pinx);
 #endif
-				break;
-			case EMMC_BOOT:
+			break;
+		case EMMC_BOOT:
 #ifdef CONFIG_HAVE_EMMC
-				emmc_boot();
+			emmc_boot();
 #endif
-				break;
-			default:
-				dbg();
-				break;
+			break;
+		default:
+			dbg();
+			break;
 		}
 		boot_not_support();
 	}
@@ -1688,7 +1684,7 @@ static void init_uart(void)
 #endif
 #if 0//def PLATFORM_Q645 //TBD
 	/* uart1 pinmux : UA1_TX, UA1_RX */
-	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 8, 1 << 8); // [8]=1
+	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 9, 1 << 9); // [9]=1
 	MOON0_REG->reset[3] = RF_MASK_V_CLR(1 << 0); /* release UA1 */
 	UART1_REG->div_l = UART_BAUD_DIV_L(BAUDRATE, UART_SRC_CLK);
 	UART1_REG->div_h = UART_BAUD_DIV_H(BAUDRATE, UART_SRC_CLK);
@@ -1711,28 +1707,23 @@ static void init_uart(void)
 	prn_string("9C000224: "); prn_dword(*(volatile u32 *)(0x9C000224));
 	prn_string("9C000228: "); prn_dword(*(volatile u32 *)(0x9C000228));
 
-
 	//*(volatile u32 *)(0x9C000228) = 0x00010001;  // power on FLA pll
 	//prn_string("9C000228: "); prn_dword(*(volatile u32 *)(0x9C000228));
-        *(volatile unsigned int *) (0x9C000000 +0x204) = 0xFE008600;// 	//0xFE008600;  0xFE00FE00
-        *(volatile unsigned int *) (0x9C000000 +0x208) = 0x00010001;// 	set SD CARD DS
-        *(volatile unsigned int *) (0x9C000000 +0x20C) = 0x07E007E0;//  SD CARD smith tri
+	*(volatile unsigned int *) (0x9C000000 +0x204) = 0xFE008600;// 	//0xFE008600;  0xFE00FE00
+	*(volatile unsigned int *) (0x9C000000 +0x208) = 0x00010001;// 	set SD CARD DS
+	*(volatile unsigned int *) (0x9C000000 +0x20C) = 0x07E007E0;//  SD CARD smith tri
 
 	prn_string("9C000204: "); prn_dword(*(volatile u32 *)(0x9C000204));
 	prn_string("9C000208: "); prn_dword(*(volatile u32 *)(0x9C000208));
 	prn_string("9C00020C: "); prn_dword(*(volatile u32 *)(0x9C00020C));
 
-
-        *(volatile unsigned int *) (0x9C000000 +0x214) = 0xFE00FE00;// 	//0xFE008600;  0xFE00FE00
-        *(volatile unsigned int *) (0x9C000000 +0x218) = 0x001F001F;// 	set SD CARD DS 0x00010001  0x001F001F
-        *(volatile unsigned int *) (0x9C000000 +0x21C) = 0x07E007E0;//  SDIO smith tri
+	*(volatile unsigned int *) (0x9C000000 +0x214) = 0xFE00FE00;// 	//0xFE008600;  0xFE00FE00
+	*(volatile unsigned int *) (0x9C000000 +0x218) = 0x001F001F;// 	set SD CARD DS 0x00010001  0x001F001F
+	*(volatile unsigned int *) (0x9C000000 +0x21C) = 0x07E007E0;//  SDIO smith tri
 
 	prn_string("9C000204: "); prn_dword(*(volatile u32 *)(0x9C000204));
 	prn_string("9C000208: "); prn_dword(*(volatile u32 *)(0x9C000218));
 	prn_string("9C00020C: "); prn_dword(*(volatile u32 *)(0x9C00020C));
-
-
-
 
 	// for GL2SW
 	*(volatile u32 *)(0x9C000238) = 0x00800000;  // Clear CK250M_EN to 0.
