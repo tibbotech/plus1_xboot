@@ -227,7 +227,7 @@ static void init_hw(void)
 static int run_draminit(void)
 {
 	/* skip dram init on csim/zebu */
-#ifdef CONFIG_BOOT_ON_CSIM
+#if defined(CONFIG_BOOT_ON_CSIM) && !defined(PLATFORM_Q645)
 	prn_string("skip draminit\n");
 #else
 	int save_val;

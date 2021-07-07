@@ -44,6 +44,8 @@
 #ifdef CONFIG_USE_ZMEM
 #ifdef PLATFORM_I143
 #define ZMEM_XBOOT_ADDR    0xA00F0000
+#elif defined(CONFIG_PLATFORM_Q645)
+#define ZMEM_XBOOT_ADDR    0xFA200000
 #else
 #define ZMEM_XBOOT_ADDR    0x1000
 #endif
