@@ -90,7 +90,7 @@ void _delay_1ms(UINT32 period)
 
 void delay_1ms(UINT32 period)
 {
-        //dbg(); // too verbose
+	//dbg(); // too verbose
 	prn_string(".");
 
 #ifndef CSIM_NEW
@@ -113,8 +113,15 @@ void boot_reset(void)
 #endif
 
 	/* STC: watchdog control */
+#ifdef PLATFORM_Q645
+	STC_REG->timerw_ctl = 0x3877;
+	STC_REG->timerw_ctl = 0xAB00;
+	STC_REG->timerw_cnt = 0x0001;
+	STC_REG->timerw_ctl = 0x4A4B;
+#else
 	STC_REG->timerw_ctrl = 0x3877;
 	STC_REG->timerw_ctrl = 0xAB00;
 	STC_REG->timerw_cnt  = 0x0001;
 	STC_REG->timerw_ctrl = 0x4A4B;
+#endif
 }
