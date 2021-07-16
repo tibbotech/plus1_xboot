@@ -50,6 +50,7 @@ CFLAGS  += -march=armv5te
 endif
 
 ifeq ($(CONFIG_PLATFORM_Q645),y)
+CFLAGS  += -Iinclude/arm
 CFLAGS  += -march=armv8-a -fno-delete-null-pointer-checks
 CFLAGS  += -mno-unaligned-access
 CFLAGS  += -ffunction-sections -fdata-sections
@@ -250,6 +251,10 @@ CSOURCES += nand/nandop.c nand/bch.c
 endif
 endif
 
+# mmu
+ifeq ($(CONFIG_PLATFORM_Q645), y)
+CSOURCES += arch/arm/q645/cache.c
+endif
 # Secure
 CSOURCES += common/verify_image.c
 

@@ -48,9 +48,11 @@ void *memcpy128(UINT32 *s1, const UINT32 *s2, int n)
 #endif
 }
 
-int memcmp(const UINT8 *s1, const UINT8 *s2, int n)
+int memcmp(const void *s1_beg, const void *s2_beg, size_t n)
 {
 	int ret = 0;
+	const UINT8 *s1 = (const UINT8 *)s1_beg;
+	const UINT8 *s2 = (const UINT8 *)s2_beg;
 	const UINT8 *s1_end = s1 + n;
 
 	while(s1 != s1_end) {

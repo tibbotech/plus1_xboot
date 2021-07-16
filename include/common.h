@@ -19,6 +19,7 @@
 #include <nand_boot/nfdriver.h>
 #include <nand_boot/nfdriver.h>
 #ifdef CONFIG_PLATFORM_Q645
+#include <hal/hal_cache.h>
 #include <spinand_boot/sp_spinand_q645.h>
 #else
 #include <spinand_boot/sp_spinand.h>
@@ -50,7 +51,7 @@ void uart0_putc(unsigned char c);
 void *memcpy16(u16 *s1, const u16 *s2, int n);
 void *memcpy32(u32 *s1, const u32 *s2, int n);
 void *memcpy128(u32 *s1, const u32 *s2, int n);
-int   memcmp(const u8 *s1, const u8 *s2, int n);
+int memcmp(const void *s1_beg, const void *s2_beg, size_t n);
 void *memset32(u32 *s1, u32 val, int n);
 
 void exit_bootROM(u32 addr);

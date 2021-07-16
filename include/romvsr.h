@@ -12,9 +12,6 @@
 #define SC_hkdf_shaX_512	(*(rom_hkdf_shaX_512)(p_romvsr->_rom_hkdf_shaX_512))
 #define SC_aes_gcm_ad		(*(rom_aes_gcm_ad)(p_romvsr->_rom_aes_gcm_ad))
 
-#define hal_dcache_enable         (*(rom_dcache_enable_t)(p_romvsr->_rom_dcache_enable))
-#define hal_dcache_disable        (*(rom_dcache_disable_t)(p_romvsr->_rom_dcache_disable))
-#define hal_dcache_is_enabled     (*(rom_dcache_is_enabled_t)(p_romvsr->_rom_dcache_is_enabled))
 #define hal_dcache_sync           (*(rom_dcache_sync_t)(p_romvsr->_rom_dcache_sync))
 #define hal_dcache_invalidate_all (*(rom_dcache_invalidate_all_t)(p_romvsr->_rom_dcache_invalidate_all))
 #define hal_dcache_flush          (*(rom_dcache_flush_t)(p_romvsr->_rom_dcache_flush))

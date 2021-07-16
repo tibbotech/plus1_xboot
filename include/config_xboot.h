@@ -67,6 +67,9 @@
 #define INITRAMFS_RUN_ADDR      0x2100000                   /* cpio */
 #define INITRAMFS_LOAD_ADDR     (INITRAMFS_RUN_ADDR - 0x40)
 
+//mmu pagetable
+#define MMU_PGTBL_ADDR 		0x000FC000   /*(1M-16k)*/
+
 #elif defined(PLATFORM_I143)
 #define OPENSBI_RUN_ADDR        0xA01D0000
 
