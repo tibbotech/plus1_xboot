@@ -28,7 +28,7 @@ void set_spi_nor_pinmux(int pin_x)
 #ifdef PLATFORM_I143
 	MOON1_REG->sft_cfg[1] = RF_MASK_V(0x3 << 0, pin_x << 0);
 #elif defined (PLATFORM_Q645)
-	MOON1_REG->sft_cfg[1] = RF_MASK_V(0x3 << 0, pin_x << 0);
+	MOON1_REG->sft_cfg[1] = RF_MASK_V(0x1 << 0, pin_x << 0);
 #else
 	MOON1_REG->sft_cfg[1] = RF_MASK_V(0xf, (pin_x << 2) | pin_x);
 #endif
@@ -39,7 +39,7 @@ void set_spi_nor_pinmux(int pin_x)
 int get_spi_nor_pinmux(void)
 {
 #ifdef PLATFORM_Q645
-	return ((MOON1_REG->sft_cfg[1] >> 0) & 0x3);
+	return ((MOON1_REG->sft_cfg[1] >> 0) & 0x1);
 #else
 	return (MOON1_REG->sft_cfg[1] & 0x3);
 #endif
