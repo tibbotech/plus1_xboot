@@ -47,11 +47,11 @@ struct SECGRP1_MAIN_REGS {
     UINT32  G083_reserved_20;
     UINT32  G083_reserved_21;
     UINT32  G083_reserved_22;
-    UINT32  G083_reserved_23;
-    UINT32  G083_reserved_24;
+    UINT32  G083_NIC_S01;   //G083_reserved_23;
+    UINT32  G083_NIC_S02;   //G083_reserved_24;
     UINT32  G083_reserved_25;
-    UINT32  G083_NIC_S01;
-    UINT32  G083_NIC_S02;
+    UINT32  G083_reserved_26; //G083_NIC_S01;
+    UINT32  G083_reserved_27; //G083_NIC_S02;
     UINT32  G083_reserved_28;
     UINT32  G083_reserved_29;
     UINT32  G083_reserved_30;
@@ -85,12 +85,12 @@ struct SECGRP1_PAI_REGS {
     UINT32  G084_reserved_21;
     UINT32  G084_reserved_22;
     UINT32  G084_reserved_23;
-    UINT32  G084_reserved_24;
-    UINT32  G084_reserved_25;
-    UINT32  G084_reserved_26;
-    UINT32  G084_NIC_S02;
-    UINT32  G084_NIC_S03;
-    UINT32  G084_NIC_S04;
+    UINT32  G084_NIC_S02;  //G084_reserved_24;
+    UINT32  G084_NIC_S03;  //G084_reserved_25;
+    UINT32  G084_NIC_S04;  //G084_reserved_26;
+    UINT32  G084_NIC_S05;  //G084_NIC_S02;
+    UINT32  G084_NIC_S06;  //G084_NIC_S03;
+    UINT32  G084_reserved_29; //G084_NIC_S04;
     UINT32  G084_reserved_30;
     UINT32  G084_reserved_31;
 };
@@ -126,10 +126,10 @@ struct SECGRP1_PAII_REGS {
     UINT32  G085_reserved_25;
     UINT32  G085_reserved_26;
     UINT32  G085_reserved_27;
-    UINT32  G085_reserved_28;
-    UINT32  G085_NIC_S04;
-    UINT32  G085_NIC_S05;
-    UINT32  G085_NIC_S06;
+    UINT32  G085_NIC_S06;  //G085_reserved_28;
+    UINT32  G085_NIC_S07;  //G085_NIC_S04;
+    UINT32  G085_NIC_S08;  //G085_NIC_S05;
+    UINT32  G085_reserved_31; //G085_NIC_S06;
 };
 
 #define SECGRP1_PAII_REG    ((volatile struct SECGRP1_PAII_REGS *)RF_GRP(SECGRP1_PAII_RGST_NUM, 0))
@@ -166,168 +166,224 @@ struct SECGRP1_PAII_REGS {
 	#define EVDN_MA0		(0x002)
 	#endif
 
-	#ifndef EVDN_MA1
-	#define EVDN_MA1		(0x003)
-	#endif
-
 	#ifndef EVDN_MA2
-	#define EVDN_MA2		(0x004)
+	#define EVDN_MA2		(0x003)
 	#endif
 
 	#ifndef EVDN_MA3
-	#define EVDN_MA3		(0x005)
+	#define EVDN_MA3		(0x004)
 	#endif
 
 	#ifndef G31_MA
-	#define G31_MA			(0x006)
+	#define G31_MA			(0x005)
 	#endif
 
 	#ifndef DUMMY0_MA
-	#define DUMMY0_MA		(0x007)
+	#define DUMMY0_MA		(0x006)
 	#endif
 
 	#ifndef IOPI_CB_MA
-	#define IOPI_CB_MA		(0x008)
+	#define IOPI_CB_MA		(0x007)
 	#endif
 
 	#ifndef IOPD_CB_MA
-	#define IOPD_CB_MA		(0x009)
+	#define IOPD_CB_MA		(0x008)
 	#endif
 
 	#ifndef CM4S_MA
-	#define CM4S_MA			(0x00a)
+	#define CM4S_MA			(0x009)
 	#endif
 
 	#ifndef CM4ID_MA
-	#define CM4ID_MA		(0x00b)
-	#endif
-
-	#ifndef VCD_MB
-	#define VCD_MB			(0x00c)
+	#define CM4ID_MA		(0x00a)
 	#endif
 
 	#ifndef CPIOL0_MA
-	#define CPIOL0_MA		(0x00d)
+	#define CPIOL0_MA		(0x00b)
 	#endif
 
 	#ifndef CPIOL1_MA
-	#define CPIOL1_MA		(0x00e)
+	#define CPIOL1_MA		(0x00c)
 	#endif
 
 	#ifndef DUMMY1_MA
-	#define DUMMY1_MA		(0x00f)
+	#define DUMMY1_MA		(0x00d)
 	#endif
 
 	#ifndef NBS_MA
-	#define NBS_MA			(0x010)
+	#define NBS_MA			(0x00e)
 	#endif
 
 	#ifndef SPI_NOR_MA
-	#define SPI_NOR_MA		(0x011)
+	#define SPI_NOR_MA		(0x00f)
 	#endif
 
 	#ifndef CARD0_MA
-	#define CARD0_MA		(0x012)
+	#define CARD0_MA		(0x010)
 	#endif
 
 	#ifndef CARD1_M0
-	#define CARD1_M0		(0x013)
+	#define CARD1_M0		(0x011)
 	#endif
 
 	#ifndef HWUA0_TX0_GDMA
-	#define HWUA0_TX0_GDMA		(0x014)
+	#define HWUA0_TX0_GDMA		(0x012)
 	#endif
 
 	#ifndef HWUA0_TX1_GDMA
-	#define HWUA0_TX1_GDMA		(0x015)
+	#define HWUA0_TX1_GDMA		(0x013)
 	#endif
 
 	#ifndef HWUA1_TX0_GDMA
-	#define HWUA1_TX0_GDMA		(0x016)
+	#define HWUA1_TX0_GDMA		(0x014)
 	#endif
 
 	#ifndef HWUA1_TX1_GDMA
-	#define HWUA1_TX1_GDMA		(0x017)
+	#define HWUA1_TX1_GDMA		(0x015)
 	#endif
 
 	#ifndef PERIO_MA
-	#define PERIO_MA		(0x018)
+	#define PERIO_MA		(0x016)
 	#endif
 
 	#ifndef PERI1_MA
-	#define PERI1_MA		(0x019)
+	#define PERI1_MA		(0x017)
 	#endif
 
 	#ifndef PERI2_MA
-	#define PERI2_MA		(0x01a)
+	#define PERI2_MA		(0x018)
 	#endif
 
 	#ifndef PERI3_MA
-	#define PERI3_MA		(0x01b)
+	#define PERI3_MA		(0x019)
 	#endif
 
 	#ifndef CBDMA0_MA
-	#define CBDMA0_MA		(0x01c)
+	#define CBDMA0_MA		(0x01a)
 	#endif
 
 	#ifndef SPI_CB0_MA
-	#define SPI_CB0_MA		(0x01d)
+	#define SPI_CB0_MA		(0x01b)
+	#endif
+
+	#ifndef SPI_CB1_MA
+	#define SPI_CB1_MA		(0x01c)
+	#endif
+
+	#ifndef SPI_CB2_MA
+	#define SPI_CB2_MA		(0x01d)
+	#endif
+
+	#ifndef SPI_CB3_MA
+	#define SPI_CB3_MA		(0x01e)
+	#endif
+
+	#ifndef SPI_CB4_MA
+	#define SPI_CB4_MA		(0x01f)
+	#endif
+
+	#ifndef SPI_CB5_MA
+	#define SPI_CB5_MA		(0x020)
 	#endif
 
 	#ifndef I2CM0_GDMA
-	#define I2CM0_GDMA		(0x01e)
+	#define I2CM0_GDMA		(0x021)
+	#endif
+
+	#ifndef I2CM1_GDMA
+	#define I2CM1_GDMA		(0x022)
+	#endif
+
+	#ifndef I2CM2_GDMA
+	#define I2CM2_GDMA		(0x023)
+	#endif
+
+	#ifndef I2CM3_GDMA
+	#define I2CM3_GDMA		(0x0241)
+	#endif
+
+	#ifndef I2CM4_GDMA
+	#define I2CM4_GDMA		(0x025)
+	#endif
+
+	#ifndef I2CM5_GDMA
+	#define I2CM5_GDMA		(0x026)
+	#endif
+
+	#ifndef CSIIW0_MA
+	#define CSIIW0_MA		(0x027)
+	#endif
+
+	#ifndef CSIIW1_MA
+	#define CSIIW1_MA		(0x028)
+	#endif
+
+	#ifndef VCL_MA
+	#define VCL_MA			(0x029)
 	#endif
 
 	#ifndef VCE_MA
-	#define VCE_MA			(0x01f)
+	#define VCE_MA			(0x02a)
+	#endif
+
+	#ifndef VCD_MA
+	#define VCD_MA			(0x02b)
 	#endif
 
 	#ifndef CPIOR0_MA
-	#define CPIOR0_MA		(0x020)
+	#define CPIOR0_MA		(0x02c)
 	#endif
 
 	#ifndef CPIOR1_MA
-	#define CPIOR1_MA		(0x021)
+	#define CPIOR1_MA		(0x02d)
 	#endif
 
 	#ifndef DUMMY2_MA
-	#define DUMMY2_MA		(0x022)
+	#define DUMMY2_MA		(0x02e)
 	#endif
 
 	#ifndef HSM_MA
-	#define HSM_MA			(0x023)
+	#define HSM_MA			(0x02f)
 	#endif
 
 	#ifndef SEMC_I_MA
-	#define SEMC_I_MA		(0x024)
+	#define SEMC_I_MA		(0x030)
 	#endif
 
 	#ifndef SEMC_D_MA
-	#define SEMC_D_MA		(0x025)
+	#define SEMC_D_MA		(0x031)
 	#endif
 
 	#ifndef SPACC_MA
-	#define SPACC_MA		(0x026)
+	#define SPACC_MA		(0x032)
 	#endif
 
 	#ifndef USB30C0_MA
-	#define USB30C0_MA		(0x027)
+	#define USB30C0_MA		(0x033)
 	#endif
 
 	#ifndef USB30C1_MA
-	#define USB30C1_MA		(0x028)
+	#define USB30C1_MA		(0x034)
 	#endif
 
 	#ifndef USBC0_MA
-	#define USBC0_MA		(0x029)
+	#define USBC0_MA		(0x035)
 	#endif
 
 	#ifndef CARD2_MA
-	#define CARD2_MA		(0x02a)
+	#define CARD2_MA		(0x036)
 	#endif
 	
 	#ifndef UART2AXI_MA
-	#define UART2AXI_MA		(0x02b)
+	#define UART2AXI_MA		(0x037)
+	#endif
+
+	#ifndef CSIIW2_MA
+	#define CSIIW2_MA		(0x038)
+	#endif
+
+	#ifndef CSIIW3_MA
+	#define CSIIW3_MA		(0x039)
 	#endif
 
 //###############################################################################
@@ -357,11 +413,13 @@ static inline void SET_NIC_PAI_SET(unsigned int IP_NAME, unsigned int MODE);
 static inline void SET_NIC_PAI_UP8(unsigned int IP_NAME, unsigned int MODE);
 static inline void SET_NIC_PAI_UP16(unsigned int IP_NAME, unsigned int MODE);
 static inline void SET_NIC_PAI_UP24(unsigned int IP_NAME, unsigned int MODE);
+static inline void SET_NIC_PAI_UP32(unsigned int IP_NAME, unsigned int MODE);
+static inline void SET_NIC_PAI_UP40(unsigned int IP_NAME, unsigned int MODE);
 
 static inline void SET_NIC_PAII_SET(unsigned int IP_NAME, unsigned int MODE);
 static inline void SET_NIC_PAII_UP40(unsigned int IP_NAME, unsigned int MODE);
-static inline void SET_NIC_PAII_UP32(unsigned int IP_NAME, unsigned int MODE);
-static inline void SET_NIC_PAII_UP24(unsigned int IP_NAME, unsigned int MODE);
+static inline void SET_NIC_PAII_UP48(unsigned int IP_NAME, unsigned int MODE);
+static inline void SET_NIC_PAII_UP56(unsigned int IP_NAME, unsigned int MODE);
 
 
 //###############################################################################
@@ -460,29 +518,28 @@ static inline void SET_NIC_PAII_UP24(unsigned int IP_NAME, unsigned int MODE);
 #define SET_NIC_PAI_UP24_M0(IP_NAME)		(SECGRP1_PAI_REG->G084_NIC_S04 = (SET_NOOVERRIDE_EN(IP_NAME) | SET_MASKING_OVERRIDE_EN(IP_NAME)))
 #endif
 
-
-#ifndef SET_NIC_PAII_UP24_M2
-#define SET_NIC_PAII_UP24_M2(IP_NAME)		(SECGRP1_PAII_REG->G085_NIC_S04 = (SET_OVERRIDE_EN(IP_NAME) | SET_SEC_EN(IP_NAME) | SET_MASKING_OVERRIDE_EN(IP_NAME) | SET_MASKING_SEC_EN(IP_NAME)))
+#ifndef SET_NIC_PAI_UP32_M2
+#define SET_NIC_PAI_UP32_M2(IP_NAME)		(SECGRP1_PAI_REG->G084_NIC_S05 = (SET_OVERRIDE_EN(IP_NAME) | SET_SEC_EN(IP_NAME) | SET_MASKING_OVERRIDE_EN(IP_NAME) | SET_MASKING_SEC_EN(IP_NAME)))
 #endif
 
-#ifndef SET_NIC_PAII_UP24_M1
-#define SET_NIC_PAII_UP24_M1(IP_NAME)		(SECGRP1_PAII_REG->G085_NIC_S04 = (SET_OVERRIDE_EN(IP_NAME) | SET_NOSEC_EN(IP_NAME) | SET_MASKING_OVERRIDE_EN(IP_NAME) | SET_MASKING_SEC_EN(IP_NAME)))
+#ifndef SET_NIC_PAI_UP32_M1
+#define SET_NIC_PAI_UP32_M1(IP_NAME)		(SECGRP1_PAI_REG->G084_NIC_S05 = (SET_OVERRIDE_EN(IP_NAME) | SET_NOSEC_EN(IP_NAME) | SET_MASKING_OVERRIDE_EN(IP_NAME) | SET_MASKING_SEC_EN(IP_NAME)))
 #endif
 
-#ifndef SET_NIC_PAII_UP24_M0
-#define SET_NIC_PAII_UP24_M0(IP_NAME)		(SECGRP1_PAII_REG->G085_NIC_S04 = (SET_NOOVERRIDE_EN(IP_NAME) | SET_MASKING_OVERRIDE_EN(IP_NAME)))
+#ifndef SET_NIC_PAI_UP32_M0
+#define SET_NIC_PAI_UP32_M0(IP_NAME)		(SECGRP1_PAI_REG->G084_NIC_S05 = (SET_NOOVERRIDE_EN(IP_NAME) | SET_MASKING_OVERRIDE_EN(IP_NAME)))
 #endif
 
-#ifndef SET_NIC_PAII_UP32_M2
-#define SET_NIC_PAII_UP32_M2(IP_NAME)		(SECGRP1_PAII_REG->G085_NIC_S05 = (SET_OVERRIDE_EN(IP_NAME) | SET_SEC_EN(IP_NAME) | SET_MASKING_OVERRIDE_EN(IP_NAME) | SET_MASKING_SEC_EN(IP_NAME)))
+#ifndef SET_NIC_PAI_UP40_M2
+#define SET_NIC_PAI_UP40_M2(IP_NAME)		(SECGRP1_PAI_REG->G084_NIC_S06 = (SET_OVERRIDE_EN(IP_NAME) | SET_SEC_EN(IP_NAME) | SET_MASKING_OVERRIDE_EN(IP_NAME) | SET_MASKING_SEC_EN(IP_NAME)))
 #endif
 
-#ifndef SET_NIC_PAII_UP32_M1
-#define SET_NIC_PAII_UP32_M1(IP_NAME)		(SECGRP1_PAII_REG->G085_NIC_S05 = (SET_OVERRIDE_EN(IP_NAME) | SET_NOSEC_EN(IP_NAME) | SET_MASKING_OVERRIDE_EN(IP_NAME) | SET_MASKING_SEC_EN(IP_NAME)))
+#ifndef SET_NIC_PAI_UP40_M1
+#define SET_NIC_PAI_UP40_M1(IP_NAME)		(SECGRP1_PAI_REG->G084_NIC_S06 = (SET_OVERRIDE_EN(IP_NAME) | SET_NOSEC_EN(IP_NAME) | SET_MASKING_OVERRIDE_EN(IP_NAME) | SET_MASKING_SEC_EN(IP_NAME)))
 #endif
 
-#ifndef SET_NIC_PAII_UP32_M0
-#define SET_NIC_PAII_UP32_M0(IP_NAME)		(SECGRP1_PAII_REG->G085_NIC_S05 = (SET_NOOVERRIDE_EN(IP_NAME) | SET_MASKING_OVERRIDE_EN(IP_NAME)))
+#ifndef SET_NIC_PAI_UP40_M0
+#define SET_NIC_PAI_UP40_M0(IP_NAME)		(SECGRP1_PAI_REG->G084_NIC_S06 = (SET_NOOVERRIDE_EN(IP_NAME) | SET_MASKING_OVERRIDE_EN(IP_NAME)))
 #endif
 
 #ifndef SET_NIC_PAII_UP40_M2
@@ -495,6 +552,30 @@ static inline void SET_NIC_PAII_UP24(unsigned int IP_NAME, unsigned int MODE);
 
 #ifndef SET_NIC_PAII_UP40_M0
 #define SET_NIC_PAII_UP40_M0(IP_NAME)		(SECGRP1_PAII_REG->G085_NIC_S06 = (SET_NOOVERRIDE_EN(IP_NAME) | SET_MASKING_OVERRIDE_EN(IP_NAME)))
+#endif
+
+#ifndef SET_NIC_PAII_UP48_M2
+#define SET_NIC_PAII_UP48_M2(IP_NAME)		(SECGRP1_PAII_REG->G085_NIC_S07 = (SET_OVERRIDE_EN(IP_NAME) | SET_SEC_EN(IP_NAME) | SET_MASKING_OVERRIDE_EN(IP_NAME) | SET_MASKING_SEC_EN(IP_NAME)))
+#endif
+
+#ifndef SET_NIC_PAII_UP48_M1
+#define SET_NIC_PAII_UP48_M1(IP_NAME)		(SECGRP1_PAII_REG->G085_NIC_S07 = (SET_OVERRIDE_EN(IP_NAME) | SET_NOSEC_EN(IP_NAME) | SET_MASKING_OVERRIDE_EN(IP_NAME) | SET_MASKING_SEC_EN(IP_NAME)))
+#endif
+
+#ifndef SET_NIC_PAII_UP48_M0
+#define SET_NIC_PAII_UP48_M0(IP_NAME)		(SECGRP1_PAII_REG->G085_NIC_S07 = (SET_NOOVERRIDE_EN(IP_NAME) | SET_MASKING_OVERRIDE_EN(IP_NAME)))
+#endif
+
+#ifndef SET_NIC_PAII_UP56_M2
+#define SET_NIC_PAII_UP56_M2(IP_NAME)		(SECGRP1_PAII_REG->G085_NIC_S08 = (SET_OVERRIDE_EN(IP_NAME) | SET_SEC_EN(IP_NAME) | SET_MASKING_OVERRIDE_EN(IP_NAME) | SET_MASKING_SEC_EN(IP_NAME)))
+#endif
+
+#ifndef SET_NIC_PAII_UP56_M1
+#define SET_NIC_PAII_UP56_M1(IP_NAME)		(SECGRP1_PAII_REG->G085_NIC_S08 = (SET_OVERRIDE_EN(IP_NAME) | SET_NOSEC_EN(IP_NAME) | SET_MASKING_OVERRIDE_EN(IP_NAME) | SET_MASKING_SEC_EN(IP_NAME)))
+#endif
+
+#ifndef SET_NIC_PAII_UP56_M0
+#define SET_NIC_PAII_UP56_M0(IP_NAME)		(SECGRP1_PAII_REG->G085_NIC_S08 = (SET_NOOVERRIDE_EN(IP_NAME) | SET_MASKING_OVERRIDE_EN(IP_NAME)))
 #endif
 
 //=======================================================
@@ -519,11 +600,11 @@ static inline void SET_NIC_OVERRIDE(unsigned int IP_NAME, unsigned int MODE) {
 #define SET_NIC_MAIN_DEF
 static inline void SET_NIC_MAIN(unsigned int IP_NAME, unsigned int MODE) {
 	//if((IP_NAME >= 0x000) && (IP_NAME <= 0x008)) {
-	if (IP_NAME <= 0x009) {
+	if (IP_NAME <= 0x008) {
 		SET_NIC_MAIN_SET(IP_NAME, MODE); 			// into partition TOP  SECGRP1 Group
-	} else if((IP_NAME >= 0x00a) && (IP_NAME <= 0x01e)) {
+	} else if((IP_NAME >= 0x009) && (IP_NAME <= 0x029)) {
 		SET_NIC_PAI_SET(IP_NAME, MODE); 			// into partition PAI  SECGRP1 Group
-	} else if((IP_NAME >= 0x01f) && (IP_NAME <= 0x02b)) {
+	} else if((IP_NAME >= 0x02a) && (IP_NAME <= 0x039)) {
 		SET_NIC_PAII_SET(IP_NAME, MODE); 			// into partition PAII SECGRP1 Group
 	} else {
 		RID_FAIL();
@@ -579,11 +660,15 @@ static inline void SET_NIC_MAIN_UP0(unsigned int IP_NAME, unsigned int MODE) {
 #ifndef SET_NIC_PAI_SET_DEF
 #define SET_NIC_PAI_SET_DEF
 static inline void SET_NIC_PAI_SET(unsigned int IP_NAME, unsigned int MODE) {
-	if(IP_NAME >= 0x018) {
+	if(IP_NAME >= 0x028) {
+		SET_NIC_PAI_UP40((IP_NAME-0x028), MODE); 		// into partition PAI  SECGRP1 Group Addr "G085_NIC_S04"
+	} else if(IP_NAME >= 0x020) {
+		SET_NIC_PAI_UP32((IP_NAME-0x020), MODE); 		// into partition PAI  SECGRP1 Group Addr "G085_NIC_S04"
+	} else if(IP_NAME >= 0x018) {
 		SET_NIC_PAI_UP24((IP_NAME-0x018), MODE); 		// into partition PAI  SECGRP1 Group Addr "G085_NIC_S04"
 	} else if(IP_NAME >= 0x010) {
 		SET_NIC_PAI_UP16((IP_NAME-0x010), MODE); 		// into partition PAI  SECGRP1 Group Addr "G085_NIC_S03"
-	} else if(IP_NAME >= 0x00a) {
+	} else if(IP_NAME >= 0x009) {
 		SET_NIC_PAI_UP8((IP_NAME-0x008), MODE);			// into partition PAI  SECGRP1 Group Addr "G085_NIC_S02"
 	} else {
 		RID_FAIL();
@@ -636,16 +721,45 @@ static inline void SET_NIC_PAI_UP24(unsigned int IP_NAME, unsigned int MODE) {
 }
 #endif
 
+#ifndef SET_NIC_PAI_UP32_DEF
+#define SET_NIC_PAI_UP32_DEF
+static inline void SET_NIC_PAI_UP32(unsigned int IP_NAME, unsigned int MODE) {
+	if(MODE == 0x2) {
+		SET_NIC_PAI_UP32_M2(IP_NAME); 				// into Mode 2, override enable and setting to security access.
+	} else if(MODE == 0x1) {
+		SET_NIC_PAI_UP32_M1(IP_NAME); 				// into Mode 1, override enable and setting to normal access.
+	} else if(MODE == 0x0) {
+		SET_NIC_PAI_UP32_M0(IP_NAME); 				// into Mode 0, override disable.
+	} else {
+		RID_FAIL();
+	}
+}
+#endif
+
+#ifndef SET_NIC_PAI_UP40_DEF
+#define SET_NIC_PAI_UP40_DEF
+static inline void SET_NIC_PAI_UP40(unsigned int IP_NAME, unsigned int MODE) {
+	if(MODE == 0x2) {
+		SET_NIC_PAI_UP40_M2(IP_NAME); 				// into Mode 2, override enable and setting to security access.
+	} else if(MODE == 0x1) {
+		SET_NIC_PAI_UP40_M1(IP_NAME); 				// into Mode 1, override enable and setting to normal access.
+	} else if(MODE == 0x0) {
+		SET_NIC_PAI_UP40_M0(IP_NAME); 				// into Mode 0, override disable.
+	} else {
+		RID_FAIL();
+	}
+}
+#endif
 
 #ifndef SET_NIC_PAII_SET_DEF
 #define SET_NIC_PAII_SET_DEF
 static inline void SET_NIC_PAII_SET(unsigned int IP_NAME, unsigned int MODE) {
-	if(IP_NAME >= 0x028) {
-		SET_NIC_PAII_UP40((IP_NAME-0x028), MODE); 		// into partition PAII  SECGRP1 Group Addr "G085_NIC_S06"
-	} else if(IP_NAME >= 0x020) {
-		SET_NIC_PAII_UP32((IP_NAME-0x020), MODE); 		// into partition PAII  SECGRP1 Group Addr "G085_NIC_S05"
-	} else if(IP_NAME >= 0x01f) {
-		SET_NIC_PAII_UP24((IP_NAME-0x018), MODE);		// into partition PAII  SECGRP1 Group Addr "G085_NIC_S04"
+	if(IP_NAME >= 0x038) {
+		SET_NIC_PAII_UP40((IP_NAME-0x038), MODE); 		// into partition PAII  SECGRP1 Group Addr "G085_NIC_S06"
+	} else if(IP_NAME >= 0x030) {
+		SET_NIC_PAII_UP32((IP_NAME-0x030), MODE); 		// into partition PAII  SECGRP1 Group Addr "G085_NIC_S05"
+	} else if(IP_NAME >= 0x02a) {
+		SET_NIC_PAII_UP24((IP_NAME-0x028), MODE);		// into partition PAII  SECGRP1 Group Addr "G085_NIC_S04"
 	} else {
 		RID_FAIL();
 	}
@@ -667,30 +781,30 @@ static inline void SET_NIC_PAII_UP40(unsigned int IP_NAME, unsigned int MODE) {
 }
 #endif
 
-#ifndef SET_NIC_PAII_UP32_DEF
-#define SET_NIC_PAII_UP32_DEF
-static inline void SET_NIC_PAII_UP32(unsigned int IP_NAME, unsigned int MODE) {
+#ifndef SET_NIC_PAII_UP48_DEF
+#define SET_NIC_PAII_UP48_DEF
+static inline void SET_NIC_PAII_UP48(unsigned int IP_NAME, unsigned int MODE) {
 	if(MODE == 0x2) {
-		SET_NIC_PAII_UP32_M2(IP_NAME); 				// into Mode 2, override enable and setting to security access.
+		SET_NIC_PAII_UP48_M2(IP_NAME); 				// into Mode 2, override enable and setting to security access.
 	} else if(MODE == 0x1) {
-		SET_NIC_PAII_UP32_M1(IP_NAME); 				// into Mode 1, override enable and setting to normal access.
+		SET_NIC_PAII_UP48_M1(IP_NAME); 				// into Mode 1, override enable and setting to normal access.
 	} else if(MODE == 0x0) {
-		SET_NIC_PAII_UP32_M0(IP_NAME); 				// into Mode 0, override disable.
+		SET_NIC_PAII_UP48_M0(IP_NAME); 				// into Mode 0, override disable.
 	} else {
 		RID_FAIL();
 	}
 }
 #endif
 
-#ifndef SET_NIC_PAII_UP24_DEF
-#define SET_NIC_PAII_UP24_DEF
-static inline void SET_NIC_PAII_UP24(unsigned int IP_NAME, unsigned int MODE) {
+#ifndef SET_NIC_PAII_UP56_DEF
+#define SET_NIC_PAII_UP56_DEF
+static inline void SET_NIC_PAII_UP56(unsigned int IP_NAME, unsigned int MODE) {
 	if(MODE == 0x2) {
-		SET_NIC_PAII_UP24_M2(IP_NAME); 				// into Mode 2, override enable and setting to security access.
+		SET_NIC_PAII_UP56_M2(IP_NAME); 				// into Mode 2, override enable and setting to security access.
 	} else if(MODE == 0x1) {
-		SET_NIC_PAII_UP24_M1(IP_NAME); 				// into Mode 1, override enable and setting to normal access.
+		SET_NIC_PAII_UP56_M1(IP_NAME); 				// into Mode 1, override enable and setting to normal access.
 	} else if(MODE == 0x0) {
-		SET_NIC_PAII_UP24_M0(IP_NAME); 				// into Mode 0, override disable.
+		SET_NIC_PAII_UP56_M0(IP_NAME); 				// into Mode 0, override disable.
 	} else {
 		RID_FAIL();
 	}
