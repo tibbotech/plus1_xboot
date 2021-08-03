@@ -345,8 +345,8 @@
 /**********************
  * UART
  *********************/
-#ifdef PLATFORM_I143
-#define UART_SRC_CLK        (19575*10000)  /* 8388 SYSSLOW */ //(19575*10000)
+#if defined(CONFIG_BOOT_ON_CSIM) || defined(CONFIG_BOOT_ON_ZEBU)
+#define UART_SRC_CLK        (32 * 1000 * 1000 / 2)	// set 32M, for zebu
 #else
 #define UART_SRC_CLK        (XTAL_CLK)
 #endif

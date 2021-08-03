@@ -266,7 +266,7 @@ static int run_draminit(void)
 #endif
 
 #ifdef CONFIG_USE_ZMEM
-#if 0 // TEST M4
+#if 1 // START M4
 	volatile u32 *m4_mem = (void *)0x1e000000;
 	MOON0_REG->stamp = 0xabcd1234; // DUMP_START
 	prn_string("Start M4 ...\n");
@@ -279,7 +279,6 @@ static int run_draminit(void)
 	MOON0_REG->reset[4]  = 0x10001; // reset M4
 	MOON2_REG->sft_cfg[24] = 0x01ff0100 | ((u32)m4_mem >> 24); // enable M4 reset address(highest 8 bit) remapping
 	MOON0_REG->reset[4]  = 0x10000; // release reset
-	while (1);
 #endif
 	/* don't corrupt zmem */
 	return 0;
@@ -1704,7 +1703,7 @@ static void init_uart(void)
 	UART1_REG->div_l = UART_BAUD_DIV_L(BAUDRATE, UART_SRC_CLK);
 	UART1_REG->div_h = UART_BAUD_DIV_H(BAUDRATE, UART_SRC_CLK);
 #endif
-#if 0//def PLATFORM_Q645 //TBD
+#ifdef PLATFORM_Q645 //TBD
 	/* uart1 pinmux : UA1_TX, UA1_RX */
 	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 9, 1 << 9); // [9]=1
 	MOON0_REG->reset[3] = RF_MASK_V_CLR(1 << 0); /* release UA1 */
