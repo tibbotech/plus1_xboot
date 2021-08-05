@@ -266,7 +266,7 @@ static int run_draminit(void)
 #endif
 
 #ifdef CONFIG_USE_ZMEM
-#if 1 // START M4
+#if defined(PLATFORM_Q645) // START M4
 	volatile u32 *m4_mem = (void *)0x1e000000;
 	MOON0_REG->stamp = 0xabcd1234; // DUMP_START
 	prn_string("Start M4 ...\n");
