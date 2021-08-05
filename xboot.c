@@ -266,19 +266,23 @@ static int run_draminit(void)
 #endif
 
 #ifdef CONFIG_USE_ZMEM
-#if defined(PLATFORM_Q645) // START M4
+#if defined(PLATFORM_Q645)
 	volatile u32 *m4_mem = (void *)0x1e000000;
 	MOON0_REG->stamp = 0xabcd1234; // DUMP_START
-	prn_string("Start M4 ...\n");
-	prn_dword(m4_mem[0]);
-	prn_dword(m4_mem[1]);
-	prn_dword(m4_mem[256]);
+	prn_string("... M4 MEM ...\n");
+	prn_dword0((u32)&m4_mem[0]);   prn_string(": "); prn_dword(m4_mem[0]);
+	prn_dword0((u32)&m4_mem[1]);   prn_string(": "); prn_dword(m4_mem[1]);
+	prn_dword0((u32)&m4_mem[256]); prn_string(": "); prn_dword(m4_mem[256]);
 
 	MOON0_REG->clken[4]  = 0x10001;
 	MOON0_REG->gclken[4] = 0x10001;
 	MOON0_REG->reset[4]  = 0x10001; // reset M4
 	MOON2_REG->sft_cfg[24] = 0x01ff0100 | ((u32)m4_mem >> 24); // enable M4 reset address(highest 8 bit) remapping
-	MOON0_REG->reset[4]  = 0x10000; // release reset
+
+#if 1 // START M4
+	prn_string("... START M4 ...\n");
+	MOON0_REG->reset[4] = 0x10000; // release reset
+#endif
 #endif
 	/* don't corrupt zmem */
 	return 0;
