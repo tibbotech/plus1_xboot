@@ -661,9 +661,9 @@ static inline void SET_NIC_MAIN_UP0(unsigned int IP_NAME, unsigned int MODE) {
 #define SET_NIC_PAI_SET_DEF
 static inline void SET_NIC_PAI_SET(unsigned int IP_NAME, unsigned int MODE) {
 	if(IP_NAME >= 0x028) {
-		SET_NIC_PAI_UP40((IP_NAME-0x028), MODE); 		// into partition PAI  SECGRP1 Group Addr "G085_NIC_S04"
+		SET_NIC_PAI_UP40((IP_NAME-0x028), MODE); 		// into partition PAI  SECGRP1 Group Addr "G085_NIC_S06"
 	} else if(IP_NAME >= 0x020) {
-		SET_NIC_PAI_UP32((IP_NAME-0x020), MODE); 		// into partition PAI  SECGRP1 Group Addr "G085_NIC_S04"
+		SET_NIC_PAI_UP32((IP_NAME-0x020), MODE); 		// into partition PAI  SECGRP1 Group Addr "G085_NIC_S05"
 	} else if(IP_NAME >= 0x018) {
 		SET_NIC_PAI_UP24((IP_NAME-0x018), MODE); 		// into partition PAI  SECGRP1 Group Addr "G085_NIC_S04"
 	} else if(IP_NAME >= 0x010) {
@@ -755,11 +755,11 @@ static inline void SET_NIC_PAI_UP40(unsigned int IP_NAME, unsigned int MODE) {
 #define SET_NIC_PAII_SET_DEF
 static inline void SET_NIC_PAII_SET(unsigned int IP_NAME, unsigned int MODE) {
 	if(IP_NAME >= 0x038) {
-		SET_NIC_PAII_UP40((IP_NAME-0x038), MODE); 		// into partition PAII  SECGRP1 Group Addr "G085_NIC_S06"
+		SET_NIC_PAII_UP56((IP_NAME-0x038), MODE); 		// into partition PAII  SECGRP1 Group Addr "G085_NIC_S08"
 	} else if(IP_NAME >= 0x030) {
-		SET_NIC_PAII_UP32((IP_NAME-0x030), MODE); 		// into partition PAII  SECGRP1 Group Addr "G085_NIC_S05"
+		SET_NIC_PAII_UP48((IP_NAME-0x030), MODE); 		// into partition PAII  SECGRP1 Group Addr "G085_NIC_S07"
 	} else if(IP_NAME >= 0x02a) {
-		SET_NIC_PAII_UP24((IP_NAME-0x028), MODE);		// into partition PAII  SECGRP1 Group Addr "G085_NIC_S04"
+		SET_NIC_PAII_UP40((IP_NAME-0x028), MODE);		// into partition PAII  SECGRP1 Group Addr "G085_NIC_S06"
 	} else {
 		RID_FAIL();
 	}
