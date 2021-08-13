@@ -13,7 +13,7 @@
 /* Global USB2 PHY Configuration Register */
 #define DWC3_GUSB2PHYCFG_PHYSOFTRST		(1 << 31)
 //#define DWC3_GUSB2PHYCFG_U2_FREECLK_EXISTS	(1 << 30)
-//#define DWC3_GUSB2PHYCFG_ENBLSLPM		(1 << 8)
+#define DWC3_GUSB2PHYCFG_ENBLSLPM		(1 << 8)
 #define DWC3_GUSB2PHYCFG_SUSPHY			(1 << 6)
 #define DWC3_GUSB2PHYCFG_PHYIF			(1 << 3)
 /* Global USB2 PHY Configuration Mask */

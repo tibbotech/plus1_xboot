@@ -248,20 +248,22 @@ struct spi_ctrl_regs {
 };
 #define SPI_CTRL_REG ((volatile struct spi_ctrl_regs *)RF_GRP(22, 0))
 
+/* start of xhci */
+struct uphy_u3_regs {
+	unsigned int cfg[32];		       // 189.0
+};
+
+#define UPHY0_U3_REG ((volatile struct uphy_u3_regs *)RF_AMBA(189, 0))
+#define UPHY1_U3_REG ((volatile struct uphy_u3_regs *)RF_AMBA(190, 0))
+#define XHCI0_REG ((volatile struct xhci_hccr *)RF_AMBA(161, 0))
+#define XHCI1_REG ((volatile struct xhci_hccr *)RF_AMBA(175, 0))
+/* end of xhci */
+
 struct uphy_rn_regs {
        unsigned int cfg[22];
 };
 #define UPHY0_RN_REG ((volatile struct uphy_rn_regs *)RF_GRP(149, 0))
 #define UPHY1_RN_REG ((volatile struct uphy_rn_regs *)RF_GRP(150, 0))
-
-/* start of xhci */
-struct uphy_u3_regs {
-	u32 cfg[160];		       // 265.0
-};
-
-#define UPHY3_U3_REG ((volatile struct uphy_u3_regs *)RF_AMBA(265, 0))
-#define XHCI_REG ((volatile struct xhci_hccr *)RF_AMBA(64, 0))
-/* end of xhci */
 
 /* usb host */
 struct ehci_regs {

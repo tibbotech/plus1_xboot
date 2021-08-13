@@ -2,7 +2,7 @@
 #include <usb/xhci_usb.h>
 #include <fat/fat.h>
 #include <common.h>
-
+#include <SECGRP1.h>
 #ifdef FPGA
 #define XHCI_DEBUG
 #endif
@@ -20,9 +20,18 @@ extern void _delay_1ms(UINT32 period); // force delay even in CSIM
 extern void boot_reset(void);
 
 // UPHY 2 & 3 init (dh_feng)
-#if defined(PLATFORM_I143)
 void uphy_init(void)
 {
+#if defined(PLATFORM_Q645)
+	MOON0_REG->clken[3] = RF_MASK_V_SET(1 << 11);
+	MOON0_REG->clken[3] = RF_MASK_V_SET(1 << 12);
+	
+	MOON0_REG->reset[3] = RF_MASK_V_SET(1 << 11);
+	MOON0_REG->reset[3] = RF_MASK_V_SET(1 << 12);
+	_delay_1ms(1);
+	MOON0_REG->reset[3] = RF_MASK_V_CLR(1 << 11);
+	MOON0_REG->reset[3] = RF_MASK_V_CLR(1 << 12);
+#elif defined(PLATFORM_I143)
 	// 1. enable UPHY 2/3 & USBC 0/1 HW CLOCK */
 	MOON0_REG->clken[2] = RF_MASK_V_SET(1 << 15);
 	MOON0_REG->clken[2] = RF_MASK_V_SET(1 << 9);
@@ -600,16 +609,26 @@ void uphy_init(void)
 	UPHY3_U3_REG->cfg[77]  = 0x30;
 	UPHY3_U3_REG->cfg[78]  = 0xe0;
 	UPHY3_U3_REG->cfg[79]  = 0x0f;
-	UPHY3_U3_REG->cfg[80]  = 0x01;	
+	UPHY3_U3_REG->cfg[80]  = 0x01;
+#endif	
 }
-#endif
+
 
 void usb_power_init(void)
 {
 	// a. enable pin mux control
 	//    Host: enable
 	//    Device: disable
-#ifdef PLATFORM_I143
+#if defined(PLATFORM_Q645)
+	MOON0_REG->clken[3] = RF_MASK_V_SET(1 << 9);
+	MOON0_REG->clken[3] = RF_MASK_V_SET(1 << 10);
+	
+	MOON0_REG->reset[3] = RF_MASK_V_SET(1 << 9);
+	MOON0_REG->reset[3] = RF_MASK_V_SET(1 << 10);
+	_delay_1ms(1);
+	MOON0_REG->reset[3] = RF_MASK_V_CLR(1 << 9);
+	MOON0_REG->reset[3] = RF_MASK_V_CLR(1 << 10);
+#elif defined(PLATFORM_I143)
 	/* I143 USBC0_OTG_EN_SEL USBC1_OTG_EN_SEL */
 	MOON0_REG->clken[2] = RF_MASK_V_SET(1 << 12);
 	
@@ -1045,7 +1064,7 @@ void inc_deq(struct xhci_ring *ring)
 	} while (last_trb(ring, ring->deq_seg, ring->dequeue));
 }
 
-void queue_trb(struct xhci_ring *ring, int more_trbs_coming, unsigned int *trb_fields)
+void queue_trb(struct xhci_ring *ring, int more_trbs_coming, u32 *trb_fields)
 {
 	struct xhci_generic_trb *trb;	
         int i;
@@ -2933,41 +2952,55 @@ int usb_init(int port, int next_port_in_hub)
         	memset32((u32 *)&g_io_buf.usb.xhci, 0, sizeof(g_io_buf.usb.xhci)/4);
         	dbg();
 
-		prn_string("\nxboot usb_init \n");
-		//check merory address align 
-		if ((intptr_t) g_io_buf.usb.xhci.sparraybuf & 0xfff) {
-			prn_string("!!!!!g_io_buf.usb.xhci.sparraybuf addr not align "); prn_dword((intptr_t) g_io_buf.usb.xhci.sparraybuf);
-		}
-		for (i = 0; i < ERST_NUM_SEGS; i++) {
-			if ((intptr_t) &g_io_buf.usb.xhci.peventtrb[i][0] & 0x3f) {
-				prn_string("!!!!!g_io_buf.usb.xhci.peventtrb addr not align "); prn_dword((intptr_t) &g_io_buf.usb.xhci.peventtrb[i][0]);
+		prn_string("\nxboot usb_init \n"); prn_dword(port);
+	    	if (port == 0) {
+			//check merory address align 
+			if ((intptr_t) g_io_buf.usb.xhci.sparraybuf & 0xfff) {
+				prn_string("!!!!!g_io_buf.usb.xhci.sparraybuf addr not align "); prn_dword((intptr_t) g_io_buf.usb.xhci.sparraybuf);
 			}
-		}
-		for (i = 0; i < ep_num; i++) {
-			if ((intptr_t) &g_io_buf.usb.xhci.peptrb[i][0] & 0x3f) {
-				prn_string("!!!!!g_io_buf.usb.xhci.peptrb addr not align "); prn_dword((intptr_t) &g_io_buf.usb.xhci.peptrb[i][0]);
+			for (i = 0; i < ERST_NUM_SEGS; i++) {
+				if ((intptr_t) &g_io_buf.usb.xhci.peventtrb[i][0] & 0x3f) {
+					prn_string("!!!!!g_io_buf.usb.xhci.peventtrb addr not align "); prn_dword((intptr_t) &g_io_buf.usb.xhci.peventtrb[i][0]);
+				}
 			}
-		}
-		for (i = 0; i < 2; i++) {
-			if ((intptr_t) &g_io_buf.usb.xhci.poutbyte[i][0] & 0x3f) {
-				prn_string("!!!!!g_io_buf.usb.xhci.poutbyte addr not align "); prn_dword((intptr_t) &g_io_buf.usb.xhci.poutbyte[i][0]);
+			for (i = 0; i < ep_num; i++) {
+				if ((intptr_t) &g_io_buf.usb.xhci.peptrb[i][0] & 0x3f) {
+					prn_string("!!!!!g_io_buf.usb.xhci.peptrb addr not align "); prn_dword((intptr_t) &g_io_buf.usb.xhci.peptrb[i][0]);
+				}
 			}
-			if ((intptr_t) &g_io_buf.usb.xhci.pinbyte[i][0] & 0x3f) {
-				prn_string("!!!!!g_io_buf.usb.xhci.pinbyte addr not align "); prn_dword((intptr_t) &g_io_buf.usb.xhci.pinbyte[i][0]);
+			for (i = 0; i < 2; i++) {
+				if ((intptr_t) &g_io_buf.usb.xhci.poutbyte[i][0] & 0x3f) {
+					prn_string("!!!!!g_io_buf.usb.xhci.poutbyte addr not align "); prn_dword((intptr_t) &g_io_buf.usb.xhci.poutbyte[i][0]);
+				}
+				if ((intptr_t) &g_io_buf.usb.xhci.pinbyte[i][0] & 0x3f) {
+					prn_string("!!!!!g_io_buf.usb.xhci.pinbyte addr not align "); prn_dword((intptr_t) &g_io_buf.usb.xhci.pinbyte[i][0]);
+				}
 			}
-		}
-		//end
-#if defined(PLATFORM_I143)
-		CSTAMP(0xE5B00001);
-		uphy_init();	
-#endif
-		CSTAMP(0xE5B00002);
-		usb_power_init();
+			//end
 
+			CSTAMP(0xE5B00001);
+			uphy_init();	
+
+			CSTAMP(0xE5B00002);
+			usb_power_init();
+			// Set RGST : allow access from non-secure
+			for (i = 0; i < 32; i++) {
+				RGST_SECURE_REG->cfg[i] = 0; // non-secure
+			}
+			SECGRP1_PAI_REG->G084_CBDMA0_S01 = 0;
+			SECGRP1_PAI_REG->G084_CBDMA0_S02 = 0xffffffff;
+
+       		}
 /* usb-uclass.c/usb_init.c -> xhci-spdwc3.c/xhci_dwc3_probe*/               
 // xhci register base
-
+#if defined(PLATFORM_Q645)
+		if (port)
+			g_io_buf.usb.xhci.hccr = (struct xhci_hccr *) XHCI1_REG;
+		else
+			g_io_buf.usb.xhci.hccr = (struct xhci_hccr *) XHCI0_REG;
+#elif defined(PLATFORM_I143)
 		g_io_buf.usb.xhci.hccr = (struct xhci_hccr *) XHCI_REG;
+#endif
 		g_io_buf.usb.xhci.hcor = (struct xhci_hcor *)((char *)g_io_buf.usb.xhci.hccr +
 				  	HC_LENGTH(g_io_buf.usb.xhci.hccr->cr_capbase));
         	dwc3_reg = (struct dwc3 *)((char *)(g_io_buf.usb.xhci.hccr) + DWC3_REG_OFFSET);
@@ -2985,6 +3018,7 @@ int usb_init(int port, int next_port_in_hub)
 		tmp1 |= DWC3_GUSB2PHYCFG_PHYIF;
 		tmp1 &= ~DWC3_GUSB2PHYCFG_USBTRDTIM_MASK;
 		tmp1 |= DWC3_GUSB2PHYCFG_USBTRDTIM_16BIT;
+		tmp1 |= DWC3_GUSB2PHYCFG_ENBLSLPM;
 		dwc3_reg->g_usb2phycfg[0] = tmp1;
 #ifdef XHCI_DEBUG
 		prn_string("dwc3_reg->g_usb2phycfg[0] "); prn_dword(dwc3_reg->g_usb2phycfg[0]);
