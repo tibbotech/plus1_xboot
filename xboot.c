@@ -163,8 +163,13 @@ static void init_hw(void)
 #endif
 
 #ifdef PLATFORM_Q628
-	if ((cpu_main_id() & 0xfff0) == 0x9260)
+	if ((cpu_main_id() & 0xfff0) == 0x9260) {
+		if (*(u32 *)B_START_POS == CPU_WAIT_INIT_VAL) {
+			prn_string("JUMP TO B_cpu_wait\n");
+			((void (*)())0xffff00c0)();
+		}
 		prn_string("-- B --\n");
+	}
 	else
 	{
 		is_A = 1;
