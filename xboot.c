@@ -164,7 +164,7 @@ static void init_hw(void)
 
 #ifdef PLATFORM_Q628
 	if ((cpu_main_id() & 0xfff0) == 0x9260) {
-		if (*(u32 *)B_START_POS == CPU_WAIT_INIT_VAL) {
+		if (*(u32 *)B_START_POS == 0xDEADC0DE) { // remoteproc trigger A926_RESET
 			prn_string("JUMP TO B_cpu_wait\n");
 			((void (*)())0xffff00c0)();
 		}
