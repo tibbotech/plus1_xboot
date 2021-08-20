@@ -167,8 +167,13 @@
 /**********************
  * Clock
  *********************/
+#if defined(PLATFORM_Q645)
+#define XTAL_CLK               (25 * 1000 * 1000)
+#define PLLSYS                 (202500 * 1000)      /* 202.5MHz */
+#else
 #define XTAL_CLK               (27 * 1000 * 1000)
 #define PLLSYS                 (202500 * 1000)      /* 202.5MHz */
+#endif
 
 /**********************
  * Timer
