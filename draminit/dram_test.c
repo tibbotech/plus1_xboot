@@ -30,9 +30,9 @@ int dram_test(void)
 #endif
 
         prn_string("dram test ");
-	prn_dword0((unsigned int)ADDRESS_CONVERT(beg));
+		prn_dword0((unsigned int)ADDRESS_CONVERT(beg));
         prn_string(" - ");
-	prn_dword((unsigned int)ADDRESS_CONVERT(end));
+		prn_dword((unsigned int)ADDRESS_CONVERT(end));
 
 	for (flip = 1; flip <= 2; flip++) {
 #ifdef DRAM_TEST_VERBOSE

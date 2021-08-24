@@ -87,8 +87,8 @@ void SetBootDev(unsigned int bootdev, unsigned int pin_x, unsigned int dev_port)
 	CSTAMP(0xC0DE5555);
 
 	dbg();
-	prn_string("dev="); prn_decimal(bootdev);
-	prn_string(" pin="); prn_decimal(pin_x); prn_string("\n");
+	prn_string("dev="); prn_decimal_ln(bootdev);
+	prn_string("pin="); prn_decimal_ln(pin_x); 
 
 	g_bootinfo.bootdev = bootdev;
 	g_bootinfo.bootdev_pinx = pin_x;
@@ -196,7 +196,7 @@ int verify_xboot_img(u8 *img)
 
         // checksum verify
         dbg();
-	checksum = tcpsum(g_xboot_buf + sizeof(*hdr), hdr->length);
+		checksum = tcpsum(g_xboot_buf + sizeof(*hdr), hdr->length);
         if (checksum != hdr->checksum) {
                 prn_string("bad checksum, calc=");
                 prn_dword(checksum);

@@ -757,8 +757,8 @@ int initSPIDriver(void)
 
 	feature_b0 = spi_nand_getfeatures(info, 0xB0);
 	prn_string("Default B0 feature: ");
-	prn_dword0(feature_b0);
-	prn_string("\n");
+	prn_dword(feature_b0);
+	//prn_string("\n");
 
 	switch (g_pyldData[0]) {
 	case VID_WINBOND:
@@ -792,8 +792,8 @@ int initSPIDriver(void)
 
 	feature_b0 &= ~0x10;                 /* disable internal ecc */
 	prn_string("Configure B0 feature to:");
-	prn_dword0(feature_b0);
-	prn_string("\n");
+	prn_dword(feature_b0);
+	//prn_string("\n");
 	spi_nand_setfeatures(info, 0xB0, feature_b0);
 
 	CSTAMP(0x59100007);
@@ -914,8 +914,8 @@ SINT32 SPINANDReadBootBlock(UINT32 *target_address)
 
 		for (i = 0 ; i < ptr->xboot_copies ; i++) {
 
-			prn_string("load xboot skip="); prn_decimal(skip_blk);
-			prn_string(" copy="); prn_decimal(i); prn_string("\n");
+			prn_string("load xboot skip="); prn_decimal_ln(skip_blk);
+			prn_string("copy="); 			prn_decimal_ln(i); //prn_string("\n");
 
 			buf = (u8 *)target_address;
 			xbsize = 0;
@@ -946,7 +946,7 @@ SINT32 SPINANDReadBootBlock(UINT32 *target_address)
 					//ptr->xboot_pg_cnt = (xbsize + sz_sect - 1) / sz_sect; // CPU PC jumps!! div has bug?
 					ptr->xboot_pg_cnt = (xbsize + sz_sect - 1);
 					ptr->xboot_pg_cnt /= sz_sect;
-					prn_string("cnt="); prn_decimal(ptr->xboot_pg_cnt); prn_string("\n");
+					prn_string("cnt="); prn_decimal_ln(ptr->xboot_pg_cnt); //prn_string("\n");
 				}
 
 				//prn_string("data="); prn_dword(*(u32 *)buf);

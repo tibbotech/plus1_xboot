@@ -286,8 +286,7 @@ tryagain:
 #endif
 			CSTAMP(0xE5B00004);
 			prn_string("\nNo usb device on port ");
-			prn_decimal(port);
-			prn_string("\n");
+			prn_decimal_ln(port);
 			return -1;
 		}
 
@@ -401,7 +400,7 @@ data_structure_init:
 	prn_string("get dev desc (8)\n");
 	USB_vendorCmd(0x80, USB_REQ_GET_DESCRIPTOR, DESC_DEVICE, 0, 0x08);
 
-	prn_string("get dev desc ("); prn_decimal(pDev->bLength); prn_string(")\n");
+	prn_string("get dev desc ("); prn_decimal_(pDev->bLength); prn_string(")\n");
 	USB_vendorCmd(0x80, USB_REQ_GET_DESCRIPTOR, DESC_DEVICE, 0, (pDev->bLength));
 
 	prn_string("get conf desc (18)\n");
@@ -417,7 +416,7 @@ data_structure_init:
 		return -1;
 	}
 
-	prn_string("set config "); prn_decimal(pCfg->bCV); prn_string("\n");
+	prn_string("set config "); prn_decimal_ln(pCfg->bCV);
 	USB_vendorCmd(0, USB_REQ_SET_CONFIG, (pCfg->bCV), 0, 0);
 
 	prn_string("get hub desc (9)\n");
@@ -627,7 +626,7 @@ usb_storage_device:
 #endif
 
 	CSTAMP(0xE5B0000F);
-	prn_string("set config "); prn_decimal(pCfg->bCV); prn_string("\n");
+	prn_string("set config "); prn_decimal_ln(pCfg->bCV); 
 	USB_vendorCmd(0, USB_REQ_SET_CONFIG, (pCfg->bCV), 0, 0);
 
 	// Test Unit Ready
@@ -784,10 +783,10 @@ UINT32 USB_transfer(UINT32 wLen, BYTE *buffer)
 #ifdef USB_PRN
 	if (((*EHCI_TD_info_ptr>>8)&3) == 1) {
 		CSTAMP(0xE5B0D000);
-		prn_string("In "); prn_decimal(wLen); prn_string("\n");
+		prn_string("In "); prn_decimal_ln(wLen); //prn_string("\n");
 	} else if (((*EHCI_TD_info_ptr>>8)&3) == 0) {
 		CSTAMP(0xE5B0D001);
-		prn_string("Out "); prn_decimal(wLen); prn_string("\n");
+		prn_string("Out "); prn_decimal_ln(wLen); //prn_string("\n");
 	} else {
 		CSTAMP(0xE5B0D002);
 		prn_string("Setup "); prn_decimal(wLen); prn_string("\n");

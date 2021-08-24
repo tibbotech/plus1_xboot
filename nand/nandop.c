@@ -194,8 +194,8 @@ SINT32 ReadBootBlock(UINT32 *target_address)
 
 		for (i = 0; i < ptr->xboot_copies; i++) {
 
-			prn_string("load xboot skip="); prn_decimal(skip_blk);
-			prn_string(" copy="); prn_decimal(i); prn_string("\n");
+			prn_string("load xboot skip="); prn_decimal_ln(skip_blk);
+			prn_string("copy="); prn_decimal_ln(i); //prn_string("\n");
 
 			buf = (u8 *)target_address;
 			xbsize = 0;
@@ -226,7 +226,7 @@ SINT32 ReadBootBlock(UINT32 *target_address)
 					//ptr->xboot_pg_cnt = (xbsize + sz_sect - 1) / sz_sect; // CPU PC jumps!! div has bug?
 					ptr->xboot_pg_cnt = (xbsize + sz_sect - 1);
 					ptr->xboot_pg_cnt /= sz_sect;
-					prn_string("cnt="); prn_decimal(ptr->xboot_pg_cnt); prn_string("\n");
+					prn_string("cnt="); prn_decimal_ln(ptr->xboot_pg_cnt); //prn_string("\n");
 				}
 
 				//prn_string("data="); prn_dword(*(u32 *)buf);
@@ -320,16 +320,16 @@ UINT32 Load_Header_Profile(SINT32 type)
 
 				if (checksum == ptr->CheckSum) {
 					prn_string("=== Header (idx="); prn_decimal(idx); prn_string(") ===\n");
-					prn_string("PageSize = "); prn_decimal(ptr->PageSize); prn_string("\n");
-					prn_string("PagePerBlock = ");  prn_decimal(ptr->PagePerBlock); prn_string("\n");
-					prn_string("ReduntSize = ");  prn_decimal(ptr->ReduntSize); prn_string("\n");
-					prn_string("BlockNum = "); prn_decimal(ptr->BlockNum); prn_string("\n");
-					prn_string("addrCycle = "); prn_decimal(ptr->addrCycle); prn_string("\n");
-					prn_string("BchType = "); prn_decimal(ptr->BchType); prn_string("\n");
-					prn_string("SpecialMode = "); prn_dword(ptr->PlaneSelectMode); prn_string("\n");
-					prn_string("xboot_copies = "); prn_dword(ptr->xboot_copies);
-					prn_string("xboot_pg_off = "); prn_dword(ptr->xboot_pg_off);
-					prn_string("xboot_pg_cnt = "); prn_dword(ptr->xboot_pg_cnt);
+					prn_string("PageSize = "); 		prn_decimal_ln(ptr->PageSize); 			//prn_string("\n");
+					prn_string("PagePerBlock = ");  prn_decimal_ln(ptr->PagePerBlock); 		//prn_string("\n");
+					prn_string("ReduntSize = ");  	prn_decimal_ln(ptr->ReduntSize); 		//prn_string("\n");
+					prn_string("BlockNum = "); 		prn_decimal_ln(ptr->BlockNum); 			//prn_string("\n");
+					prn_string("addrCycle = "); 	prn_decimal(ptr->addrCycle); prn_string("\n");
+					prn_string("BchType = "); 		prn_decimal_ln(ptr->BchType); 			//prn_string("\n");
+					prn_string("SpecialMode = "); 	prn_dword(ptr->PlaneSelectMode); 		//prn_string("\n");
+					prn_string("xboot_copies = "); 	prn_dword(ptr->xboot_copies);
+					prn_string("xboot_pg_off = "); 	prn_dword(ptr->xboot_pg_off);
+					prn_string("xboot_pg_cnt = "); 	prn_dword(ptr->xboot_pg_cnt);
 
 					if (!ptr->xboot_pg_off || !ptr->xboot_pg_cnt || !ptr->xboot_copies) {
 						// default xboot to Block 1

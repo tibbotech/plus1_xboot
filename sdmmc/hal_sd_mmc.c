@@ -232,9 +232,8 @@ SetChipCtrlClk(unsigned int sysClock, unsigned int busSpeed)
 	speedFactor = ((sysClock+busSpeed-1)/busSpeed) - 1;
 
 	//prn_string("sysclk="); prn_decimal(sysClock);
-	prn_string("busclk="); prn_decimal(busSpeed);
-	prn_string(" div="); prn_decimal(speedFactor);
-	prn_string("\n");
+	prn_string("busclk="); prn_decimal_ln(busSpeed);
+	prn_string("div="); prn_decimal_ln(speedFactor);
 
 	hwSdFreqSet(speedFactor);
 }
@@ -293,8 +292,8 @@ int CheckSDAppOpCond(struct STORAGE_DEVICE* pStroage_dev)
 
 	args_check_pattern = rsp_buf[4];
 	args_voltage_supplied = rsp_buf[3] & 0x0f;
-	DEBUG_PRINTF_FUNLINE("args_check_pattern = ");prn_dword0(args_check_pattern);prn_string("\n");
-	DEBUG_PRINTF_FUNLINE("args_voltage_supplied = ");prn_dword0(args_voltage_supplied);prn_string("\n");
+	DEBUG_PRINTF_FUNLINE("args_check_pattern = ");prn_dword(args_check_pattern);//prn_string("\n");
+	DEBUG_PRINTF_FUNLINE("args_voltage_supplied = ");prn_dword(args_voltage_supplied);//prn_string("\n");
 
 	// No response or voltage mismatch 2.7-3.6
 	if ((ret != SD_SUCCESS) || (args_voltage_supplied != ARGS_VS_1B)) {
@@ -624,7 +623,7 @@ int GetSDSCRNum(struct STORAGE_DEVICE* pStroage_dev)
 
 	scr_struct = UNSTUFF_BITS(response_buf,2, 60, 4);
 	if (scr_struct != 0) {
-		prn_string("Unknown SCR ver="); prn_decimal(scr_struct); prn_string("\n");
+		prn_string("Unknown SCR ver="); prn_decimal_ln(scr_struct); //prn_string("\n");
 		goto FAIL_GET_SCR;
 	}
 
@@ -634,9 +633,8 @@ int GetSDSCRNum(struct STORAGE_DEVICE* pStroage_dev)
 	//prn_string("rsp[0]="); prn_dword(response_buf[0]);
 	//prn_string("rsp[1]="); prn_dword(response_buf[1]);
 	//prn_string("SCR Ver="); prn_decimal(scr_struct);
-	prn_string("SPEC="); prn_decimal(pStroage_dev->dev_card.reg_SCR.sd_spec);
-	prn_string(" BUS_WIDTHS="); prn_decimal(pStroage_dev->dev_card.reg_SCR.sd_bus_widths);
-	prn_string("\n");
+	prn_string("SPEC="); prn_decimal_ln(pStroage_dev->dev_card.reg_SCR.sd_spec);
+	prn_string("BUS_WIDTHS="); prn_decimal_ln(pStroage_dev->dev_card.reg_SCR.sd_bus_widths);
 
 	SetChipCtrlBlkLen(BLOCK_LEN_BYTES_512);
 
@@ -1907,8 +1905,8 @@ int ReadSDMultipleSectorDma(unsigned int SectorIdx, unsigned int SectorNum,
 	unsigned int time0, time1;
 
 #ifdef SD_VERBOSE
-	prn_string("SD Read blk="); prn_decimal(SectorIdx);
-	prn_string(" num="); prn_decimal(SectorNum); prn_string("\n");
+	prn_string("SD Read blk="); prn_decimal_ln(SectorIdx);
+	prn_string("num="); prn_decimal_ln(SectorNum); //prn_string("\n");
 #endif
 	if(!IS_DMA_ADDR_2BYTE_ALIGNED((unsigned int)ADDRESS_CONVERT(pRecBuff))) {
 		prn_string("[sd err]dma addr is not 2 bytes aligned\n");
@@ -2017,8 +2015,8 @@ int ReadSDMultipleSector(unsigned int SectorIdx, unsigned int SectorNum,
 
 #ifdef SD_VERBOSE
 	//printk("[ReadSDMultipleSector] SectorIdx=%d, SectorNum=%d\n",SectorIdx,SectorNum);
-	prn_string("SD Read blk="); prn_decimal(SectorIdx);
-	prn_string(" num="); prn_decimal(SectorNum); prn_string("\n");
+	prn_string("SD Read blk="); prn_decimal_ln(SectorIdx);
+	prn_string("num="); prn_decimal_ln(SectorNum);// prn_string("\n");
 #endif
 
 	if ((gStorage_dev.what_dev == WHAT_STORAGE_STANDARD_CAPACITY_SD) ||
@@ -2095,7 +2093,6 @@ void sdTryNextReadDelay(int card_num)
 	SD_HIGHSPEED_EN_SET(g_bootinfo.gSD_HIGHSPEED_EN_SET_val[card_num]);
 	SD_RD_CLK_DELAY_TIME_SET(g_bootinfo.gSD_RD_CLK_DELAY_TIME_val[card_num]);
 
-	prn_string(" Set rd_clk_dly="); prn_decimal(g_bootinfo.gSD_RD_CLK_DELAY_TIME_val[card_num]);
-	prn_string(" high="); prn_decimal(g_bootinfo.gSD_HIGHSPEED_EN_SET_val[card_num]);
-	prn_string("\n");
+	prn_string(" Set rd_clk_dly="); prn_decimal_ln(g_bootinfo.gSD_RD_CLK_DELAY_TIME_val[card_num]);
+	prn_string(" high="); prn_decimal_ln(g_bootinfo.gSD_HIGHSPEED_EN_SET_val[card_num]);
 }

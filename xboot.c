@@ -115,7 +115,7 @@ static void prn_clk_info(int is_A)
 	prn_string("M abio_ctrl=(");
 	io_ctrl = BIO_CTL_REG->io_ctrl;
 	prn_decimal((io_ctrl & 2) ? 16 : 8);
-	prn_string("bit,"); prn_string((io_ctrl & 1) ? "DDR)\n" : "SDR)\n");
+	prn_string((io_ctrl & 1) ? "bit,DDR)\n" : "bit,SDR)\n");
 
 	if (is_A) {
 		clk_cfg = A_MOON0_REG->clk_cfg;
@@ -163,11 +163,7 @@ static void init_hw(void)
 #endif
 
 #ifdef PLATFORM_Q628
-	if ((cpu_main_id() & 0xfff0) == 0x9260) {
-		if (*(u32 *)B_START_POS == 0xDEADC0DE) { // remoteproc trigger A926_RESET
-			prn_string("JUMP TO B_cpu_wait\n");
-			((void (*)())0xffff00c0)();
-		}
+	if ((cpu_main_id() & 0xfff0) == CPU_WAIT_INIT_VAL) {
 		prn_string("-- B --\n");
 	}
 	else
@@ -908,8 +904,7 @@ static int fat_load_uhdr_image(fat_info *finfo, const char *img_name, void *dst,
 	/* load image data */
 	len = image_get_size(hdr);
 	prn_string("load data size=");
-	prn_decimal(len);
-	prn_string("\n");
+	prn_decimal_ln(len);
 
 	if (len + 64 > max_img_sz) {
 		prn_string("image is too big, size=");
@@ -1485,8 +1480,7 @@ static int nand_load_uhdr_image(int type, const char *img_name, void *dst,
 
 	/* load image data */
 	prn_string("load data size=");
-	prn_decimal(len);
-	prn_string("\n");
+	prn_decimal_ln(len);
 	res = bblk_read(type, (u8 *)hdr, real_blk_off, 64 + len + SIGN_DATA_SIZE, 100, img_blk_end);
 	if (res) {
 		prn_string("failed to load data\n");
@@ -1590,7 +1584,7 @@ static void para_nand_boot(int pin_x)
 	u32 ret;
 
 	prn_string("\n{{nand_boot}}\n");
-	dbg();
+
 	SetBootDev(DEVICE_PARA_NAND, 1, 0);
 	ret = InitDevice(0);
 	if (ret == ROM_SUCCESS) {
@@ -1605,9 +1599,8 @@ static void spi_nand_boot(int pin_x)
 {
 	u32 ret;
 	prn_string("\n{{spi_nand_boot}}\n");
-	prn_decimal(pin_x); prn_string("\n");
+	prn_decimal_ln(pin_x);
 
-	dbg();
 	SetBootDev(DEVICE_SPI_NAND, pin_x, 0);
 	ret = InitDevice(SPINAND_BOOT);
 	if (ret == ROM_SUCCESS) {
@@ -1655,19 +1648,17 @@ static void boot_flow(void)
 		switch (g_bootinfo.gbootRom_boot_mode) {
 		case UART_ISP:
 #ifdef CONFIG_HAVE_UART_BOOTSTRAP
-			dbg();
 			uart_isp(1);
 #endif
 			break;
 		case USB_ISP:
 #if defined(CONFIG_HAVE_USB_DISK) || defined(CONFIG_HAVE_SNPS_USB3_DISK)
-			dbg();
 			usb_isp();
 #endif
 			break;
 		case SDCARD_ISP:
 #ifdef CONFIG_HAVE_SDCARD
-			CSTAMP(0xC0DE000C);dbg();
+			CSTAMP(0xC0DE000C);
 			sdcard_isp();
 #endif
 			break;
