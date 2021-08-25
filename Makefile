@@ -103,7 +103,7 @@ ifeq ($(CONFIG_PLATFORM_Q645),y)
 	@bash ./add_xhdr.sh ../draminit/dwc/firmware/lpddr4_pmu_train_dmem.bin $(BIN)/lpddr4_pmu_train_dmem.img 0 dm1d
 	@bash ./add_xhdr.sh ../draminit/dwc/firmware/lpddr4_2d_pmu_train_imem.bin $(BIN)/lpddr4_2d_pmu_train_imem.img 0 im2d
 	@bash ./add_xhdr.sh ../draminit/dwc/firmware/lpddr4_2d_pmu_train_dmem.bin $(BIN)/lpddr4_2d_pmu_train_dmem.img 0 dm2d
-endif	
+endif
 
 ifeq ($(CONFIG_STANDALONE_DRAMINIT), y)
 	@# print draminit.img size
@@ -122,7 +122,7 @@ size_check:
 	@sz=`du -sb bin/$(TARGET).img | cut -f1` ; \
 	 printf "xboot.img size = %d (hex %x)\n" $$sz $$sz ; \
 	 if [ $$sz -gt $(XBOOT_MAX) ];then \
-		echo "xboot size limit is $(XBOOT_MAX). Please reduce its size.\n" ; \
+		echo -e "\033[0;1;31;40mxboot size limit is $(XBOOT_MAX). Please reduce its size.\033[0m" ; \
 		exit 1; \
 	 fi
 
