@@ -269,7 +269,6 @@ static int run_draminit(void)
 #ifdef CONFIG_USE_ZMEM
 #if defined(PLATFORM_Q645)
 	volatile u32 *m4_mem = (void *)0x1e000000;
-	MOON0_REG->stamp = 0xabcd1234; // DUMP_START
 	prn_string("... M4 MEM ...\n");
 	prn_dword0((u32)&m4_mem[0]);   prn_string(": "); prn_dword(m4_mem[0]);
 	prn_dword0((u32)&m4_mem[1]);   prn_string(": "); prn_dword(m4_mem[1]);
@@ -705,7 +704,7 @@ static void boot_uboot(void)
 	copy_bl31_from_uboot_img((void*)BL31_LOAD_ADDR);
 
 	copy_bootinfo_for_uboot();
-	go_a32_to_a64(UBOOT_RUN_ADDR);
+	go_a32_to_a64(LINUX_RUN_ADDR);
 #elif defined(PLATFORM_Q628)
 	prn_string((const char *)image_get_name(hdr)); prn_string("\n");
 
