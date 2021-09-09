@@ -12,7 +12,7 @@
 #define CONFIG_SPINAND_TIMEOUT          100    /* unit: ms */
 #define CONFIG_SPINAND_TRSMODE          SPINAND_TRS_DMA
 #define CONFIG_SPINAND_READ_BITMODE     SPINAND_1BIT_MODE
-#define CONFIG_SPINAND_CLK_DIV          1      /* 0~7 are allowed */
+#define CONFIG_SPINAND_CLK_DIV          4      /* 0~7 are allowed */
 #if 0 // For zebu sim, set SPI read timing to 0.
 #define CONFIG_SPINAND_READ_TIMING_SEL  0      /* 0~7 are allowed */
 #else

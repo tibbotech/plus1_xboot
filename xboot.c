@@ -595,8 +595,10 @@ static void set_module_nonsecure(void)
 	// 16-bit mask
 	// 8-bit overwrite enable
 	// 8-bit secure(0)/non_secure(1)
-	SECGRP1_MAIN_REG->G083_NIC_S01 = 0xFFFFFF00; // IP  7~0
+	//SECGRP1_MAIN_REG->G083_NIC_S01 = 0xFFFFFF00; // IP  7~0	
+	SECGRP1_MAIN_REG->G083_NIC_S01 = 0xFFFFFC03; // IP  7~0    CA55, N78 need to set to be 01 (bypass), or N78 will probe fail due to IRQ error.
 	SECGRP1_MAIN_REG->G083_NIC_S02 = 0xFFFFFF00; // IP 15~8
+	
 	CSTAMP(0xCBDA0003);
 	SECGRP1_PAI_REG->G084_NIC_S02  = 0xFFFFFF00;
 	SECGRP1_PAI_REG->G084_NIC_S03  = 0xFFFFFF00;
@@ -614,6 +616,32 @@ static void set_module_nonsecure(void)
 	SECGRP1_VIDEOIN_REG->G114_NIC_S03 = 0xFFFFFF00;
 	SECGRP1_DISP_REG->G113_NIC_S01 = 0xFFFFFF00;
 	SECGRP1_DISP_REG->G113_NIC_S02 = 0xFFFFFF00;
+#endif
+#if 0//for checking IP SECURE setting 
+    volatile unsigned int *addr;
+	addr = (volatile unsigned int *)0xF80029DC;//G083_NIC_S01
+	prn_string("0xF80029DC-G083_NIC_S01=");prn_dword(addr[0]);prn_string("\n");
+	addr = (volatile unsigned int *)0xF80029E0;//G083_NIC_S02
+	prn_string("0xF80029E0-G083_NIC_S02=");prn_dword(addr[0]);prn_string("\n");
+	addr = (volatile unsigned int *)0xF80029E4;//G083_reserved_25
+	prn_string("0xF80029E4-G083_reserved_25=");prn_dword(addr[0]);prn_string("\n");
+	addr = (volatile unsigned int *)0xF80029E8;//G083_reserved_26
+	prn_string("0xF80029E8-G083_reserved_26=");prn_dword(addr[0]);prn_string("\n");
+	addr = (volatile unsigned int *)0xF80029EC;//G083_reserved_27
+	prn_string("0xF80029EC-G083_reserved_27=");prn_dword(addr[0]);prn_string("\n");
+
+	addr = (volatile unsigned int *)0xF8002A60;//G084_NIC_S02
+	prn_string("0xF8002A60-G084_NIC_S02=");prn_dword(addr[0]);prn_string("\n");
+	addr = (volatile unsigned int *)0xF8002A64;//G084_NIC_S03
+	prn_string("0xF8002A64-G084_NIC_S03=");prn_dword(addr[0]);prn_string("\n");
+	addr = (volatile unsigned int *)0xF8002A68;//G084_NIC_S04
+	prn_string("0xF8002A68-G084_NIC_S04=");prn_dword(addr[0]);prn_string("\n");
+	addr = (volatile unsigned int *)0xF8002A6C;//G084_NIC_S05
+	prn_string("0xF8002A6C-G084_NIC_S05=");prn_dword(addr[0]);prn_string("\n");
+	addr = (volatile unsigned int *)0xF8002A70;//G084_NIC_S06
+	prn_string("0xF8002A70-G084_NIC_S06=");prn_dword(addr[0]);prn_string("\n");
+	addr = (volatile unsigned int *)0xF8002A74;//G084_reserved_29
+	prn_string("0xF8002A74-G084_reserved_29=");prn_dword(addr[0]);prn_string("\n");
 #endif
 }
 
