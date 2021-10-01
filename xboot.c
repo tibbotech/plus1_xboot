@@ -596,7 +596,8 @@ static void set_module_nonsecure(void)
 	// 8-bit overwrite enable
 	// 8-bit secure(0)/non_secure(1)
 	//SECGRP1_MAIN_REG->G083_NIC_S01 = 0xFFFFFF00; // IP  7~0	
-	SECGRP1_MAIN_REG->G083_NIC_S01 = 0xFFFFFC03; // IP  7~0    CA55, N78 need to set to be 01 (bypass), or N78 will probe fail due to IRQ error.
+	//SECGRP1_MAIN_REG->G083_NIC_S01 = 0xFFFFFC03; // IP  7~0    CA55, N78 need to set to be 01 (bypass), or N78 will probe fail due to IRQ error.
+	SECGRP1_MAIN_REG->G083_NIC_S01 = 0xFFFFFD00; // IP  7~0    CA55 set security, N78 Bypass
 	SECGRP1_MAIN_REG->G083_NIC_S02 = 0xFFFFFF00; // IP 15~8
 	
 	CSTAMP(0xCBDA0003);
