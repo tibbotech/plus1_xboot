@@ -57,8 +57,6 @@
 #define DTB_RUN_ADDR            0x3F0000                   /* skip header */
 #define DTB_LOAD_ADDR           (DTB_RUN_ADDR - 0x40)          /* dtb */
 
-#define BOOT_INFO_ADDR		(DTB_LOAD_ADDR-0x200)			/* used in uboot */
-
 // Linux
 #define LINUX_RUN_ADDR          0x400000                   /* vmlinux */
 #define LINUX_LOAD_ADDR         (LINUX_RUN_ADDR - 0x40)    /* - header */

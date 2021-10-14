@@ -542,10 +542,6 @@ static void zmem_check_uboot(void)
 
 #ifdef CONFIG_PLATFORM_Q645
 
-static void copy_bootinfo_for_uboot(void)
-{
-	memcpy((u8 *)BOOT_INFO_ADDR, (UINT8 *)&g_bootinfo, sizeof(struct bootinfo));
-}
 static int copy_bl31_from_uboot_img(void* dst)
 {
 	void* bl31_src;
@@ -732,7 +728,6 @@ static void boot_uboot(void)
 	/* boot aarch64 uboot */
 	copy_bl31_from_uboot_img((void*)BL31_LOAD_ADDR);
 
-	copy_bootinfo_for_uboot();
 	go_a32_to_a64(UBOOT_RUN_ADDR);
 #elif defined(PLATFORM_Q628)
 	prn_string((const char *)image_get_name(hdr)); prn_string("\n");
