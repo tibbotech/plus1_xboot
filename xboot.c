@@ -222,6 +222,10 @@ static void init_hw(void)
 	*(volatile u32 *)ARM_TSGEN_WR_BASE = 3; //EN = 1 and HDBG = 1
 	*(volatile u32 *)(ARM_TSGEN_WR_BASE + 0x08) = 0; // CNTCV[31:0]
 	*(volatile u32 *)(ARM_TSGEN_WR_BASE + 0x0C) = 0; // CNTCV[63:32]
+	
+	//Set EVDN VCCM to be correct value(0xB1000000) that comes from EV71 IP config within arc.tcf file.
+	MOON2_REG->sft_cfg[22] = RF_MASK_V(0xffff, 0x0000);//EVDN VCCM base address low byte
+	MOON2_REG->sft_cfg[23] = RF_MASK_V(0xffff, 0xB100);//EVDN VCCM base address high byte	
 #endif
 
 	dbg();
@@ -592,8 +596,7 @@ static void set_module_nonsecure(void)
 	// 8-bit overwrite enable
 	// 8-bit secure(0)/non_secure(1)
 	//SECGRP1_MAIN_REG->G083_NIC_S01 = 0xFFFFFF00; // IP  7~0	
-	//SECGRP1_MAIN_REG->G083_NIC_S01 = 0xFFFFFC03; // IP  7~0    CA55, N78 need to set to be 01 (bypass), or N78 will probe fail due to IRQ error.
-	SECGRP1_MAIN_REG->G083_NIC_S01 = 0xFFFFFD00; // IP  7~0    CA55 set security, N78 Bypass
+	SECGRP1_MAIN_REG->G083_NIC_S01 = 0xFFFFFC00; // IP  7~0    CA55 needs to set to be bypass mode, or N78 will probe fail due to NCU's judgement.
 	SECGRP1_MAIN_REG->G083_NIC_S02 = 0xFFFFFF00; // IP 15~8
 	
 	CSTAMP(0xCBDA0003);
