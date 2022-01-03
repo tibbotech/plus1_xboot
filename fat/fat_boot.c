@@ -632,7 +632,7 @@ static u32 search_fat16_files(fat_info *info, u8 *buffer, u8 type)
 u8 fat_sdcard_check_boot_mode(fat_info *info)
 {
 
-#if defined (PLATFORM_Q645)
+#if defined (PLATFORM_Q645) || defined(PLATFORM_Q654)
 	if(info->fileInfo[0].size > 0x28000)
 #else
 	if(info->fileInfo[0].size != 0x10000)

@@ -18,7 +18,7 @@
 #endif
 #include <nand_boot/nfdriver.h>
 #include <nand_boot/nfdriver.h>
-#ifdef CONFIG_PLATFORM_Q645
+#if defined (CONFIG_PLATFORM_Q645) || defined (CONFIG_PLATFORM_Q654)
 #include <hal/hal_cache.h>
 #include <spinand_boot/sp_spinand_q645.h>
 #else
@@ -149,7 +149,7 @@ union storage_buf {
 
 #define SB_FLAG_ENABLE    1
 
-#ifdef PLATFORM_Q645
+#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
 #define FLAG_SECURE_ENABLE       (1 << 0)
 #define FLAG_HSM_DISABLE         (1 << 8)
 #define IS_IC_SECURE_ENABLE()    (g_bootinfo.hw_security & FLAG_SECURE_ENABLE)
@@ -169,7 +169,7 @@ struct bootinfo {
 	u32     mp_flag;             // mp machine flag
 	u32     bootcpu;             // 0: B, 1: A
 	u32     in_xboot;            // 0=in iboot, 1=in xboot
-#ifdef PLATFORM_Q645	
+#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
 	u32     hw_security;         // hw security
 #endif	
 	u32     sb_flag;             // secure boot flag, bit0=1(secure boot)

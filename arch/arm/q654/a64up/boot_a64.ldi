@@ -1,0 +1,26 @@
+#include "../../../../include/config.h"
+
+OUTPUT_FORMAT("elf64-littleaarch64", "elf64-littleaarch64", "elf64-littleaarch64")
+OUTPUT_ARCH(aarch64)
+ENTRY(_start_a64)
+
+
+MEMORY
+{
+	// cb sram last 1K
+	ram : ORIGIN = XBOOT_A64_ADDR, LENGTH = 1024
+}
+
+SECTIONS
+{
+	.stext : {
+		__stext = .;
+		start_a64.o (.text)
+		*(.text*)
+		*(.rodata*)
+		__etext = .;
+	} > ram
+
+	// borrow life-ended aarch32 xboot's stack
+	__init_stack_N = (BOOT_RAM_BASE + (255 * 1024) - 64);
+}

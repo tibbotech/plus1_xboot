@@ -27,7 +27,7 @@ void set_spi_nor_pinmux(int pin_x)
 {
 #ifdef PLATFORM_I143
 	MOON1_REG->sft_cfg[1] = RF_MASK_V(0x3 << 0, pin_x << 0);
-#elif defined (PLATFORM_Q645)
+#elif defined (PLATFORM_Q645) || defined(PLATFORM_Q654)
 	MOON1_REG->sft_cfg[1] = RF_MASK_V(0x1 << 0, pin_x << 0);
 #else
 	MOON1_REG->sft_cfg[1] = RF_MASK_V(0xf, (pin_x << 2) | pin_x);
@@ -38,16 +38,16 @@ void set_spi_nor_pinmux(int pin_x)
 /* Return 1 = X1,SPI_NOR, 2 = X2,SPI_NOR */
 int get_spi_nor_pinmux(void)
 {
-#ifdef PLATFORM_Q645
-	return ((MOON1_REG->sft_cfg[1] >> 0) & 0x1);
+#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
+	return (MOON1_REG->sft_cfg[1] >> 0) & 0x1;
 #else
-	return (MOON1_REG->sft_cfg[1] & 0x3);
+	return MOON1_REG->sft_cfg[1] & 0x3;
 #endif
 }
 
 static inline void set_spi_nand_pinmux(int pin_x)
 {
-#ifdef PLATFORM_Q645
+#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
 	MOON1_REG->sft_cfg[1] = RF_MASK_V(0x3 << 4, pin_x << 4);
 #else
 	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 4, pin_x << 4);
@@ -58,7 +58,7 @@ static inline void set_emmc_pinmux(int pin_x)
 {
 #ifdef PLATFORM_I143
 	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 2, pin_x << 2);
-#elif defined (PLATFORM_Q645)
+#elif defined (PLATFORM_Q645) || defined(PLATFORM_Q654)
 	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 3, pin_x << 3);
 #else
 	// Q628 eMMC : X1,CARD0_SD
@@ -70,7 +70,7 @@ static inline void set_sdcard1_pinmux(int pin_x)
 {
 #ifdef PLATFORM_I143
 	MOON1_REG->sft_cfg[4] = RF_MASK_V(1 << 0, pin_x << 0);
-#elif defined (PLATFORM_Q645)
+#elif defined (PLATFORM_Q645) || defined(PLATFORM_Q654)
 	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 6, pin_x << 6);
 #else
 	// Q628 SD_CARD : X1,CARD1_SD
@@ -88,7 +88,7 @@ void SetBootDev(unsigned int bootdev, unsigned int pin_x, unsigned int dev_port)
 
 	dbg();
 	prn_string("dev="); prn_decimal_ln(bootdev);
-	prn_string("pin="); prn_decimal_ln(pin_x); 
+	prn_string("pin="); prn_decimal_ln(pin_x);
 
 	g_bootinfo.bootdev = bootdev;
 	g_bootinfo.bootdev_pinx = pin_x;
@@ -119,7 +119,7 @@ void SetBootDev(unsigned int bootdev, unsigned int pin_x, unsigned int dev_port)
 		set_spi_nand_pinmux(pin_x);
 		break;
 	case DEVICE_PARA_NAND:
-		g_bootinfo.gbootRom_boot_mode = NAND_LARGE_BOOT;
+		g_bootinfo.gbootRom_boot_mode = PARA_NAND_BOOT;
 		break;
 #ifdef CONFIG_HAVE_EMMC
 	case DEVICE_EMMC:

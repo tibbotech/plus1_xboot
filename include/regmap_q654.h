@@ -1,5 +1,5 @@
-#ifndef __INC_REGMAP_Q645_H
-#define __INC_REGMAP_Q645_H
+#ifndef __INC_REGMAP_Q654_H
+#define __INC_REGMAP_Q654_H
 
 struct moon0_regs {
 	unsigned int stamp;            // 0.0
@@ -714,4 +714,4 @@ struct rgst_secure_regs {
 /* TSGEN Write/Read */
 #define ARM_TSGEN_WR_BASE  0xf810a000
 
-#endif /* __INC_REGMAP_Q645_H */
+#endif /* __INC_REGMAP_Q654_H */

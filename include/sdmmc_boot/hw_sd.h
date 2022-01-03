@@ -3,7 +3,7 @@
 
 #ifdef PLATFORM_I143
 #include "hw_sd_143.h"
-#elif defined(PLATFORM_Q645)
+#elif defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
 #include "hw_sd_645.h"
 #else
 #include "hw_sd_628.h"

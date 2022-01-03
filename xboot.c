@@ -45,7 +45,7 @@ __attribute__ ((section("storage_buf_sect")))    union storage_buf   g_io_buf;
 __attribute__ ((section("bootinfo_sect")))       struct bootinfo     g_bootinfo;
 __attribute__ ((section("boothead_sect")))       u8                  g_boothead[GLOBAL_HEADER_SIZE];
 __attribute__ ((section("xboot_header_sect")))   u8                  g_xboot_buf[32];
-#ifdef PLATFORM_Q645
+#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
 fat_info g_finfo;
 #endif
 
@@ -71,7 +71,7 @@ static void fixup_boot_compatible(void)
 	memcpy((u8 *)ROM_V100_BOOTINFO_ADDR, (UINT8 *)&g_bootinfo, sizeof(struct bootinfo));
 
 	if ((g_bootinfo.gbootRom_boot_mode == SPINAND_BOOT) ||
-	    (g_bootinfo.gbootRom_boot_mode == NAND_LARGE_BOOT)) {
+	    (g_bootinfo.gbootRom_boot_mode == PARA_NAND_BOOT)) {
 		memcpy((u8 *)ROM_V100_BHDR_ADDR, (UINT8 *)&g_boothead, GLOBAL_HEADER_SIZE);
 	}
 }
@@ -145,7 +145,7 @@ static void init_hw(void)
 {
 	int i;
 
-#ifdef PLATFORM_Q645
+#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
 	// enable CA55_SYS_TIMER
 	volatile u32 *r = (void *)0xf810a000;
 	r[2] = 0xfffffff0; // set cntl
@@ -182,7 +182,6 @@ static void init_hw(void)
 	prn_clk_info(is_A);
 #endif
 
-#if defined(PLATFORM_Q628)|| defined(PLATFORM_I143)||defined(PLATFORM_Q645)
 #ifdef CONFIG_PARTIAL_CLKEN
 	prn_string("partial clken\n");
 	/* power saving, provided by yuwen + CARD_CTL4 */
@@ -203,7 +202,6 @@ static void init_hw(void)
 	/* reset[all] = clear */
 	for (i = 0; i < sizeof(MOON0_REG->reset) / 4; i++)
 		MOON0_REG->reset[i] = RF_MASK_V_CLR(0xffff);
-#endif
 
 #ifdef PLATFORM_I143
 	/* GPU driver (if not,all the date that gpu output to frame buffer is 0) by xt*/
@@ -218,14 +216,14 @@ static void init_hw(void)
 	}
 #endif
 
-#ifdef PLATFORM_Q645
+#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
 	*(volatile u32 *)ARM_TSGEN_WR_BASE = 3; //EN = 1 and HDBG = 1
 	*(volatile u32 *)(ARM_TSGEN_WR_BASE + 0x08) = 0; // CNTCV[31:0]
 	*(volatile u32 *)(ARM_TSGEN_WR_BASE + 0x0C) = 0; // CNTCV[63:32]
-	
+
 	//Set EVDN VCCM to be correct value(0xB1000000) that comes from EV71 IP config within arc.tcf file.
 	MOON2_REG->sft_cfg[22] = RF_MASK_V(0xffff, 0x0000);//EVDN VCCM base address low byte
-	MOON2_REG->sft_cfg[23] = RF_MASK_V(0xffff, 0xB100);//EVDN VCCM base address high byte	
+	MOON2_REG->sft_cfg[23] = RF_MASK_V(0xffff, 0xB100);//EVDN VCCM base address high byte
 #endif
 
 	dbg();
@@ -234,11 +232,11 @@ static void init_hw(void)
 static int run_draminit(void)
 {
 	/* skip dram init on csim/zebu */
-#if defined(CONFIG_BOOT_ON_CSIM) && !defined(PLATFORM_Q645)
+#if defined(CONFIG_BOOT_ON_CSIM) && !defined(PLATFORM_Q645) && !defined(PLATFORM_Q654)
 	prn_string("skip draminit\n");
 #else
 	int save_val;
-#if defined(PLATFORM_Q645)
+#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
 	int (*dram_init)(unsigned int);
 #else
 	int (*dram_init)(void);
@@ -248,7 +246,7 @@ static int run_draminit(void)
 	prn_string("standalone draiminit\n");
 	dram_init = (void *)DRAMINIT_RUN_ADDR;
 #else
-#if defined(PLATFORM_Q645)
+#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
 	extern int dram_init_main(unsigned int);
 #else
 	extern int dram_init_main(void);
@@ -258,10 +256,8 @@ static int run_draminit(void)
 
 	prn_string("Run draiminit@"); prn_dword((u32)ADDRESS_CONVERT(dram_init));
 	save_val = g_bootinfo.mp_flag;
-#ifdef PLATFORM_3502
-	g_bootinfo.mp_flag = 1;		/* mask prints */
-#endif
-#if defined(PLATFORM_Q645)
+
+#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
 	dram_init(g_bootinfo.gbootRom_boot_mode);
 #else
 	dram_init();
@@ -271,7 +267,7 @@ static int run_draminit(void)
 #endif
 
 #ifdef CONFIG_USE_ZMEM
-#if defined(PLATFORM_Q645)
+#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
 	volatile u32 *m4_mem = (void *)0x1e000000;
 	prn_string("... M4 MEM ...\n");
 	prn_dword0((u32)&m4_mem[0]);   prn_string(": "); prn_dword(m4_mem[0]);
@@ -302,7 +298,7 @@ static int run_draminit(void)
 
 static inline void release_spi_ctrl(void)
 {
-#ifdef PLATFORM_Q645
+#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
 	// SPIFL no reset
 	MOON0_REG->reset[2] = RF_MASK_V_CLR(1 << 10); /* SPIFL_RESET=0 */
 #else
@@ -544,8 +540,7 @@ static void zmem_check_uboot(void)
 }
 #endif
 
-#ifdef CONFIG_PLATFORM_Q645
-
+#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
 static int copy_bl31_from_uboot_img(void* dst)
 {
 	void* bl31_src;
@@ -595,10 +590,10 @@ static void set_module_nonsecure(void)
 	// 16-bit mask
 	// 8-bit overwrite enable
 	// 8-bit secure(0)/non_secure(1)
-	//SECGRP1_MAIN_REG->G083_NIC_S01 = 0xFFFFFF00; // IP  7~0	
+	//SECGRP1_MAIN_REG->G083_NIC_S01 = 0xFFFFFF00; // IP  7~0
 	SECGRP1_MAIN_REG->G083_NIC_S01 = 0xFFFFFC00; // IP  7~0    CA55 needs to set to be bypass mode, or N78 will probe fail due to NCU's judgement.
 	SECGRP1_MAIN_REG->G083_NIC_S02 = 0xFFFFFF00; // IP 15~8
-	
+
 	CSTAMP(0xCBDA0003);
 	SECGRP1_PAI_REG->G084_NIC_S02  = 0xFFFFFF00;
 	SECGRP1_PAI_REG->G084_NIC_S03  = 0xFFFFFF00;
@@ -617,7 +612,7 @@ static void set_module_nonsecure(void)
 	SECGRP1_DISP_REG->G113_NIC_S01 = 0xFFFFFF00;
 	SECGRP1_DISP_REG->G113_NIC_S02 = 0xFFFFFF00;
 #endif
-#if 0//for checking IP SECURE setting 
+#if 0//for checking IP SECURE setting
     volatile unsigned int *addr;
 	addr = (volatile unsigned int *)0xF80029DC;//G083_NIC_S01
 	prn_string("0xF80029DC-G083_NIC_S01=");prn_dword(addr[0]);prn_string("\n");
@@ -725,13 +720,15 @@ static void boot_uboot(void)
 		copy_bootinfo_to_0xfe809a00();
 		exit_bootROM(OPENSBI_RUN_ADDR);
 	}
-#elif defined(PLATFORM_Q645)
+
+#elif defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
 	prn_string((const char *)image_get_name(hdr)); prn_string("\n");
 	prn_string("Run uboot@");prn_dword(UBOOT_RUN_ADDR);
 	/* boot aarch64 uboot */
 	copy_bl31_from_uboot_img((void*)BL31_LOAD_ADDR);
 
 	go_a32_to_a64(UBOOT_RUN_ADDR);
+
 #elif defined(PLATFORM_Q628)
 	prn_string((const char *)image_get_name(hdr)); prn_string("\n");
 
@@ -763,7 +760,7 @@ static void boot_linux(void)
 #ifdef PLATFORM_I143
 	exit_bootROM(OPENSBI_RUN_ADDR);
 
-#elif defined(PLATFORM_Q645)
+#elif defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
 	CSTAMP(0x44556677);
 	prn_string("Run Linux@");
 	prn_dword(LINUX_RUN_ADDR);
@@ -956,7 +953,7 @@ static int fat_load_uhdr_image(fat_info *finfo, const char *img_name, void *dst,
 static void do_fat_boot(u32 type, u32 port)
 {
 	u32 ret;
-#ifndef PLATFORM_Q645
+#if !defined(PLATFORM_Q645) && !defined(PLATFORM_Q654)
 	fat_info g_finfo;
 #endif
 #ifdef CONFIG_STANDALONE_DRAMINIT
@@ -1006,7 +1003,7 @@ static void do_fat_boot(u32 type, u32 port)
 
 	run_draminit();
 
-#if defined(PLATFORM_Q645)
+#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
 	if (fat_sdcard_check_boot_mode(&g_finfo) == TRUE) {
 		if (type == SDCARD_ISP) {
 			g_bootinfo.gbootRom_boot_mode = SDCARD_BOOT;
@@ -1372,7 +1369,7 @@ static int bblk_read(int type, u8 *dst, u32 blk_off, u32 read_length,
 			}
 #endif
 #ifdef CONFIG_HAVE_PARA_NAND
-			if (type == NAND_LARGE_BOOT) {
+			if (type == PARA_NAND_BOOT) {
 				res = ReadNANDPage_1K60(NAND_CS0, pg_off + j, (u32 *)(dst + got), &length);
 			}
 #endif
@@ -1614,7 +1611,7 @@ static void para_nand_boot(int pin_x)
 	SetBootDev(DEVICE_PARA_NAND, 1, 0);
 	ret = InitDevice(0);
 	if (ret == ROM_SUCCESS) {
-		nand_uboot(NAND_LARGE_BOOT);
+		nand_uboot(PARA_NAND_BOOT);
 	}
 	dbg();
 }
@@ -1653,7 +1650,7 @@ static void boot_flow(void)
 	 * g_bootinfo.gbootRom_boot_mode = USB_ISP; g_bootinfo.bootdev = DEVICE_USB_ISP; g_bootinfo.bootdev_port = 1;
 	 * g_bootinfo.gbootRom_boot_mode = EMMC_BOOT;
 	 * g_bootinfo.gbootRom_boot_mode = UART_ISP;
-	 * g_bootinfo.gbootRom_boot_mode = NAND_LARGE_BOOT; g_bootinfo.app_blk_start = 2;
+	 * g_bootinfo.gbootRom_boot_mode = PARA_NAND_BOOT; g_bootinfo.app_blk_start = 2;
 	 * g_bootinfo.gbootRom_boot_mode = SPI_NAND_BOOT;
 	 * g_bootinfo.gbootRom_boot_mode = SDCARD_ISP; g_bootinfo.bootdev = DEVICE_SD0; g_bootinfo.bootdev_pinx = 1;
 	 * prn_string("force boot mode="); prn_dword(g_bootinfo.gbootRom_boot_mode);
@@ -1698,7 +1695,7 @@ static void boot_flow(void)
 			spi_nand_boot(g_bootinfo.bootdev_pinx);
 #endif
 			break;
-		case NAND_LARGE_BOOT:
+		case PARA_NAND_BOOT:
 #ifdef CONFIG_HAVE_PARA_NAND
 			para_nand_boot(g_bootinfo.bootdev_pinx);
 #endif
@@ -1729,7 +1726,7 @@ static void init_uart(void)
 	UART1_REG->div_l = UART_BAUD_DIV_L(BAUDRATE, UART_SRC_CLK);
 	UART1_REG->div_h = UART_BAUD_DIV_H(BAUDRATE, UART_SRC_CLK);
 #endif
-#ifdef PLATFORM_Q645 //TBD
+#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
 	/* uart1 pinmux : UA1_TX, UA1_RX */
 	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 9, 1 << 9); // [9]=1
 	MOON0_REG->reset[3] = RF_MASK_V_CLR(1 << 0); /* release UA1 */

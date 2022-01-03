@@ -190,7 +190,7 @@ void mon_shell(void)
 		case 'm': {
 			const int bootmenu[] = {
 				USB_ISP, SDCARD_ISP, SPI_NOR_BOOT, SPINAND_BOOT,
-				NAND_LARGE_BOOT, EMMC_BOOT, UART_ISP, AUTO_SCAN };
+				PARA_NAND_BOOT, EMMC_BOOT, UART_ISP, AUTO_SCAN };
 			prn_string("\n1:usb, 2:sdcard, 3:nor, 4:spinand, 5:paranand, 6:emmc, 7:uart, 8:auto\n");
 			if (get_word_ex("choice=", 0, &value)) {
 				if (--value < sizeof(bootmenu) / sizeof(bootmenu[0])) {

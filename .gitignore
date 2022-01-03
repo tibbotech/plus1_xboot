@@ -12,4 +12,9 @@ arch/arm/q645/a64up/a64up.bin
 arch/arm/q645/a64up/a64up.dis
 arch/arm/q645/a64up/a64up.map
 arch/arm/q645/a64up/boot_a64.ld
+arch/arm/q654/a64up/a64up
+arch/arm/q654/a64up/a64up.bin
+arch/arm/q654/a64up/a64up.dis
+arch/arm/q654/a64up/a64up.map
+arch/arm/q654/a64up/boot_a64.ld
 secure/

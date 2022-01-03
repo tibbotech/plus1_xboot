@@ -1,0 +1,143 @@
+#include "include/config.h"
+
+OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
+OUTPUT_ARCH(arm)
+ENTRY(_start)
+
+#define BOOT_ROM_SIZE       (96 * 1024)
+
+/* ROM base */
+#ifdef PLATFORM_SPIBAREMETAL
+#define IBOOT_BASE SPI_FLASH_BASE	/* spi baremetal boot */
+#else
+#define IBOOT_BASE BOOT_ROM_BASE	/* arm ROM address */
+#endif
+
+#define ROM_PGTBL_SIZE      (16 * 1024)
+#define ROM_SHARE2_SIZE     (16 * 1024)
+#define ROM_INIT_SIZE       (1024 + 512 - ROM_VSR_SIZE)
+#define ROM_VSR_SIZE        128
+#define ROM_SHARE_SIZE      (BOOT_ROM_SIZE - ROM_SHARE2_SIZE - ROM_PGTBL_SIZE - ROM_VSR_SIZE - ROM_INIT_SIZE)
+
+#define ROM_PGTBL_START     (IBOOT_BASE)
+#define ROM_SHARE2_START    (ROM_PGTBL_START + ROM_PGTBL_SIZE)
+#define ROM_INIT_START      (ROM_SHARE2_START + ROM_SHARE2_SIZE)
+#define ROM_VSR_START       (ROM_INIT_START + ROM_INIT_SIZE)
+#define ROM_SHARE_START     (ROM_VSR_START + ROM_VSR_SIZE)
+
+
+/* RAM base */
+#ifdef CONFIG_USE_ZMEM
+#define XBOOT_START         (ZMEM_XBOOT_ADDR)  /* xboot @ DRAM */
+#else
+#define XBOOT_START         (BOOT_RAM_BASE)
+#endif
+
+#define BOOTINFO_START      (BOOT_RAM_BASE + XBOOT_BUF_SIZE)
+#define GLOBAL_HEADER_START (BOOTINFO_START + BOOTINFO_SIZE)
+#define A64UP_START         (GLOBAL_HEADER_START + GLOBAL_HEADER_SIZE)
+#define CDATA_START         (A64UP_START + A64UP_SIZE)
+#define STORAGE_BUF_START   (CDATA_START + CDATA_SIZE)
+#define STACK_START         (STORAGE_BUF_START + STORAGE_BUF_SIZE)
+#define BOOTCOMPT_START     (STACK_START + STACK_SIZE)
+#define SPACC_RAM_START     (BOOTCOMPT_START + BOOTCOMPT_SIZE)
+
+MEMORY
+{
+	/* rom */
+	rom_pgtbl    : ORIGIN = ROM_PGTBL_START,     LENGTH = ROM_PGTBL_SIZE      /* 16K                */
+	rom_share2   : ORIGIN = ROM_SHARE2_START,    LENGTH = ROM_SHARE2_SIZE     /* 16K               */
+	rom_boot     : ORIGIN = ROM_INIT_START,      LENGTH = ROM_INIT_SIZE       /* 1.5K - vsr        */
+	rom_vsr      : ORIGIN = ROM_VSR_START,       LENGTH = ROM_VSR_SIZE        /* 128               */
+	rom_share    : ORIGIN = ROM_SHARE_START,     LENGTH = ROM_SHARE_SIZE      /* remaining ROM     */
+	                                                                          /*    size @ offset  */
+	xboot_buf    : ORIGIN = XBOOT_START,         LENGTH = XBOOT_BUF_SIZE      /*     96K @  0      */
+	bootinfo     : ORIGIN = BOOTINFO_START,      LENGTH = BOOTINFO_SIZE       /*     512 @ 96K     */
+	boothead     : ORIGIN = GLOBAL_HEADER_START, LENGTH = GLOBAL_HEADER_SIZE  /*     512 @ 96K+512 */
+	a64up        : ORIGIN = A64UP_START,         LENGTH = A64UP_SIZE          /*     1K  @ 97K     */
+	cdata        : ORIGIN = CDATA_START,         LENGTH = CDATA_SIZE          /*     62K @ 98K     */
+	storage_buf  : ORIGIN = STORAGE_BUF_START,   LENGTH = STORAGE_BUF_SIZE    /*     32K @ 160K    */
+	stack        : ORIGIN = STACK_START,         LENGTH = STACK_SIZE          /*  63K-64 @ 192K    */
+	bootcompat   : ORIGIN = BOOTCOMPT_START,     LENGTH = BOOTCOMPT_SIZE      /*      64 @ 255K-64 */
+	spacc_ram    : ORIGIN = SPACC_RAM_START,     LENGTH = SPACC_RAM_SIZE      /*      1K @ 255K    */
+}
+
+SECTIONS
+{
+	/* ROM */
+	.rom_vsr : {
+		__rom_vsr_base = .;
+	} > rom_vsr
+
+	/* RAM */
+	.xhdr (NOLOAD): {
+		*(xboot_header_sect)
+	} > xboot_buf
+
+	.text (XBOOT_START + 0x20) : {
+		arch/arm/q654/start.o (.text) ;
+		*(.text)
+		*(.text.*)
+		*(.rodata)
+		*(.rodata.*)
+
+		. = ALIGN(4);
+		__hsm_keys_s = .;
+#ifdef CONFIG_SECURE_BOOT_SIGN
+		KEEP(../../build/tools/secure_hsm/secure/hsm_keys/hsmk.o (.hsmk));
+#endif
+		__hsm_keys_e = .;
+
+		. = ALIGN(4);
+		__a64rom = .;
+		KEEP(arch/arm/q654/a64up/a64bin.o (.a64bin));
+		. = ALIGN(4);
+		__a64rom_end = .;
+
+		__etext = .;
+
+		__data = .;
+		*(.data*)
+		__edata = .;
+	} > xboot_buf
+
+	__DATA_ROM_START__ = __data;
+
+	/* RAM */
+	.xboot_buf (NOLOAD): {
+		*(xboot_buf_sect)
+	} > xboot_buf
+
+	.bootinfo (NOLOAD): {
+		*(bootinfo_sect)
+	} > bootinfo
+
+	.boothead (NOLOAD): {
+		*(boothead_sect)
+	} > boothead
+
+	.storage_buf (NOLOAD): {
+		__storage_buf_beg = .;
+		*(storage_buf_sect)
+		__except_stack_top = __storage_buf_beg + STORAGE_BUF_SIZE ; /* borrow storage buf end */
+	} > storage_buf
+
+	.bss : {
+		__bss_start = .;
+		KEEP(*(.bss*));
+		KEEP(*(.sbss*));
+		KEEP(*(COMMON));
+		. = ALIGN(4);
+		__bss_end = .;
+		__bss_end__ = .;
+	} > cdata
+
+	.stack : {
+		__stack_base = .;
+		PROVIDE (__stack_top = __stack_base + STACK_SIZE);
+	} > stack
+
+	/DISCARD/ : {
+		*(.note.gnu.build-id)
+	}
+}

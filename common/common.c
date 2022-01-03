@@ -115,7 +115,7 @@ void boot_reset(void)
 #endif
 
 	/* STC: watchdog control */
-#ifdef PLATFORM_Q645
+#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
 	STC_REG->timerw_ctl = 0x3877;
 	STC_REG->timerw_ctl = 0xAB00;
 	STC_REG->timerw_cnt = 0x0001;
