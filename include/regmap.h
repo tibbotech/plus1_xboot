@@ -7,8 +7,8 @@
 #include <regmap_q628.h>
 #elif defined(PLATFORM_Q645)
 #include <regmap_q645.h>
-#elif defined(PLATFORM_Q654)
-#include <regmap_q654.h>
+#elif defined(PLATFORM_SP7350)
+#include <regmap_sp7350.h>
 #endif
 
 #endif /* __INC_REGMAP_H */

@@ -75,7 +75,7 @@ SECTIONS
 	} > xboot_buf
 
 	.text (XBOOT_START + 0x20) : {
-		arch/arm/q654/start.o (.text) ;
+		arch/arm/sp7350/start.o (.text) ;
 		*(.text)
 		*(.text.*)
 		*(.rodata)
@@ -90,7 +90,7 @@ SECTIONS
 
 		. = ALIGN(4);
 		__a64rom = .;
-		KEEP(arch/arm/q654/a64up/a64bin.o (.a64bin));
+		KEEP(arch/arm/sp7350/a64up/a64bin.o (.a64bin));
 		. = ALIGN(4);
 		__a64rom_end = .;
 

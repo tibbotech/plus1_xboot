@@ -27,7 +27,7 @@ void set_spi_nor_pinmux(int pin_x)
 {
 #ifdef PLATFORM_I143
 	MOON1_REG->sft_cfg[1] = RF_MASK_V(0x3 << 0, pin_x << 0);
-#elif defined (PLATFORM_Q645) || defined(PLATFORM_Q654)
+#elif defined (PLATFORM_Q645) || defined(PLATFORM_SP7350)
 	MOON1_REG->sft_cfg[1] = RF_MASK_V(0x1 << 0, pin_x << 0);
 #else
 	MOON1_REG->sft_cfg[1] = RF_MASK_V(0xf, (pin_x << 2) | pin_x);
@@ -38,7 +38,7 @@ void set_spi_nor_pinmux(int pin_x)
 /* Return 1 = X1,SPI_NOR, 2 = X2,SPI_NOR */
 int get_spi_nor_pinmux(void)
 {
-#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
 	return (MOON1_REG->sft_cfg[1] >> 0) & 0x1;
 #else
 	return MOON1_REG->sft_cfg[1] & 0x3;
@@ -47,7 +47,7 @@ int get_spi_nor_pinmux(void)
 
 static inline void set_spi_nand_pinmux(int pin_x)
 {
-#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
 	MOON1_REG->sft_cfg[1] = RF_MASK_V(0x3 << 4, pin_x << 4);
 #else
 	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 4, pin_x << 4);
@@ -58,7 +58,7 @@ static inline void set_emmc_pinmux(int pin_x)
 {
 #ifdef PLATFORM_I143
 	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 2, pin_x << 2);
-#elif defined (PLATFORM_Q645) || defined(PLATFORM_Q654)
+#elif defined (PLATFORM_Q645) || defined(PLATFORM_SP7350)
 	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 3, pin_x << 3);
 #else
 	// Q628 eMMC : X1,CARD0_SD
@@ -70,7 +70,7 @@ static inline void set_sdcard1_pinmux(int pin_x)
 {
 #ifdef PLATFORM_I143
 	MOON1_REG->sft_cfg[4] = RF_MASK_V(1 << 0, pin_x << 0);
-#elif defined (PLATFORM_Q645) || defined(PLATFORM_Q654)
+#elif defined (PLATFORM_Q645) || defined(PLATFORM_SP7350)
 	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 6, pin_x << 6);
 #else
 	// Q628 SD_CARD : X1,CARD1_SD

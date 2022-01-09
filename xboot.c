@@ -45,7 +45,7 @@ __attribute__ ((section("storage_buf_sect")))    union storage_buf   g_io_buf;
 __attribute__ ((section("bootinfo_sect")))       struct bootinfo     g_bootinfo;
 __attribute__ ((section("boothead_sect")))       u8                  g_boothead[GLOBAL_HEADER_SIZE];
 __attribute__ ((section("xboot_header_sect")))   u8                  g_xboot_buf[32];
-#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
 fat_info g_finfo;
 #endif
 
@@ -145,7 +145,7 @@ static void init_hw(void)
 {
 	int i;
 
-#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
 	// enable CA55_SYS_TIMER
 	volatile u32 *r = (void *)0xf810a000;
 	r[2] = 0xfffffff0; // set cntl
@@ -216,7 +216,7 @@ static void init_hw(void)
 	}
 #endif
 
-#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
 	*(volatile u32 *)ARM_TSGEN_WR_BASE = 3; //EN = 1 and HDBG = 1
 	*(volatile u32 *)(ARM_TSGEN_WR_BASE + 0x08) = 0; // CNTCV[31:0]
 	*(volatile u32 *)(ARM_TSGEN_WR_BASE + 0x0C) = 0; // CNTCV[63:32]
@@ -232,11 +232,11 @@ static void init_hw(void)
 static int run_draminit(void)
 {
 	/* skip dram init on csim/zebu */
-#if defined(CONFIG_BOOT_ON_CSIM) && !defined(PLATFORM_Q645) && !defined(PLATFORM_Q654)
+#if defined(CONFIG_BOOT_ON_CSIM) && !defined(PLATFORM_Q645) && !defined(PLATFORM_SP7350)
 	prn_string("skip draminit\n");
 #else
 	int save_val;
-#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
 	int (*dram_init)(unsigned int);
 #else
 	int (*dram_init)(void);
@@ -246,7 +246,7 @@ static int run_draminit(void)
 	prn_string("standalone draiminit\n");
 	dram_init = (void *)DRAMINIT_RUN_ADDR;
 #else
-#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
 	extern int dram_init_main(unsigned int);
 #else
 	extern int dram_init_main(void);
@@ -257,7 +257,7 @@ static int run_draminit(void)
 	prn_string("Run draiminit@"); prn_dword((u32)ADDRESS_CONVERT(dram_init));
 	save_val = g_bootinfo.mp_flag;
 
-#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
 	dram_init(g_bootinfo.gbootRom_boot_mode);
 #else
 	dram_init();
@@ -267,7 +267,7 @@ static int run_draminit(void)
 #endif
 
 #ifdef CONFIG_USE_ZMEM
-#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
 	volatile u32 *m4_mem = (void *)0x1e000000;
 	prn_string("... M4 MEM ...\n");
 	prn_dword0((u32)&m4_mem[0]);   prn_string(": "); prn_dword(m4_mem[0]);
@@ -298,7 +298,7 @@ static int run_draminit(void)
 
 static inline void release_spi_ctrl(void)
 {
-#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
 	// SPIFL no reset
 	MOON0_REG->reset[2] = RF_MASK_V_CLR(1 << 10); /* SPIFL_RESET=0 */
 #else
@@ -540,7 +540,7 @@ static void zmem_check_uboot(void)
 }
 #endif
 
-#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
 static int copy_bl31_from_uboot_img(void* dst)
 {
 	void* bl31_src;
@@ -721,7 +721,7 @@ static void boot_uboot(void)
 		exit_bootROM(OPENSBI_RUN_ADDR);
 	}
 
-#elif defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
+#elif defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
 	prn_string((const char *)image_get_name(hdr)); prn_string("\n");
 	prn_string("Run uboot@");prn_dword(UBOOT_RUN_ADDR);
 	/* boot aarch64 uboot */
@@ -760,7 +760,7 @@ static void boot_linux(void)
 #ifdef PLATFORM_I143
 	exit_bootROM(OPENSBI_RUN_ADDR);
 
-#elif defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
+#elif defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
 	CSTAMP(0x44556677);
 	prn_string("Run Linux@");
 	prn_dword(LINUX_RUN_ADDR);
@@ -953,7 +953,7 @@ static int fat_load_uhdr_image(fat_info *finfo, const char *img_name, void *dst,
 static void do_fat_boot(u32 type, u32 port)
 {
 	u32 ret;
-#if !defined(PLATFORM_Q645) && !defined(PLATFORM_Q654)
+#if !defined(PLATFORM_Q645) && !defined(PLATFORM_SP7350)
 	fat_info g_finfo;
 #endif
 #ifdef CONFIG_STANDALONE_DRAMINIT
@@ -1003,7 +1003,7 @@ static void do_fat_boot(u32 type, u32 port)
 
 	run_draminit();
 
-#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
 	if (fat_sdcard_check_boot_mode(&g_finfo) == TRUE) {
 		if (type == SDCARD_ISP) {
 			g_bootinfo.gbootRom_boot_mode = SDCARD_BOOT;
@@ -1726,7 +1726,7 @@ static void init_uart(void)
 	UART1_REG->div_l = UART_BAUD_DIV_L(BAUDRATE, UART_SRC_CLK);
 	UART1_REG->div_h = UART_BAUD_DIV_H(BAUDRATE, UART_SRC_CLK);
 #endif
-#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
 	/* uart1 pinmux : UA1_TX, UA1_RX */
 	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 9, 1 << 9); // [9]=1
 	MOON0_REG->reset[3] = RF_MASK_V_CLR(1 << 0); /* release UA1 */

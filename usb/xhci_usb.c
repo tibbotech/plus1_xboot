@@ -32,7 +32,7 @@ void uphy_init(void)
 	MOON0_REG->reset[3] = RF_MASK_V_CLR(1 << 11);
 	MOON0_REG->reset[3] = RF_MASK_V_CLR(1 << 12);
 
-#elif defined(PLATFORM_Q654)
+#elif defined(PLATFORM_SP7350)
 	MOON0_REG->clken[3] = RF_MASK_V_SET(1 << 11);
 
 	MOON0_REG->reset[3] = RF_MASK_V_SET(1 << 11);
@@ -637,7 +637,7 @@ void usb_power_init(void)
 	MOON0_REG->reset[3] = RF_MASK_V_CLR(1 << 9);
 	MOON0_REG->reset[3] = RF_MASK_V_CLR(1 << 10);
 
-#elif defined(PLATFORM_Q654)
+#elif defined(PLATFORM_SP7350)
 	MOON0_REG->clken[3] = RF_MASK_V_SET(1 << 9);
 
 	MOON0_REG->reset[3] = RF_MASK_V_SET(1 << 9);
@@ -3014,7 +3014,7 @@ int usb_init(int port, int next_port_in_hub)
 			g_io_buf.usb.xhci.hccr = (struct xhci_hccr *) XHCI1_REG;
 		else
 			g_io_buf.usb.xhci.hccr = (struct xhci_hccr *) XHCI0_REG;
-#elif defined(PLATFORM_Q654)
+#elif defined(PLATFORM_SP7350)
 		g_io_buf.usb.xhci.hccr = (struct xhci_hccr *) XHCI0_REG;
 #elif defined(PLATFORM_I143)
 		g_io_buf.usb.xhci.hccr = (struct xhci_hccr *) XHCI_REG;

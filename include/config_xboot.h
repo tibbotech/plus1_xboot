@@ -13,7 +13,7 @@
 //
 
 // SPI NOR
-#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
 #define SPI_DTB_OFFSET        0x040000   // 256K
 #define SPI_UBOOT_OFFSET      0x060000   // 384K
 #define SPI_INITRAMFS_OFFSET  0x400000   // 4M
@@ -42,7 +42,7 @@
 #define DRAM_TEST_LEN        1024
 #define DRAM_TEST_END        (DRAM_TEST_BEGIN + DRAM_TEST_LEN)
 
-#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
 // u-boot
 #define UBOOT_REAL_LOAD_ADDR    0x300000 /*u-boot.img load addr*/
 #define UBOOT_LOAD_ADDR         (UBOOT_REAL_LOAD_ADDR - 0x40)  /* header(64) + u-boot.img(header+data) + BL31.img(header+data) + sign data */
@@ -129,7 +129,7 @@
 
 /* ISP image offset */
 #define ISP_IMG_OFF_XBOOT    (0)
-#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
 #define ISP_IMG_OFF_UBOOT    (160 * 1024)
 #else
 #define ISP_IMG_OFF_UBOOT    (64 * 1024)

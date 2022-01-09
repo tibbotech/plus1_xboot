@@ -25,8 +25,8 @@
 #define PLATFORM_Q628                   /* Build for Q628 */
 #elif defined(CONFIG_PLATFORM_Q645)
 #define PLATFORM_Q645                   /* Build for Q645 */
-#elif defined(CONFIG_PLATFORM_Q654)
-#define PLATFORM_Q654                   /* Build for Q654 */
+#elif defined(CONFIG_PLATFORM_SP7350)
+#define PLATFORM_SP7350                 /* Build for SP7350 */
 #elif defined(CONFIG_PLATFORM_I143)
 #define PLATFORM_I143                   /* Build for I143 */
 #endif
@@ -46,7 +46,7 @@
 #ifdef CONFIG_USE_ZMEM
 #ifdef PLATFORM_I143
 #define ZMEM_XBOOT_ADDR    0xA00F0000
-#elif defined(CONFIG_PLATFORM_Q645) || defined(CONFIG_PLATFORM_Q654)
+#elif defined(CONFIG_PLATFORM_Q645) || defined(CONFIG_PLATFORM_SP7350)
 #define ZMEM_XBOOT_ADDR    0xFA200000
 #else
 #define ZMEM_XBOOT_ADDR    0x1000
@@ -61,7 +61,7 @@
 /**********************
  * Register
  *********************/
-#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
 #define REG_BASE           0xF8000000
 #define AHB0_REG_BASE      0xF8100000
 #else
@@ -118,7 +118,7 @@
 #define USB_BOOT                0xfd
 #define SDCARD_BOOT             0xfe
 #define PARA_NAND_BOOT          0xff
-#elif defined(PLATFORM_Q654)
+#elif defined(PLATFORM_SP7350)
 #define EMMC_BOOT               0x1F
 #define SPINAND_BOOT            0x1D
 #define USB_ISP                 0x1B
@@ -180,7 +180,7 @@
 /**********************
  * Clock
  *********************/
-#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
 #define XTAL_CLK               (25 * 1000 * 1000)
 #define PLLSYS                 (360 * 1000 * 1000)  /* 360 MHz is for CARD_CLK and CARD012_CLK */
 #else
@@ -196,7 +196,7 @@
 /**********************
  * ROM
  *********************/
-#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
 #define BOOT_ROM_BASE       0xfffe8000
 #else
 #define BOOT_ROM_BASE       0xffff0000
@@ -207,7 +207,7 @@
 /**********************
  * SPI
  *********************/
-#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
 #define SPI_FLASH_BASE      0xF0000000
 #elif defined(PLATFORM_I143)
 #define SPI_FLASH_BASE      0xF8000000
@@ -215,7 +215,7 @@
 #define SPI_FLASH_BASE      0x98000000
 #endif
 #define SPI_IBOOT_OFFSET    ( 0 * 1024)
-#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
 #define SPI_XBOOT_OFFSET    (96 * 1024)
 #else
 #define SPI_XBOOT_OFFSET    (64 * 1024)
@@ -226,7 +226,7 @@
 /**********************
  * SRAM
  *********************/
-#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
 #define SRAM0_SIZE          (256 * 1024)
 #elif defined(PLATFORM_I143)
 #define SRAM0_SIZE          (64 * 1024)
@@ -234,7 +234,7 @@
 #define SRAM0_SIZE          (40 * 1024)
 #endif
 
-#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
 #define SRAM0_BASE          0xFA200000
 #elif defined(PLATFORM_I143)
 #define SRAM0_BASE          0xFE800000
@@ -262,7 +262,7 @@
 #define A_WORK_MEM_END      (A_WORK_MEM_BASE + A_WORK_MEM_SIZE)
 
 /* SRAM layout: must match with boot.ldi */
-#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
 #define XBOOT_BUF_SIZE      (96 * 1024)
 #define BOOTINFO_SIZE       (512)
 #define GLOBAL_HEADER_SIZE  (512)
@@ -300,7 +300,7 @@
 #define STACK_SIZE          (3008) /* 3K - 64 */
 #endif
 
-#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
 #if defined(__aarch64__)
 #define ISB()    do { asm volatile ("isb"); } while (0)
 #define DSB()    do { asm volatile ("dsb sy"); } while (0)
@@ -323,7 +323,7 @@
 /**********************
  * CPU boot address
  *********************/
-#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
 #define CPU_WAIT_A64_VAL             0xfffffffe
 #define CORE_CPU_START_POS(core_id)  (CORE0_CPU_START_POS - ((core_id) * 4))
 #define CORE3_CPU_START_POS          (0xfa23fc00 - 0x18)  // core3 wait fa23_fbe8
@@ -337,7 +337,7 @@
 #define B_START_POS              (SRAM0_END - 0x8)       // 9e809ff8
 #define BOOT_ANOTHER_POS         (SRAM0_END - 0x4)       // 9e809ffc
 
-#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
 #define A_START_POS_B_VIEW       (SRAM0_END - 0xc)
 #define A_START_POS_A_VIEW       A_START_POS_B_VIEW
 #define BOOT_ANOTHER_POS_A_VIEW  BOOT_ANOTHER_POS
@@ -443,7 +443,7 @@
 /***********************
 * Q645 HSM
 ***********************/
-#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
 #define XB_HSMK_PTR_OFFS  4 // offset to hsmk pointer in xboot.bin
 #define XB_HSMK_PTR_ADDR  (XBOOT_ADDR + 32 + XB_HSMK_PTR_OFFS) // 32: xhdr size
 #endif

@@ -15,7 +15,7 @@
 #define __ALIGN4       __attribute__((aligned(4)))
 #define __ALIGN8       __attribute__((aligned(8)))
 
-#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
 void prn_dump(const char *title, const unsigned char *buf, int len)
 {
 	int i;
@@ -507,7 +507,7 @@ out:
 int xboot_verify_uboot(const struct image_header  *hdr)
 {
 	int ret = -1;
-#if defined(PLATFORM_Q645) || defined(PLATFORM_Q654)
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
 	ret = q645_uboot_verify_decrypt(hdr);
 #else
 	ret = q628_verify_uboot_signature(hdr);
@@ -519,4 +519,3 @@ int xboot_verify_uboot(const struct image_header  *hdr)
 	return ret;
 }
 #endif
-

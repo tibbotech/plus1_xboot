@@ -64,7 +64,7 @@ struct romvsr {
 	void *_rom_dcache_invalidate;
 };
 
-#elif defined(PLATFORM_Q654)
+#elif defined(PLATFORM_SP7350)
 #define SC_shaX_512        (*(rom_shaX_512_t)(p_romvsr->_rom_shaX_512))
 #define SC_ed25519_hash    (*(rom_ed25519_hash_t)(p_romvsr->_rom_ed25519_hash))
 #define SC_ed25519_verify_hash (*(rom_ed25519_v_h_t)(p_romvsr->_rom_ed25519_verify_hash))

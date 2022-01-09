@@ -21,8 +21,8 @@ choice
 		bool "I143"
 	config PLATFORM_Q645
 		bool "Q645"
-	config PLATFORM_Q654
-		bool "Q654"
+	config PLATFORM_SP7350
+		bool "SP7350"
 endchoice
 
 config PLATFORM_IC_REV
@@ -177,18 +177,18 @@ endmenu
 config USE_ROM_SHARE
 	bool "Use rom share"
 	default n
-	depends on PLATFORM_Q645 || PLATFORM_Q654
+	depends on PLATFORM_Q645 || PLATFORM_SP7350
 
 config LOAD_BL31
 	bool "Load and run BL31 (Secure Monitor)"
 	default y
-	depends on PLATFORM_Q645 || PLATFORM_Q654
+	depends on PLATFORM_Q645 || PLATFORM_SP7350
 
 menu "Experiments"
 	config A64_EL1
 		bool "Drop from EL3 to EL1 in xBoot"
 		default n
-		depends on PLATFORM_Q645 || PLATFORM_Q654
+		depends on PLATFORM_Q645 || PLATFORM_SP7350
 		help
 		  By default, xboot is at EL3 AArch64.
 		  Select this option to drop xBoot to NS-EL1(default)

@@ -2,7 +2,7 @@
 # Automatically generated file; DO NOT EDIT.
 # Linux Kernel Configuration
 #
-CONFIG_PLATFORM_Q654=y
+CONFIG_PLATFORM_SP7350=y
 
 CONFIG_ARCH_ARM=y
 # CONFIG_QUIET_OUTPUT is not set

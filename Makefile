@@ -12,8 +12,8 @@ ifeq ($(CONFIG_PLATFORM_Q628),y)
 CPU_PATH := arm/q628
 else ifeq ($(CONFIG_PLATFORM_Q645),y)
 CPU_PATH := arm/q645
-else ifeq ($(CONFIG_PLATFORM_Q654),y)
-CPU_PATH := arm/q654
+else ifeq ($(CONFIG_PLATFORM_SP7350),y)
+CPU_PATH := arm/sp7350
 else ifeq ($(CONFIG_PLATFORM_I143),y)
 CPU_PATH := riscv/i143
 endif
@@ -65,7 +65,7 @@ CFLAGS  += -DCONFIG_COMPILE_WITH_SECURE=0
 endif
 endif
 
-ifeq ($(CONFIG_PLATFORM_Q654),y)
+ifeq ($(CONFIG_PLATFORM_SP7350),y)
 CFLAGS  += -Iinclude/arm
 CFLAGS  += -march=armv8-a -fno-delete-null-pointer-checks
 CFLAGS  += -mno-unaligned-access
@@ -100,7 +100,7 @@ endif
 ifeq ($(CONFIG_PLATFORM_Q645),y)
 XBOOT_MAX =$$((96 * 1024))
 endif
-ifeq ($(CONFIG_PLATFORM_Q654),y)
+ifeq ($(CONFIG_PLATFORM_SP7350),y)
 XBOOT_MAX =$$((96 * 1024))
 endif
 
@@ -121,7 +121,7 @@ ifeq ($(CONFIG_PLATFORM_Q645),y)
 	@bash ./add_xhdr.sh ../draminit/dwc/firmware/lpddr4_2d_pmu_train_imem.bin $(BIN)/lpddr4_2d_pmu_train_imem.img 0 im2d
 	@bash ./add_xhdr.sh ../draminit/dwc/firmware/lpddr4_2d_pmu_train_dmem.bin $(BIN)/lpddr4_2d_pmu_train_dmem.img 0 dm2d
 endif
-ifeq ($(CONFIG_PLATFORM_Q654),y)
+ifeq ($(CONFIG_PLATFORM_SP7350),y)
 	@bash ./add_xhdr.sh ../draminit/dwc/firmware/lpddr4_pmu_train_imem.bin $(BIN)/lpddr4_pmu_train_imem.img 0 im1d
 	@bash ./add_xhdr.sh ../draminit/dwc/firmware/lpddr4_pmu_train_dmem.bin $(BIN)/lpddr4_pmu_train_dmem.img 0 dm1d
 	@bash ./add_xhdr.sh ../draminit/dwc/firmware/lpddr4_2d_pmu_train_imem.bin $(BIN)/lpddr4_2d_pmu_train_imem.img 0 im2d
@@ -208,7 +208,7 @@ DRAMINIT_OBJ += $(DWC_USER_DIR)/$(DWC_USER)io_write16.o
 DRAMINIT_OBJ += $(DWC_USER_DIR)/$(DWC_USER)io_read16.o
 DRAMINIT_OBJ += $(DWC_USER_DIR)/$(DWC_USER)saveRetRegs.o
 
-else ifeq ($(CONFIG_PLATFORM_Q654),y)
+else ifeq ($(CONFIG_PLATFORM_SP7350),y)
 DWC_SRC_DIR = ../draminit/dwc/software/lpddr4/src
 DWC_USER_DIR = ../draminit/dwc/software/lpddr4/userCustom
 DWC = dwc_ddrphy_phyinit_
@@ -284,7 +284,7 @@ dwc:
 ifeq ($(CONFIG_PLATFORM_Q645),y)
 	$(MAKE) -C ../draminit/dwc ARCH=$(ARCH) CROSS=$(CROSS)
 endif
-ifeq ($(CONFIG_PLATFORM_Q654),y)
+ifeq ($(CONFIG_PLATFORM_SP7350),y)
 	$(MAKE) -C ../draminit/dwc ARCH=$(ARCH) CROSS=$(CROSS)
 endif
 	@echo ">>>>>>>>>>> Build dwc obj (done)"
@@ -327,7 +327,7 @@ endif
 ifeq ($(CONFIG_HAVE_NAND_COMMON), y)
 ifeq ($(CONFIG_PLATFORM_Q645), y)
 CSOURCES += nand/nandop.c nand/bch_q645.c
-else ifeq ($(CONFIG_PLATFORM_Q654), y)
+else ifeq ($(CONFIG_PLATFORM_SP7350), y)
 CSOURCES += nand/nandop.c nand/bch_q645.c
 else
 CSOURCES += nand/nandop.c nand/bch.c
@@ -338,8 +338,8 @@ endif
 ifeq ($(CONFIG_PLATFORM_Q645), y)
 CSOURCES += arch/arm/q645/cache.c
 endif
-ifeq ($(CONFIG_PLATFORM_Q654), y)
-CSOURCES += arch/arm/q654/cache.c
+ifeq ($(CONFIG_PLATFORM_SP7350), y)
+CSOURCES += arch/arm/sp7350/cache.c
 endif
 # Secure
 CSOURCES += common/verify_image.c
@@ -353,7 +353,7 @@ endif
 ifeq ($(CONFIG_HAVE_SPI_NAND), y)
 ifeq ($(CONFIG_PLATFORM_Q645), y)
 CSOURCES += nand/spi_nand_q645.c
-else ifeq ($(CONFIG_PLATFORM_Q654), y)
+else ifeq ($(CONFIG_PLATFORM_SP7350), y)
 CSOURCES += nand/spi_nand_q645.c
 else
 CSOURCES += nand/spi_nand.c
@@ -396,7 +396,7 @@ ifeq ($(CONFIG_I143_C_P), y)
 $(TARGET): $(OBJS) I143_C_P
 else ifeq ($(CONFIG_PLATFORM_Q645),y)
 $(TARGET): $(OBJS) hsmk a64bin
-else ifeq ($(CONFIG_PLATFORM_Q654),y)
+else ifeq ($(CONFIG_PLATFORM_SP7350),y)
 $(TARGET): $(OBJS) hsmk a64bin
 else
 $(TARGET): $(OBJS)
@@ -435,9 +435,9 @@ ifeq ($(CONFIG_PLATFORM_Q645),y)
 	@$(MAKE) -C arch/arm/q645/a64up/
 	@$(CROSS)objcopy -I binary -O elf32-littlearm -B arm --rename-section .data=.a64bin arch/arm/q645/a64up/a64up.bin arch/arm/q645/a64up/a64bin.o
 endif
-ifeq ($(CONFIG_PLATFORM_Q654),y)
-	@$(MAKE) -C arch/arm/q654/a64up/
-	@$(CROSS)objcopy -I binary -O elf32-littlearm -B arm --rename-section .data=.a64bin arch/arm/q654/a64up/a64up.bin arch/arm/q654/a64up/a64bin.o
+ifeq ($(CONFIG_PLATFORM_SP7350),y)
+	@$(MAKE) -C arch/arm/sp7350/a64up/
+	@$(CROSS)objcopy -I binary -O elf32-littlearm -B arm --rename-section .data=.a64bin arch/arm/sp7350/a64up/a64up.bin arch/arm/sp7350/a64up/a64bin.o
 endif
 
 HSMK_BIN=../../build/tools/secure_hsm/secure/hsm_keys/hsmk.bin
@@ -475,8 +475,8 @@ clean:
 ifeq ($(CONFIG_PLATFORM_Q645),y)
 	@$(MAKE) -C arch/arm/q645/a64up/ clean
 endif
-ifeq ($(CONFIG_PLATFORM_Q654),y)
-	@$(MAKE) -C arch/arm/q654/a64up/ clean
+ifeq ($(CONFIG_PLATFORM_SP7350),y)
+	@$(MAKE) -C arch/arm/sp7350/a64up/ clean
 endif
 	@$(MAKE) -C ../draminit $(DRAMINIT_TARGET) ARCH=$(ARCH) CROSS=$(CROSS) $@
 	@rm -rf .depend $(LD_GEN) $(OBJS) *.o *.d>/dev/null
@@ -499,7 +499,7 @@ distclean: clean
 .PHONY: prepare
 ifeq ($(CONFIG_PLATFORM_Q645),y)
 prepare: auto_config dwc
-else ifeq ($(CONFIG_PLATFORM_Q654),y)
+else ifeq ($(CONFIG_PLATFORM_SP7350),y)
 prepare: auto_config dwc
 else
 prepare: auto_config build_draminit
