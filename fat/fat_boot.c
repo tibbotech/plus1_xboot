@@ -77,7 +77,7 @@ u32 fat_read_file(u32 idx, fat_info *info, u8 *buffer, u32 offset, u32 length, u
 	u32 off = offset >> info->bytePerSectInPower;
 	u32 remain = offset & (info->bytePerSect -1);
 	u32 size = length;
-	u32 cluster;
+	u32 cluster, pre_cluster;
 	u32 bytesPerClus = info->bytePerSect * info->sectPerClus;
 	u32 count;
 
@@ -206,7 +206,10 @@ u32 fat_read_file(u32 idx, fat_info *info, u8 *buffer, u32 offset, u32 length, u
 		if (size == 0) {
 			return PASS;
 		} else {
+			pre_cluster = cluster;
 			cluster = next_cluster(info, cluster, (u8 *)buffer);
+			if((size < bytesPerClus) && (cluster >= 0x0FFFF000))
+				cluster = pre_cluster + 1;
 		}
 	}
 
