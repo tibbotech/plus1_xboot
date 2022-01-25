@@ -2,7 +2,7 @@
 #include <fat/fat.h>
 #include <config.h>
 #include <common.h>
-#ifdef CONFIG_HAVE_USB_DISK
+#ifdef CONFIG_HAVE_USB2_DISK
 #include <usb/ehci_usb.h>
 #endif
 #ifdef CONFIG_HAVE_SNPS_USB3_DISK
@@ -170,10 +170,17 @@ u32 fat_read_file(u32 idx, fat_info *info, u8 *buffer, u32 offset, u32 length, u
 		cluster = next_cluster(info, cluster, (u8 *)buffer);
 	}
 
-#if (defined(CONFIG_HAVE_USB_DISK) || defined(CONFIG_HAVE_SNPS_USB3_DISK)) && defined(FAT_USB_4K_READ)
+#ifdef FAT_USB_4K_READ
 	/* USB: transfer clusters in 4K unit to speed up */
-	if (info->read_sector == usb_readSector && !(info->sectPerClus % 8)) {
-		txfer_sects = 8;
+	if(!(info->sectPerClus % 8)) {
+	#ifdef CONFIG_HAVE_SNPS_USB3_DISK
+		if (info->read_sector == usb_readSector)
+			txfer_sects = 8;
+	#endif
+	#ifdef CONFIG_HAVE_USB2_DISK
+		if (info->read_sector == usb2_readSector)
+			txfer_sects = 8;
+	#endif
 	}
 #endif
 
@@ -277,7 +284,7 @@ u32 fat_boot(u32 type, u32 port, fat_info *info, u8 *buffer)
 #endif
 	u32 tmp;
 	u32 ret;
-#if defined(CONFIG_HAVE_USB_DISK) || defined(CONFIG_HAVE_SNPS_USB3_DISK)
+#if defined(CONFIG_HAVE_USB2_DISK) || defined(CONFIG_HAVE_SNPS_USB3_DISK)
 	int next_port_in_hub = 0;
 #endif
 
@@ -292,10 +299,19 @@ u32 fat_boot(u32 type, u32 port, fat_info *info, u8 *buffer)
 
 	/* Set init function and read_sector function*/
 	if (type == USB_ISP) {
-#if defined(CONFIG_HAVE_USB_DISK) || defined(CONFIG_HAVE_SNPS_USB3_DISK)
-		dbg_info();
-		info->init_usb = usb_init;
-		info->read_sector = usb_readSector;
+#ifdef CONFIG_HAVE_SNPS_USB3_DISK
+		if (port == USB3_PORT) {
+			dbg_info();
+			info->init_usb = usb_init;
+			info->read_sector = usb_readSector;
+		}
+#endif
+#ifdef CONFIG_HAVE_USB2_DISK
+		if (port == USB2_PORT) {
+			dbg_info();
+			info->init_usb = usb2_init;
+			info->read_sector = usb2_readSector;
+		}
 #endif
 	} else if (type == SDCARD_ISP) {
 #ifdef CONFIG_HAVE_SDCARD
@@ -314,7 +330,7 @@ u32 fat_boot(u32 type, u32 port, fat_info *info, u8 *buffer)
 	memset(info->fileInfo, 0, sizeof(info->fileInfo));
 	CSTAMP(0xFAB00001);
 
-#if defined(CONFIG_HAVE_USB_DISK) || defined(CONFIG_HAVE_SNPS_USB3_DISK)
+#if defined(CONFIG_HAVE_USB2_DISK) || defined(CONFIG_HAVE_SNPS_USB3_DISK)
 check_next_port:
 	if ((type == USB_ISP) && (next_port_in_hub)) {
 		info->startSector = 0;
@@ -325,7 +341,7 @@ check_next_port:
 	 * Initialization
 	 */
 	if (type == USB_ISP) {
-#if defined(CONFIG_HAVE_USB_DISK) || defined(CONFIG_HAVE_SNPS_USB3_DISK)
+#if defined(CONFIG_HAVE_USB2_DISK) || defined(CONFIG_HAVE_SNPS_USB3_DISK)
 		next_port_in_hub = info->init_usb(port, next_port_in_hub);
 		if (next_port_in_hub == -1) {
 			dbg_info();
@@ -389,7 +405,7 @@ check_next_port:
 		info->read_sector(info->startSector, 1, (u32 *)buffer);
 	} else {
 		prn_string("no MBR\n");
-#if defined(CONFIG_HAVE_USB_DISK) || defined(CONFIG_HAVE_SNPS_USB3_DISK)
+#if defined(CONFIG_HAVE_USB2_DISK) || defined(CONFIG_HAVE_SNPS_USB3_DISK)
 		if ((type == USB_ISP) && (next_port_in_hub))
 			goto check_next_port;
 #endif
@@ -442,7 +458,7 @@ check_next_port:
 		prn_string("FAT16 file system\n");
 	} else {
 		prn_string("Not FAT32/FAT16\n");
-	#if defined(CONFIG_HAVE_USB_DISK) || defined(CONFIG_HAVE_SNPS_USB3_DISK)
+	#if defined(CONFIG_HAVE_USB2_DISK) || defined(CONFIG_HAVE_SNPS_USB3_DISK)
 		if ((type == USB_ISP) && (next_port_in_hub))
 			goto check_next_port;
 	#endif
@@ -452,7 +468,7 @@ check_next_port:
 #else
 	else {
 		prn_string("Not FAT32\n");
-	#if defined(CONFIG_HAVE_USB_DISK) || defined(CONFIG_HAVE_SNPS_USB3_DISK)
+	#if defined(CONFIG_HAVE_USB2_DISK) || defined(CONFIG_HAVE_SNPS_USB3_DISK)
 		if ((type == USB_ISP) && (next_port_in_hub))
 			goto check_next_port;
 	#endif
@@ -482,7 +498,7 @@ check_next_port:
 
 	if (ret == FAIL) {
 		dbg();
-#if defined(CONFIG_HAVE_USB_DISK) || defined(CONFIG_HAVE_SNPS_USB3_DISK)
+#if defined(CONFIG_HAVE_USB2_DISK) || defined(CONFIG_HAVE_SNPS_USB3_DISK)
 		if ((type == USB_ISP) && (next_port_in_hub)) {
 			prn_string("not found, try next port of the hub\n");
 			goto check_next_port;

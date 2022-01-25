@@ -1,5 +1,6 @@
 #include <types.h>
 #include <usb/ehci_usb.h>
+#include <usb/xhci_usb.h>
 #include <fat/fat.h>
 #include <common.h>
 
@@ -17,7 +18,7 @@
 void USB_requestSense(void);
 UINT32 USB_transfer(UINT32 wLen, BYTE *buffer);
 UINT32 doTransfer(BYTE *buf);
-void USB_vendorCmd(UINT32 bReq,UINT32 bCmd,UINT32 wValue,UINT32 wIndex,UINT32 wLen);
+void USB2_vendorCmd(UINT32 bReq,UINT32 bCmd,UINT32 wValue,UINT32 wIndex,UINT32 wLen);
 int USB_testUnitReady(void);
 
 extern void _delay_1ms(UINT32 period); // force delay even in CSIM
@@ -33,7 +34,7 @@ extern void boot_reset(void);
 
 // UPHY 0 & 1 init (dh_feng)
 #if defined(PLATFORM_I143)
-void uphy_init(void)
+void u2phy_init(void)
 {
 	// 1. enable UPHY 0/1 & USBC 0/1 HW CLOCK */
 	MOON0_REG->clken[2] = RF_MASK_V_SET(3 << 13);
@@ -86,7 +87,7 @@ void uphy_init(void)
 	UPHY1_RN_REG->cfg[25] = 0x4;
 }
 #else
-void uphy_init(void)
+void u2phy_init(void)
 {
 	unsigned int val, set;
 
@@ -167,7 +168,7 @@ void uphy_init(void)
 }
 #endif
 
-void usb_power_init(int is_host)
+void usb2_power_init(int is_host)
 {
 	// a. enable pin mux control
 	//    Host: enable
@@ -208,7 +209,7 @@ void usb_power_init(int is_host)
 #endif
 }
 
-int usb_init(int port, int next_port_in_hub)
+int usb2_init(int port, int next_port_in_hub)
 {
 	UINT32 tmp1, tmp2;
 #ifdef CONFIG_HAVE_USB2_HUB
@@ -229,7 +230,7 @@ int usb_init(int port, int next_port_in_hub)
 	memset32((u32 *)&g_io_buf.usb.ehci, 0, sizeof(g_io_buf.usb.ehci)/4);
 
 	// ehci register base
-	g_io_buf.usb.ehci.ehci_hcd_regs = port ? EHCI1_REG : EHCI0_REG;
+	g_io_buf.usb.ehci.ehci_hcd_regs = EHCI0_REG;
 
 #ifndef EHCI_DEBUG
 tryagain:
@@ -237,10 +238,10 @@ tryagain:
 	dbg();
 
 	CSTAMP(0xE5B00001);
-	uphy_init();
+	u2phy_init();
 
 	CSTAMP(0xE5B00002);
-	usb_power_init(1);
+	usb2_power_init(1);
 
 	// init EHCI
 
@@ -263,7 +264,7 @@ tryagain:
 	CSTAMP(0xE5B00003);
 	prn_string("\nReset EHCI\n");
 	EHCI_USBCMD |= EHCI_SFT_RESET;
-	while (EHCI_USBCMD&EHCI_SFT_RESET) {
+	while (EHCI_USBCMD & EHCI_SFT_RESET) {
 #ifdef EHCI_DEBUG
 		prn_string("Wait Reset Done...\n");
 		_delay_1ms(1);
@@ -275,8 +276,7 @@ tryagain:
 
 	/* detect device in */
 	//prn_string("Dect device\n");
-	while((EHCI_PORTSC&PORT_CONNECT) == 0){
-
+	while ((EHCI_PORTSC & PORT_CONNECT) == 0) {
 		_delay_1ms(1);
 
 #if defined(CSIM_NEW) || defined(ASIC_TEST)
@@ -308,13 +308,13 @@ tryagain:
 
 	/* Reset device */
 	//prn_string("Reset device\n");
-	EHCI_PORTSC |= PORT_RESET;
+	EHCI_PORTSC |= PORT_RST;
 #ifdef CSIM_NEW
 	_delay_1ms(10);
 #else
 	_delay_1ms(50);
 #endif
-	EHCI_PORTSC &= (~PORT_RESET);
+	EHCI_PORTSC &= (~PORT_RST);
 
 	// DON'T PRINT HERE to avoid delay
 	// Implicit delay is not desired here
@@ -347,11 +347,11 @@ tryagain:
 	_delay_1ms(3);
 
 	//enum USB disk
-	pUSB_CfgDesc pCfg = (pUSB_CfgDesc)(USB_dataBuf);
-	pUSB_DevDesc pDev = (pUSB_DevDesc)(USB_dataBuf);
+	pUSB_CfgDesc pCfg = (pUSB_CfgDesc)(USB2_dataBuf);
+	pUSB_DevDesc pDev = (pUSB_DevDesc)(USB2_dataBuf);
 #ifdef CONFIG_HAVE_USB2_HUB
-	pUSB_HubDesc pHub = (pUSB_HubDesc)(USB_dataBuf);
-	pUSB_PortStatus pPortsts = (pUSB_PortStatus)(USB_dataBuf);
+	pUSB_HubDesc pHub = (pUSB_HubDesc)(USB2_dataBuf);
+	pUSB_PortStatus pPortsts = (pUSB_PortStatus)(USB2_dataBuf);
 
 data_structure_init:
 #endif
@@ -394,22 +394,22 @@ data_structure_init:
 	}
 
 	prn_string("set addr\n");
-	USB_vendorCmd(0, USB_REQ_SET_ADDRESS, DEVICE_ADDRESS, 0, 0);
+	USB2_vendorCmd(0, USB_REQ_SET_ADDRESS, DEVICE_ADDRESS, 0, 0);
 	EHCI_addr = DEVICE_ADDRESS;
 
 	prn_string("get dev desc (8)\n");
-	USB_vendorCmd(0x80, USB_REQ_GET_DESCRIPTOR, DESC_DEVICE, 0, 0x08);
+	USB2_vendorCmd(0x80, USB_REQ_GET_DESCRIPTOR, DESC_DEVICE, 0, 0x08);
 
-	prn_string("get dev desc ("); prn_decimal_(pDev->bLength); prn_string(")\n");
-	USB_vendorCmd(0x80, USB_REQ_GET_DESCRIPTOR, DESC_DEVICE, 0, (pDev->bLength));
+	prn_string("get dev desc ("); prn_decimal(pDev->bLength); prn_string(")\n");
+	USB2_vendorCmd(0x80, USB_REQ_GET_DESCRIPTOR, DESC_DEVICE, 0, (pDev->bLength));
 
 	prn_string("get conf desc (18)\n");
-	USB_vendorCmd(0x80, USB_REQ_GET_DESCRIPTOR, DESC_CONFIGURATION, 0, 0x12);
+	USB2_vendorCmd(0x80, USB_REQ_GET_DESCRIPTOR, DESC_CONFIGURATION, 0, 0x12);
 
-	if (USB_dataBuf[9+5] == USB_CLASS_MASS_STORAGE) {
+	if (USB2_dataBuf[9+5] == USB_CLASS_MASS_STORAGE) {
 		prn_string("usb mass storage device found\n");
 		goto usb_storage_device;
-	} else if (USB_dataBuf[9+5] == USB_CLASS_HUB) {
+	} else if (USB2_dataBuf[9+5] == USB_CLASS_HUB) {
 		is_hub = 1;
 		prn_string("usb hub found\n");
 	} else {
@@ -417,20 +417,20 @@ data_structure_init:
 	}
 
 	prn_string("set config "); prn_decimal_ln(pCfg->bCV);
-	USB_vendorCmd(0, USB_REQ_SET_CONFIG, (pCfg->bCV), 0, 0);
+	USB2_vendorCmd(0, USB_REQ_SET_CONFIG, (pCfg->bCV), 0, 0);
 
 	prn_string("get hub desc (9)\n");
-	USB_vendorCmd(0xA0, USB_REQ_GET_DESCRIPTOR, DESC_HUB, 0, 0x09);
+	USB2_vendorCmd(0xA0, USB_REQ_GET_DESCRIPTOR, DESC_HUB, 0, 0x09);
 	NumberOfPorts = pHub->bNumPorts;
 
 	for (port_num = 1; port_num <= NumberOfPorts; port_num++) {
 		prn_string("set feature (S_PORT"); prn_decimal(port_num); prn_string("_POWER) \n");
-		USB_vendorCmd(0x23, USB_REQ_SET_FEATURE, S_PORT_POWER, port_num, 0);
+		USB2_vendorCmd(0x23, USB_REQ_SET_FEATURE, S_PORT_POWER, port_num, 0);
 	}
 
 	for (port_num = 1; port_num <= NumberOfPorts; port_num++) {
 		prn_string("get port "); prn_decimal(port_num); prn_string(" status \n");
-		USB_vendorCmd(0xA3, USB_REQ_GET_STATUS, 0, port_num, 0x04);
+		USB2_vendorCmd(0xA3, USB_REQ_GET_STATUS, 0, port_num, 0x04);
 
 	#if 0
 		prn_string("port status :"); prn_dword(pPortsts->wPortStatus);
@@ -442,36 +442,36 @@ data_structure_init:
 	}
 
 	prn_string("set feature (Device Remote Wakeup) \n");
-	USB_vendorCmd(0, USB_REQ_SET_FEATURE, DEVICE_REMOTE_WAKEUP, 0, 0);
+	USB2_vendorCmd(0, USB_REQ_SET_FEATURE, DEVICE_REMOTE_WAKEUP, 0, 0);
 
 	#if 0
 	while (1) {
 		prn_string("get dev status (2)\n");
-		USB_vendorCmd(0x80, USB_REQ_GET_STATUS, 0, 0, 0x02);
+		USB2_vendorCmd(0x80, USB_REQ_GET_STATUS, 0, 0, 0x02);
 
 		if (pDevsts->wDevStatus & 0x02) // check remote-wakeup bit
 			break;
 
 		prn_string("set feature (Device Remote Wakeup) \n");
-		USB_vendorCmd(0, USB_REQ_SET_FEATURE, DEVICE_REMOTE_WAKEUP, 0, 0);
+		USB2_vendorCmd(0, USB_REQ_SET_FEATURE, DEVICE_REMOTE_WAKEUP, 0, 0);
 	}
 	#endif
 
 	prn_string("clear feature (Device Remote Wakeup) \n");
-	USB_vendorCmd(0, USB_REQ_CLEAR_FEATURE, DEVICE_REMOTE_WAKEUP, 0, 0);
+	USB2_vendorCmd(0, USB_REQ_CLEAR_FEATURE, DEVICE_REMOTE_WAKEUP, 0, 0);
 
 	port_num = 1;
 
 scan_device_on_port:
 	if (next_port_in_hub) {
 		prn_string("get hub desc (9)\n");
-		USB_vendorCmd(0xA0, USB_REQ_GET_DESCRIPTOR, DESC_HUB, 0, 0x09);
+		USB2_vendorCmd(0xA0, USB_REQ_GET_DESCRIPTOR, DESC_HUB, 0, 0x09);
 		NumberOfPorts = pHub->bNumPorts;
 	}
 
 	while (port_num <= NumberOfPorts) {
 		prn_string("get port "); prn_decimal(port_num); prn_string(" status \n");
-		USB_vendorCmd(0xA3, USB_REQ_GET_STATUS, 0, port_num, 0x04);
+		USB2_vendorCmd(0xA3, USB_REQ_GET_STATUS, 0, port_num, 0x04);
 
 	#if 0
 		prn_string("port status :"); prn_dword(pPortsts->wPortStatus);
@@ -502,15 +502,15 @@ scan_device_on_port:
 
 found_device_on_port:
 	prn_string("clear feature (C_PORT"); prn_decimal(port_num); prn_string("_CONNECTION) \n");
-	USB_vendorCmd(0x23, USB_REQ_CLEAR_FEATURE, C_PORT_CONNECTION, port_num, 0);
+	USB2_vendorCmd(0x23, USB_REQ_CLEAR_FEATURE, C_PORT_CONNECTION, port_num, 0);
 
 	prn_string("set feature (S_PORT"); prn_decimal(port_num); prn_string("_RESET) \n");
-	USB_vendorCmd(0x23, USB_REQ_SET_FEATURE, S_PORT_RESET, port_num, 0);
+	USB2_vendorCmd(0x23, USB_REQ_SET_FEATURE, S_PORT_RESET, port_num, 0);
 
 	dev_dct_cnt = 0;
 	while (1) {
 		prn_string("get port "); prn_decimal(port_num); prn_string(" status \n");
-		USB_vendorCmd(0xA3, USB_REQ_GET_STATUS, 0, port_num, 0x04);
+		USB2_vendorCmd(0xA3, USB_REQ_GET_STATUS, 0, port_num, 0x04);
 
 		if (!(pPortsts->wPortStatus & 0x10))
 			break;
@@ -524,10 +524,10 @@ found_device_on_port:
 	}
 
 	prn_string("clear feature (C_PORT"); prn_decimal(port_num); prn_string("_RESET) \n");
-	USB_vendorCmd(0x23, USB_REQ_CLEAR_FEATURE, C_PORT_RESET, port_num, 0);
+	USB2_vendorCmd(0x23, USB_REQ_CLEAR_FEATURE, C_PORT_RESET, port_num, 0);
 
 	prn_string("get port "); prn_decimal(port_num); prn_string(" status \n");
-	USB_vendorCmd(0xA3, USB_REQ_GET_STATUS, 0, port_num, 0x04);
+	USB2_vendorCmd(0xA3, USB_REQ_GET_STATUS, 0, port_num, 0x04);
 
 	#if 0
 	prn_string("port status :"); prn_dword(pPortsts->wPortStatus);
@@ -552,7 +552,7 @@ usb_storage_device:
 
 	CSTAMP(0xE5B00008);
 	prn_string("get dev desc (64)\n");
-	USB_vendorCmd(0x80, USB_REQ_GET_DESCRIPTOR, DESC_DEVICE, 0, 0x40);
+	USB2_vendorCmd(0x80, USB_REQ_GET_DESCRIPTOR, DESC_DEVICE, 0, 0x40);
 
 	prn_string("vid="); prn_byte((pDev->idVendor  >> 8) & 0xff); prn_byte(pDev->idVendor & 0xff);
 	prn_string("pid="); prn_byte((pDev->idProduct >> 8) & 0xff); prn_byte(pDev->idProduct & 0xff);
@@ -563,36 +563,36 @@ usb_storage_device:
 	if (is_hub) {
 		CSTAMP(0xE5B00009);
 		prn_string("set addr\n");
-		USB_vendorCmd(0, USB_REQ_SET_ADDRESS, DEVICE_ADDRESS+port_num, 0, 0);
+		USB2_vendorCmd(0, USB_REQ_SET_ADDRESS, DEVICE_ADDRESS+port_num, 0, 0);
 		EHCI_addr = DEVICE_ADDRESS + port_num;
 	}
 #else
 	CSTAMP(0xE5B00009);
 	prn_string("set addr\n");
-	USB_vendorCmd(0, USB_REQ_SET_ADDRESS, DEVICE_ADDRESS, 0, 0);
+	USB2_vendorCmd(0, USB_REQ_SET_ADDRESS, DEVICE_ADDRESS, 0, 0);
 	EHCI_addr = DEVICE_ADDRESS;
 #endif
 
 	CSTAMP(0xE5B0000A);
 	prn_string("get dev desc ("); prn_decimal(pDev->bLength); prn_string(")\n");
-	USB_vendorCmd(0x80, USB_REQ_GET_DESCRIPTOR, DESC_DEVICE, 0, (pDev->bLength));
+	USB2_vendorCmd(0x80, USB_REQ_GET_DESCRIPTOR, DESC_DEVICE, 0, (pDev->bLength));
 
 	CSTAMP(0xE5B0000B);
 	prn_string("get conf desc (18)\n");
-	USB_vendorCmd(0x80, USB_REQ_GET_DESCRIPTOR, DESC_CONFIGURATION, 0, 18);
+	USB2_vendorCmd(0x80, USB_REQ_GET_DESCRIPTOR, DESC_CONFIGURATION, 0, 18);
 
 #ifdef CONFIG_HAVE_USB2_HUB
 	if (is_hub)
 #endif
 	{
-		if (USB_dataBuf[9+5] != USB_CLASS_MASS_STORAGE) {
+		if (USB2_dataBuf[9+5] != USB_CLASS_MASS_STORAGE) {
 #ifdef CONFIG_HAVE_USB2_HUB
 			prn_string("not usb mass storage device\n");
 			port_num++;
 			EHCI_addr = DEVICE_ADDRESS;
 			goto scan_device_on_port;
 #else
-			if (USB_dataBuf[9+5] == USB_CLASS_HUB)
+			if (USB2_dataBuf[9+5] == USB_CLASS_HUB)
 				prn_string("usb hub not supported\n");
 			else
 				prn_string("not usb mass storage device\n");
@@ -605,10 +605,10 @@ usb_storage_device:
 
 	CSTAMP(0xE5B0000C);
 	prn_string("get conf desc ("); prn_decimal(pCfg->wLength); prn_string(")\n");
-	USB_vendorCmd(0x80, USB_REQ_GET_DESCRIPTOR, DESC_CONFIGURATION, 0, (pCfg->wLength));
+	USB2_vendorCmd(0x80, USB_REQ_GET_DESCRIPTOR, DESC_CONFIGURATION, 0, (pCfg->wLength));
 
-	tmp1 = USB_dataBuf[9+9+2];
-	tmp2 = USB_dataBuf[9+9+7+2];
+	tmp1 = USB2_dataBuf[9+9+2];
+	tmp2 = USB2_dataBuf[9+9+7+2];
 
 	if (tmp1 & 0x80) {
 		CSTAMP(0xE5B0000D);
@@ -626,8 +626,8 @@ usb_storage_device:
 #endif
 
 	CSTAMP(0xE5B0000F);
-	prn_string("set config "); prn_decimal_ln(pCfg->bCV); 
-	USB_vendorCmd(0, USB_REQ_SET_CONFIG, (pCfg->bCV), 0, 0);
+	prn_string("set config "); prn_decimal_ln(pCfg->bCV);
+	USB2_vendorCmd(0, USB_REQ_SET_CONFIG, (pCfg->bCV), 0, 0);
 
 	// Test Unit Ready
 	tmp2 = 0;
@@ -722,12 +722,12 @@ void USB_requestSense(void)
 }
 
 /*
- * usb_readSector
+ * usb2_readSector
  * @lba		LBA to read
  * @count       not used
  * @buf		destination buffer
  */
-int usb_readSector(u32 lba, u32 count, u32 *dest)
+int usb2_readSector(u32 lba, u32 count, u32 *dest)
 {
 	UINT32 i;
 	UINT32 stallErr;
@@ -762,7 +762,7 @@ int usb_readSector(u32 lba, u32 count, u32 *dest)
 		stallErr = doTransfer((u8*)dest);
 
 		if (stallErr) {
-			prn_string("usb_readSector STALL Error, send USB_requestSense\n");
+			prn_string("usb2_readSector STALL Error, send USB_requestSense\n");
 			USB_requestSense();
 		}
 	} while (stallErr);
@@ -781,10 +781,10 @@ UINT32 USB_transfer(UINT32 wLen, BYTE *buffer)
 	CSTAMP(0xE5B00015);
 
 #ifdef USB_PRN
-	if (((*EHCI_TD_info_ptr>>8)&3) == 1) {
+	if (((*EHCI_TD_info_ptr >> 8) & 3) == 1) {
 		CSTAMP(0xE5B0D000);
 		prn_string("In "); prn_decimal_ln(wLen); //prn_string("\n");
-	} else if (((*EHCI_TD_info_ptr>>8)&3) == 0) {
+	} else if (((*EHCI_TD_info_ptr >> 8) & 3) == 0) {
 		CSTAMP(0xE5B0D001);
 		prn_string("Out "); prn_decimal_ln(wLen); //prn_string("\n");
 	} else {
@@ -816,16 +816,15 @@ UINT32 USB_transfer(UINT32 wLen, BYTE *buffer)
 
 		//cnt = cnt-(4*1024-addr&0xfff);
 		cnt -= 4096;
-		addr = (addr + 4096)&(~0xfff);
+		addr = (addr + 4096) & (~0xfff);
 
-		for(i = 1;i < 5;i++){
-
-			if(cnt <= 0)
+		for (i = 1; i < 5; i++) {
+			if (cnt <= 0)
 				break;
 
 			EHCI_TD.hw_buf[i] = addr;
-			cnt  -= 4*1024;
-			addr += 4*1024;
+			cnt  -= 4 * 1024;
+			addr += 4 * 1024;
 		}
 	}
 #else
@@ -834,7 +833,7 @@ UINT32 USB_transfer(UINT32 wLen, BYTE *buffer)
 
 	// set QH
 	//EHCI_QH.hw_next = (1<<1)|CACHE_TO_BUS(&EHCI_QH);
-	EHCI_QH.hw_info1 = *EHCI_QH_info_ptr|(EHCI_endpoint << 8)|EHCI_addr;
+	EHCI_QH.hw_info1 = *EHCI_QH_info_ptr | (EHCI_endpoint << 8) | EHCI_addr;
 	//EHCI_QH.hw_info2 |= 1<<30;
 	//EHCI_QH.hw_current = CACHE_TO_BUS(&EHCI_TD);
 	//EHCI_QH.hw_qtd_next = EHCI_LIST_END;
@@ -851,7 +850,7 @@ UINT32 USB_transfer(UINT32 wLen, BYTE *buffer)
 	EHCI_USBCMD |= EN_ASYNC_SCHEDULE;
 
 	//dbg();
-	while((EHCI_USBSTS & STS_ASS) == 0) {
+	while ((EHCI_USBSTS & STS_ASS) == 0) {
 		//_delay_1ms(1);
 	}
 
@@ -867,7 +866,7 @@ UINT32 USB_transfer(UINT32 wLen, BYTE *buffer)
 
 			// Need Clear stall
 			temp = EHCI_endpoint;
-			if (((*EHCI_TD_info_ptr>>8)&3) == 1) { //in
+			if (((*EHCI_TD_info_ptr >> 8) & 3) == 1) { //in
 				temp |= 0x80;
 			}
 
@@ -907,7 +906,7 @@ UINT32 USB_transfer(UINT32 wLen, BYTE *buffer)
 	// Clear INT Status
 	EHCI_USBSTS &= STS_INT_MASK;
 
-	// Disbale AS,
+	// Disbale AS
 	EHCI_USBCMD &= (~EN_ASYNC_SCHEDULE);
 
 	if (EHCI_endpoint) {
@@ -916,7 +915,7 @@ UINT32 USB_transfer(UINT32 wLen, BYTE *buffer)
 
 	// make sure AS have disable
 	//dbg();
-	while(EHCI_USBSTS&STS_ASS) {
+	while (EHCI_USBSTS & STS_ASS) {
 		_delay_1ms(1);
 	}
 
@@ -925,7 +924,7 @@ UINT32 USB_transfer(UINT32 wLen, BYTE *buffer)
 	return 0;
 }
 
-void USB_vendorCmd(UINT32 bReq,UINT32 bCmd,UINT32 wValue,UINT32 wIndex,UINT32 wLen)
+void USB2_vendorCmd(UINT32 bReq, UINT32 bCmd, UINT32 wValue, UINT32 wIndex, UINT32 wLen)
 {
 	CSTAMP(0xE5B00019);
 
@@ -959,7 +958,7 @@ void USB_vendorCmd(UINT32 bReq,UINT32 bCmd,UINT32 wValue,UINT32 wIndex,UINT32 wL
 	EHCI_TD_info0 |= TD_TOGGLE;	        // force DATA1
 	if (USB_setup->wLength) {
 		EHCI_TD_info0 |= 0x0100;        // set PID to IN Token
-		USB_transfer(USB_setup->wLength, (BYTE *)(USB_dataBuf));
+		USB_transfer(USB_setup->wLength, (BYTE *)(USB2_dataBuf));
 	}
 
 	EHCI_TD_info0 ^= 0x0100;            // IN <-> OUT
@@ -979,7 +978,7 @@ UINT32 doTransfer(BYTE *buf)
 
 	USB_DBG();
 	sCBW *pcbw = (sCBW*)(STRUCT_BUF_ADDR);
-	sCSW * psCSW = (sCSW*)(STRUCT_BUF_ADDR);
+	sCSW *psCSW = (sCSW*)(STRUCT_BUF_ADDR);
 
 	// CBW Packet
 	// 512bytes packet, Data Toggle from TD, High Speed, QH_Head
@@ -1012,7 +1011,7 @@ UINT32 doTransfer(BYTE *buf)
 
 		if (stallErr) {
 			EHCI_endpoint = 0;
-			USB_vendorCmd(0x2, USB_REQ_CLEAR_FEATURE, 0, stallErr , 0);
+			USB2_vendorCmd(0x2, USB_REQ_CLEAR_FEATURE, 0, stallErr , 0);
 
 			EHCI_TD_infoIn &= ~TD_TOGGLE; // Reset toggle to data0
 		}
@@ -1020,11 +1019,11 @@ UINT32 doTransfer(BYTE *buf)
 
 	// CSW Packet
 #if 1	/*add by yong.y*/
-	if(pcbw->dCBWDataTransferLength > 512){
+	if (pcbw->dCBWDataTransferLength > 512) {
 		CSTAMP(0xE5B0001C);
 		psCSW = (sCSW*)(buf+pcbw->dCBWDataTransferLength);
 
-		if(psCSW->dCBWSignature == 0){
+		if (psCSW->dCBWSignature == 0) {
 			USB_transfer(0x0D, (UINT8*)psCSW);
 		}
 		//prn_dump_buffer((unsigned char*)psCSW,13);

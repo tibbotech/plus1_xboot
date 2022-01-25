@@ -416,6 +416,9 @@
 ***********************/
 #define FAT_USB_4K_READ
 
+#define USB3_PORT		0
+#define USB2_PORT		1
+
 /***********************
 * SD CARD
 ***********************/

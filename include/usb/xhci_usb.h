@@ -600,15 +600,6 @@ struct devrequest {
 	u16	length;
 } __attribute__ ((packed));
 
-typedef struct
-{
-	UINT8	bmRequest;
-	UINT8 	bRequest;
-	UINT16 	wValue;
-	UINT16 	wIndex;
-	UINT16 	wLength;
-} USBsetup;
-
 // CBW packet format
 typedef struct
 {
