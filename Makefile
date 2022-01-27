@@ -366,7 +366,7 @@ CSOURCES += fat/fat_boot.c
 endif
 
 # USB
-ifeq ($(CONFIG_HAVE_USB2_DISK), y)
+ifeq ($(CONFIG_HAVE_USB_DISK), y)
 CSOURCES += usb/ehci_usb.c
 endif
 

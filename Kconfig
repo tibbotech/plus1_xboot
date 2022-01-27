@@ -57,16 +57,16 @@ config HAVE_UART_BOOTSTRAP
 	bool "UART Bootstrap"
 	default y
 
-config HAVE_USB2_DISK
+config HAVE_USB_DISK
 	bool "USB2 disk driver"
 	default y
 	select HAVE_FS_FAT
 	help
 		Sunplus EHCI dirver, need to disable HAVE_SNPS_USB3_DISK
 
-config HAVE_USB2_HUB
+config HAVE_USB_HUB
 	bool "USB2 hub supported"
-	depends on HAVE_USB2_DISK
+	depends on HAVE_USB_DISK
 	default n
 
 config HAVE_SNPS_USB3_DISK
@@ -74,7 +74,7 @@ config HAVE_SNPS_USB3_DISK
 	default n
 	select HAVE_FS_FAT
 	help
-		Sunplus synopsys XHCI dirver, need to disable HAVE_USB2_DISK
+		Sunplus synopsys XHCI dirver, need to disable HAVE_USB_DISK
 
 config HAVE_USB3_HUB
 	bool "USB hub supported by xhci"
@@ -123,12 +123,12 @@ config HAVE_SPI_NAND
 config HAVE_FS_FAT
 	bool "FAT32 filesystem"
 	default n
-	depends on HAVE_USB2_DISK || HAVE_SNPS_USB3_DISK || HAVE_SDCARD
+	depends on HAVE_USB_DISK || HAVE_SNPS_USB3_DISK || HAVE_SDCARD
 
 config HAVE_FS_FAT16
 	bool "FAT16 filesystem"
 	default n
-	depends on HAVE_USB2_DISK || HAVE_SNPS_USB3_DISK || HAVE_SDCARD
+	depends on HAVE_USB_DISK || HAVE_SNPS_USB3_DISK || HAVE_SDCARD
 
 config HAVE_SPI_NOR
 	bool "SPI NOR boot"
