@@ -2,12 +2,7 @@
 # Automatically generated file; DO NOT EDIT.
 # Configuration: i143_romter_c_defconfig
 #
-# CONFIG_ARCH_ARM is not set
 CONFIG_ARCH_RISCV=y
-# CONFIG_PLATFORM_Q628 is not set
-# CONFIG_PLATFORM_8388 is not set
-# CONFIG_PLATFORM_I137 is not set
-# CONFIG_PLATFORM_3502 is not set
 CONFIG_PLATFORM_I143=y
 CONFIG_PLATFORM_IC_REV=2
 # CONFIG_XIP_SPIBAREMETAL is not set
@@ -27,11 +22,6 @@ CONFIG_HAVE_MON_SHELL=y
 # CONFIG_STANDALONE_DRAMINIT is not set
 CONFIG_PREBUILT_DRAMINIT_OBJ=""
 CONFIG_HAVE_ARCH_FASTMEM=y
-
-#
-# Power saving
-#
-
 #
 # Experiments
 #

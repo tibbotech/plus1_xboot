@@ -1,22 +1,22 @@
 choice
-        prompt "Architecture select"
-        default ARCH_ARM
-config ARCH_ARM
+	prompt "Architecture select"
+	default ARCH_ARM
+	config ARCH_ARM
 		bool "ARM architecture"
-config ARCH_RISCV
+	config ARCH_RISCV
 		bool "RISCV architecture"
 endchoice
 choice
-        prompt "Platform"
-        default PLATFORM_Q628
-        config PLATFORM_Q628
-                bool "Q628"
-        config PLATFORM_8388
-                bool "8388"
-        config PLATFORM_I137
-                bool "I137"
-        config PLATFORM_3502
-                bool "3502"
+	prompt "Platform"
+	default PLATFORM_Q628
+	config PLATFORM_Q628
+		bool "Q628"
+	config PLATFORM_8388
+		bool "8388"
+	config PLATFORM_I137
+		bool "I137"
+	config PLATFORM_3502
+		bool "3502"
 	config PLATFORM_I143
 		bool "I143"
 	config PLATFORM_Q645
@@ -35,23 +35,19 @@ config PLATFORM_IC_REV
 
 config XIP_SPIBAREMETAL
 	bool "iBoot is XIP on SPI NOR (SPI Baremetal Boot)"
-	default n
 	help
-		Select if iBoot is XIP on SPI_NOR.
+	  Select if iBoot is XIP on SPI_NOR.
 
 config BOOT_ON_CSIM
 	bool "Build for CSIM"
-	default n
 
 config BOOT_ON_ZEBU
-        bool "Boot on Zebu"
-        default n
-        depends on BOOT_ON_CSIM
+	bool "Boot on Zebu"
+	depends on BOOT_ON_CSIM
 
 config USE_ZMEM
-        bool "Use ZMEM to skip image loading"
-        default n
-        depends on BOOT_ON_ZEBU
+	bool "Use ZMEM to skip image loading"
+	depends on BOOT_ON_ZEBU
 
 config HAVE_UART_BOOTSTRAP
 	bool "UART Bootstrap"
@@ -59,75 +55,60 @@ config HAVE_UART_BOOTSTRAP
 
 config HAVE_USB_DISK
 	bool "USB2 disk driver"
-	default y
 	select HAVE_FS_FAT
 	help
-		Sunplus EHCI dirver, need to disable HAVE_SNPS_USB3_DISK
+	  Sunplus EHCI dirver, need to disable HAVE_SNPS_USB3_DISK
 
 config HAVE_USB_HUB
 	bool "USB2 hub supported"
 	depends on HAVE_USB_DISK
-	default n
 
 config HAVE_SNPS_USB3_DISK
 	bool "Synopsys USB 3.1 disk driver"
-	default n
 	select HAVE_FS_FAT
 	help
-		Sunplus synopsys XHCI dirver, need to disable HAVE_USB_DISK
+	  Sunplus synopsys XHCI dirver, need to disable HAVE_USB_DISK
 
 config HAVE_USB3_HUB
 	bool "USB hub supported by xhci"
-	default n
 	depends on HAVE_SNPS_USB3_DISK
 
 config HAVE_OTP
 	bool "OTP driver"
-	default n
 
 config HAVE_MMC
 	bool "MMC common"
-	default n
-	depends on HAVE_SDCARD || HAVE_EMMC
 	help
-		Common MMC code for SD Card or eMMC.
+	  Common MMC code for SD Card or eMMC.
 
 config HAVE_SDCARD
 	bool "SD Card driver"
-	default y
 	select HAVE_MMC
 	select HAVE_FS_FAT
 
 config HAVE_EMMC
 	bool "eMMC driver"
-	default y
 	select HAVE_MMC
 
 config HAVE_NAND_COMMON
 	bool "NAND common"
-	default n
-	depends on HAVE_PARA_NAND || HAVE_SPI_NAND
 	help
-		Common NAND code, like BCH support.
+	  Common NAND code, like BCH support.
 
 config HAVE_PARA_NAND
 	bool "Parallel NAND"
-	default y
 	select HAVE_NAND_COMMON
 
 config HAVE_SPI_NAND
 	bool "SPI NAND"
-	default y
 	select HAVE_NAND_COMMON
 
 config HAVE_FS_FAT
 	bool "FAT32 filesystem"
-	default n
 	depends on HAVE_USB_DISK || HAVE_SNPS_USB3_DISK || HAVE_SDCARD
 
 config HAVE_FS_FAT16
 	bool "FAT16 filesystem"
-	default n
 	depends on HAVE_USB_DISK || HAVE_SNPS_USB3_DISK || HAVE_SDCARD
 
 config HAVE_SPI_NOR
@@ -140,43 +121,39 @@ config HAVE_MON_SHELL
 
 config DEBUG_WITH_2ND_UART
 	bool "Use 2nd UART as debug port"
-	default n
 	depends on HAVE_MON_SHELL
 
 config STANDALONE_DRAMINIT
 	bool "Use standalone draminit bin (depricated)"
-	default n
 	help
-		If yes, load and run draminit image at run-time.
-		If no, link draminit obj into xboot.
+	  If yes, load and run draminit image at run-time.
+	  If no, link draminit obj into xboot.
 
 config PREBUILT_DRAMINIT_OBJ
 	string "Provide pebuilt draminit obj path"
 	depends on !STANDALONE_DRAMINIT
 	default ""
 	help
-		If empty, use recent ../draminit/plf_dram.o.
+	  If empty, use recent ../draminit/plf_dram.o.
 
 config HAVE_ARCH_FASTMEM
-        bool "Use memset/memcpy fast assembly code"
-        default y
+	bool "Use memset/memcpy fast assembly code"
+	default y
 
 menu "Power saving"
 	config PARTIAL_CLKEN
 		bool "Enable partial clocks to save power (heuristics)"
 		depends on PLATFORM_Q628
-		default n
 
 	config DISABLE_CORE2_3
 		bool "Disable A's core 2, 3"
 		depends on PLATFORM_Q628
-		default n
 		help
-			Don't power on A's core 2, 3.
+		  Don't power on A's core 2, 3.
 endmenu
+
 config USE_ROM_SHARE
 	bool "Use rom share"
-	default n
 	depends on PLATFORM_Q645 || PLATFORM_SP7350
 
 config LOAD_BL31
@@ -187,34 +164,31 @@ config LOAD_BL31
 menu "Experiments"
 	config A64_EL1
 		bool "Drop from EL3 to EL1 in xBoot"
-		default n
 		depends on PLATFORM_Q645 || PLATFORM_SP7350
 		help
 		  By default, xboot is at EL3 AArch64.
 		  Select this option to drop xBoot to NS-EL1(default)
-		  or S-EL1(please modify SCR_VALUE).
+		  or S-EL1 (please modify SCR_VALUE).
 
 	config LOAD_LINUX
 		bool "Load and run Linux"
-		default n
 	config LOAD_DTB
 		bool "Load DTB (if Linux has no builtin DTB)"
 		depends on LOAD_LINUX && !ARCH_NDS
-		default n
 
 endmenu
 
 config SECURE_BOOT_SIGN
 	bool "Sign image to enable Secure Boot"
-	default n
 	select HAVE_OTP
 	help
 	  Sign xboot image and append generated signature to it.
 	  If IC OTP secure boot bit is enabled, ROM code only boots
 	  signed xboot image.
+
 config I143_C_P
 	bool "I143_C_P"
 	default y
 	depends on ARCH_RISCV && XIP_SPIBAREMETAL=n
 	help
-		I143_C_P(U54+CA7),CA7 code place in xboot.bin from 26K  to 27k
+	  I143_C_P(U54+CA7),CA7 code place in xboot.bin from 26K  to 27k
