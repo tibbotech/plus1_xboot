@@ -13,11 +13,14 @@
 //
 
 // SPI NOR
-#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
+#if defined(PLATFORM_Q645)
 #define SPI_DTB_OFFSET        0x040000   // 256K
 #define SPI_UBOOT_OFFSET      0x060000   // 384K
-#define SPI_INITRAMFS_OFFSET  0x400000   // 4M
 #define SPI_LINUX_OFFSET      0x220000   // 2M+128K
+#elif defined(PLATFORM_SP7350)
+#define SPI_DTB_OFFSET        0x040000   // 256K
+#define SPI_UBOOT_OFFSET      0x060000   // 384K
+#define SPI_LINUX_OFFSET      0x200000   // 2M
 #else
 #define SPI_DTB_OFFSET        0x020000   // 128K
 #define SPI_UBOOT_OFFSET      0x040000   // 256K
