@@ -196,8 +196,10 @@
 /**********************
  * ROM
  *********************/
-#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
+#if defined(PLATFORM_Q645)
 #define BOOT_ROM_BASE       0xfffe8000
+#elif defined(PLATFORM_SP7350)
+#define BOOT_ROM_BASE       0xfffe0000
 #else
 #define BOOT_ROM_BASE       0xffff0000
 #endif
