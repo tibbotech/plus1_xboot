@@ -16,17 +16,15 @@ ENTRY(_start)
 
 #define ROM_INIT_SIZE       (1024 + 512 - ROM_VSR_SIZE)
 #define ROM_VSR_SIZE        (128)
-#define ROM_SHARE_SIZE      (64 * 1024 - ROM_INIT_SIZE - ROM_VSR_SIZE)
-#define ROM_SHARE2_SIZE     (16 * 1024)
+#define ROM_SHARE_SIZE      (78 * 1024 + 512)
 #define ROM_PGTBL_SIZE      (16 * 1024)
-#define ROM_RESERVED_SIZE   (BOOT_ROM_SIZE - ROM_PGTBL_SIZE - ROM_SHARE2_SIZE - ROM_SHARE_SIZE - ROM_VSR_SIZE - ROM_INIT_SIZE)
+#define ROM_RESERVED_SIZE   (BOOT_ROM_SIZE - ROM_PGTBL_SIZE - ROM_SHARE_SIZE - ROM_VSR_SIZE - ROM_INIT_SIZE)
 
 
 #define ROM_INIT_START      (IBOOT_BASE)
 #define ROM_VSR_START       (ROM_INIT_START  + ROM_INIT_SIZE)
 #define ROM_SHARE_START     (ROM_VSR_START   + ROM_VSR_SIZE)
-#define ROM_SHARE2_START    (ROM_SHARE_START + ROM_SHARE_SIZE)
-#define ROM_PGTBL_START     (ROM_SHARE2_START+ ROM_SHARE2_SIZE)
+#define ROM_PGTBL_START     (ROM_SHARE_START + ROM_SHARE_START)
 #define ROM_RESERVED_START  (ROM_PGTBL_START + ROM_PGTBL_SIZE)
 
 
@@ -52,8 +50,7 @@ MEMORY
 	/* rom */
 	rom_boot     : ORIGIN = ROM_INIT_START,      LENGTH = ROM_INIT_SIZE       /* 1.5K - vsr            */
 	rom_vsr      : ORIGIN = ROM_VSR_START,       LENGTH = ROM_VSR_SIZE        /* 128                   */
-	rom_share    : ORIGIN = ROM_SHARE_START,     LENGTH = ROM_SHARE_SIZE      /* remaining (64k)       */
-	rom_share2   : ORIGIN = ROM_SHARE2_START,    LENGTH = ROM_SHARE2_SIZE     /* 16K                   */
+	rom_share    : ORIGIN = ROM_SHARE_START,     LENGTH = ROM_SHARE_SIZE      /* 78.5k                 */
 	rom_pgtbl    : ORIGIN = ROM_PGTBL_START,     LENGTH = ROM_PGTBL_SIZE      /* 16K                   */
 	rom_reserved : ORIGIN = ROM_RESERVED_START,  LENGTH = ROM_RESERVED_SIZE   /* remaining (total ROM) */
 	                                                                          /*    size @ offset  */
