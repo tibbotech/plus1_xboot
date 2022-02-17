@@ -224,6 +224,15 @@ static void init_hw(void)
 	//Set EVDN VCCM to be correct value(0xB1000000) that comes from EV71 IP config within arc.tcf file.
 	MOON2_REG->sft_cfg[22] = RF_MASK_V(0xffff, 0x0000);//EVDN VCCM base address low byte
 	MOON2_REG->sft_cfg[23] = RF_MASK_V(0xffff, 0xB100);//EVDN VCCM base address high byte
+
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
+	/* CM4 init, boot in rootfs by remoteproc */
+	MOON0_REG->clken[4]  = 0x10001;
+	MOON0_REG->gclken[4] = 0x10001;
+	MOON0_REG->reset[4]  = 0x10001; // reset M4
+	MOON2_REG->sft_cfg[24] = 0x01ff0100 | (CM4_BOOT_ADDR >> 24); // enable M4 reset address(highest 8 bit) remapping
+#endif
+
 #endif
 
 	dbg();
@@ -268,22 +277,19 @@ static int run_draminit(void)
 
 #ifdef CONFIG_USE_ZMEM
 #if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
-	volatile u32 *m4_mem = (void *)0x1e000000;
+#if 0 // START M4 in zmem mode for develop
+	volatile u32 *m4_mem = (void *)CM4_BOOT_ADDR;
 	prn_string("... M4 MEM ...\n");
+	prn_dword0(m4_mem);
 	prn_dword0((u32)&m4_mem[0]);   prn_string(": "); prn_dword(m4_mem[0]);
 	prn_dword0((u32)&m4_mem[1]);   prn_string(": "); prn_dword(m4_mem[1]);
 	prn_dword0((u32)&m4_mem[256]); prn_string(": "); prn_dword(m4_mem[256]);
 
-	MOON0_REG->clken[4]  = 0x10001;
-	MOON0_REG->gclken[4] = 0x10001;
-	MOON0_REG->reset[4]  = 0x10001; // reset M4
-	MOON2_REG->sft_cfg[24] = 0x01ff0100 | ((u32)m4_mem >> 24); // enable M4 reset address(highest 8 bit) remapping
-
-#if 1 // START M4
 	prn_string("... START M4 ...\n");
 	MOON0_REG->reset[4] = 0x10000; // release reset
 #endif
 #endif
+
 	/* don't corrupt zmem */
 	return 0;
 #endif
