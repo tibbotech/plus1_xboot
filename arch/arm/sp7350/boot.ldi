@@ -4,29 +4,26 @@ OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
 OUTPUT_ARCH(arm)
 ENTRY(_start)
 
+#define BOOT_ROM_SIZE       (96 * 1024)
 
 /* ROM base */
 #ifdef PLATFORM_SPIBAREMETAL
 #define IBOOT_BASE SPI_FLASH_BASE	/* spi baremetal boot */
-#define BOOT_ROM_SIZE       (96 * 1024)
 #else
 #define IBOOT_BASE BOOT_ROM_BASE	/* arm ROM address */
-#define BOOT_ROM_SIZE       (128 * 1024)
 #endif
 
-#define ROM_INIT_SIZE       (1024 + 512 - ROM_VSR_SIZE)
-#define ROM_VSR_SIZE        (128)
-#define ROM_SHARE_SIZE      (78 * 1024 + 512)
 #define ROM_PGTBL_SIZE      (16 * 1024)
-#define ROM_RESERVED_SIZE   (BOOT_ROM_SIZE - ROM_PGTBL_SIZE - ROM_SHARE_SIZE - ROM_VSR_SIZE - ROM_INIT_SIZE)
+#define ROM_SHARE2_SIZE     (16 * 1024)
+#define ROM_INIT_SIZE       (1024 + 512 - ROM_VSR_SIZE)
+#define ROM_VSR_SIZE        128
+#define ROM_SHARE_SIZE      (BOOT_ROM_SIZE - ROM_SHARE2_SIZE - ROM_PGTBL_SIZE - ROM_VSR_SIZE - ROM_INIT_SIZE)
 
-
-#define ROM_INIT_START      (IBOOT_BASE)
-#define ROM_VSR_START       (ROM_INIT_START  + ROM_INIT_SIZE)
-#define ROM_SHARE_START     (ROM_VSR_START   + ROM_VSR_SIZE)
-#define ROM_PGTBL_START     (ROM_SHARE_START + ROM_SHARE_SIZE)
-#define ROM_RESERVED_START  (ROM_PGTBL_START + ROM_PGTBL_SIZE)
-
+#define ROM_PGTBL_START     (IBOOT_BASE)
+#define ROM_SHARE2_START    (ROM_PGTBL_START + ROM_PGTBL_SIZE)
+#define ROM_INIT_START      (ROM_SHARE2_START + ROM_SHARE2_SIZE)
+#define ROM_VSR_START       (ROM_INIT_START + ROM_INIT_SIZE)
+#define ROM_SHARE_START     (ROM_VSR_START + ROM_VSR_SIZE)
 
 
 /* RAM base */
@@ -48,11 +45,11 @@ ENTRY(_start)
 MEMORY
 {
 	/* rom */
-	rom_boot     : ORIGIN = ROM_INIT_START,      LENGTH = ROM_INIT_SIZE       /* 1.5K - vsr            */
-	rom_vsr      : ORIGIN = ROM_VSR_START,       LENGTH = ROM_VSR_SIZE        /* 128                   */
-	rom_share    : ORIGIN = ROM_SHARE_START,     LENGTH = ROM_SHARE_SIZE      /* 78.5k                 */
-	rom_pgtbl    : ORIGIN = ROM_PGTBL_START,     LENGTH = ROM_PGTBL_SIZE      /* 16K                   */
-	rom_reserved : ORIGIN = ROM_RESERVED_START,  LENGTH = ROM_RESERVED_SIZE   /* remaining (total ROM) */
+	rom_pgtbl    : ORIGIN = ROM_PGTBL_START,     LENGTH = ROM_PGTBL_SIZE      /* 16K                */
+	rom_share2   : ORIGIN = ROM_SHARE2_START,    LENGTH = ROM_SHARE2_SIZE     /* 16K               */
+	rom_boot     : ORIGIN = ROM_INIT_START,      LENGTH = ROM_INIT_SIZE       /* 1.5K - vsr        */
+	rom_vsr      : ORIGIN = ROM_VSR_START,       LENGTH = ROM_VSR_SIZE        /* 128               */
+	rom_share    : ORIGIN = ROM_SHARE_START,     LENGTH = ROM_SHARE_SIZE      /* remaining ROM     */
 	                                                                          /*    size @ offset  */
 	xboot_buf    : ORIGIN = XBOOT_START,         LENGTH = XBOOT_BUF_SIZE      /*     96K @  0      */
 	bootinfo     : ORIGIN = BOOTINFO_START,      LENGTH = BOOTINFO_SIZE       /*     512 @ 96K     */

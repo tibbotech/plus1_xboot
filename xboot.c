@@ -224,15 +224,6 @@ static void init_hw(void)
 	//Set EVDN VCCM to be correct value(0xB1000000) that comes from EV71 IP config within arc.tcf file.
 	MOON2_REG->sft_cfg[22] = RF_MASK_V(0xffff, 0x0000);//EVDN VCCM base address low byte
 	MOON2_REG->sft_cfg[23] = RF_MASK_V(0xffff, 0xB100);//EVDN VCCM base address high byte
-
-#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
-	/* CM4 init, boot in rootfs by remoteproc */
-	MOON0_REG->clken[4]  = 0x10001;
-	MOON0_REG->gclken[4] = 0x10001;
-	MOON0_REG->reset[4]  = 0x10001; // reset M4
-	MOON2_REG->sft_cfg[24] = 0x01ff0100 | (CM4_BOOT_ADDR >> 24); // enable M4 reset address(highest 8 bit) remapping
-#endif
-
 #endif
 
 	dbg();
@@ -276,20 +267,6 @@ static int run_draminit(void)
 #endif
 
 #ifdef CONFIG_USE_ZMEM
-#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
-#if 0 // START M4 in zmem mode for develop
-	volatile u32 *m4_mem = (void *)CM4_BOOT_ADDR;
-	prn_string("... M4 MEM ...\n");
-	prn_dword0(m4_mem);
-	prn_dword0((u32)&m4_mem[0]);   prn_string(": "); prn_dword(m4_mem[0]);
-	prn_dword0((u32)&m4_mem[1]);   prn_string(": "); prn_dword(m4_mem[1]);
-	prn_dword0((u32)&m4_mem[256]); prn_string(": "); prn_dword(m4_mem[256]);
-
-	prn_string("... START M4 ...\n");
-	MOON0_REG->reset[4] = 0x10000; // release reset
-#endif
-#endif
-
 	/* don't corrupt zmem */
 	return 0;
 #endif
@@ -547,6 +524,28 @@ static void zmem_check_uboot(void)
 #endif
 
 #if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
+static void cm4_init()
+{
+	/* CM4 init, boot in rootfs by remoteproc */
+	prn_string("M4 init: \n");
+	MOON0_REG->clken[4]  = 0x10001;
+	MOON0_REG->gclken[4] = 0x10001;
+	MOON0_REG->reset[4]  = 0x10001;
+	MOON2_REG->sft_cfg[24] = 0x01ff0100 | (CM4_BOOT_ADDR >> 24); // enable M4 reset address(highest 8 bit) remapping
+
+#if 0 // START M4 in zmem mode for develop
+#ifdef CONFIG_USE_ZMEM
+	volatile u32 *m4_mem = (void *)CM4_BOOT_ADDR;
+	prn_dword0((u32)&m4_mem[0]);   prn_string(": "); prn_dword(m4_mem[0]);
+	prn_dword0((u32)&m4_mem[1]);   prn_string(": "); prn_dword(m4_mem[1]);
+	prn_dword0((u32)&m4_mem[256]); prn_string(": "); prn_dword(m4_mem[256]);
+
+	prn_string("... START M4 ...\n");
+	MOON0_REG->reset[4] = 0x10000; // release reset
+#endif
+#endif
+
+}
 static int copy_bl31_from_uboot_img(void* dst)
 {
 	void* bl31_src;
@@ -733,6 +732,7 @@ static void boot_uboot(void)
 	/* boot aarch64 uboot */
 	copy_bl31_from_uboot_img((void*)BL31_LOAD_ADDR);
 
+	cm4_init();
 	go_a32_to_a64(UBOOT_RUN_ADDR);
 
 #elif defined(PLATFORM_Q628)
@@ -866,8 +866,12 @@ static void spi_nor_boot(int pin_x)
 {
 #ifdef SPEED_UP_SPI_NOR_CLK
 	dbg();
-	//SPI_CTRL_REG->spi_ctrl = (SPI_CTRL_REG->spi_ctrl & ~(7 << 16)) | (3 << 16); // 3: CLK_SPI/6
+#ifdef PLATFORM_SP7350
+	SPI_CTRL_REG->spi_ctrl = (SPI_CTRL_REG->spi_ctrl & ~(7 << 16)) | (4 << 16); // 1: CLK_SPI/8
+#else
 	SPI_CTRL_REG->spi_ctrl = (SPI_CTRL_REG->spi_ctrl & ~(7 << 16)) | (1 << 16); // 1: CLK_SPI/2
+#endif
+
 	SPI_CTRL_REG->spi_cfg[2] = 0x00150095; // restore default after setting spi_ctrl
 #endif
 
@@ -875,7 +879,6 @@ static void spi_nor_boot(int pin_x)
 		dbg();
 		return;
 	}
-
 	// spi linux
 #ifdef CONFIG_LOAD_LINUX
 	spi_nor_linux();
