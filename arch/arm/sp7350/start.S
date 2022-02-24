@@ -16,13 +16,7 @@
 
 .global _start
 _start:
-	b	1f
 
-# pointer to struct hsm_keys
-.org	XB_HSMK_PTR_OFFS
-.word	__hsm_keys_s
-
-1:
 	/* setup stack */
 	ldr     sp, =__stack_top
 	bic     sp, sp, #7      /* for 8-byte alignment */

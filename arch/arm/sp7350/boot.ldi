@@ -38,9 +38,10 @@ ENTRY(_start)
 #define A64UP_START         (GLOBAL_HEADER_START + GLOBAL_HEADER_SIZE)
 #define CDATA_START         (A64UP_START + A64UP_SIZE)
 #define STORAGE_BUF_START   (CDATA_START + CDATA_SIZE)
-#define STACK_START         (STORAGE_BUF_START + STORAGE_BUF_SIZE)
+#define PAGE_TABLE_START    (STORAGE_BUF_START + STORAGE_BUF_SIZE)
+#define STACK_START         (PAGE_TABLE_START + PAGE_TABLE_SIZE)
 #define BOOTCOMPT_START     (STACK_START + STACK_SIZE)
-#define SPACC_RAM_START     (BOOTCOMPT_START + BOOTCOMPT_SIZE)
+#define RESERVED_START      (BOOTCOMPT_START + BOOTCOMPT_SIZE)
 
 MEMORY
 {
@@ -57,9 +58,11 @@ MEMORY
 	a64up        : ORIGIN = A64UP_START,         LENGTH = A64UP_SIZE          /*     1K  @ 97K     */
 	cdata        : ORIGIN = CDATA_START,         LENGTH = CDATA_SIZE          /*     62K @ 98K     */
 	storage_buf  : ORIGIN = STORAGE_BUF_START,   LENGTH = STORAGE_BUF_SIZE    /*     32K @ 160K    */
-	stack        : ORIGIN = STACK_START,         LENGTH = STACK_SIZE          /*  63K-64 @ 192K    */
+	mmu_pgtbl    : ORIGIN = PAGE_TABLE_START,    LENGTH = PAGE_TABLE_SIZE     /*     16K @ 176K    */
+	stack        : ORIGIN = STACK_START,         LENGTH = STACK_SIZE          /*  47K-64 @ 192K    */
 	bootcompat   : ORIGIN = BOOTCOMPT_START,     LENGTH = BOOTCOMPT_SIZE      /*      64 @ 255K-64 */
-	spacc_ram    : ORIGIN = SPACC_RAM_START,     LENGTH = SPACC_RAM_SIZE      /*      1K @ 255K    */
+	reserved_ram : ORIGIN = RESERVED_START,      LENGTH = RESERVED_RAM_SIZE    /*     1K @ 255K    */
+
 }
 
 SECTIONS
@@ -80,13 +83,6 @@ SECTIONS
 		*(.text.*)
 		*(.rodata)
 		*(.rodata.*)
-
-		. = ALIGN(4);
-		__hsm_keys_s = .;
-#ifdef CONFIG_SECURE_BOOT_SIGN
-		KEEP(../../build/tools/secure_hsm/secure/hsm_keys/hsmk.o (.hsmk));
-#endif
-		__hsm_keys_e = .;
 
 		. = ALIGN(4);
 		__a64rom = .;
@@ -115,6 +111,11 @@ SECTIONS
 	.boothead (NOLOAD): {
 		*(boothead_sect)
 	} > boothead
+
+	.mmu_pgtbl(NOLOAD): {
+		. = ALIGN(14);
+		__page_table_beg = .;
+	} > mmu_pgtbl
 
 	.storage_buf (NOLOAD): {
 		__storage_buf_beg = .;

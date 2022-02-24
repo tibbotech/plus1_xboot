@@ -397,7 +397,7 @@ $(TARGET): $(OBJS) I143_C_P
 else ifeq ($(CONFIG_PLATFORM_Q645),y)
 $(TARGET): $(OBJS) hsmk a64bin
 else ifeq ($(CONFIG_PLATFORM_SP7350),y)
-$(TARGET): $(OBJS) hsmk a64bin
+$(TARGET): $(OBJS) a64bin
 else
 $(TARGET): $(OBJS)
 endif

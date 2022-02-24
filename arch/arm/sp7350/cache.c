@@ -14,7 +14,9 @@ void prn_string(const char *);
 void prn_dword(unsigned int);
 #endif
 
-u32 *page_table = (u32 *)MMU_PGTBL_ADDR;
+extern void *__page_table_beg;
+
+u32 *page_table = (u32 *)&__page_table_beg;
 
 #define CR_M    (1 << 0)        /* MMU enable                           */
 #define CR_A    (1 << 1)        /* Alignment abort enable               */
@@ -109,3 +111,4 @@ int hal_dcache_is_enabled(void)
 	reg = read_sctlr();
 	return !!(reg & CR_C);
 }
+
