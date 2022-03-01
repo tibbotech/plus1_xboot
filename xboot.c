@@ -670,10 +670,14 @@ static void go_a32_to_a64(u32 ap_addr)
 	prn_string("a64up@"); prn_dword(start64_addr);
 
 	// set aa64 boot address for all SMP cores
+	#if defined(PLATFORM_Q645)
 	SECGRP1_MAIN_REG->G083_CA55_S01 = start64_addr;
 	SECGRP1_MAIN_REG->G083_CA55_S02 = start64_addr;
 	SECGRP1_MAIN_REG->G083_CA55_S03 = start64_addr;
 	SECGRP1_MAIN_REG->G083_CA55_S04 = start64_addr;
+	#elif  defined(PLATFORM_SP7350)
+	memcpy((void *)0x4000000, beg, end - beg); // set next addr to 0x4000000
+	#endif
 
 	DSB();
 
