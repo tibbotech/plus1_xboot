@@ -113,7 +113,6 @@ SECTIONS
 	} > boothead
 
 	.mmu_pgtbl(NOLOAD): {
-		. = ALIGN(14);
 		__page_table_beg = .;
 	} > mmu_pgtbl
 
