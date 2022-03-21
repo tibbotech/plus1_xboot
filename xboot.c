@@ -163,6 +163,11 @@ static void init_hw(void)
 #endif
 
 #ifdef PLATFORM_Q628
+	// Set clock polarity of RMII of L2SW.
+	*(volatile u32 *)(0x9c000294) = *(volatile u32 *)(0x9c000294) | ((0xf<<16) | 0xf);
+#endif
+
+#ifdef PLATFORM_Q628
 	if ((cpu_main_id() & 0xfff0) == 0x9260) {
 		prn_string("-- B --\n");
 	}
