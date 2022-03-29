@@ -71,8 +71,12 @@
 
 #define RF_GRP(_grp, _reg)              ((((_grp) * 32 + (_reg)) * 4) + REG_BASE)
 #define RF_AMBA(_grp, _reg)             ((((_grp) * 1024 + (_reg)) * 4) + REG_BASE)
-
 #define AHB_GRP(_ahb_grp, _grp, _reg)   ((((_grp) * 32 + (_reg)) * 4) + ((_ahb_grp) * 0x1000) + AHB0_REG_BASE)
+
+#ifdef PLATFORM_SP7350
+#define REG_BASE_AO           0xF8800000
+#define RF_GRP_AO(_grp, _reg)              ((((_grp) * 32 + (_reg)) * 4) + REG_BASE_AO)
+#endif
 
 #define A_REG_BASE                      0x9ec00000
 #define A_RF_GRP(_grp, _reg)            ((((_grp) * 32 + (_reg)) * 4) + A_REG_BASE)
@@ -102,7 +106,12 @@
  *********************/
 
 /* IV_MX[6:2] */
+#ifdef PLATFORM_SP7350
+#define HW_CFG_REG              RF_GRP_AO(0, 31)
+#else
 #define HW_CFG_REG              RF_GRP(0, 31)
+#endif
+
 #define HW_CFG_SHIFT            12
 #define HW_CFG_MASK_VAL         0x1F
 #define HW_CFG_MASK             (HW_CFG_MASK_VAL << HW_CFG_SHIFT)

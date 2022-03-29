@@ -282,10 +282,10 @@ build_draminit:
 dwc:
 	@echo ">>>>>>>>>>> Build dwc obj"
 ifeq ($(CONFIG_PLATFORM_Q645),y)
-	$(MAKE) -C ../draminit/dwc ARCH=$(ARCH) CROSS=$(CROSS)
+	$(MAKE) -C ../draminit/dwc ARCH=$(ARCH) CROSS=$(CROSS) PLATFROM=Q645
 endif
 ifeq ($(CONFIG_PLATFORM_SP7350),y)
-	$(MAKE) -C ../draminit/dwc ARCH=$(ARCH) CROSS=$(CROSS)
+	$(MAKE) -C ../draminit/dwc ARCH=$(ARCH) CROSS=$(CROSS) PLATFROM=SP7350
 endif
 	@echo ">>>>>>>>>>> Build dwc obj (done)"
 	@echo ""

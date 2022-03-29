@@ -324,8 +324,9 @@ tryagain:
 	// Implicit delay is not desired here
 
 	// Put exact delay (500us ~ 1ms)
-	STC_REG->stc_15_0 = 0;
-	while (STC_REG->stc_15_0 < 50); // 555us
+    // STC_REG->stc_15_0 = 0;
+    // while (STC_REG->stc_15_0 < 50); // 555us
+	STC_delay_ticks(50);
 
 	// if this delsy is too short or too long,
 	// USB_transfer() has error USBSTS=0x0000A007
