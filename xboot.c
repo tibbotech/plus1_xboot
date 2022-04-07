@@ -19,7 +19,11 @@
 #include <SECGRP1.h>
 
 #ifdef CONFIG_SECURE_BOOT_SIGN
-#define SIGN_DATA_SIZE	(64+8)// |header+data+flag(8)+sign(64)|
+#ifdef PLATFORM_Q628
+#define SIGN_DATA_SIZE	(64+8)  // |header+data+flag(8)+sign(64)|
+#else
+#define SIGN_DATA_SIZE	(64)    // |header(64)|
+#endif
 #else
 #define SIGN_DATA_SIZE (0)
 #endif
@@ -356,7 +360,7 @@ static int nor_load_uhdr_image(const char *img_name, void *dst, void *src, int v
 	}
 
 	// load image data
-	len = image_get_size(hdr)+ SIGN_DATA_SIZE;
+	len = image_get_size(hdr) + SIGN_DATA_SIZE;
 	prn_string("load data size="); prn_decimal(len); prn_string("\n");
 
 	/* copy chunk size */
@@ -1522,7 +1526,11 @@ static int nand_load_uhdr_image(int type, const char *img_name, void *dst,
 	/* load image data */
 	prn_string("load data size=");
 	prn_decimal_ln(len);
+#ifdef PLATFORM_Q628
 	res = bblk_read(type, (u8 *)hdr, real_blk_off, 64 + len + SIGN_DATA_SIZE, 100, img_blk_end);
+#else
+	res = bblk_read(type, (u8 *)hdr, real_blk_off, len + SIGN_DATA_SIZE, 100, img_blk_end);
+#endif
 	if (res) {
 		prn_string("failed to load data\n");
 		return -1;
