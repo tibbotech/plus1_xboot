@@ -21,7 +21,7 @@ int otprx_read(volatile struct hb_gp_regs *otp_data, volatile struct otprx_regs 
 	addr = addr * OTP_BIT_ADDR_OF_BANK;
 	regs->otp_addr = addr;
 
-	regs->otp_cmd = 0x1E04;
+	regs->otp_cmd = 0x1e04;
 
 	do {
 		delay_1ms(1);
@@ -38,10 +38,17 @@ int otprx_read(volatile struct hb_gp_regs *otp_data, volatile struct otprx_regs 
 
 int otprx_write(volatile struct hb_gp_regs *otp_data, volatile struct otprx_regs *regs, int addr, char value)
 {
-	unsigned int data;
+	unsigned int data, cfg;
 	u32 timeout = OTP_WRITE_TIMEOUT;
 
-	regs->otp_ctrl = 0xFD01;
+#if defined(PLATFORM_Q645)
+	cfg = MOON2_REG->sft_cfg[0];
+	MOON2_REG->sft_cfg[0] = 0x003c0008;
+
+	regs->otp_ctrl = 0x5dc1;
+#else
+	regs->otp_ctrl = 0xfd01;
+#endif
 	regs->otp_prog_addr = addr;
 	regs->otp_prog_ctl = 0x03;
 
@@ -63,6 +70,10 @@ int otprx_write(volatile struct hb_gp_regs *otp_data, volatile struct otprx_regs
 	regs->otp_prog_pgenb =0x01;
 	regs->otp_prog_wr = 0x00;
 	regs->otp_prog_ctl = 0x00;
+
+#if defined(PLATFORM_Q645)
+	MOON2_REG->sft_cfg[0] = 0xffff0000 | cfg;
+#endif
 
 	return 0;
 }
