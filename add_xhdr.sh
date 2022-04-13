@@ -54,6 +54,10 @@ elif [ "$4" = "im2d" ];then
 	val=$((0x64326d69)) # im2d (i=69h)
 elif [ "$4" = "dm2d" ];then
 	val=$((0x64326d64)) # dm2d (d=64h)
+elif [ "$4" = "imda" ];then
+	val=$((0x6a646d69)) # imda (i=69h)
+elif [ "$4" = "dmda" ];then
+	val=$((0x6a646d64)) # dmda (d=64h)	
 else
 	val=$((0x54554258)) # XBUT (X=58h)
 fi
