@@ -38,7 +38,11 @@ int otprx_read(volatile struct hb_gp_regs *otp_data, volatile struct otprx_regs 
 
 int otprx_write(volatile struct hb_gp_regs *otp_data, volatile struct otprx_regs *regs, int addr, char value)
 {
+#if defined(PLATFORM_Q645)
 	unsigned int data, cfg;
+#else
+	unsigned int data;
+#endif
 	u32 timeout = OTP_WRITE_TIMEOUT;
 
 #if defined(PLATFORM_Q645)
