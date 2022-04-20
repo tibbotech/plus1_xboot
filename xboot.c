@@ -922,7 +922,7 @@ static int fat_load_uhdr_image(fat_info *finfo, const char *img_name, void *dst,
 	}
 
 	/* ISPBOOOT.BIN file index is 0,uboot.img is 1*/
-	fileindex = (type==SDCARD_BOOT)?FAT_UBOOT_INDEX:FAT_ISPBOOOT_INDEX;
+	fileindex = (type == SDCARD_BOOT) ? FAT_UBOOT_INDEX : FAT_ISPBOOOT_INDEX;
 
 	/* read header first */
 	len = 64;
@@ -956,6 +956,13 @@ static int fat_load_uhdr_image(fat_info *finfo, const char *img_name, void *dst,
 		prn_decimal(len + 64);
 		return -1;
 	}
+
+#if (defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)) && defined(CONFIG_HAVE_USB_DISK)
+	/* fix the issue of unaligned dst */
+	if ((type == USB_ISP) && (g_bootinfo.bootdev_port == USB2_PORT))
+		hal_dcache_invalidate_all();
+#endif
+
 	ret = fat_read_file(fileindex, finfo, buf, img_offs + 64, len + SIGN_DATA_SIZE, dst + 64);
 	if (ret == FAIL) {
 		prn_string("load body failed\n");
