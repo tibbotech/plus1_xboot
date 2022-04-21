@@ -81,6 +81,11 @@ u32 fat_read_file(u32 idx, fat_info *info, u8 *buffer, u32 offset, u32 length, u
 	u32 bytesPerClus = info->bytePerSect * info->sectPerClus;
 	u32 count;
 
+#if (defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)) && defined(CONFIG_HAVE_USB_DISK)
+	if ((g_bootinfo.gbootRom_boot_mode == USB_ISP) && (g_bootinfo.bootdev_port == USB2_PORT))
+		hal_dcache_invalidate_all();
+#endif
+
 	if (size == 0) {
 		return FAIL;
 	}
