@@ -28,6 +28,8 @@
 #define SIGN_DATA_SIZE (0)
 #endif
 
+//#define OTP_TEST
+
 /*
  * TOC
  * ---------------------
@@ -1672,6 +1674,11 @@ void boot_not_support(void)
 static void boot_flow(void)
 {
 	int retry = 10;
+#ifdef OTP_TEST
+	unsigned int i;
+	unsigned int data;
+	char buf;
+#endif
 
 	/* Force romcode boot mode for xBoot testings :
 	 * g_bootinfo.gbootRom_boot_mode = USB_ISP; g_bootinfo.bootdev = DEVICE_USB_ISP; g_bootinfo.bootdev_port = 1;
@@ -1682,6 +1689,25 @@ static void boot_flow(void)
 	 * g_bootinfo.gbootRom_boot_mode = SDCARD_ISP; g_bootinfo.bootdev = DEVICE_SD0; g_bootinfo.bootdev_pinx = 1;
 	 * prn_string("force boot mode="); prn_dword(g_bootinfo.gbootRom_boot_mode);
 	 */
+
+#ifdef OTP_TEST
+	prn_string("OTP DATA\n");
+	for (i = 0; i < 128; i++) {
+		if (!otprx_read(HB_GP_REG, SP_OTPRX_REG, i, &buf)) {
+			if ((i % 4) == 0) {
+				prn_string("OTP"); prn_decimal(i / 4); prn_string(" = ");
+				data = buf;
+			} else if ((i % 4) == 1) {
+				data = (((unsigned int) buf) << 8) | data;
+			} else if ((i % 4) == 2) {
+				data = (((unsigned int) buf) << 16) | data;
+			} else if ((i % 4) == 3) {
+				data = (((unsigned int) buf) << 24) | data;
+				prn_dword(data);
+			}
+		}
+	}
+#endif
 
 	prn_string("mode=");
 	prn_dword(g_bootinfo.gbootRom_boot_mode);

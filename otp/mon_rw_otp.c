@@ -45,12 +45,20 @@ extern int otprx_write(volatile struct hb_gp_regs *otp_data, volatile struct otp
 
 static inline void reset_STC()
 {
+#if defined (PLATFORM_SP7350)
+	STC_REG->stc_31_0 = 0;
+#else
 	STC_REG->stc_15_0 = 0;
+#endif
 }
 
 static int get_STC()
 {
+#if defined (PLATFORM_SP7350)
+	return STC_REG->stc_31_0;
+#else
 	return STC_REG->stc_15_0;
+#endif
 }
 
 /*static int istimeout(int msec)
