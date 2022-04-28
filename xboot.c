@@ -539,11 +539,18 @@ static void cm4_init()
 {
 	/* CM4 init, boot in rootfs by remoteproc */
 	prn_string("M4 init: \n");
+#if defined(PLATFORM_Q645)	
 	MOON0_REG->clken[4]  = 0x10001;
 	MOON0_REG->gclken[4] = 0x10001;
 	MOON0_REG->reset[4]  = 0x10001;
 	MOON2_REG->sft_cfg[24] = 0x01ff0100 | (CM4_BOOT_ADDR >> 24); // enable M4 reset address(highest 8 bit) remapping
-
+#elif defined(PLATFORM_SP7350)
+	MOON4_REG_AO->sft_cfg[19] = RF_MASK_V_SET(1 << 1); // enable M4 reset address
+	MOON4_REG_AO->sft_cfg[20] = 0xffff0000 | (CM4_BOOT_ADDR >> 16); // enable M4 reset address
+	MOON0_REG->reset[7]  = RF_MASK_V_SET(1 << 9);
+	prn_string("... START M4 ...\n");
+	MOON0_REG->reset[7]  = RF_MASK_V_CLR(1 << 9);
+#endif
 #if 0 // START M4 in zmem mode for develop
 #ifdef CONFIG_USE_ZMEM
 	volatile u32 *m4_mem = (void *)CM4_BOOT_ADDR;
@@ -1777,13 +1784,26 @@ static void init_uart(void)
 	UART1_REG->div_l = UART_BAUD_DIV_L(BAUDRATE, UART_SRC_CLK);
 	UART1_REG->div_h = UART_BAUD_DIV_H(BAUDRATE, UART_SRC_CLK);
 #endif
-#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
+#ifdef PLATFORM_Q645
 	/* uart1 pinmux : UA1_TX, UA1_RX */
 	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 9, 1 << 9); // [9]=1
 	MOON0_REG->reset[3] = RF_MASK_V_CLR(1 << 0); /* release UA1 */
 	UART1_REG->div_l = UART_BAUD_DIV_L(BAUDRATE, UART_SRC_CLK);
 	UART1_REG->div_h = UART_BAUD_DIV_H(BAUDRATE, UART_SRC_CLK);
 #endif
+#ifdef PLATFORM_SP7350
+	/* uart1 pinmux : UA1_TX, UA1_RX */
+	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 13, 1 << 13); // [13]=1
+	MOON0_REG->reset[5] = RF_MASK_V_CLR(1 << 3); /* release UA1 */
+	UART1_REG->div_l = UART_BAUD_DIV_L(BAUDRATE, UART_SRC_CLK);
+	UART1_REG->div_h = UART_BAUD_DIV_H(BAUDRATE, UART_SRC_CLK);
+	UART1_REG->dr = 'U';
+	UART1_REG->dr = 'A';
+	UART1_REG->dr = 'R';
+	UART1_REG->dr = 'T';
+	UART1_REG->dr = '1';
+#endif
+
 #endif
 #ifdef PLATFORM_I143
 	UART0_REG->div_l = UART_BAUD_DIV_L(BAUDRATE, UART_SRC_CLK);	/* baud rate */

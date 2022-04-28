@@ -7,8 +7,7 @@ struct moon0_regs {
 	unsigned int rsvd_1[5];        // 0.6 - 0.10
 	unsigned int gclken[5];        // 0.11
 	unsigned int rsvd_2[5];        // 0.16 - 0.20
-	unsigned int reset[5];         // 0.21
-	unsigned int rsvd_3[5];        // 0.26 - 030
+	unsigned int reset[10];         // 0.21
 	unsigned int hw_cfg;           // 0.31
 
 };
@@ -17,17 +16,17 @@ struct moon0_regs {
 struct moon1_regs {
 	unsigned int sft_cfg[32];
 };
-#define MOON1_REG ((volatile struct moon1_regs *)RF_GRP(1, 0))
+#define MOON1_REG ((volatile struct moon1_regs *)RF_GRP_AO(1, 0))
 
 struct moon2_regs {
 	unsigned int sft_cfg[32];
 };
-#define MOON2_REG ((volatile struct moon2_regs *)RF_GRP(2, 0))
+#define MOON2_REG ((volatile struct moon2_regs *)RF_GRP_AO(2, 0))
 
 struct moon3_regs {
 	unsigned int sft_cfg[32];
 };
-#define MOON3_REG ((volatile struct moon3_regs *)RF_GRP(3, 0))
+#define MOON3_REG ((volatile struct moon3_regs *)RF_GRP_AO(3, 0))
 
 struct moon4_regs {
 	unsigned int pllsp_ctl[7];	// 4.0
@@ -46,6 +45,11 @@ struct moon4_regs {
 	unsigned int otp_st;		// 4.31
 };
 #define MOON4_REG ((volatile struct moon4_regs *)RF_GRP(4, 0))
+
+struct moon4_regs_ao {
+	unsigned int sft_cfg[32];
+};
+#define MOON4_REG_AO ((volatile struct moon4_regs_ao *)RF_GRP_AO(4, 0))
 
 struct moon5_regs {
 	unsigned int sft_cfg[32];
@@ -119,10 +123,10 @@ struct uart_regs {
 	unsigned int clk_src;
 	unsigned int smp_rate;
 };
-#define UART0_REG    ((volatile struct uart_regs *)RF_GRP_AO(3, 0))
-#define UART1_REG    ((volatile struct uart_regs *)RF_GRP_AO(4, 0))
-#define UART2_REG    ((volatile struct uart_regs *)RF_GRP_AO(5, 0))
-#define UART3_REG    ((volatile struct uart_regs *)RF_GRP_AO(6, 0))
+#define UART0_REG    ((volatile struct uart_regs *)RF_GRP_AO(50, 0))
+#define UART1_REG    ((volatile struct uart_regs *)RF_GRP_AO(51, 0))
+#define UART2_REG    ((volatile struct uart_regs *)RF_GRP_AO(52, 0))
+#define UART3_REG    ((volatile struct uart_regs *)RF_GRP_AO(53, 0))
 
 #define UART4_REG    ((volatile struct uart_regs *)RF_GRP(17, 0))
 #define UADBG_REG    ((volatile struct uart_regs *)RF_GRP(498, 0))
