@@ -1673,6 +1673,22 @@ void boot_not_support(void)
 			g_bootinfo.gbootRom_boot_mode);
 	mon_shell();
 }
+
+void custom_boot_flags( void) {
+#ifdef CONFIG_CUSTOM_BOOT_BTN
+ gpio_set_IO( CONFIG_CUSTOM_BOOT_BTN, 0, 0);
+ if ( !gpio_getV( CONFIG_CUSTOM_BOOT_BTN)) return;
+#if defined(CONFIG_HAVE_SDCARD) && CONFIG_CUSTOM_BTN_DEV == SDCARD_ISP
+ SetBootDev( DEVICE_SDCARD, 1, 1);
+#endif
+#if defined(CONFIG_HAVE_USB_DISK) && CONFIG_CUSTOM_BTN_DEV == USB_ISP
+ SetBootDev( DEVICE_USB_ISP, 0, 0);
+#endif
+ prn_string("\nCUSTOM KEY -> mode:");
+ prn_dword(g_bootinfo.gbootRom_boot_mode);
+#endif
+ return;  }
+
 /*
  * boot_flow - Top boot flow logic
  */
@@ -1716,6 +1732,9 @@ static void boot_flow(void)
 
 	prn_string("mode=");
 	prn_dword(g_bootinfo.gbootRom_boot_mode);
+
+	// custom gpio flag handler
+	custom_boot_flags();
 
 #if !defined(PLATFORM_Q645) && !defined(PLATFORM_SP7350)
 	// NOR pins are enabled by hardware.
