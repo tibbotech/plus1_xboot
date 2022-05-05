@@ -539,7 +539,7 @@ static void cm4_init()
 {
 	/* CM4 init, boot in rootfs by remoteproc */
 	prn_string("M4 init: \n");
-#if defined(PLATFORM_Q645)	
+#if defined(PLATFORM_Q645)
 	MOON0_REG->clken[4]  = 0x10001;
 	MOON0_REG->gclken[4] = 0x10001;
 	MOON0_REG->reset[4]  = 0x10001;
@@ -1717,11 +1717,13 @@ static void boot_flow(void)
 	prn_string("mode=");
 	prn_dword(g_bootinfo.gbootRom_boot_mode);
 
+#if !defined(PLATFORM_Q645) && !defined(PLATFORM_SP7350)
 	// NOR pins are enabled by hardware.
 	// Release them if boot device is not NOR.
 	if (g_bootinfo.gbootRom_boot_mode != SPI_NOR_BOOT) {
 		set_spi_nor_pinmux(0);
 	}
+#endif
 
 	/* coverity[no_escape] */
 	while (retry-- > 0) {
