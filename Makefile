@@ -390,6 +390,10 @@ endif
 
 CSOURCES += draminit/dram_test.c
 
+ifeq ($(CONFIG_PLATFORM_Q628),y)
+CSOURCES += gpio/gpio_q628.c
+endif
+
 OBJS = $(ASOURCES:.S=.o) $(CSOURCES:.c=.o)
 
 $(OBJS): prepare

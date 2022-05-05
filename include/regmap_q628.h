@@ -48,6 +48,15 @@ struct moon5_regs {
 };
 #define MOON5_REG ((volatile struct moon5_regs *)RF_GRP(5, 0))
 
+struct gpioxt_regs {
+ uint32_t ctl_sel[ 8];		// pin is iop(0) or gpio(1)	mask/vals: 16/16
+ uint32_t oe[ 8];		// pin is I(0) or O(1)	mask/vals: 16/16
+ uint32_t o[ 8];		// pin OUT val	mask/vals: 16/16
+ uint32_t in[ 8];		// pin OUT val	mask/vals: 16/16
+};
+// off: +0x300
+#define REG_GPIOXT ((volatile struct gpioxt_regs *)RF_GRP(6, 0))
+
 struct pad_ctl_regs {
         unsigned int reserved[20];         // 101.0
         unsigned int spi_flash_sftpad_ctl; // 101.20
