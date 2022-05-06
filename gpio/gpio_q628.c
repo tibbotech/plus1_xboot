@@ -1,3 +1,5 @@
+#include <types.h>
+
 #include <regmap.h>
 #include <common.h>
 
