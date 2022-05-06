@@ -2993,12 +2993,13 @@ int usb_init(int port, int next_port_in_hub)
 				}
 			}
 			//end
-
+#if !defined(PLATFORM_Q645) && !defined(PLATFORM_SP7350)
 			CSTAMP(0xE5B00001);
 			uphy_init();
 
 			CSTAMP(0xE5B00002);
 			usb_power_init();
+#endif
 			// Set RGST : allow access from non-secure
 			for (i = 0; i < 32; i++) {
 				RGST_SECURE_REG->cfg[i] = 0; // non-secure
