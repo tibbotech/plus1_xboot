@@ -237,6 +237,10 @@ static void init_hw(void)
 	MOON2_REG->sft_cfg[23] = RF_MASK_V(0xffff, 0xB100);//EVDN VCCM base address high byte
 #endif
 
+#if defined(PLATFORM_Q645)
+	//MOON4_REG->pllf_ctl = RF_MASK_V(0x3FFE, 0x1952);//tonyh test 1333MHz
+	MOON4_REG->pllf_ctl = RF_MASK_V(0xFFFF, 0x900B);//tonyh test 400MHz, SDRAM clock 800MHz, datarate 1600
+#endif 	
 	dbg();
 }
 
