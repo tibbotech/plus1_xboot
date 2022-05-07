@@ -52,7 +52,7 @@ struct gpioxt_regs {
  uint32_t ctl_sel[ 8];		// pin is iop(0) or gpio(1)	mask/vals: 16/16
  uint32_t oe[ 8];		// pin is I(0) or O(1)	mask/vals: 16/16
  uint32_t o[ 8];		// pin OUT val	mask/vals: 16/16
- uint32_t in[ 8];		// pin OUT val	mask/vals: 16/16
+ uint32_t in[ 8];		// pin IN  val	vals: 32
 };
 // off: +0x300
 #define REG_GPIOXT ((volatile struct gpioxt_regs *)RF_GRP(6, 0))
