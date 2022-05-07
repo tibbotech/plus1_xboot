@@ -238,10 +238,21 @@ static void init_hw(void)
 #endif
 
 #if defined(PLATFORM_Q645)
-	//MOON4_REG->pllf_ctl = RF_MASK_V(0xFFFF, 0x900B);//tonyh test 400MHz, SDRAM clock 800MHz, datarate 1600
-    MOON4_REG->pllf_ctl = RF_MASK_V(0x3FFE, 0x9003);//tonyh test 200MHz, SDRAM clock 400MHz, datarate 800
-	prn_dword(MOON4_REG->pllf_ctl);
+
+#if 0 //PLL 200MHz
+	prn_string("PLL 200MHz"); 
+	prn_string("\n");
+	MOON4_REG->pllf_ctl = RF_MASK_V(0x3FFE, 0x9003);//tonyh test 200MHz, SDRAM clock 400MHz, datarate 800
 	MOON4_REG->plltv_ctl[0] = RF_MASK_V(0x000C, 0x0000);//tonyh test 200MHz, SDRAM clock 400MHz, datarate 800
+#endif 
+
+#if 1 //PLL 400MHz
+		prn_string("PLL 400MHz"); 
+		prn_string("\n");
+		MOON4_REG->pllf_ctl = RF_MASK_V(0xFFFF, 0x900B);//tonyh test 400MHz, SDRAM clock 800MHz, datarate 1600
+#endif 
+
+	prn_dword(MOON4_REG->pllf_ctl);
 	prn_dword(MOON4_REG->plltv_ctl[0]);
     delay_1ms(8);
 #endif 	
