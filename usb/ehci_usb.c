@@ -146,25 +146,69 @@ void u2phy_init(void)
 
 	CSTAMP(0xE5B0A001);
 
-     // OTP for USB DISC (disconnect voltage)
+	// OTP for USB DISC (disconnect voltage)
 	/* Q628 OTP[UPHY0_DISC] OTP[UPHY1_DISC] */
 	val = HB_GP_REG->hb_otp_data6;
-    set = val & 0x1F; // UPHY0 DISC
-    if (!set) {
-            set = DEFAULT_UPHY_DISC;
-    } else if (set <= ORIG_UPHY_DISC) {
-            set += 2;
-    }
-    UPHY0_RN_REG->cfg[7] = (UPHY0_RN_REG->cfg[7] & ~0x1F) | set;
-    set = (val >> 5) & 0x1F; // UPHY1 DISC
-    if (!set) {
-            set = DEFAULT_UPHY_DISC;
-    } else if (set <= ORIG_UPHY_DISC) {
-            set += 2;
-    }
-    UPHY1_RN_REG->cfg[7] = (UPHY1_RN_REG->cfg[7] & ~0x1F) | set;
+	set = val & 0x1F; // UPHY0 DISC
+	if (!set) {
+		set = DEFAULT_UPHY_DISC;
+	} else if (set <= ORIG_UPHY_DISC) {
+		set += 2;
+	}
+	UPHY0_RN_REG->cfg[7] = (UPHY0_RN_REG->cfg[7] & ~0x1F) | set;
+	set = (val >> 5) & 0x1F; // UPHY1 DISC
+	if (!set) {
+		set = DEFAULT_UPHY_DISC;
+	} else if (set <= ORIG_UPHY_DISC) {
+		set += 2;
+	}
+	UPHY1_RN_REG->cfg[7] = (UPHY1_RN_REG->cfg[7] & ~0x1F) | set;
 
 	CSTAMP(0xE5B0A002);
+}
+#elif defined(PLATFORM_Q645)
+void u2phy_init(void)
+{
+	// 1. enable UPHY0 & USBC0 CLOCK */
+	MOON0_REG->clken[3] = RF_MASK_V_SET(1 << 8);
+	MOON0_REG->clken[3] = RF_MASK_V_SET(1 << 13);
+	_delay_1ms(1);
+
+	// 2. reset UPHY0
+	MOON0_REG->reset[3] = RF_MASK_V_SET(1 << 8);
+	_delay_1ms(1);
+	MOON0_REG->reset[3] = RF_MASK_V_CLR(1 << 8);
+	_delay_1ms(1);
+
+	// 3. Default value modification
+	UPHY0_RN_REG->gctrl[0] = 0x18888002;
+	_delay_1ms(1);
+
+	// 4. PLL power off/on twice
+	UPHY0_RN_REG->gctrl[2] = 0x88;
+	_delay_1ms(1);
+	UPHY0_RN_REG->gctrl[2] = 0x80;
+	_delay_1ms(1);
+	UPHY0_RN_REG->gctrl[2] = 0x88;
+	_delay_1ms(1);
+	UPHY0_RN_REG->gctrl[2] = 0x80;
+	_delay_1ms(20);
+	UPHY0_RN_REG->gctrl[2] = 0x0;
+
+	// 5. USBC0 reset
+	MOON0_REG->reset[3] = RF_MASK_V_SET(1 << 13);
+	_delay_1ms(1);
+	MOON0_REG->reset[3] = RF_MASK_V_CLR(1 << 13);
+	_delay_1ms(1);
+
+	// 6. HW workaround
+	UPHY0_RN_REG->cfg[19] |= 0x0f;
+
+	// 7. USB DISC (disconnect voltage)
+	UPHY0_RN_REG->cfg[7] = 0x8b;
+
+	// 8. RX SQUELCH LEVEL
+	UPHY0_RN_REG->cfg[25] = 0x4;
 }
 #elif defined(PLATFORM_SP7350)
 void u2phy_init(void)
@@ -178,25 +222,26 @@ void usb2_power_init(int is_host)
 	//    Host: enable
 	//    Device: disable
 #if defined(PLATFORM_I143)
-	/* I143 USBC0_OTG_EN_SEL USBC1_OTG_EN_SEL */
+	/* I143 USBC0_OTG_EN_SEL and USBC1_OTG_EN_SEL */
 	if (is_host) {
 		MOON1_REG->sft_cfg[2] = RF_MASK_V_SET(3 << 12);
 	} else {
 		MOON1_REG->sft_cfg[2] = RF_MASK_V_CLR(3 << 12);
 	}
 #elif defined(PLATFORM_Q628)
-	/* Q628 USBC0_OTG_EN_SEL USBC1_OTG_EN_SEL */
+	/* Q628 USBC0_OTG_EN_SEL and USBC1_OTG_EN_SEL */
 	if (is_host) {
 		MOON1_REG->sft_cfg[3] = RF_MASK_V_SET(3 << 2);
 	} else {
 		MOON1_REG->sft_cfg[3] = RF_MASK_V_CLR(3 << 2);
 	}
+#elif defined(PLATFORM_Q645)
 #elif defined(PLATFORM_SP7350)
 #endif
 
 	// b. USB control register:
 #if defined(PLATFORM_I143)
-	/* I143 USBC0_TYPE, USBC0_SEL, USBC1_TYPE, USBC1_SEL */
+	/* I143 USBC0_TYPE, USBC0_SEL and USBC1_TYPE, USBC1_SEL */
 	if (is_host) {
 		MOON5_REG->sft_cfg[17] = RF_MASK_V_SET((7 << 12) | (7 << 4));
 	} else {
@@ -204,13 +249,22 @@ void usb2_power_init(int is_host)
 		MOON5_REG->sft_cfg[17] = RF_MASK_V_CLR((3 << 13) | (3 << 5));
 	}
 #elif defined(PLATFORM_Q628)
-	/* Q628 USBC0_TYPE, USBC0_SEL, USBC1_TYPE, USBC1_SEL */
+	/* Q628 USBC0_TYPE, USBC0_SEL and USBC1_TYPE, USBC1_SEL */
 	if (is_host) {
 		MOON4_REG->usbc_ctl = RF_MASK_V_SET((7 << 12) | (7 << 4));
 	} else {
 		MOON4_REG->usbc_ctl = RF_MASK_V_SET((1 << 12) | (1 << 4));
 		MOON4_REG->usbc_ctl = RF_MASK_V_CLR((3 << 13) | (3 << 5));
 	}
+#elif defined(PLATFORM_Q645)
+	/* Q645 USBC0_TYPE, USBC0_SEL */
+	if (is_host) {
+		MOON3_REG->sft_cfg[22] = RF_MASK_V_SET(7 << 0);
+	} else {
+		MOON3_REG->sft_cfg[22] = RF_MASK_V_SET(1 << 0);
+		MOON3_REG->sft_cfg[22] = RF_MASK_V_CLR(3 << 1);
+	}
+#elif defined(PLATFORM_SP7350)
 #endif
 }
 

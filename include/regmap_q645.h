@@ -221,10 +221,11 @@ struct uphy_u3_regs {
 /* end of xhci */
 
 struct uphy_rn_regs {
-       unsigned int cfg[22];
+	u32 cfg[28];			//  0 - 27
+	u32 gctrl[3];			// 28 - 30
+	u32 gsts;			// 31
 };
 #define UPHY0_RN_REG ((volatile struct uphy_rn_regs *)RF_GRP(149, 0))
-#define UPHY1_RN_REG ((volatile struct uphy_rn_regs *)RF_GRP(150, 0))
 
 /* usb host */
 struct ehci_regs {
