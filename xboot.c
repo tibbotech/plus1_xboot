@@ -195,11 +195,13 @@ static void init_hw(void)
 
 #ifdef CONFIG_PARTIAL_CLKEN
 	prn_string("partial clken\n");
+#if defined(PLATFORM_Q628)
 	/* power saving, provided by yuwen + CARD_CTL4 */
 	const int ps_clken[] = {
 		0x67ef, 0xffff, 0xff03, 0xfff0, 0x0004, /* G0.1~5  */
 		0x0000, 0x8000, 0xffff, 0x0040, 0x0004, /* G0.6~10 */
 	};
+#endif
 	for (i = 0; i < sizeof(MOON0_REG->clken) / 4; i++)
 		MOON0_REG->clken[i] = RF_MASK_V(0xffff, ps_clken[i]);
 #else
@@ -207,9 +209,11 @@ static void init_hw(void)
 	for (i = 0; i < sizeof(MOON0_REG->clken) / 4; i++)
 		MOON0_REG->clken[i] = RF_MASK_V_SET(0xffff);
 #endif
+
 	/* gclken[all] = no */
 	for (i = 0; i < sizeof(MOON0_REG->gclken) / 4; i++)
 		MOON0_REG->gclken[i] = RF_MASK_V_CLR(0xffff);
+
 	/* reset[all] = clear */
 	for (i = 0; i < sizeof(MOON0_REG->reset) / 4; i++)
 		MOON0_REG->reset[i] = RF_MASK_V_CLR(0xffff);
@@ -238,31 +242,27 @@ static void init_hw(void)
 #endif
 
 #if defined(PLATFORM_Q645)
-
-#if 0 //PLL 200MHz
-	prn_string("PLL 200MHz"); 
-	prn_string("\n");
-	MOON4_REG->pllf_ctl = RF_MASK_V(0x3FFE, 0x9003);//tonyh test 200MHz, SDRAM clock 400MHz, datarate 800
-	MOON4_REG->plltv_ctl[0] = RF_MASK_V(0x000C, 0x0000);//tonyh test 200MHz, SDRAM clock 400MHz, datarate 800
-#endif 
-
-#if 0//PLL 333MHz
-	prn_string("PLL 333MHz"); 
-	prn_string("\n");
-	MOON4_REG->pllf_ctl = RF_MASK_V(0x3FFE, 0x92b3);//tonyh test 200MHz, SDRAM clock 400MHz, datarate 800
-	MOON4_REG->plltv_ctl[0] = RF_MASK_V(0x000C, 0x0000);//tonyh test 200MHz, SDRAM clock 400MHz, datarate 800
+#if 0 // PLLD 200MHz
+	prn_string("PLLD: 200MHz\n");
+	MOON4_REG->plld_cfg[0] = RF_MASK_V(0x3FFE, 0x9003);//tonyh test 200MHz, SDRAM clock 400MHz, datarate 800
+	MOON4_REG->plld_cfg[1] = RF_MASK_V(0x000C, 0x0000);//tonyh test 200MHz, SDRAM clock 400MHz, datarate 800
 #endif
 
-#if 1 //PLL 400MHz
-		prn_string("PLL 400MHz"); 
-		prn_string("\n");
-		MOON4_REG->pllf_ctl = RF_MASK_V(0xFFFF, 0x900B);//tonyh test 400MHz, SDRAM clock 800MHz, datarate 1600
-#endif 
+#if 0 // PLLD 333MHz
+	prn_string("PLLD: 333MHz\n");
+	MOON4_REG->plld_cfg[0] = RF_MASK_V(0x3FFE, 0x92b3);//tonyh test 200MHz, SDRAM clock 400MHz, datarate 800
+	MOON4_REG->plld_cfg[1] = RF_MASK_V(0x000C, 0x0000);//tonyh test 200MHz, SDRAM clock 400MHz, datarate 800
+#endif
 
-	prn_dword(MOON4_REG->pllf_ctl);
-	prn_dword(MOON4_REG->plltv_ctl[0]);
-    delay_1ms(8);
-#endif 	
+#if 1 // PLLD 400MHz
+	prn_string("PLLD: 400MHz\n");
+	MOON4_REG->plld_cfg[0] = RF_MASK_V(0xFFFF, 0x900B);//tonyh test 400MHz, SDRAM clock 800MHz, datarate 1600
+#endif
+
+	prn_dword(MOON4_REG->plld_cfg[0]);
+	prn_dword(MOON4_REG->plld_cfg[1]);
+	delay_1ms(8);
+#endif
 	dbg();
 }
 

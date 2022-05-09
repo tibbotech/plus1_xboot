@@ -86,7 +86,7 @@ void u2phy_init(void)
 	UPHY0_RN_REG->cfg[25] = 0x4;
 	UPHY1_RN_REG->cfg[25] = 0x4;
 }
-#else
+#elif defined(PLATFORM_Q628)
 void u2phy_init(void)
 {
 	unsigned int val, set;
@@ -166,6 +166,10 @@ void u2phy_init(void)
 
 	CSTAMP(0xE5B0A002);
 }
+#elif defined(PLATFORM_SP7350)
+void u2phy_init(void)
+{
+}
 #endif
 
 void usb2_power_init(int is_host)
@@ -173,24 +177,25 @@ void usb2_power_init(int is_host)
 	// a. enable pin mux control
 	//    Host: enable
 	//    Device: disable
-#ifdef PLATFORM_I143
+#if defined(PLATFORM_I143)
 	/* I143 USBC0_OTG_EN_SEL USBC1_OTG_EN_SEL */
 	if (is_host) {
 		MOON1_REG->sft_cfg[2] = RF_MASK_V_SET(3 << 12);
 	} else {
 		MOON1_REG->sft_cfg[2] = RF_MASK_V_CLR(3 << 12);
 	}
-#else
+#elif defined(PLATFORM_Q628)
 	/* Q628 USBC0_OTG_EN_SEL USBC1_OTG_EN_SEL */
 	if (is_host) {
 		MOON1_REG->sft_cfg[3] = RF_MASK_V_SET(3 << 2);
 	} else {
 		MOON1_REG->sft_cfg[3] = RF_MASK_V_CLR(3 << 2);
 	}
+#elif defined(PLATFORM_SP7350)
 #endif
 
 	// b. USB control register:
-#ifdef PLATFORM_I143
+#if defined(PLATFORM_I143)
 	/* I143 USBC0_TYPE, USBC0_SEL, USBC1_TYPE, USBC1_SEL */
 	if (is_host) {
 		MOON5_REG->sft_cfg[17] = RF_MASK_V_SET((7 << 12) | (7 << 4));
@@ -198,7 +203,7 @@ void usb2_power_init(int is_host)
 		MOON5_REG->sft_cfg[17] = RF_MASK_V_SET((1 << 12) | (1 << 4));
 		MOON5_REG->sft_cfg[17] = RF_MASK_V_CLR((3 << 13) | (3 << 5));
 	}
-#else
+#elif defined(PLATFORM_Q628)
 	/* Q628 USBC0_TYPE, USBC0_SEL, USBC1_TYPE, USBC1_SEL */
 	if (is_host) {
 		MOON4_REG->usbc_ctl = RF_MASK_V_SET((7 << 12) | (7 << 4));
@@ -260,7 +265,7 @@ tryagain:
 
 		prn_dword(EHCI_PORTSC);
 		prn_dword(reg_tmp);
-		prn_string("Test mode \n"); 
+		prn_string("Test mode \n");
 		while(1);
 	}
 #endif
@@ -324,8 +329,8 @@ tryagain:
 	// Implicit delay is not desired here
 
 	// Put exact delay (500us ~ 1ms)
-    // STC_REG->stc_15_0 = 0;
-    // while (STC_REG->stc_15_0 < 50); // 555us
+	// STC_REG->stc_15_0 = 0;
+	// while (STC_REG->stc_15_0 < 50); // 555us
 	STC_delay_ticks(50);
 
 	// if this delsy is too short or too long,

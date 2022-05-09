@@ -3,11 +3,12 @@
 
 struct moon0_regs {
 	unsigned int stamp;            // 0.0
-	unsigned int clken[5];         // 0.1 - 0.5
-	unsigned int rsvd_1[5];        // 0.6 - 0.10
-	unsigned int gclken[5];        // 0.11
-	unsigned int rsvd_2[5];        // 0.16 - 0.20
-	unsigned int reset[10];         // 0.21
+	unsigned int clken[7];         // 0.1 - 0.7
+	unsigned int rsvd_1[3];        // 0.8 - 0.10
+	unsigned int gclken[7];        // 0.11 - 0.17
+	unsigned int rsvd_2[3];        // 0.18 - 0.20
+	unsigned int reset[7];         // 0.21 - 0.27
+	unsigned int rsvd_3[3];        // 0.28 - 0.30
 	unsigned int hw_cfg;           // 0.31
 
 };
@@ -29,20 +30,17 @@ struct moon3_regs {
 #define MOON3_REG ((volatile struct moon3_regs *)RF_GRP_AO(3, 0))
 
 struct moon4_regs {
-	unsigned int pllsp_ctl[7];	// 4.0
-	unsigned int plla_ctl[5];	// 4.7
-	unsigned int plle_ctl;		// 4.12
-	unsigned int pllf_ctl;		// 4.13
-	unsigned int plltv_ctl[3];	// 4.14
-	unsigned int usbc_ctl;		// 4.17
-	unsigned int uphy0_ctl[4];	// 4.18
-	unsigned int uphy1_ctl[4];	// 4.22
-	unsigned int pllsys;		// 4.26
-	unsigned int clk_sel0;		// 4.27
-	unsigned int probe_sel;		// 4.28
-	unsigned int misc_ctl_0;	// 4.29
-	unsigned int uphy0_sts;		// 4.30
-	unsigned int otp_st;		// 4.31
+	unsigned int pll_cfg[1];	// 4.0
+	unsigned int pllh_cfg[3];	// 4.1 - 4.3
+	unsigned int plln_cfg[3];	// 4.4 - 4.6
+	unsigned int plls_cfg[3];	// 4.7 - 4.9
+	unsigned int pllc_cfg[3];	// 4.10 - 4.12
+	unsigned int plld_cfg[3];	// 4.13 - 4.15
+	unsigned int plll3_cfg[3];	// 4.16 - 4.18
+	unsigned int xtal1v_cfg[1];	// 4.19
+	unsigned int iv_mx_cfg[3];	// 4.20 - 4.22
+	unsigned int plla_cfg[7];	// 4.23 - 4.29
+	unsigned int rsvd_1[2];		// 4.30 - 4.31
 };
 #define MOON4_REG ((volatile struct moon4_regs *)RF_GRP(4, 0))
 

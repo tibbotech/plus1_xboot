@@ -110,7 +110,7 @@ void boot_reset(void)
 	_delay_1ms(10);
 
 	/* enable watchdog reset */
-#if defined(PLATFORM_Q628)|| defined(PLATFORM_I143)
+#if defined(PLATFORM_Q628)
 	MOON4_REG->misc_ctl_0 = RF_MASK_V_SET((1 << 4) | (1 << 1));
 #endif
 
