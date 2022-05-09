@@ -246,6 +246,13 @@ static void init_hw(void)
 	MOON4_REG->plltv_ctl[0] = RF_MASK_V(0x000C, 0x0000);//tonyh test 200MHz, SDRAM clock 400MHz, datarate 800
 #endif 
 
+#if 0//PLL 333MHz
+	prn_string("PLL 333MHz"); 
+	prn_string("\n");
+	MOON4_REG->pllf_ctl = RF_MASK_V(0x3FFE, 0x92b3);//tonyh test 200MHz, SDRAM clock 400MHz, datarate 800
+	MOON4_REG->plltv_ctl[0] = RF_MASK_V(0x000C, 0x0000);//tonyh test 200MHz, SDRAM clock 400MHz, datarate 800
+#endif
+
 #if 1 //PLL 400MHz
 		prn_string("PLL 400MHz"); 
 		prn_string("\n");
