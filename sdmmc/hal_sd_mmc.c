@@ -231,7 +231,7 @@ SetChipCtrlClk(unsigned int sysClock, unsigned int busSpeed)
 	unsigned int speedFactor;
 	speedFactor = ((sysClock+busSpeed-1)/busSpeed) - 1;
 
-	//prn_string("sysclk="); prn_decimal(sysClock);
+	//prn_string("sysclk="); prn_decimal_ln(sysClock);
 	prn_string("busclk="); prn_decimal_ln(busSpeed);
 	prn_string("div="); prn_decimal_ln(speedFactor);
 
@@ -1728,7 +1728,10 @@ int IdentifyStorage(void)
 		} else {
 			CSTAMP(0xCAD0001A);
 			//SetChipCtrlClk(CARD012_CLK,pstorage_device->dev_card.reg_CSD.max_dtr);
-			SetChipCtrlClk(CARD012_CLK,5000000); //BootCode use 5MHz for safty
+			#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
+				SetChipCtrlClk(CARD012_CLK,25000000);
+			#endif
+				SetChipCtrlClk(CARD012_CLK,5000000); //BootCode use 5MHz for safty
 			//SetChipCtrlClk(CARD012_CLK,160000); //BootCode use 160KHz for safty
 			//SetChipCtrlClk(CARD012_CLK,1000000);
 			//SetChipCtrlClk(CARD012_CLK,27000000);
