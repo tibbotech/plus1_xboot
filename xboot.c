@@ -946,9 +946,15 @@ static int fat_load_uhdr_image(fat_info *finfo, const char *img_name, void *dst,
 	prn_string(img_name);
 	prn_string("\n");
 
-	/* usb dma need aligned address */
-	if ((u32)ADDRESS_CONVERT(dst) & 0xfff) {
-		prn_string("WARN: unaligned dst "); prn_dword((u32)ADDRESS_CONVERT(dst));
+	if ((type == USB_ISP)
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
+		|| (type == USB_BOOT)
+#endif
+		) {
+		/* USB DMA needs 4KiB-aligned address. */
+		if ((u32)ADDRESS_CONVERT(dst) & 0xfff) {
+			prn_string("WARN: unaligned dst "); prn_dword((u32)ADDRESS_CONVERT(dst));
+		}
 	}
 
 	/* ISPBOOOT.BIN file index is 0,uboot.img is 1*/
@@ -961,8 +967,6 @@ static int fat_load_uhdr_image(fat_info *finfo, const char *img_name, void *dst,
 		prn_string("load hdr failed\n");
 		return -1;
 	}
-
-	/* uhdr_dump(hdr); */
 
 	/* magic check */
 	if (!image_check_magic(hdr)) {
