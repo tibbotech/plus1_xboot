@@ -56,6 +56,18 @@ static inline void set_spi_nand_pinmux(int pin_x)
 #endif
 }
 
+__attribute__((unused))
+static int get_spi_nand_pinmux(void)
+{
+#if defined(PLATFORM_SP7350)
+	return ((MOON1_REG->sft_cfg[1] >> 2 & 0x3);
+#elif defined(PLATFORM_Q645)
+	return ((MOON1_REG->sft_cfg[1] >> 4) & 0x3);
+#else
+	return ((MOON1_REG->sft_cfg[1] >> 4) & 0x1);
+#endif
+}
+
 static inline void set_emmc_pinmux(int pin_x)
 {
 #ifdef PLATFORM_I143

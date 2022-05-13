@@ -150,6 +150,36 @@ static void prn_A_setup(void)
 	prn_string("A_G0.18(ioctrl): "); prn_dword(ABIO_IOCTRL_CFG);
 }
 
+#if defined(PLATFORM_Q645)
+static void set_pad_driving_strength(u32 pin, u32 strength)
+{
+	int reg_off = pin / 32;
+	int bit_mask = 1 << (pin % 32);
+
+	strength = (strength > 15) ? 15 : strength;
+
+	if (strength & 1)
+		PAD_CTL_REG->driving_selector0[reg_off] |= bit_mask;
+	else
+		PAD_CTL_REG->driving_selector0[reg_off] &= ~bit_mask;
+
+	if (strength & 2)
+		PAD_CTL_REG->driving_selector1[reg_off] |= bit_mask;
+	else
+		PAD_CTL_REG->driving_selector1[reg_off] &= ~bit_mask;
+
+	if (strength & 4)
+		PAD_CTL_REG->driving_selector2[reg_off] |= bit_mask;
+	else
+		PAD_CTL_REG->driving_selector2[reg_off] &= ~bit_mask;
+
+	if (strength & 8)
+		PAD_CTL_REG->driving_selector3[reg_off] |= bit_mask;
+	else
+		PAD_CTL_REG->driving_selector3[reg_off] &= ~bit_mask;
+}
+#endif
+
 static void init_hw(void)
 {
 	int i;
@@ -914,6 +944,16 @@ static void spi_nor_uboot(void)
 
 static void spi_nor_boot(int pin_x)
 {
+#if defined(PLATFORM_Q645)
+	int i;
+
+	// Set driving strength of following pins to 3 (min.: 8.8mA, typ.: 11.5mA).
+	// SPI-NOR  (X1):  6,  7,  8,  9, 10, 11
+	for (i = 6; i <= 11; i++)
+		set_pad_driving_strength(i, 3);
+	delay_1ms(1);
+#endif
+
 #ifdef SPEED_UP_SPI_NOR_CLK
 	dbg();
 #ifdef PLATFORM_SP7350
@@ -1078,8 +1118,23 @@ static void do_fat_boot(u32 type, u32 port)
 		}
 	}
 #else
-	if ((type==SDCARD_ISP) && (fat_sdcard_check_boot_mode(&g_finfo)==TRUE)) {
+	if ((type == SDCARD_ISP) && (fat_sdcard_check_boot_mode(&g_finfo) == TRUE)) {
 		type = SDCARD_BOOT;
+	}
+#endif
+
+#if defined(PLATFORM_Q645)
+	if ((type == SDCARD_ISP) || (type == USB_ISP)) {
+		int i;
+
+		// Set driving strength of following pins to 3 (min.: 8.8mA, typ.: 11.5mA).
+		// SPI-NOR  (X1):  6,  7,  8,  9, 10, 11
+		// SPI-NAND (X1): 16, 17, 18, 19, 20, 21
+		// SPI-NAND (X2):  6,  7,  8,  9, 10, 11
+		// eMMC:          12, 13, 14, 15, 16, 17, 18, 19, 20, 21
+		for (i = 6; i <= 21; i++)
+			set_pad_driving_strength(i, 3);
+		delay_1ms(1);
 	}
 #endif
 
@@ -1259,12 +1314,21 @@ static void emmc_boot(void)
 	gpt_entry *gpt_part;
 	u32 blk_start1 = -1, blk_start2 = -1;
 	int res, len = 0;
+#endif
+#if !defined(CONFIG_USE_ZMEM) || defined(PLATFORM_Q645)
 	int i;
 #endif
 
 	prn_string("\n{{emmc_boot}}\n");
-
 	SetBootDev(DEVICE_EMMC, 1, 0);
+
+#if defined(PLATFORM_Q645)
+	// Set driving strength of following pins to 3 (min.: 8.8mA, typ.: 11.5mA).
+	// eMMC: 12, 13, 14, 15, 16, 17, 18, 19, 20, 21
+	for (i = 12; i <= 21; i++)
+		set_pad_driving_strength(i, 3);
+	delay_1ms(1);
+#endif
 
 #ifdef CONFIG_STANDALONE_DRAMINIT
 	/* continue to load draminit after iboot loading xboot */
@@ -1599,6 +1663,21 @@ static void nand_uboot(u32 type)
 	int len;
 	u32 sect_sz = GetNANDPageCount_1K60(g_bootinfo.sys_nand.u16PyldLen) * 1024;
 	u32 blk_use_sz = g_bootinfo.sys_nand.u16PageNoPerBlk * sect_sz;
+#endif
+
+#if defined(PLATFORM_Q645)
+	int i;
+
+	// Set driving strength of following pins to 3 (min.: 8.8mA, typ.: 11.5mA).
+	// SPI-NAND (X1): 16, 17, 18, 19, 20, 21
+	// SPI-NAND (X2):  6,  7,  8,  9, 10, 11
+	if (get_spi_nand_pinmux() == 2)
+		for (i = 6; i <= 11; i++)
+			set_pad_driving_strength(i, 3);
+	else
+		for (i = 16; i <= 21; i++)
+			set_pad_driving_strength(i, 3);
+	delay_1ms(1);
 #endif
 
 #ifdef CONFIG_STANDALONE_DRAMINIT
