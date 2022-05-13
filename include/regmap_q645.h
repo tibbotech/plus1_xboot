@@ -49,12 +49,17 @@ struct moon5_regs {
 #define MOON5_REG ((volatile struct moon5_regs *)RF_GRP(5, 0))
 
 struct pad_ctl_regs {
-	unsigned int reserved[20];         // 101.0
-	unsigned int spi_flash_sftpad_ctl; // 101.20
-	unsigned int spi_nd_sftpad_ctl;    // 101.21
-	unsigned int reserved_21[4];       // 101.21
+	unsigned int pull_down_enable[4];  // 101.0 - 101.3
+	unsigned int driving_selector0[4]; // 101.4 - 101.7
+	unsigned int driving_selector1[4]; // 101.8 - 101.11
+	unsigned int driving_selector2[4]; // 101.12 - 101.15
+	unsigned int driving_selector3[4]; // 101.16 - 101.19
+	unsigned int reserved_20[2];       // 101.20 - 101.21
+	unsigned int sd_config[1];         // 101.22
+	unsigned int sdio_config[1];       // 101.23
+	unsigned int reserved_24[1];       // 101.24
 	unsigned int gpio_first[4];        // 101.25
-	unsigned int reserved_29[3];       // 101.29
+	unsigned int reserved_29[3];       // 101.29 - 101.31
 };
 #define PAD_CTL_REG ((volatile struct pad_ctl_regs *)RF_GRP(101, 0))
 

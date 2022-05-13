@@ -259,6 +259,13 @@ static void init_hw(void)
 	prn_dword(MOON4_REG->plld_cfg[0]);
 	prn_dword(MOON4_REG->plld_cfg[1]);
 	delay_1ms(8);
+
+	// Set driving strength of all GPIO pads to 4.6 mA.
+	PAD_CTL_REG->driving_selector0[0] = 0xffffffff;
+	PAD_CTL_REG->driving_selector0[1] = 0xffffffff;
+	PAD_CTL_REG->driving_selector0[2] = 0xffffffff;
+	PAD_CTL_REG->driving_selector0[3] = 0xffffffff;
+	delay_1ms(1);
 #endif
 	dbg();
 }
