@@ -57,7 +57,7 @@ static inline void set_spi_nand_pinmux(int pin_x)
 }
 
 __attribute__((unused))
-static int get_spi_nand_pinmux(void)
+int get_spi_nand_pinmux(void)
 {
 #if defined(PLATFORM_SP7350)
 	return ((MOON1_REG->sft_cfg[1] >> 2 & 0x3);

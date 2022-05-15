@@ -107,5 +107,6 @@ int verify_xboot_img(u8 *img);
 
 /* pinmux ops */
 int get_spi_nor_pinmux(void);
+int get_spi_nand_pinmux(void);
 
 #endif
