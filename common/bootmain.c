@@ -60,7 +60,7 @@ __attribute__((unused))
 int get_spi_nand_pinmux(void)
 {
 #if defined(PLATFORM_SP7350)
-	return ((MOON1_REG->sft_cfg[1] >> 2 & 0x3);
+	return ((MOON1_REG->sft_cfg[1] >> 2) & 0x3);
 #elif defined(PLATFORM_Q645)
 	return ((MOON1_REG->sft_cfg[1] >> 4) & 0x3);
 #else
