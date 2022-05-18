@@ -247,6 +247,62 @@ u32 fat_read_file(u32 idx, fat_info *info, u8 *buffer, u32 offset, u32 length, u
 	return PASS;
 }
 
+/*
+ * fat_read_fat_table
+ * @info:	fat_info structure
+ * @buffer	io buffer whose size is equal to sector size
+ */
+static u32 fat_tbl_for_ISPBOOOT_BIN[384]; // max. 192 KiB
+static u16 max_lba_for_ISPBOOOT_BIN;
+int fat_read_fat_table(fat_info *info, u8 *buffer)
+{
+	u32 cluster;
+	u32 sector;
+	u32 i;
+
+#if (defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)) && defined(CONFIG_HAVE_USB_DISK)
+	if ((g_bootinfo.gbootRom_boot_mode == USB_ISP) && (g_bootinfo.bootdev_port == USB2_PORT))
+		hal_dcache_invalidate_all();
+#endif
+
+	/* Walk through all clusters */
+	i = 0;
+	cluster = info->fileInfo[0].cluster;
+	while (i < 384) {
+#ifdef CONFIG_HAVE_FS_FAT16
+		if (info->fatType == FAT_16) {
+			sector = info->rootSectStart + info->rootSect +
+				 ((cluster - FAT_DATA_1ST_CLUS_NUM) * info->sectPerClus);
+		}
+		else
+#endif
+		{
+			sector = info->clust0Sect +
+				 ((cluster - info->rootClus) * info->sectPerClus);
+		}
+		fat_tbl_for_ISPBOOOT_BIN[i] = sector;
+
+		cluster = next_cluster(info, cluster, (u8 *)buffer);
+		if (cluster == 0x0FFFFFFF) {
+			max_lba_for_ISPBOOOT_BIN = i;
+			return PASS;
+		}
+
+		i++;
+	}
+
+	max_lba_for_ISPBOOOT_BIN = i - 1;
+	prn_string("Error: Doesn't find all entries of FAT of ISPBOOOT.BIN!");
+	return FAIL;
+}
+
+u32 lba2sec_for_ISPBOOOT_BIN(u32 lba) {
+	if (lba > max_lba_for_ISPBOOOT_BIN)
+		lba = max_lba_for_ISPBOOOT_BIN;
+
+	return fat_tbl_for_ISPBOOOT_BIN[lba];
+}
+
 #if 0	//for debug
 static void prn_data(u8 *buffer, int length)
 {
