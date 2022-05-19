@@ -252,9 +252,9 @@ u32 fat_read_file(u32 idx, fat_info *info, u8 *buffer, u32 offset, u32 length, u
  * @info:	fat_info structure
  * @buffer	io buffer whose size is equal to sector size
  */
-static u32 fat_tbl_for_ISPBOOOT_BIN[384]; // max. 192 KiB
-static u16 max_lba_for_ISPBOOOT_BIN;
-int fat_read_fat_table(fat_info *info, u8 *buffer)
+static u32 fat_tbl_for_training_fw[128]; // max. 64 KiB
+static u16 max_lba_for_training_fw;
+int fat_read_fat_for_training_fw(fat_info *info, u8 *buffer, u32 start_lba)
 {
 	u32 cluster;
 	u32 sector;
@@ -268,7 +268,7 @@ int fat_read_fat_table(fat_info *info, u8 *buffer)
 	/* Walk through all clusters */
 	i = 0;
 	cluster = info->fileInfo[0].cluster;
-	while (i < 384) {
+	while ((int)(i - start_lba) < 128) {
 #ifdef CONFIG_HAVE_FS_FAT16
 		if (info->fatType == FAT_16) {
 			sector = info->rootSectStart + info->rootSect +
@@ -280,27 +280,33 @@ int fat_read_fat_table(fat_info *info, u8 *buffer)
 			sector = info->clust0Sect +
 				 ((cluster - info->rootClus) * info->sectPerClus);
 		}
-		fat_tbl_for_ISPBOOOT_BIN[i] = sector;
+
+		if (i >= start_lba)
+			fat_tbl_for_training_fw[i-start_lba] = sector;
 
 		cluster = next_cluster(info, cluster, (u8 *)buffer);
-		if (cluster == 0x0FFFFFFF) {
-			max_lba_for_ISPBOOOT_BIN = i;
-			return PASS;
-		}
+		if (cluster == 0x0FFFFFFF)
+			break;
 
 		i++;
 	}
 
-	max_lba_for_ISPBOOOT_BIN = i - 1;
-	prn_string("Error: Doesn't find all entries of FAT of ISPBOOOT.BIN!");
-	return FAIL;
+	if (i >= (start_lba+1)) {
+		max_lba_for_training_fw = i - start_lba - 1;
+		//prn_string("max_lba_for_training_fw=");prn_dword(max_lba_for_training_fw);
+		return PASS;
+	} else {
+		max_lba_for_training_fw = 0;
+		prn_string("Error: Doesn't find entries of FAT of training fw!\n");
+		return FAIL;
+	}
 }
 
-u32 lba2sec_for_ISPBOOOT_BIN(u32 lba) {
-	if (lba > max_lba_for_ISPBOOOT_BIN)
-		lba = max_lba_for_ISPBOOOT_BIN;
+u32 lba2sec_for_training_fw(u32 lba) {
+	if (lba > max_lba_for_training_fw)
+		lba = max_lba_for_training_fw;
 
-	return fat_tbl_for_ISPBOOOT_BIN[lba];
+	return fat_tbl_for_training_fw[lba];
 }
 
 #if 0	//for debug
