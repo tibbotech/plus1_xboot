@@ -247,6 +247,68 @@ u32 fat_read_file(u32 idx, fat_info *info, u8 *buffer, u32 offset, u32 length, u
 	return PASS;
 }
 
+/*
+ * fat_read_fat_table
+ * @info:	fat_info structure
+ * @buffer	io buffer whose size is equal to sector size
+ */
+static u32 fat_tbl_for_training_fw[128]; // max. 64 KiB
+static u16 max_lba_for_training_fw;
+int fat_read_fat_for_training_fw(fat_info *info, u8 *buffer, u32 start_lba)
+{
+	u32 cluster;
+	u32 sector;
+	u32 i;
+
+#if (defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)) && defined(CONFIG_HAVE_USB_DISK)
+	if ((g_bootinfo.gbootRom_boot_mode == USB_ISP) && (g_bootinfo.bootdev_port == USB2_PORT))
+		hal_dcache_invalidate_all();
+#endif
+
+	/* Walk through all clusters */
+	i = 0;
+	cluster = info->fileInfo[0].cluster;
+	while ((int)(i - start_lba) < 128) {
+#ifdef CONFIG_HAVE_FS_FAT16
+		if (info->fatType == FAT_16) {
+			sector = info->rootSectStart + info->rootSect +
+				 ((cluster - FAT_DATA_1ST_CLUS_NUM) * info->sectPerClus);
+		}
+		else
+#endif
+		{
+			sector = info->clust0Sect +
+				 ((cluster - info->rootClus) * info->sectPerClus);
+		}
+
+		if (i >= start_lba)
+			fat_tbl_for_training_fw[i-start_lba] = sector;
+
+		cluster = next_cluster(info, cluster, (u8 *)buffer);
+		if (cluster == 0x0FFFFFFF)
+			break;
+
+		i++;
+	}
+
+	if (i >= (start_lba+1)) {
+		max_lba_for_training_fw = i - start_lba - 1;
+		//prn_string("max_lba_for_training_fw=");prn_dword(max_lba_for_training_fw);
+		return PASS;
+	} else {
+		max_lba_for_training_fw = 0;
+		prn_string("Error: Doesn't find entries of FAT of training fw!\n");
+		return FAIL;
+	}
+}
+
+u32 lba2sec_for_training_fw(u32 lba) {
+	if (lba > max_lba_for_training_fw)
+		lba = max_lba_for_training_fw;
+
+	return fat_tbl_for_training_fw[lba];
+}
+
 #if 0	//for debug
 static void prn_data(u8 *buffer, int length)
 {
