@@ -27,6 +27,7 @@ inline static unsigned int Xil_In32(unsigned int Addr)
 
 #include <types.h>
 #include <nand_boot/nfdriver.h>
+#include <paranand_boot/para_nand.h>
 
 enum boot_code_parameter {
 	VIRTUAL_PAGE_SIZE       = 2048,
@@ -43,6 +44,7 @@ enum SDev_flg {
 typedef UINT8 (*predInitDriver_t)(void);
 typedef void (*predEraseBlk_t)(UINT8, UINT32);
 typedef SINT32 (*predReadWritePage_t)(UINT8, UINT32 ,UINT32* ,UINT32* ,UINT8 );
+typedef UINT8 (*predReadPage_t)(UINT32, UINT16, UINT16, struct collect_data_buf *, struct flash_info *);
 typedef void (*predGetInfo_t)(void);
 
 typedef struct SDev_s
@@ -52,7 +54,8 @@ typedef struct SDev_s
 	UINT8 reserved;
 
 	predInitDriver_t predInitDriver;
-	predEraseBlk_t predEraseBlk ;
+	predEraseBlk_t predEraseBlk;
+	predReadPage_t predReadPage;
 	predReadWritePage_t predReadWritePage ;
 	predGetInfo_t predGetInfo;
 }SDev_t;
@@ -109,7 +112,7 @@ struct BootProfileHeader
 	UINT32    PageSize;       // NAND Page size
 	UINT32    ACWriteTiming;  // not used now
 	UINT32    ACReadTiming;   // not used now
-	UINT32    PlaneSelectMode;// special odd blocks read mode (bit 0: special sw flow en. bit 1 read mode en. bit 2~bit 5 plane select bit addr) 
+	UINT32    PlaneSelectMode;// special odd blocks read mode (bit 0: special sw flow en. bit 1 read mode en. bit 2~bit 5 plane select bit addr)
 
 	// 48
 	UINT32    xboot_copies;   // Number of Xboot copies. Copies are consecutive.
@@ -118,7 +121,12 @@ struct BootProfileHeader
 	UINT32    reserved60;
 
 	// 64
-	struct OptBootEntry16 opt_entry[11]; // optional boot entries at 64, 80, ..., 224
+	//struct OptBootEntry16 opt_entry[11]; // optional boot entries at 64, 80, ..., 224
+	UINT32    AC_Timing0;
+	UINT32    AC_Timing1;
+	UINT32    AC_Timing2;
+	UINT32    AC_Timing3;
+	UINT32    reserved96[40];
 
 	// 240
 	UINT32    reserved240;
@@ -161,6 +169,10 @@ struct SysInfo
 
 	UINT32  gNANDACReadTiming;
 	UINT32  gNANDACWriteTiming;
+	UINT32  u32AC_Timing0;
+	UINT32  u32AC_Timing1;
+	UINT32  u32AC_Timing2;
+	UINT32  u32AC_Timing3;
 };
 
 
@@ -197,8 +209,11 @@ SINT32 initDriver_nand(void);
 SINT32 ReadWritePage(UINT8 which_cs, UINT32 u32PhyAddr,UINT32* PyldBuffer,UINT32* DataBuffer,UINT32 u8RWMode);
 
 int InitDevice(int type);
-void initNandFunptr(void);
-SINT32 ReadBootBlock(UINT32 *target_address);
+
+SINT32 PNANDReadBootBlock(UINT32 *target_address);
+void initPNandFunptr(void);
+SINT32 ReadPNANDSector_1K60(UINT32 * ptrPyldData, UINT32 pageNo);
+SINT32 PNANDReadNANDPage_1K60(UINT32 pageNo, UINT32 * ptrPyldData, UINT32 *read_bytes);
 
 SINT32 SPINANDReadBootBlock(u32 *xbuffer);
 void initSPINandFunptr(void);

@@ -1461,6 +1461,7 @@ static void emmc_boot(void)
 static int bblk_read(int type, u8 *dst, u32 blk_off, u32 read_length,
 		     int max_blk_skip, u32 *blk_last_read)
 {
+	/* 'got' is used to record the size of the data has been read */
 	u32 pg_off, length, got = 0;
 	int i, j, blks, blk_skip = 0;
 	int res;
@@ -1498,7 +1499,7 @@ static int bblk_read(int type, u8 *dst, u32 blk_off, u32 read_length,
 #endif
 #ifdef CONFIG_HAVE_PARA_NAND
 			if (type == PARA_NAND_BOOT) {
-				res = ReadNANDPage_1K60(NAND_CS0, pg_off + j, (u32 *)(dst + got), &length);
+				res = PNANDReadNANDPage_1K60(pg_off + j, (u32 *)(dst + got), &length);
 			}
 #endif
 
@@ -1634,7 +1635,7 @@ static int nand_load_uhdr_image(int type, const char *img_name, void *dst,
 	prn_decimal_ln(len);
 #ifdef PLATFORM_Q628
 	res = bblk_read(type, (u8 *)hdr, real_blk_off, 64 + len + SIGN_DATA_SIZE, 100, img_blk_end);
-#else
+#else//xt: why not plus 64 in Q645
 	res = bblk_read(type, (u8 *)hdr, real_blk_off, len + SIGN_DATA_SIZE, 100, img_blk_end);
 #endif
 	if (res) {
@@ -1752,11 +1753,11 @@ static void nand_uboot(u32 type)
 static void para_nand_boot(int pin_x)
 {
 	u32 ret;
+	prn_string("\n{{para_nand_boot}}\n");
+	prn_decimal_ln(pin_x);
 
-	prn_string("\n{{nand_boot}}\n");
-
-	SetBootDev(DEVICE_PARA_NAND, 1, 0);
-	ret = InitDevice(0);
+	SetBootDev(DEVICE_PARA_NAND, pin_x, 0);
+	ret = InitDevice(PARA_NAND_BOOT);
 	if (ret == ROM_SUCCESS) {
 		nand_uboot(PARA_NAND_BOOT);
 	}

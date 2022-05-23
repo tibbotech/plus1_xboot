@@ -241,7 +241,7 @@ void initfunptr(UINT32 devId)
 	switch(devId) {
 #ifdef CONFIG_HAVE_PARA_NAND
 	case DEVICE_PARA_NAND:
-		initNandFunptr();
+		initPNandFunptr();
 		break;
 #endif
 #ifdef CONFIG_HAVE_SPI_NAND

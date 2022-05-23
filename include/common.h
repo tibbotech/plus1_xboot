@@ -17,10 +17,10 @@
 #include <usb/xhci_usb.h>
 #endif
 #include <nand_boot/nfdriver.h>
-#include <nand_boot/nfdriver.h>
 #if defined (CONFIG_PLATFORM_Q645) || defined (CONFIG_PLATFORM_SP7350)
 #include <hal/hal_cache.h>
 #include <spinand_boot/sp_spinand_q645.h>
+#include <paranand_boot/para_nand_hal.h>
 #else
 #include <spinand_boot/sp_spinand.h>
 #endif
@@ -118,7 +118,7 @@ union storage_buf {
 
 	/* usb */
 	struct usb_io {
-			
+
 #ifdef CONFIG_HAVE_SNPS_USB3_DISK
 		xhci_usb     xhci;
 #endif
@@ -171,7 +171,7 @@ struct bootinfo {
 	u32     in_xboot;            // 0=in iboot, 1=in xboot
 #if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
 	u32     hw_security;         // hw security
-#endif	
+#endif
 	u32     sb_flag;             // secure boot flag, bit0=1(secure boot)
 
 	/*
@@ -190,6 +190,11 @@ struct bootinfo {
 	UINT8 gRandomizeFlag;
 	UINT8 reserved;
 	SDev_t gsdev;
+
+	/* nand/para_nand.c */
+	struct flash_info flash_readable_info;
+	UINT32 g_u32_ahb_memory_space;
+	struct channel_status ftnandc024_status;
 
 	/* nand/nfdriver.c */
 	UINT32 g_int_wake_up_flag;

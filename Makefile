@@ -348,7 +348,8 @@ CSOURCES += common/verify_image.c
 
 # Parallel NAND
 ifeq ($(CONFIG_HAVE_PARA_NAND), y)
-CSOURCES += nand/nfdriver.c
+CSOURCES += nand/para_nand.c
+CSOURCES += nand/para_nand_hal.c
 endif
 
 # SPI NAND
