@@ -191,10 +191,12 @@ struct bootinfo {
 	UINT8 reserved;
 	SDev_t gsdev;
 
+#ifdef PLATFORM_SP7350
 	/* nand/para_nand.c */
 	struct flash_info flash_readable_info;
 	UINT32 g_u32_ahb_memory_space;
 	struct channel_status ftnandc024_status;
+#endif
 
 	/* nand/nfdriver.c */
 	UINT32 g_int_wake_up_flag;
