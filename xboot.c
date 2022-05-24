@@ -664,7 +664,7 @@ static void set_module_nonsecure(void)
 	for (i = 0; i < 32; i++) {
 		RGST_SECURE_REG->cfg[i] = 0; // non-secure
 	}
-
+	AMBA_SECURE_REG->cfg[5] &= ~(3<<29); // u3phy0,1 non-secure
 	// Set cbdma sram to be all non-secure
 	SET_CBDMA0_S01(0);		// [0  ,   0] secure
 	SET_CBDMA0_S02(0xffffffff);	// [256K, 256K] secure
