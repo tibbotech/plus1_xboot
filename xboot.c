@@ -275,6 +275,9 @@ static void init_hw(void)
 #endif
 
 #if defined(PLATFORM_Q645)
+	/* Switch the shared analog macros to MIPI RX mode for MIPI-CSI0/2 */
+	MOON3_REG->sft_cfg[25] = RF_MASK_V(0xffff, 0xc007);
+
 #ifdef PLLD_333MHz
 	prn_string("PLLD: 333MHz\n");
 	MOON4_REG->plld_cfg[0] = RF_MASK_V(0x3FFE, 0x92b3);//tonyh test 200MHz, SDRAM clock 400MHz, datarate 800
