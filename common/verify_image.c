@@ -93,7 +93,8 @@ static int q654_load_otp_Sb_pub_key(u8 in_pub[32])
 #else
 	CSTAMP(0xbbbbbbbb);
 
-	ret = SC_key_otp_load(in_pub, 0, 32); // G779.0~7
+	ret = SC_key_otp_load(in_pub, 16*4, 32); // OTP16~23 from G73
+
 #endif
 
 #ifdef CONFIG_BOOT_ON_ZEBU
@@ -117,7 +118,8 @@ static int q654_load_otp_Device_priv_key(u8 in_priv[32])
 	prn_string("Test priv-key:\n");
 #else
 
-	ret = SC_key_otp_load(in_priv, 32, 32); // G779.8~15
+	ret = SC_key_otp_load(in_priv, 24*4, 32); // OTP24~32 from G73
+
 #endif
 
 #ifdef CONFIG_BOOT_ON_ZEBU
