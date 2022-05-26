@@ -661,13 +661,17 @@ static int copy_bl31_from_uboot_img(void* dst)
 // RD mnatis: http://psweb.sunplus.com/mantis_PD2/view.php?id=9092
 static void set_module_nonsecure(void)
 {
+#if defined(PLATFORM_Q645)
 	int i;
 
-	// Set RGST : allow access from non-secure
+	// Set RGST: allow access from non-secure
 	for (i = 0; i < 32; i++) {
 		RGST_SECURE_REG->cfg[i] = 0; // non-secure
 	}
+
+	// Set AMBA: allow access from non-secure
 	AMBA_SECURE_REG->cfg[5] &= ~(3<<29); // u3phy0,1 non-secure
+
 	// Set cbdma sram to be all non-secure
 	SET_CBDMA0_S01(0);		// [0  ,   0] secure
 	SET_CBDMA0_S02(0xffffffff);	// [256K, 256K] secure
@@ -690,7 +694,7 @@ static void set_module_nonsecure(void)
 	SECGRP1_PAII_REG->G085_NIC_S06 = 0xFFFFFF00;
 	SECGRP1_PAII_REG->G085_NIC_S07 = 0xFFFFFF00;
 	SECGRP1_PAII_REG->G085_NIC_S08 = 0xFFFFFF00;
-
+#endif
 #if 0	// zebu no such ip
 	SECGRP1_VIDEOIN_REG->G114_NIC_S01 = 0xFFFFFF00;
 	SECGRP1_VIDEOIN_REG->G114_NIC_S02 = 0xFFFFFF00;
