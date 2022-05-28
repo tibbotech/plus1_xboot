@@ -275,8 +275,11 @@ static void init_hw(void)
 #endif
 
 #if defined(PLATFORM_Q645)
+	// Remap DRAM (0xe0000000 ~ 0xffffffff) to (0x100000000 ~ 0x11fffffff).
+	MOON2_REG->sft_cfg[3] = RF_MASK_V((1 << 12), (1 << 12));
+
 	/* Switch the shared analog macros to MIPI RX mode for MIPI-CSI0/2 */
-	MOON3_REG->sft_cfg[25] = RF_MASK_V(0xffff, 0xc007);
+	MOON3_REG->sft_cfg[25] = RF_MASK_V((3 << 14), (3 << 14));
 
 #ifdef PLLD_333MHz
 	prn_string("PLLD: 333MHz\n");
