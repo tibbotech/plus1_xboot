@@ -32,6 +32,7 @@
 #if defined(PLATFORM_Q645)
 #define PLLD_333MHz
 //#define PLLD_400MHz
+//#define PLLD_600MHz
 #endif
 /*
  * TOC
@@ -283,13 +284,19 @@ static void init_hw(void)
 
 #ifdef PLLD_333MHz
 	prn_string("PLLD: 333MHz\n");
-	MOON4_REG->plld_cfg[0] = RF_MASK_V(0x3FFE, 0x92b3);//tonyh test 200MHz, SDRAM clock 400MHz, datarate 800
-	MOON4_REG->plld_cfg[1] = RF_MASK_V(0x000C, 0x0000);//tonyh test 200MHz, SDRAM clock 400MHz, datarate 800
+	MOON4_REG->plld_cfg[0] = RF_MASK_V(0x3FFE, 0x92b3);//333MHz, SDRAM clock 666MHz, datarate 1333
+	MOON4_REG->plld_cfg[1] = RF_MASK_V(0x000C, 0x0000);
 #endif
 
 #ifdef PLLD_400MHz
 	prn_string("PLLD: 400MHz\n");
-	MOON4_REG->plld_cfg[0] = RF_MASK_V(0xFFFF, 0x900B);//tonyh test 400MHz, SDRAM clock 800MHz, datarate 1600
+	MOON4_REG->plld_cfg[0] = RF_MASK_V(0xFFFF, 0x900B);//400MHz, SDRAM clock 800MHz, datarate 1600
+#endif
+
+#ifdef PLLD_600MHz
+	prn_string("PLLD: 600MHz\n");
+	MOON4_REG->plld_cfg[0] = RF_MASK_V(0xFFFF, 0x920B);//600MHz, SDRAM clock 1200MHz, datarate 2400
+	MOON4_REG->plld_cfg[1] = RF_MASK_V(0x000C, 0x0008);
 #endif
 
 	prn_dword(MOON4_REG->plld_cfg[0]);
