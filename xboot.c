@@ -183,7 +183,9 @@ static void set_pad_driving_strength(u32 pin, u32 strength)
 
 static void init_hw(void)
 {
+#if !defined(PLATFORM_SP7350) // added temporarily
 	int i;
+#endif
 
 #if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
 	// enable CA55_SYS_TIMER
@@ -227,6 +229,7 @@ static void init_hw(void)
 	prn_clk_info(is_A);
 #endif
 
+#if !defined(PLATFORM_SP7350) // added temporarily
 #ifdef CONFIG_PARTIAL_CLKEN
 	prn_string("partial clken\n");
 #if defined(PLATFORM_Q628)
@@ -251,6 +254,7 @@ static void init_hw(void)
 	/* reset[all] = clear */
 	for (i = 0; i < sizeof(MOON0_REG->reset) / 4; i++)
 		MOON0_REG->reset[i] = RF_MASK_V_CLR(0xffff);
+#endif
 
 #ifdef PLATFORM_I143
 	/* GPU driver (if not,all the date that gpu output to frame buffer is 0) by xt*/
@@ -365,9 +369,12 @@ static int run_draminit(void)
 
 static inline void release_spi_ctrl(void)
 {
-#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
+#if defined(PLATFORM_Q645)
 	// SPIFL no reset
 	MOON0_REG->reset[2] = RF_MASK_V_CLR(1 << 10); /* SPIFL_RESET=0 */
+#elif defined(PLATFORM_SP7350)
+	// SPIFL no reset
+	MOON0_REG_AO->reset[5] = RF_MASK_V_CLR(1 << 1); /* SPIFL_RESET=0 */
 #else
 	// SPIFL & SPI_COMBO no reset
 	MOON0_REG->reset[0] = RF_MASK_V_CLR(3 << 9); /* SPI_COMBO_RESET=0, SPIFL_RESET=0 */
@@ -613,16 +620,11 @@ static void cm4_init()
 	/* CM4 init, boot in rootfs by remoteproc */
 	prn_string("M4 init: \n");
 #if defined(PLATFORM_Q645)
-	MOON0_REG->clken[4]  = 0x10001;
-	MOON0_REG->gclken[4] = 0x10001;
-	MOON0_REG->reset[4]  = 0x10001;
-	MOON2_REG->sft_cfg[24] = 0x01ff0100 | (CM4_BOOT_ADDR >> 24); // enable M4 reset address(highest 8 bit) remapping
+	MOON0_REG->reset[4]    = RF_MASK_V_SET(1 << 0); // reset M4
+	MOON2_REG->sft_cfg[24] = RF_MASK_V_SET(1 << 8); // enable M4 address (highest 8 bits) remapping
 #elif defined(PLATFORM_SP7350)
-	MOON4_REG_AO->sft_cfg[19] = RF_MASK_V_SET(1 << 1); // enable M4 reset address
-	MOON4_REG_AO->sft_cfg[20] = 0xffff0000 | (CM4_BOOT_ADDR >> 16); // enable M4 reset address
-	MOON0_REG->reset[7]  = RF_MASK_V_SET(1 << 9);
-	prn_string("... START M4 ...\n");
-	MOON0_REG->reset[7]  = RF_MASK_V_CLR(1 << 9);
+	MOON0_REG_AO->reset[7]    = RF_MASK_V_SET(1 << 15); // reset M4
+	MOON4_REG_AO->sft_cfg[19] = RF_MASK_V_SET(1 << 1);  // enable M4 address (highest 16 bits) remapping
 #endif
 #if 0 // START M4 in zmem mode for develop
 #ifdef CONFIG_USE_ZMEM
@@ -1947,7 +1949,7 @@ static void init_uart(void)
 #ifdef PLATFORM_SP7350
 	/* uart1 pinmux : UA1_TX, UA1_RX */
 	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 13, 1 << 13); // [13]=1
-	MOON0_REG->reset[5] = RF_MASK_V_CLR(1 << 3); /* release UA1 */
+	MOON0_REG_AO->reset[5] = RF_MASK_V_CLR(1 << 7); /* release UA1 */
 	UART1_REG->div_l = UART_BAUD_DIV_L(BAUDRATE, UART_SRC_CLK);
 	UART1_REG->div_h = UART_BAUD_DIV_H(BAUDRATE, UART_SRC_CLK);
 	UART1_REG->dr = 'U';

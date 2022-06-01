@@ -92,9 +92,12 @@ u32 AV1_GetStc32(void)
 
 void AV1_STC_init(void)
 {
-#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
+#if defined(PLATFORM_Q645)
 	/* Clear STC_AV1_RESET */
 	MOON0_REG->reset[4] = RF_MASK_V_CLR(1 << 3);
+#elif defined(PLATFORM_SP7350)
+	/* Clear STC_AV1_RESET */
+	MOON0_REG_AO->reset[8] = RF_MASK_V_CLR(1 << 2);
 #else
 	/* Clear STC_AV1_RESET */
 	MOON0_REG->reset[1] = RF_MASK_V_CLR(1 << 6);

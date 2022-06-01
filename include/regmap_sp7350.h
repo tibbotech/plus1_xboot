@@ -1,15 +1,14 @@
 #ifndef __INC_REGMAP_SP7350_H
 #define __INC_REGMAP_SP7350_H
 
-struct moon0_regs {
+struct moon0_regs_ao {
 	unsigned int stamp;            // 0.0
-	unsigned int clken[10];         // 0.1 - 0.10
-	unsigned int gclken[10];        // 0.11 - 0.20
-	unsigned int reset[10];         // 0.21 - 0.30
+	unsigned int reset[12];        // 0.1 - 0.12
+	unsigned int rsvd_1[18];       // 0.13 - 1.30
 	unsigned int hw_cfg;           // 0.31
 
 };
-#define MOON0_REG ((volatile struct moon0_regs *)RF_GRP_AO(0, 0))
+#define MOON0_REG_AO ((volatile struct moon0_regs_ao *)RF_GRP_AO(0, 0))
 
 struct moon1_regs {
 	unsigned int sft_cfg[32];
