@@ -23,22 +23,22 @@ extern void boot_reset(void);
 void uphy_init(void)
 {
 #if defined(PLATFORM_Q645)
-	MOON0_REG->clken[3] = RF_MASK_V_SET(1 << 11);
-	MOON0_REG->clken[3] = RF_MASK_V_SET(1 << 12);
+	MOON0_REG->clken[3] = RF_MASK_V_SET(1 << 11); // U3PHY0_CLKEN=1
+	MOON0_REG->clken[3] = RF_MASK_V_SET(1 << 12); // U3PHY1_CLKEN=1
 
-	MOON0_REG->reset[3] = RF_MASK_V_SET(1 << 11);
-	MOON0_REG->reset[3] = RF_MASK_V_SET(1 << 12);
+	MOON0_REG->reset[3] = RF_MASK_V_SET(1 << 11); // U3PHY0_RESET=1
+	MOON0_REG->reset[3] = RF_MASK_V_SET(1 << 12); // U3PHY1_RESET=1
 	_delay_1ms(1);
-	MOON0_REG->reset[3] = RF_MASK_V_CLR(1 << 11);
-	MOON0_REG->reset[3] = RF_MASK_V_CLR(1 << 12);
+	MOON0_REG->reset[3] = RF_MASK_V_CLR(1 << 11); // U3PHY0_RESET=0
+	MOON0_REG->reset[3] = RF_MASK_V_CLR(1 << 12); // U3PHY1_RESET=0
 
 #elif defined(PLATFORM_SP7350)
-	//MOON0_REG->clken[3] = RF_MASK_V_SET(1 << 11);
+	MOON2_REG_AO->clken[5] = RF_MASK_V_SET(1 << 14); // U3PHY0_CLKEN=1
 
 	// Reset U3PHY0
-	MOON0_REG_AO->reset[5] = RF_MASK_V_SET(1 << 14);
+	MOON0_REG_AO->reset[5] = RF_MASK_V_SET(1 << 14); // U3PHY0_RESET=1
 	_delay_1ms(1);
-	MOON0_REG_AO->reset[5] = RF_MASK_V_CLR(1 << 14);
+	MOON0_REG_AO->reset[5] = RF_MASK_V_CLR(1 << 14); // U3PHY0_RESET=0
 
 #elif defined(PLATFORM_I143)
 	// 1. enable UPHY 2/3 & USBC 0/1 HW CLOCK */
@@ -629,22 +629,22 @@ void usb_power_init(void)
 	//    Host: enable
 	//    Device: disable
 #if defined(PLATFORM_Q645)
-	MOON0_REG->clken[3] = RF_MASK_V_SET(1 << 9);
-	MOON0_REG->clken[3] = RF_MASK_V_SET(1 << 10);
+	MOON0_REG->clken[3] = RF_MASK_V_SET(1 << 9);  // USB30C0_CLKEN=1
+	MOON0_REG->clken[3] = RF_MASK_V_SET(1 << 10); // USB30C1_CLKEN=1
 
-	MOON0_REG->reset[3] = RF_MASK_V_SET(1 << 9);
-	MOON0_REG->reset[3] = RF_MASK_V_SET(1 << 10);
+	MOON0_REG->reset[3] = RF_MASK_V_SET(1 << 9);  // USB30C0_RESET=1
+	MOON0_REG->reset[3] = RF_MASK_V_SET(1 << 10); // USB30C1_RESET=1
 	_delay_1ms(1);
-	MOON0_REG->reset[3] = RF_MASK_V_CLR(1 << 9);
-	MOON0_REG->reset[3] = RF_MASK_V_CLR(1 << 10);
+	MOON0_REG->reset[3] = RF_MASK_V_CLR(1 << 9);  // USB30C0_RESET=0
+	MOON0_REG->reset[3] = RF_MASK_V_CLR(1 << 10); // USB30C1_RESET=0
 
 #elif defined(PLATFORM_SP7350)
-	//MOON0_REG->clken[3] = RF_MASK_V_SET(1 << 9);
+	MOON2_REG_AO->clken[5] = RF_MASK_V_SET(1 << 13); // USB30C0_CLKEN=1
 
 	// Reset USB30C0
-	MOON0_REG_AO->reset[5] = RF_MASK_V_SET(1 << 13);
+	MOON0_REG_AO->reset[5] = RF_MASK_V_SET(1 << 13); // USB30C0_RESET=1
 	_delay_1ms(1);
-	MOON0_REG_AO->reset[5] = RF_MASK_V_CLR(1 << 13);
+	MOON0_REG_AO->reset[5] = RF_MASK_V_CLR(1 << 13); // USB30C0_RESET=0
 
 #elif defined(PLATFORM_I143)
 	/* I143 USBC0_OTG_EN_SEL USBC1_OTG_EN_SEL */

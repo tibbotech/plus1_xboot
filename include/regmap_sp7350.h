@@ -10,35 +10,32 @@ struct moon0_regs_ao {
 };
 #define MOON0_REG_AO ((volatile struct moon0_regs_ao *)RF_GRP_AO(0, 0))
 
-struct moon1_regs {
+struct moon1_regs_ao {
 	unsigned int sft_cfg[32];
 };
-#define MOON1_REG ((volatile struct moon1_regs *)RF_GRP_AO(1, 0))
+#define MOON1_REG_AO ((volatile struct moon1_regs_ao *)RF_GRP_AO(1, 0))
 
-struct moon2_regs {
-	unsigned int sft_cfg[32];
+struct moon2_regs_ao {
+	unsigned int rsvd1;            // 2.0
+	unsigned int clken[12];        // 2.1 - 2.12
+	unsigned int rsvd2[2];         // 2.13 - 2.14
+	unsigned int gclken[12];       // 2.15 - 2.26
+	unsigned int rsvd3[5];         // 2.27 - 2.31
 };
-#define MOON2_REG ((volatile struct moon2_regs *)RF_GRP_AO(2, 0))
+#define MOON2_REG_AO ((volatile struct moon2_regs_ao *)RF_GRP_AO(2, 0))
 
-struct moon3_regs {
-	unsigned int sft_cfg[32];
+struct moon3_regs_ao {
+	unsigned int plla_cfg[5];      // 3.0 - 3.4
+	unsigned int pllc_cfg[3];      // 3.5 - 3.7
+	unsigned int plll3_cfg[3];     // 3.8 - 3.10
+	unsigned int plld_cfg[3];      // 3.11 - 3.13
+	unsigned int pllh_cfg[3];      // 3.14 - 3.16
+	unsigned int plln_cfg[3];      // 3.17 - 3.19
+	unsigned int plls_cfg[3];      // 3.20 - 3.22
+	unsigned int clken[6];         // 3.23 - 3.28
+	unsigned int rsvd[3];          // 2.29 - 3.31
 };
-#define MOON3_REG ((volatile struct moon3_regs *)RF_GRP_AO(3, 0))
-
-struct moon4_regs {
-	unsigned int pll_cfg[1];	// 4.0
-	unsigned int pllh_cfg[3];	// 4.1 - 4.3
-	unsigned int plln_cfg[3];	// 4.4 - 4.6
-	unsigned int plls_cfg[3];	// 4.7 - 4.9
-	unsigned int pllc_cfg[3];	// 4.10 - 4.12
-	unsigned int plld_cfg[3];	// 4.13 - 4.15
-	unsigned int plll3_cfg[3];	// 4.16 - 4.18
-	unsigned int xtal1v_cfg[1];	// 4.19
-	unsigned int iv_mx_cfg[3];	// 4.20 - 4.22
-	unsigned int plla_cfg[7];	// 4.23 - 4.29
-	unsigned int rsvd_1[2];		// 4.30 - 4.31
-};
-#define MOON4_REG ((volatile struct moon4_regs *)RF_GRP(4, 0))
+#define MOON3_REG_AO ((volatile struct moon3_regs_ao *)RF_GRP_AO(3, 0))
 
 struct moon4_regs_ao {
 	unsigned int sft_cfg[32];
@@ -222,7 +219,9 @@ struct uphy_u3_regs {
 /* end of xhci */
 
 struct uphy_rn_regs {
-       unsigned int cfg[22];
+	u32 cfg[28];			//  0 - 27
+	u32 gctrl[3];			// 28 - 30
+	u32 gsts;			// 31
 };
 #define UPHY0_RN_REG ((volatile struct uphy_rn_regs *)RF_GRP(149, 0))
 #define UPHY1_RN_REG ((volatile struct uphy_rn_regs *)RF_GRP(150, 0))

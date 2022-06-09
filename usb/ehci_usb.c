@@ -170,14 +170,14 @@ void u2phy_init(void)
 void u2phy_init(void)
 {
 	// 1. enable UPHY0 & USBC0 CLOCK */
-	MOON0_REG->clken[3] = RF_MASK_V_SET(1 << 8);
-	MOON0_REG->clken[3] = RF_MASK_V_SET(1 << 13);
+	MOON0_REG->clken[3] = RF_MASK_V_SET(1 << 8);  // USBC0_CLKEN=1
+	MOON0_REG->clken[3] = RF_MASK_V_SET(1 << 13); // UPHY0_CLKEN=1
 	_delay_1ms(1);
 
 	// 2. reset UPHY0
-	MOON0_REG->reset[3] = RF_MASK_V_SET(1 << 8);
+	MOON0_REG->reset[3] = RF_MASK_V_SET(1 << 8);  // USBC0_RESET=1
 	_delay_1ms(1);
-	MOON0_REG->reset[3] = RF_MASK_V_CLR(1 << 8);
+	MOON0_REG->reset[3] = RF_MASK_V_CLR(1 << 8);  // USBC0_RESET=0
 	_delay_1ms(1);
 
 	// 3. Default value modification
@@ -196,9 +196,9 @@ void u2phy_init(void)
 	UPHY0_RN_REG->gctrl[2] = 0x0;
 
 	// 5. USBC0 reset
-	MOON0_REG->reset[3] = RF_MASK_V_SET(1 << 13);
+	MOON0_REG->reset[3] = RF_MASK_V_SET(1 << 13); // UPHY0_RESET=1
 	_delay_1ms(1);
-	MOON0_REG->reset[3] = RF_MASK_V_CLR(1 << 13);
+	MOON0_REG->reset[3] = RF_MASK_V_CLR(1 << 13); // UPHY0_RESET=0
 	_delay_1ms(1);
 
 	// 6. HW workaround
@@ -213,6 +213,46 @@ void u2phy_init(void)
 #elif defined(PLATFORM_SP7350)
 void u2phy_init(void)
 {
+	// 1. enable UPHY0 & USBC0 CLOCK */
+	MOON2_REG_AO->clken[5] = RF_MASK_V_SET(1 << 15); // USBC0_CLKEN=1
+	MOON2_REG_AO->clken[5] = RF_MASK_V_SET(1 << 12); // UPHY0_CLKEN=1
+	_delay_1ms(1);
+
+	// 2. reset UPHY0
+	MOON0_REG_AO->reset[5] = RF_MASK_V_SET(1 << 15); // USBC0_RESET=1
+	_delay_1ms(1);
+	MOON0_REG_AO->reset[5] = RF_MASK_V_CLR(1 << 15); // USBC0_RESET=0
+	_delay_1ms(1);
+
+	// 3. Default value modification
+	UPHY0_RN_REG->gctrl[0] = 0x18888002;
+	_delay_1ms(1);
+
+	// 4. PLL power off/on twice
+	UPHY0_RN_REG->gctrl[2] = 0x88;
+	_delay_1ms(1);
+	UPHY0_RN_REG->gctrl[2] = 0x80;
+	_delay_1ms(1);
+	UPHY0_RN_REG->gctrl[2] = 0x88;
+	_delay_1ms(1);
+	UPHY0_RN_REG->gctrl[2] = 0x80;
+	_delay_1ms(20);
+	UPHY0_RN_REG->gctrl[2] = 0x0;
+
+	// 5. USBC0 reset
+	MOON0_REG_AO->reset[5] = RF_MASK_V_SET(1 << 12); // UPHY0_RESET=1
+	_delay_1ms(1);
+	MOON0_REG_AO->reset[5] = RF_MASK_V_CLR(1 << 12); // UPHY0_RESET=0
+	_delay_1ms(1);
+
+	// 6. HW workaround
+	UPHY0_RN_REG->cfg[19] |= 0x0f;
+
+	// 7. USB DISC (disconnect voltage)
+	UPHY0_RN_REG->cfg[7] = 0x8b;
+
+	// 8. RX SQUELCH LEVEL
+	UPHY0_RN_REG->cfg[25] = 0x4;
 }
 #endif
 

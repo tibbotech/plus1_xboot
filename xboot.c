@@ -269,7 +269,7 @@ static void init_hw(void)
 	}
 #endif
 
-#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
+#if defined(PLATFORM_Q645)
 	*(volatile u32 *)ARM_TSGEN_WR_BASE = 3; //EN = 1 and HDBG = 1
 	*(volatile u32 *)(ARM_TSGEN_WR_BASE + 0x08) = 0; // CNTCV[31:0]
 	*(volatile u32 *)(ARM_TSGEN_WR_BASE + 0x0C) = 0; // CNTCV[63:32]
@@ -277,6 +277,10 @@ static void init_hw(void)
 	//Set EVDN VCCM to be correct value(0xB1000000) that comes from EV71 IP config within arc.tcf file.
 	MOON2_REG->sft_cfg[22] = RF_MASK_V(0xffff, 0x0000);//EVDN VCCM base address low byte
 	MOON2_REG->sft_cfg[23] = RF_MASK_V(0xffff, 0xB100);//EVDN VCCM base address high byte
+#elif defined(PLATFORM_SP7350)
+	*(volatile u32 *)ARM_TSGEN_WR_BASE = 3; //EN = 1 and HDBG = 1
+	*(volatile u32 *)(ARM_TSGEN_WR_BASE + 0x08) = 0; // CNTCV[31:0]
+	*(volatile u32 *)(ARM_TSGEN_WR_BASE + 0x0C) = 0; // CNTCV[63:32]
 #endif
 
 #if defined(PLATFORM_Q645)
@@ -1934,22 +1938,23 @@ static void init_uart(void)
 	/* uart1 pinmux : x1,UA1_TX, X2,UA1_RX */
 	MOON3_REG->sft_cfg[14] = RF_MASK_V((0x7f << 0), (1 << 0));
 	MOON3_REG->sft_cfg[14] = RF_MASK_V((0x7f << 8), (2 << 8));
-	MOON0_REG->reset[1] = RF_MASK_V_CLR(1 << 9); /* release UA1 */
+	MOON0_REG->reset[1] = RF_MASK_V_CLR(1 << 9); // UA1_RESET=0
 	UART1_REG->div_l = UART_BAUD_DIV_L(BAUDRATE, UART_SRC_CLK);
 	UART1_REG->div_h = UART_BAUD_DIV_H(BAUDRATE, UART_SRC_CLK);
 #endif
 #ifdef PLATFORM_Q645
+	MOON1_REG->sft_cfg[2] = RF_MASK_V_CLR(0x3c);   // disable JTAG
+
 	/* uart1 pinmux : UA1_TX, UA1_RX */
-	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 9, 1 << 9); // [9]=1
-	MOON1_REG->sft_cfg[2] = RF_MASK_V_CLR(0x3c); // disable JTAG
-	MOON0_REG->reset[3] = RF_MASK_V_CLR(1 << 0); /* release UA1 */
+	MOON1_REG->sft_cfg[1] = RF_MASK_V_SET(1 << 9); // UA1_SEL=1
+	MOON0_REG->reset[3] = RF_MASK_V_CLR(1 << 0);   // UA1_RESET=0
 	UART1_REG->div_l = UART_BAUD_DIV_L(BAUDRATE, UART_SRC_CLK);
 	UART1_REG->div_h = UART_BAUD_DIV_H(BAUDRATE, UART_SRC_CLK);
 #endif
 #ifdef PLATFORM_SP7350
 	/* uart1 pinmux : UA1_TX, UA1_RX */
-	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 13, 1 << 13); // [13]=1
-	MOON0_REG_AO->reset[5] = RF_MASK_V_CLR(1 << 7); /* release UA1 */
+	MOON1_REG_AO->sft_cfg[1] = RF_MASK_V_SET(1 << 13); // UA1_SEL=1
+	MOON0_REG_AO->reset[5] = RF_MASK_V_CLR(1 << 7);    // UA1_RESET=0
 	UART1_REG->div_l = UART_BAUD_DIV_L(BAUDRATE, UART_SRC_CLK);
 	UART1_REG->div_h = UART_BAUD_DIV_H(BAUDRATE, UART_SRC_CLK);
 	UART1_REG->dr = 'U';
