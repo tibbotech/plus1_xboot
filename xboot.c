@@ -183,9 +183,7 @@ static void set_pad_driving_strength(u32 pin, u32 strength)
 
 static void init_hw(void)
 {
-#if !defined(PLATFORM_SP7350) // added temporarily
 	int i;
-#endif
 
 #if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
 	// enable CA55_SYS_TIMER
@@ -229,7 +227,19 @@ static void init_hw(void)
 	prn_clk_info(is_A);
 #endif
 
-#if !defined(PLATFORM_SP7350) // added temporarily
+#if defined(PLATFORM_SP7350)
+	/* clken[all]  = enable */
+	for (i = 0; i < sizeof(MOON2_REG_AO->clken) / 4; i++)
+		MOON2_REG_AO->clken[i] = RF_MASK_V_SET(0xffff);
+
+	/* gclken[all] = no */
+	for (i = 0; i < sizeof(MOON2_REG_AO->gclken) / 4; i++)
+		MOON2_REG_AO->gclken[i] = RF_MASK_V_CLR(0xffff);
+
+	/* reset[all] = clear */
+	for (i = 0; i < sizeof(MOON0_REG_AO->reset) / 4; i++)
+		MOON0_REG_AO->reset[i] = RF_MASK_V_CLR(0xffff);
+#else
 #ifdef CONFIG_PARTIAL_CLKEN
 	prn_string("partial clken\n");
 #if defined(PLATFORM_Q628)
