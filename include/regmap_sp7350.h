@@ -707,6 +707,11 @@ struct rgst_secure_regs {
 };
 #define RGST_SECURE_REG ((volatile struct rgst_secure_regs *)RF_GRP(502, 0))
 
+struct amba_secure_regs {
+	unsigned int cfg[32];              // 502.0~31
+};
+#define AMBA_SECURE_REG ((volatile struct amba_secure_regs *)RF_GRP(503, 0))
+
 /* TSGEN Write/Read */
 #define ARM_TSGEN_WR_BASE  0xf810a000
 

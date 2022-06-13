@@ -337,11 +337,7 @@
 #define XBOOT_ADDR       BOOT_RAM_BASE
 #endif
 
-#if defined(PLATFORM_Q645)
 #define XBOOT_A64_ADDR   (BOOT_RAM_BASE + (97 * 1024))
-#else
-#define XBOOT_A64_ADDR   0x04000000
-#endif
 
 #endif
 

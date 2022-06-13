@@ -3006,9 +3006,8 @@ int usb_init(int port, int next_port_in_hub)
 			for (i = 0; i < 32; i++) {
 				RGST_SECURE_REG->cfg[i] = 0; // non-secure
 			}
-			SECGRP1_PAI_REG->G084_CBDMA0_S01 = 0;
-			SECGRP1_PAI_REG->G084_CBDMA0_S02 = 0xffffffff;
-
+			SET_CBDMA0_S01(0);
+			SET_CBDMA0_S02(0xffffffff);
        		}
 /* usb-uclass.c/usb_init.c -> xhci-spdwc3.c/xhci_dwc3_probe*/
 // xhci register base
