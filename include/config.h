@@ -117,6 +117,7 @@
 #define HW_CFG_MASK             (HW_CFG_MASK_VAL << HW_CFG_SHIFT)
 
 #if defined(PLATFORM_Q645)
+#define INT_BOOT                0x10
 #define EMMC_BOOT               0x1F
 #define SPINAND_BOOT            0x1D
 #define USB_ISP                 0x1B
@@ -128,6 +129,7 @@
 #define SDCARD_BOOT             0xfe
 #define PARA_NAND_BOOT          0xff
 #elif defined(PLATFORM_SP7350)
+#define INT_BOOT                0x10
 #define EMMC_BOOT               0x1F
 #define SPINAND_BOOT            0x1D
 #define USB_ISP                 0x1B

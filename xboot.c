@@ -1831,18 +1831,29 @@ void boot_not_support(void)
 
 void custom_boot_flags( void) {
 #ifdef CONFIG_CUSTOM_BOOT_BTN
- gpio_set_IO( CONFIG_CUSTOM_BOOT_BTN, 0, 0);
- if ( !gpio_getV( CONFIG_CUSTOM_BOOT_BTN)) return;
+	gpio_set_IO(CONFIG_CUSTOM_BOOT_BTN, 0, 0);
+	if (!gpio_getV(CONFIG_CUSTOM_BOOT_BTN))
+		return;
 #if defined(CONFIG_HAVE_SDCARD) && CONFIG_CUSTOM_BTN_DEV == SDCARD_ISP
- SetBootDev( DEVICE_SDCARD, 1, 1);
+	SetBootDev(DEVICE_SDCARD, 1, 1);
 #endif
 #if defined(CONFIG_HAVE_USB_DISK) && CONFIG_CUSTOM_BTN_DEV == USB_ISP
- SetBootDev( DEVICE_USB_ISP, 0, 0);
+	SetBootDev(DEVICE_USB_ISP, 0, 0);
 #endif
- prn_string("\nCUSTOM KEY -> mode:");
- prn_dword(g_bootinfo.gbootRom_boot_mode);
+	prn_string("\nCUSTOM KEY -> mode:");
+	prn_dword(g_bootinfo.gbootRom_boot_mode);
 #endif
- return;  }
+}
+
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
+static u32 read_hw_boot_mode(void)
+{
+	u32 mode;
+
+	mode = *(volatile unsigned int *)HW_CFG_REG;
+	return (mode & HW_CFG_MASK) >> HW_CFG_SHIFT;
+}
+#endif
 
 /*
  * boot_flow - Top boot flow logic
@@ -1891,10 +1902,16 @@ static void boot_flow(void)
 	// custom gpio flag handler
 	custom_boot_flags();
 
-#if !defined(PLATFORM_Q645) && !defined(PLATFORM_SP7350)
 	// NOR pins are enabled by hardware.
 	// Release them if boot device is not NOR.
-	if (g_bootinfo.gbootRom_boot_mode != SPI_NOR_BOOT) {
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
+	if ((g_bootinfo.gbootRom_boot_mode != SPI_NOR_BOOT) &&
+	    (read_hw_boot_mode() & INT_BOOT)){
+		set_spi_nor_pinmux(0);
+	}
+#else
+	if ((g_bootinfo.gbootRom_boot_mode != SPI_NOR_BOOT) &&
+	    (g_bootinfo.gbootRom_boot_mode != EXT_BOOT)) {
 		set_spi_nor_pinmux(0);
 	}
 #endif
