@@ -57,11 +57,11 @@
 #define SMP_CORES 4
 
 // DTB
-#define DTB_RUN_ADDR            0x780000                    /* skip header */
+#define DTB_RUN_ADDR            0x1F80000                   /* skip header */
 #define DTB_LOAD_ADDR           (DTB_RUN_ADDR - 0x40)       /* dtb */
 
 // Linux
-#define LINUX_RUN_ADDR          0x800000                    /* vmlinux */
+#define LINUX_RUN_ADDR          0x2000000                   /* vmlinux */
 #define LINUX_LOAD_ADDR         (LINUX_RUN_ADDR - 0x40)     /* - header */
 
 // initramfs
