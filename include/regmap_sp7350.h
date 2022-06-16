@@ -32,7 +32,7 @@ struct moon3_regs_ao {
 	unsigned int pllh_cfg[3];      // 3.14 - 3.16
 	unsigned int plln_cfg[3];      // 3.17 - 3.19
 	unsigned int plls_cfg[3];      // 3.20 - 3.22
-	unsigned int clken[6];         // 3.23 - 3.28
+	unsigned int clkgen[6];        // 3.23 - 3.28
 	unsigned int rsvd[3];          // 2.29 - 3.31
 };
 #define MOON3_REG_AO ((volatile struct moon3_regs_ao *)RF_GRP_AO(3, 0))
