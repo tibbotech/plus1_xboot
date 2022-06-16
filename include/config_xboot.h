@@ -71,7 +71,7 @@
 //mmu pagetable
 #define MMU_PGTBL_ADDR 		0x000FC000   /*(1M-16k)*/
 
-#define CM4_BOOT_ADDR			0x1e000000
+#define CM4_BOOT_ADDR		0x77000000
 
 #elif defined(PLATFORM_I143)
 #define OPENSBI_RUN_ADDR        0xA01D0000
