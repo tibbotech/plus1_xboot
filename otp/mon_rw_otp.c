@@ -5,13 +5,19 @@
 
 //#define OTP_WR_DEBUG_OPEN
 
+//#define MULTI_EFUSE_SUPPORT_TOOL
+
 #ifdef OTP_WR_DEBUG_OPEN
 #define OTP_WR_DEBUG diag_printf
 #else
 #define OTP_WR_DEBUG(s...) ((void)0)
 #endif
 
+#ifdef MULTI_EFUSE_SUPPORT_TOOL
+#define PACKAGE_SIZE_MAX 1500
+#else
 #define PACKAGE_SIZE_MAX 150
+#endif
 #define HEADER_SIZE 6
 
 enum{
@@ -39,6 +45,14 @@ enum {
 #define UART_LSR_RX             (1 << 1)
 #define UART_RX_READY()        ((DBG_UART_REG->lsr) & UART_LSR_RX)
 #define UART_GET_ERROR()       (((DBG_UART_REG->lsr) << 3) & 0xE0)
+
+#define EFUSE0			1
+#define EFUSE1			2
+#define EFUSE2			3
+
+#define EFUSE_INDEX_START_BIT	6
+#define EFUSE_INDEX_END_BIT	13
+#define EFUSE_INDEX_LENGTH	(EFUSE_INDEX_END_BIT - EFUSE_INDEX_START_BIT + 1)
 
 extern int otprx_read(volatile struct hb_gp_regs *otp_data, volatile struct otprx_regs *regs, int addr, char *value);
 extern int otprx_write(volatile struct hb_gp_regs *otp_data, volatile struct otprx_regs *regs, int addr, char value);
@@ -138,7 +152,6 @@ static u8 checksum(char *data,int len)
 	return checksum;
 }
 
-
 static int receive_package(char *data,int bufsize,int timeout)
 {
 	int payloadlen = 0;
@@ -214,7 +227,7 @@ static int receive_package(char *data,int bufsize,int timeout)
 	return packagelen;
 }
 
-static void write_package(u8 event,u8 command_id,char *data,int len)
+static void write_package(u8 event, u8 command_id, char *data, int len)
 {
 
 	char package[PACKAGE_SIZE_MAX];
@@ -231,35 +244,79 @@ static void write_package(u8 event,u8 command_id,char *data,int len)
 
 }
 
-static int write_otp_data(u16 startbyte,u16 endbyte,char *data)
+#ifdef MULTI_EFUSE_SUPPORT_TOOL
+static int write_otp_data(u16 startbyte, u16 endbyte, char *data, int index)
+#else
+static int write_otp_data(u16 startbyte, u16 endbyte, char *data)
+#endif
 {
 	int rlt = TRUE;
 	for(u16 address = startbyte;address<=endbyte;address++)
 	{
+#ifdef MULTI_EFUSE_SUPPORT_TOOL
+		int writerlt;
+
+		if (index == EFUSE0)
+			writerlt = otprx_write(HB_GP_REG, SP_OTPRX_REG,address,data[address-startbyte]);
+	#if defined(CONFIG_PLATFORM_Q645)
+		else if (index == EFUSE1)
+			writerlt = otprx_write(KEY_HB_GP_REG, KEY_OTPRX_REG,address,data[address-startbyte]);
+		else if (index == EFUSE2)
+			writerlt = otprx_write(CUSTOMER_OTP_REG, CUSTOMER_OTPRX_REG,address,data[address-startbyte]);
+	#endif
+		else
+			writerlt = -1;
+#else
 		int writerlt = otprx_write(HB_GP_REG,SP_OTPRX_REG,address,data[address-startbyte]);
+#endif
 		if(writerlt == -1)
 		{
 			rlt = FALSE;
 		}
+
+#ifndef MULTI_EFUSE_SUPPORT_TOOL
 		diag_printf("[otp_rw.c]%s	address=0x%x,data=0x%x,writerlt=%d\n",__FUNCTION__,address,data[address-startbyte],writerlt);
+#endif
 	}
-	
+
 	return rlt;
 }
 
+#ifdef MULTI_EFUSE_SUPPORT_TOOL
+static int read_otp_data(u16 startbyte,u16 endbyte,char *data, int index)
+#else
 static int read_otp_data(u16 startbyte,u16 endbyte,char *data)
+#endif
 {
 	int rlt = TRUE;
 	for(u16 address = startbyte;address<=endbyte;address++)
 	{
+#ifdef MULTI_EFUSE_SUPPORT_TOOL
+		int readrlt;
+
+		if (index == EFUSE0)
+			readrlt = otprx_read(HB_GP_REG, SP_OTPRX_REG,address,&data[address-startbyte]);
+	#if defined(CONFIG_PLATFORM_Q645)
+		else if (index == EFUSE1)
+			readrlt = otprx_read(KEY_HB_GP_REG, KEY_OTPRX_REG,address,&data[address-startbyte]);
+		else if (index == EFUSE2)
+			readrlt = otprx_read(CUSTOMER_OTP_REG, CUSTOMER_OTPRX_REG,address,&data[address-startbyte]);
+	#endif
+		else
+			readrlt = -1;
+#else
 		int readrlt = otprx_read(HB_GP_REG,SP_OTPRX_REG,address,&data[address-startbyte]);
+#endif
 		if(readrlt == -1)
 		{
 			rlt = FALSE;
 		}
+
+#ifndef MULTI_EFUSE_SUPPORT_TOOL
 		diag_printf("[otp_rw.c]%s address=0x%x,data=0x%x,readrlt=%d\n",__FUNCTION__,address,data[address-startbyte],readrlt);
+#endif
 	}
-	
+
 	return rlt;
 }
 
@@ -275,14 +332,32 @@ static int parser_package(char *data,int packagelen)
 	{
 		return OTP_PARSER_ERROR;
 	}
-	
+
 	OTP_WR_DEBUG("[otp_rw.c]%s  event=0x%x,command_id=0x%x\n",__FUNCTION__,event,command_id);
 	if((event == EVENT_SEND) && (command_id == COMMAND_ID_WRITE))
 	{
+#ifdef MULTI_EFUSE_SUPPORT_TOOL
+		u16 startbyte = (data[6+EFUSE_INDEX_LENGTH]&0xff)|((data[7+EFUSE_INDEX_LENGTH]&0xff)<<8);
+		u16 endbyte = (data[8+EFUSE_INDEX_LENGTH]&0xff)|((data[9+EFUSE_INDEX_LENGTH]&0xff)<<8);
+		u64 index;
+		int i;
+
+		index = 0;
+		for (i = EFUSE_INDEX_END_BIT; i >= EFUSE_INDEX_START_BIT; i--)
+			index = (index << 8) | data[i];
+
+#else
 		u16 startbyte = (data[6]&0xff)|((data[7]&0xff)<<8);
 		u16 endbyte = (data[8]&0xff)|((data[9]&0xff)<<8);
+#endif
+
 		OTP_WR_DEBUG("[otp_rw.c]%s	startbyte=0x%x,endbyte=0x%x\n",__FUNCTION__,startbyte,endbyte);
+
+#ifdef MULTI_EFUSE_SUPPORT_TOOL
+		int rlt = write_otp_data(startbyte,endbyte,&data[10+EFUSE_INDEX_LENGTH], index);
+#else
 		int rlt = write_otp_data(startbyte,endbyte,&data[10]);
+#endif
 		if(rlt)
 		{
 			data[0] = 0;
@@ -294,7 +369,21 @@ static int parser_package(char *data,int packagelen)
 		write_package(EVENT_ACK,command_id,&data[0],1);
 	}
 	else if((event == EVENT_SEND) && (command_id == COMMAND_ID_READ))
-	{	
+	{
+#ifdef MULTI_EFUSE_SUPPORT_TOOL
+		u16 startbyte = (data[6+EFUSE_INDEX_LENGTH]&0xff)|((data[7+EFUSE_INDEX_LENGTH]&0xff)<<8);
+		u16 endbyte = (data[8+EFUSE_INDEX_LENGTH]&0xff)|((data[9+EFUSE_INDEX_LENGTH]&0xff)<<8);
+		u64 index;
+		int i;
+
+		index = 0;
+		for (i = EFUSE_INDEX_END_BIT; i >= EFUSE_INDEX_START_BIT; i--)
+			index = (index << 8) | data[i];
+
+		memcpy(data,data+EFUSE_INDEX_LENGTH,4+EFUSE_INDEX_LENGTH);
+		read_otp_data(startbyte,endbyte,&data[4+EFUSE_INDEX_LENGTH],index);
+		write_package(EVENT_ACK,command_id,data,endbyte-startbyte+1+4+EFUSE_INDEX_LENGTH);
+#else
 		u16 startbyte = (data[6]&0xff)|((data[7]&0xff)<<8);
 		u16 endbyte = (data[8]&0xff)|((data[9]&0xff)<<8);
 		data[0] = data[6];
@@ -303,29 +392,44 @@ static int parser_package(char *data,int packagelen)
 		data[3] = data[9];
 		read_otp_data(startbyte,endbyte,&data[4]);
 		write_package(EVENT_ACK,command_id,data,endbyte-startbyte+1+4);
-	}	
+#endif
+	}
 	else if((event == EVENT_SEND) && (command_id == COMMAND_ID_CONNECT))
 	{
+#ifdef MULTI_EFUSE_SUPPORT_TOOL
+		OTP_WR_DEBUG("[otp_rw.c]%s	payloadlen=0x%x,data[6]=0x%x\n",__FUNCTION__,payloadlen,data[6+EFUSE_INDEX_LENGTH]);
+		if((payloadlen == 1)&&(data[6+EFUSE_INDEX_LENGTH]==0x01))
+		{
+			write_package(EVENT_ACK,command_id,&data[6+EFUSE_INDEX_LENGTH],1);
+			return OTP_DISCONNECT;
+		}
+#else
 		OTP_WR_DEBUG("[otp_rw.c]%s	payloadlen=0x%x,data[6]=0x%x\n",__FUNCTION__,payloadlen,data[6]);
 		if((payloadlen == 1)&&(data[6]==0x01))
 		{
 			write_package(EVENT_ACK,command_id,&data[6],1);
 			return OTP_DISCONNECT;
 		}
-		
+#endif
 	}
 	else if((event == EVENT_ACK) && (command_id == COMMAND_ID_CONNECT))
 	{
+#ifdef MULTI_EFUSE_SUPPORT_TOOL
+		OTP_WR_DEBUG("[otp_rw.c]%s	payloadlen=0x%x,data[6]=0x%x\n",__FUNCTION__,payloadlen,data[6+EFUSE_INDEX_LENGTH]);
+		if((payloadlen == 1)&&(data[6+EFUSE_INDEX_LENGTH]==0x00))
+		{
+			return OTP_CONNECT;
+		}
+#else
 		OTP_WR_DEBUG("[otp_rw.c]%s	payloadlen=0x%x,data[6]=0x%x\n",__FUNCTION__,payloadlen,data[6]);
 		if((payloadlen == 1)&&(data[6]==0x00))
 		{
 			return OTP_CONNECT;
 		}
-		
+#endif
 	}
 	return OTP_PARSER_OK;
 }
-
 
 static int receive_handshake_cmd(void)
 {
@@ -361,7 +465,6 @@ static int receive_handshake_cmd(void)
 	OTP_WR_DEBUG("[otp_rw.c]connect fail!\n");
 	return FALSE;
 }
-
 
 static int otp_handshake(void)
 {

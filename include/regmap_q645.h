@@ -76,6 +76,7 @@ struct hb_gp_regs {
 };
 #define HB_GP_REG ((volatile struct hb_gp_regs *)RF_GRP(350, 0))
 #define KEY_HB_GP_REG ((volatile struct hb_gp_regs *)RF_GRP(779, 0))
+#define CUSTOMER_OTP_REG ((volatile struct hb_gp_regs *)RF_GRP(79, 0))
 
 struct otprx_regs {
 	unsigned int sw_trim;          // 351.0
@@ -104,6 +105,7 @@ struct otprx_regs {
 };
 #define SP_OTPRX_REG    ((volatile struct otprx_regs *)RF_GRP(351, 0))
 #define KEY_OTPRX_REG   ((volatile struct otprx_regs *)RF_GRP(780, 0))
+#define CUSTOMER_OTPRX_REG   ((volatile struct otprx_regs *)RF_GRP(80, 0))
 
 struct uart_regs {
 	unsigned int dr;  /* data register */
