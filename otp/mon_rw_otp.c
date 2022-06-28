@@ -57,6 +57,9 @@ enum {
 #define EFUSE_INDEX_LENGTH	(EFUSE_INDEX_END_BIT - EFUSE_INDEX_START_BIT + 1)
 
 extern int otprx_read(volatile struct hb_gp_regs *otp_data, volatile struct otprx_regs *regs, int addr, char *value);
+#if defined(PLATFORM_SP7350)
+extern int otprx_key_read(volatile struct otp_key_regs *otp_data, volatile struct otprx_regs *regs, int addr, char *value);
+#endif
 extern int otprx_write(volatile struct hb_gp_regs *otp_data, volatile struct otprx_regs *regs, int addr, char value);
 
 static inline void reset_STC()
@@ -296,18 +299,38 @@ static int read_otp_data(u16 startbyte,u16 endbyte,char *data)
 #ifdef MULTI_EFUSE_SUPPORT_TOOL
 		int readrlt;
 
-		if (index == EFUSE0)
-			readrlt = otprx_read(HB_GP_REG, SP_OTPRX_REG,address,&data[address-startbyte]);
-	#if defined(CONFIG_PLATFORM_Q645)
-		else if (index == EFUSE1)
-			readrlt = otprx_read(KEY_HB_GP_REG, KEY_OTPRX_REG,address,&data[address-startbyte]);
-		else if (index == EFUSE2)
-			readrlt = otprx_read(CUSTOMER_OTP_REG, CUSTOMER_OTPRX_REG,address,&data[address-startbyte]);
+		if (index == EFUSE0) {
+	#if defined(PLATFORM_SP7350)
+			if (address < 64)
+				readrlt = otprx_read(HB_GP_REG,SP_OTPRX_REG,address,&data[address-startbyte]);
+			else
+				readrlt = otprx_key_read(OTP_KEY_REG,SP_OTPRX_REG,address,&data[address-startbyte]);
+	#else
+			readrlt = otprx_read(HB_GP_REG,SP_OTPRX_REG,address,&data[address-startbyte]);
 	#endif
-		else
+		}
+	#if defined(CONFIG_PLATFORM_Q645)
+		else if (index == EFUSE1) {
+			readrlt = otprx_read(KEY_HB_GP_REG, KEY_OTPRX_REG,address,&data[address-startbyte]);
+		}
+		else if (index == EFUSE2) {
+			readrlt = otprx_read(CUSTOMER_OTP_REG, CUSTOMER_OTPRX_REG,address,&data[address-startbyte]);
+		}
+	#endif
+		else {
 			readrlt = -1;
+		}
 #else
+	#if defined(PLATFORM_SP7350)
+		int readrlt;
+
+		if (address < 64)
+			readrlt = otprx_read(HB_GP_REG,SP_OTPRX_REG,address,&data[address-startbyte]);
+		else
+			readrlt = otprx_key_read(OTP_KEY_REG,SP_OTPRX_REG,address,&data[address-startbyte]);
+	#else
 		int readrlt = otprx_read(HB_GP_REG,SP_OTPRX_REG,address,&data[address-startbyte]);
+	#endif
 #endif
 		if(readrlt == -1)
 		{

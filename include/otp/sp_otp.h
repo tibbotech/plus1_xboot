@@ -15,10 +15,6 @@
 #define OTP_BIT_ADDR_OF_BANK		(8 * OTP_WORD_SIZE * \
 						OTP_WORDS_PER_BANK)
 
-#define OTPRX2_BASE_ADR                 0x9C002800
-#define OTPRX_BASE_ADR                  0x9C00AF80
-#define HB_GPIO                         0x9C00AF00
-
 /* OTP register map */
 #define OTP_PROGRAM_CONTROL             0x0C
 #define PIO_MODE                        0x07
@@ -65,6 +61,7 @@
 #define OTP_WRITE_TIMEOUT               200
 
 int otprx_read(volatile struct hb_gp_regs *otp_data, volatile struct otprx_regs *regs, int addr, char *value);
+int otprx_key_read(volatile struct otp_key_regs *otp_data, volatile struct otprx_regs *regs, int addr, char *value);
 int otprx_write(volatile struct hb_gp_regs *otp_data, volatile struct otprx_regs *regs, int addr, char value);
 
 #endif  //_SP_OTP

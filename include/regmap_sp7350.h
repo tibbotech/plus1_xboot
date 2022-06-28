@@ -68,8 +68,7 @@ struct hb_gp_regs {
 	unsigned int hb_otp_data7;
 	unsigned int reserved_8[24];
 };
-#define HB_GP_REG ((volatile struct hb_gp_regs *)RF_GRP(350, 0))
-#define KEY_HB_GP_REG ((volatile struct hb_gp_regs *)RF_GRP(779, 0))
+#define HB_GP_REG ((volatile struct hb_gp_regs *)RF_GRP_AO(71, 0))
 
 struct otprx_regs {
 	unsigned int sw_trim;          // 351.0
@@ -96,8 +95,13 @@ struct otprx_regs {
 	unsigned int otp_data;         // 351.21
 	unsigned int reserved_22[10];  // 351.22
 };
-#define SP_OTPRX_REG    ((volatile struct otprx_regs *)RF_GRP(351, 0))
-#define KEY_OTPRX_REG   ((volatile struct otprx_regs *)RF_GRP(780, 0))
+#define SP_OTPRX_REG ((volatile struct otprx_regs *)RF_GRP_AO(72, 0))
+
+struct otp_key_regs {
+	unsigned int block_addr[4];
+	unsigned int reserved_8[28];
+};
+#define OTP_KEY_REG ((volatile struct otp_key_regs *)RF_GRP(73, 0))
 
 struct uart_regs {
 	unsigned int dr;  /* data register */
