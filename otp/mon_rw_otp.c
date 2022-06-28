@@ -5,7 +5,9 @@
 
 //#define OTP_WR_DEBUG_OPEN
 
-//#define MULTI_EFUSE_SUPPORT_TOOL
+#if defined(CONFIG_PLATFORM_Q645)
+#define MULTI_EFUSE_SUPPORT_TOOL
+#endif
 
 #ifdef OTP_WR_DEBUG_OPEN
 #define OTP_WR_DEBUG diag_printf
