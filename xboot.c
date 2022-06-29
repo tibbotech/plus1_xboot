@@ -1863,7 +1863,7 @@ static void boot_flow(void)
 	int retry = 10;
 #ifdef OTP_TEST
 	unsigned int i;
-	unsigned int data;
+	unsigned int data = 0;
 	char buf;
 #endif
 
@@ -1880,19 +1880,40 @@ static void boot_flow(void)
 #ifdef OTP_TEST
 	prn_string("OTP DATA\n");
 	for (i = 0; i < 128; i++) {
-		if (!otprx_read(HB_GP_REG, SP_OTPRX_REG, i, &buf)) {
-			if ((i % 4) == 0) {
-				prn_string("OTP"); prn_decimal(i / 4); prn_string(" = ");
-				data = buf;
-			} else if ((i % 4) == 1) {
-				data = (((unsigned int) buf) << 8) | data;
-			} else if ((i % 4) == 2) {
-				data = (((unsigned int) buf) << 16) | data;
-			} else if ((i % 4) == 3) {
-				data = (((unsigned int) buf) << 24) | data;
-				prn_dword(data);
+	#if defined(PLATFORM_SP7350)
+		if (i < 64) {
+	#endif
+			if (!otprx_read(HB_GP_REG, SP_OTPRX_REG, i, &buf)) {
+				if ((i % 4) == 0) {
+					prn_string("OTP"); prn_decimal(i / 4); prn_string(" = ");
+					data = buf;
+				} else if ((i % 4) == 1) {
+					data = (((unsigned int) buf) << 8) | data;
+				} else if ((i % 4) == 2) {
+					data = (((unsigned int) buf) << 16) | data;
+				} else if ((i % 4) == 3) {
+					data = (((unsigned int) buf) << 24) | data;
+					prn_dword(data);
+				}
+			}
+	#if defined(PLATFORM_SP7350)
+		}
+		else if ((i >= 64) && (i < 128)) {
+			if (!otprx_key_read(OTP_KEY_REG, SP_OTPRX_REG, i, &buf)) {
+				if ((i % 4) == 0) {
+					prn_string("OTP"); prn_decimal(i / 4); prn_string(" = ");
+					data = buf;
+				} else if ((i % 4) == 1) {
+					data = (((unsigned int) buf) << 8) | data;
+				} else if ((i % 4) == 2) {
+					data = (((unsigned int) buf) << 16) | data;
+				} else if ((i % 4) == 3) {
+					data = (((unsigned int) buf) << 24) | data;
+					prn_dword(data);
+				}
 			}
 		}
+	#endif
 	}
 #endif
 

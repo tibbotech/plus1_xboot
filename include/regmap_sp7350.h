@@ -101,7 +101,7 @@ struct otp_key_regs {
 	unsigned int block_addr[4];
 	unsigned int reserved_8[28];
 };
-#define OTP_KEY_REG ((volatile struct otp_key_regs *)RF_GRP(73, 0))
+#define OTP_KEY_REG ((volatile struct otp_key_regs *)RF_GRP_AO(73, 0))
 
 struct uart_regs {
 	unsigned int dr;  /* data register */
