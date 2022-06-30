@@ -61,7 +61,9 @@
 #define OTP_WRITE_TIMEOUT               200
 
 int otprx_read(volatile struct hb_gp_regs *otp_data, volatile struct otprx_regs *regs, int addr, char *value);
+#if defined(PLATFORM_SP7350)
 int otprx_key_read(volatile struct otp_key_regs *otp_data, volatile struct otprx_regs *regs, int addr, char *value);
+#endif
 int otprx_write(volatile struct hb_gp_regs *otp_data, volatile struct otprx_regs *regs, int addr, char value);
 
 #endif  //_SP_OTP
