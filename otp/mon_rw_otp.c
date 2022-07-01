@@ -166,7 +166,7 @@ static int receive_package(char *data,int bufsize,int timeout)
 	int readnum = 0;
 	memset(data,0,bufsize);
 	readnum = 0;
-	
+
 	OTP_WR_DEBUG("[otp_rw.c]%s in\n",__FUNCTION__);
 	do
 	{
@@ -198,14 +198,13 @@ static int receive_package(char *data,int bufsize,int timeout)
 			{
 				data[readnum] = byte;
 				readnum ++;
-				
+
 				if(readnum == packagelen)
 				{
 					OTP_WR_DEBUG("[otp_rw.c]%s  packagelen=%d\n",__FUNCTION__,packagelen);
 					break;
 				}
-						
-			}		
+			}
 			else
 			{
 				readnum = 0;
@@ -227,7 +226,7 @@ static int receive_package(char *data,int bufsize,int timeout)
 		}
 	}
 	while(1);
-	
+
 	OTP_WR_DEBUG("[otp_rw.c]%s out\n",__FUNCTION__);
 	return packagelen;
 }
@@ -278,6 +277,8 @@ static int write_otp_data(u16 startbyte, u16 endbyte, char *data)
 		{
 			rlt = FALSE;
 		}
+
+		delay_1ms(1);
 
 #ifndef MULTI_EFUSE_SUPPORT_TOOL
 		diag_printf("[otp_rw.c]%s	address=0x%x,data=0x%x,writerlt=%d\n",__FUNCTION__,address,data[address-startbyte],writerlt);
