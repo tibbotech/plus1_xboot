@@ -191,9 +191,12 @@
 /**********************
  * Clock
  *********************/
-#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
+#if defined(PLATFORM_Q645)
 #define XTAL_CLK               (25 * 1000 * 1000)
 #define PLLSYS                 (360 * 1000 * 1000)  /* 360 MHz is for CARD_CLK and CARD012_CLK */
+#elif defined(PLATFORM_SP7350)
+#define XTAL_CLK               (25 * 1000 * 1000)
+#define PLLSYS                 (358 * 1000 * 1000)  /* 358 MHz is for CARD_CLK and CARD012_CLK */
 #else
 #define XTAL_CLK               (27 * 1000 * 1000)
 #define PLLSYS                 (202500 * 1000)      /* 202.5MHz */
