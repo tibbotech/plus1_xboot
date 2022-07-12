@@ -128,6 +128,8 @@ ifeq ($(CONFIG_PLATFORM_SP7350),y)
 	@bash ./add_xhdr.sh ../draminit/dwc/firmware/lpddr4_pmu_train_dmem.bin $(BIN)/lpddr4_pmu_train_dmem.img 0 dm1d
 	@bash ./add_xhdr.sh ../draminit/dwc/firmware/lpddr4_2d_pmu_train_imem.bin $(BIN)/lpddr4_2d_pmu_train_imem.img 0 im2d
 	@bash ./add_xhdr.sh ../draminit/dwc/firmware/lpddr4_2d_pmu_train_dmem.bin $(BIN)/lpddr4_2d_pmu_train_dmem.img 0 dm2d
+	@bash ./add_xhdr.sh ../draminit/dwc/firmware/lpddr4_diags_imem.bin $(BIN)/lpddr4_diags_imem.img 0 imda
+	@bash ./add_xhdr.sh ../draminit/dwc/firmware/lpddr4_diags_dmem.bin $(BIN)/lpddr4_diags_dmem.img 0 dmda
 endif
 ifeq ($(CONFIG_STANDALONE_DRAMINIT), y)
 	@# print draminit.img size
