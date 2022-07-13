@@ -647,7 +647,7 @@ void handshake(volatile u32 *ptr, u32 mask, u32 done, int usec)
 	do {
 		result = *ptr;
 		if (result == ~(u32)0) {
-			prn_string("\n		ERR 0 ");
+			prn_string("ERR 0");
 			break;
 		}
 		result &= mask;
@@ -657,7 +657,7 @@ void handshake(volatile u32 *ptr, u32 mask, u32 done, int usec)
 		_delay_1ms(1);
 	} while (usec > 0);
 	if (usec <= 0)
-		prn_string("\n  	ERR 1 ");
+		prn_string("ERR 1");
 }
 
 u32 xhci_v1_0_td_remainder(int running_total, int trb_buff_len, unsigned int total_packet_count, int maxpacketsize, unsigned int num_trbs_left)
@@ -2537,7 +2537,7 @@ void usb_test_unit_ready(void)
 		if (stor_BBB_transport(0, 12, 0, NULL) == 0)
 			return;
 		else
-			prn_string(" =>usb_test_unit_ready\n");
+			prn_string("=>usb_test_unit_ready\n");
 		memset(g_io_buf.usb.xhci.reserved, 0, sizeof(g_io_buf.usb.xhci.reserved));
 		//usb_request_sense
 		g_io_buf.usb.xhci.reserved[0] = SCSICMD_REQUEST_SENSE;
@@ -2551,7 +2551,7 @@ void usb_test_unit_ready(void)
 			memset(g_io_buf.usb.xhci.reserved, 0, sizeof(g_io_buf.usb.xhci.reserved));
 			_delay_1ms(100);
 		} else
-			prn_string(" =>usb_request_sense\n");
+			prn_string("=>usb_request_sense\n");
 	} while (retry--);
 	prn_string("unit still not ready...\n");
 	boot_reset();
@@ -2661,18 +2661,18 @@ int stor_BBB_transport(u32 datalen, u32 cmdlen, u8 dir_in, u8 *buf)
 		//usb_stor_BBB_reset(us);
 		return -1;//USB_STOR_TRANSPORT_FAILED;
 	} else if (pcsw->bCSWStatus > 0x2) {//CSWSTATUS_PHASE
-		prn_string("\n!!!!! >PHASE ");
+		prn_string("\n!!!!! >PHASE\n");
 		//usb_stor_BBB_reset(us);
 		return -1;//USB_STOR_TRANSPORT_FAILED;
 	} else if (pcsw->bCSWStatus == 0x2) {//CSWSTATUS_PHASE
-		prn_string("\n!!!!! =PHASE ");
+		prn_string("\n!!!!! =PHASE\n");
 		//usb_stor_BBB_reset(us);
 		return -1;//USB_STOR_TRANSPORT_FAILED;
 	} else if (data_actlent > datalen) {
-		prn_string("\n!!!!! transferred %dB instead of %ldB ");
+		prn_string("\n!!!!! transferred %dB instead of %ldB\n");
 		return -1;//USB_STOR_TRANSPORT_FAILED;
 	} else if (pcsw->bCSWStatus == 0x1) {//CSWSTATUS_FAILED
-		prn_string("\n!!!!! FAILED ");
+		prn_string("\n!!!!! FAILED\n");
 		return -1;//USB_STOR_TRANSPORT_FAILED;
 	}
 
@@ -2825,9 +2825,9 @@ void usb_select_config(pUSB_DevDesc pDev)
 	usb_string(pDev->iManufacturer, g_io_buf.usb.xhci.udev.mf, sizeof(g_io_buf.usb.xhci.udev.mf));
 	usb_string(pDev->iProduct, g_io_buf.usb.xhci.udev.prod, sizeof(g_io_buf.usb.xhci.udev.prod));
 	usb_string(pDev->iSerialNumber, g_io_buf.usb.xhci.udev.serial, sizeof(g_io_buf.usb.xhci.udev.serial));
-	prn_string("\n  	mf     "); prn_string(g_io_buf.usb.xhci.udev.mf);
-	prn_string("\n  	prod   "); prn_string(g_io_buf.usb.xhci.udev.prod);
-	prn_string("\n  	serial "); prn_string(g_io_buf.usb.xhci.udev.serial);
+	prn_string("\nMF:     "); prn_string(g_io_buf.usb.xhci.udev.mf);
+	prn_string("\nProd:   "); prn_string(g_io_buf.usb.xhci.udev.prod);
+	prn_string("\nSerial: "); prn_string(g_io_buf.usb.xhci.udev.serial);
 }
 
 void usb_storage()
@@ -2862,7 +2862,7 @@ u32 port_test(u32 i)
 	u32 val_64, tmp;
 	struct usb_port_status portst;
 
-	prn_string("port "); prn_dword(i);
+	prn_string("port "); prn_decimal(i);
 
 	usb_get_port_status(i, &portst);
 	if (!(portst.wPortStatus & USB_PORT_STAT_CONNECTION) && !(portst.wPortChange & USB_PORT_STAT_CONNECTION)) {
@@ -2905,17 +2905,17 @@ u32 port_test(u32 i)
 				case USB_PORT_STAT_HIGH_SPEED:
 					g_io_buf.usb.xhci.udev.speed = USB_SPEED_HIGH;
 #ifdef XHCI_DEBUG
-					prn_string("\n#####HIGH speed ");
+					prn_string("\nHIGH speed ");
 #endif
 					break;
 				case USB_PORT_STAT_SUPER_SPEED:
 					g_io_buf.usb.xhci.udev.speed = USB_SPEED_SUPER;
 #ifdef XHCI_DEBUG
-					prn_string("\n#####SUPER speed ");
+					prn_string("\nSUPER speed ");
 #endif
 					break;
 				default:
-					prn_string("\n#####no support speed ");
+					prn_string("\nNo support speed!");
 					break;
 			}
 #ifdef XHCI_DEBUG
@@ -2924,7 +2924,7 @@ u32 port_test(u32 i)
 			return 1;
 		} else {
 #ifdef XHCI_DEBUG
-			prn_string("==> un support speed");
+			prn_string("==> unsupported speed");
 #endif
 			return 0;
 		}
@@ -2952,8 +2952,8 @@ int usb_init(int port, int next_port_in_hub)
         	memset32((u32 *)&g_io_buf.usb.xhci, 0, sizeof(g_io_buf.usb.xhci)/4);
         	dbg();
 
-		prn_string("\nxboot usb_init \n"); prn_dword(port);
-	    	if (port == 0) {
+		prn_string("usb_init, port "); prn_decimal(port);
+		if (port == 0) {
 			//check merory address align
 			if ((intptr_t) g_io_buf.usb.xhci.sparraybuf & 0xfff) {
 				prn_string("!!!!!g_io_buf.usb.xhci.sparraybuf addr not align "); prn_dword((intptr_t) g_io_buf.usb.xhci.sparraybuf);
@@ -3145,7 +3145,7 @@ int usb_init(int port, int next_port_in_hub)
 		_delay_1ms(200);
 
 		for (i = 1; i <= Hub_NbrPorts_root; i++) {
-			prn_string("\n#####root ");
+			prn_string("\nUSB Root, ");
 			val_64 = port_test(i);
 			if (val_64) {
 //_xhci_alloc_device
@@ -3181,13 +3181,13 @@ int usb_init(int port, int next_port_in_hub)
 				} else {
 					usb_storage();//usb_storage
 					//break;
-					prn_string("\n#####end##### \n");
+					prn_string("\n");
 					return 0;
 				}
 			}
 		}
 		if (i > Hub_NbrPorts_root) {
-			prn_string("\n#####root hub scan end ==> no device##### \n");
+			prn_string("\nRoot scan end ==> no device!\n");
 			return -1;
 		}
 	}
@@ -3195,7 +3195,7 @@ int usb_init(int port, int next_port_in_hub)
 	pUSB_DevDesc pDev = (pUSB_DevDesc) g_io_buf.usb.xhci.reserved;
 
 	for (trb_64 = next_port_in_hub; trb_64 <= g_io_buf.usb.xhci.udev.Hub_NbrPorts; trb_64++) {
-		prn_string("\n###hub ");
+		prn_string("\nUSB Hub, ");
 
 		g_io_buf.usb.xhci.udev.slot_id = g_io_buf.usb.xhci.udev.r_slot_id;
 		val_64 = port_test(trb_64);
@@ -3224,7 +3224,7 @@ int usb_init(int port, int next_port_in_hub)
 			return ++trb_64;
 		}
 	}
-	prn_string("\n#####hub scan end ==> no device##### \n");
+	prn_string("\nHub scan end ==> no device!\n");
 #endif
 	return -1;
 }
@@ -3249,7 +3249,7 @@ int usb_readSector(u32 lba, u32 count, u32 *dest)
 	g_io_buf.usb.xhci.reserved[8] = (u8)count & 0xff;
 
 	if (stor_BBB_transport((count << 9), 12, 1, (u8 *)dest) != 0)
-		prn_string(" =>usb_readSector\n");
+		prn_string("=>usb_readSector\n");
 
 	CSTAMP(0xE5B00014);
 	return 0;
