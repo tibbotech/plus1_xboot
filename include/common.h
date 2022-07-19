@@ -118,7 +118,6 @@ union storage_buf {
 
 	/* usb */
 	struct usb_io {
-
 #ifdef CONFIG_HAVE_SNPS_USB3_DISK
 		xhci_usb     xhci;
 #endif
@@ -128,7 +127,6 @@ union storage_buf {
 #ifdef CONFIG_HAVE_USB_DISK
 		ehci_usb     ehci;                  /* for all usb transfer, 320 bytes */
 #endif
-
 	} usb;
 
 	/* uart bootstrap */

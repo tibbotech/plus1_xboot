@@ -1834,10 +1834,10 @@ void custom_boot_flags( void) {
 	gpio_set_IO(CONFIG_CUSTOM_BOOT_BTN, 0, 0);
 	if (!gpio_getV(CONFIG_CUSTOM_BOOT_BTN))
 		return;
-#if defined(CONFIG_HAVE_SDCARD) && CONFIG_CUSTOM_BTN_DEV == SDCARD_ISP
+#if defined(CONFIG_HAVE_SDCARD) && (CONFIG_CUSTOM_BTN_DEV == SDCARD_ISP)
 	SetBootDev(DEVICE_SDCARD, 1, 1);
 #endif
-#if defined(CONFIG_HAVE_USB_DISK) && CONFIG_CUSTOM_BTN_DEV == USB_ISP
+#if defined(CONFIG_HAVE_USB_DISK) && (CONFIG_CUSTOM_BTN_DEV == USB_ISP)
 	SetBootDev(DEVICE_USB_ISP, 0, 0);
 #endif
 	prn_string("\nCUSTOM KEY -> mode:");
