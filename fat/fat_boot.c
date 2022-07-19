@@ -381,13 +381,13 @@ u32 fat_boot(u32 type, u32 port, fat_info *info, u8 *buffer)
 		}
 #endif
 #ifdef CONFIG_HAVE_USB_DISK
-	#ifdef CONFIG_PLATFORM_SP7350
+	#if defined(CONFIG_PLATFORM_Q645) || defined(CONFIG_PLATFORM_SP7350)
 		if (port == USB2_PORT) {
 	#endif
 			dbg_info();
 			info->init_usb = usb2_init;
 			info->read_sector = usb2_readSector;
-	#ifdef CONFIG_PLATFORM_SP7350
+	#if defined(CONFIG_PLATFORM_Q645) || defined(CONFIG_PLATFORM_SP7350)
 		}
 	#endif
 #endif

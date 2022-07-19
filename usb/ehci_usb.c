@@ -329,7 +329,7 @@ int usb2_init(int port, int next_port_in_hub)
 	memset32((u32 *)&g_io_buf.usb.ehci, 0, sizeof(g_io_buf.usb.ehci)/4);
 
 	// ehci register base
-#ifdef CONFIG_PLATFORM_SP7350
+#if defined(CONFIG_PLATFORM_Q645) || defined(CONFIG_PLATFORM_SP7350)
 	g_io_buf.usb.ehci.ehci_hcd_regs = EHCI0_REG;
 #else
 	g_io_buf.usb.ehci.ehci_hcd_regs = port ? EHCI1_REG : EHCI0_REG;
