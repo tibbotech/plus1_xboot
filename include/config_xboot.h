@@ -135,7 +135,7 @@
 /* ISP image offset */
 #define ISP_IMG_OFF_XBOOT    (0)
 #if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
-#define ISP_IMG_OFF_UBOOT    (160 * 1024)
+#define ISP_IMG_OFF_UBOOT    (192 * 1024)
 #else
 #define ISP_IMG_OFF_UBOOT    (64 * 1024)
 #endif
