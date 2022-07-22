@@ -33,6 +33,7 @@
 #define PLLD_333MHz
 //#define PLLD_400MHz
 //#define PLLD_600MHz
+//#define PLLD_650MHz
 #endif
 /*
  * TOC
@@ -317,6 +318,11 @@ static void init_hw(void)
 	MOON4_REG->plld_cfg[1] = RF_MASK_V(0x000C, 0x0008);
 #endif
 
+#ifdef PLLD_650MHz
+	prn_string("PLLD: 650MHz\n");
+	MOON4_REG->plld_cfg[0] = RF_MASK_V(0xFFFF, 0x928B);//650MHz, SDRAM clock 1300MHz, datarate 2600
+	MOON4_REG->plld_cfg[1] = RF_MASK_V(0xFFFF, 0x2B3D);
+#endif
 	prn_dword(MOON4_REG->plld_cfg[0]);
 	prn_dword(MOON4_REG->plld_cfg[1]);
 	delay_1ms(8);
