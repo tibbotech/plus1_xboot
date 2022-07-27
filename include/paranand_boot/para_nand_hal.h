@@ -215,64 +215,9 @@ UINT8 ECC_mask_status(UINT8 u8_channel);
 UINT8 ECC_enable_interrupt(UINT8 u8_ecc_error_bit_hit_the_threshold, UINT8 u8_ecc_correct_failed,
 			  UINT8 u8_ecc_error_bit_hit_the_threshold_for_spare, UINT8 u8_ecc_correct_failed_for_spare);
 
-/*
-	Function Name	: ECC_correction_failed
-
-	Effect 			: Report the correction of ECC is failed or not.
-
-	Parameter		:
-		u8_channel	--> Channel ID
-
-	Return value	:
-		1	--> The correcting is failed.
-		0	--> The correcting isn't failed.
-*/
-UINT8 ECC_correction_failed(UINT8 u8_channel);
 
 /*
-	Function Name	: ECC_failed_hit_threshold
-
-	Effect 			: The number of ECC failed bit hits the pre-defined ECC threshold.
-
-	Parameter		:
-		u8_channel	--> Channel ID
-
-	Return value	:
-		1	--> Below.
-		0	--> Data is failed in spite of the ECC correction.
-*/
-UINT8 ECC_failed_hit_threshold(UINT8 u8_channel);
-
-/*
-	Function Name	: ECC_correction_failed_for_spare
-
-	Effect 			: Report the correction of EC for spareC is failed or not.
-
-	Parameter		:
-		u8_channel	--> Channel ID
-
-	Return value	:
-		1	--> The correcting is failed.
-		0	--> The correcting isn't failed.
-*/
-UINT8 ECC_correction_failed_for_spare(UINT8 u8_channel);
-
-/*
-	Function Name	: ECC_failed_hit_threshold_for_spare
-
-	Effect 			: The number of ECC failed bit for spare hits the pre-defined ECC threshold.
-
-	Parameter		:
-		u8_channel	--> Channel ID
-
-	Return value	:
-		1	--> Below.
-		0	--> Data is failed in spite of the ECC correction.
-*/
-UINT8 ECC_failed_hit_threshold_for_spare(UINT8 u8_channel);
-
-/*
-	Function Name	: NANDC024_general_setting_for_all_channel
+	Function Name	: para_nand_general_setting_for_all_channel
 
 	Effect 			: Configurate the NANDC023 control register
 
@@ -290,13 +235,13 @@ UINT8 ECC_failed_hit_threshold_for_spare(UINT8 u8_channel);
 		1	--> Function success
 		0	--> Function fail
 */
-UINT8 NANDC024_general_setting_for_all_channel(UINT8 u8_flash_write_protection,
+UINT8 para_nand_general_setting_for_all_channel(UINT8 u8_flash_write_protection,
 					      UINT8 u8_data_inverse, UINT8 u8_scrambler,
 					      UINT8 u8_device_busy_ready_status_bit_location,
 					      UINT8 u8_command_pass_failed_status_bit_location);
 
 /*
-	Function Name	: NANDC024_chip_num
+	Function Name	: para_nand_chip_num
 
 	Effect 			: Setting the numbers of ce in channel
 
@@ -307,10 +252,10 @@ UINT8 NANDC024_general_setting_for_all_channel(UINT8 u8_flash_write_protection,
 		1	--> Function success
 		0	--> Function fail
 */
-UINT8 NANDC024_chip_num(UINT8 u8_chip_num);
+UINT8 para_nand_chip_num(UINT8 u8_chip_num);
 
 /*
-	Function Name	: NANDC024_spare_ecc_setting
+	Function Name	: para_nand_spare_ecc_setting
 
 	Effect 			: ECC setting for spare area
 
@@ -322,12 +267,12 @@ UINT8 NANDC024_chip_num(UINT8 u8_chip_num);
 		1	--> Function success
 		0	--> Function fail
 */
-UINT8 NANDC024_spare_ecc_setting(UINT8 u8_channel,
+UINT8 para_nand_spare_ecc_setting(UINT8 u8_channel,
 				UINT8 u8_ecc_correct_err_bit_for_spare,
 				UINT8 u8_ecc_thres_bit_for_spare);
 
 /*
-	Function Name	: NANDC024_ecc_occupy_for_sector
+	Function Name	: para_nand_ecc_occupy_for_sector
 
 	Effect 			: Return how many bits does ecc occupied for data
 
@@ -337,37 +282,9 @@ UINT8 NANDC024_spare_ecc_setting(UINT8 u8_channel,
 	Return value	:
 		Bytes needs to be supplied for ecc protection
 */
-UINT8 NANDC024_ecc_occupy_for_sector(UINT8 u8_channel, UINT8 u8_flash_access_mode);
+UINT8 para_nand_ecc_occupy_for_sector(UINT8 u8_channel, UINT8 u8_flash_access_mode);
 
-UINT8 NANDC024_interrupt_enable(UINT8 u8_channel, UINT8 u8_flash_status_failed);
-
-/*
-	Function Name	: Status_failed
-
-	Effect 			: Return the status checking failed status of device in specified channel
-
-	Parameter		:
-		u8_channel	--> Channel ID
-
-	Return value	:
-		1	--> Status checking fail
-		0	--> No status checking occurs
-*/
-UINT8 Status_failed(UINT8 u8_channel);
-
-/*
-	Function Name	: Command_complete
-
-	Effect 			: Return the command complete in specified channel
-
-	Parameter		:
-		u8_channel	--> Channel ID
-
-	Return value	:
-		1	--> Command is complete
-		0	--> Command is executing
-*/
-UINT8 Command_complete(UINT8 u8_channel);
+UINT8 para_nand_interrupt_enable(UINT8 u8_channel, UINT8 u8_flash_status_failed);
 
 /*
 	Function Name	: Command_queue_status_full

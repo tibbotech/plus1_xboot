@@ -3,10 +3,10 @@
 
 #include <types.h>
 
-#define FTNANDC024_Data_Port_Fixed
-//#undef FTNANDC024_Data_Port_Fixed
+#define NANDC_Data_Port_Fixed
+//#undef NANDC_Data_Port_Fixed
 
-#define FTNANDC024_FW_VERSION "ver:2017.10.30"
+#define NANDC_FW_VERSION "ver:2017.10.30"
 
 //#define MTD_Cmd_Idx
 #define CTD_Cmd_Idx
@@ -28,16 +28,16 @@
 #define CMD_ARGU_INVAILD	1
 #define CMD_FAIL			2
 
-#define FTNANDC024_DMA_LLD_STRUCT_ADDR	0x500000
-#define FTNANDC024_BUFF_START_ADDR	(FTNANDC024_DMA_LLD_STRUCT_ADDR + 0x20000)
+#define NANDC_DMA_LLD_STRUCT_ADDR	0x500000
+#define NANDC_BUFF_START_ADDR	(NANDC_DMA_LLD_STRUCT_ADDR + 0x20000)
 
-#define FTNANDC024_CORE_FREQ			200000000
-#define FTNANDC024_MAX_CE			8
-#define FTNANDC024_MAX_CHANNEL 			1 // 2 //HW config
-#define FTNANDC024_NUM_BMC_REGION		1 // 2 //HW config
-#define FTNANDC024_BASE				0xF8120000 //0xF8120000 //RF_AMBA(288, 0)
-#define FTNANDC024_DATA_PORT_BASE		0xFB000000
-//#define	FTNANDC024_IRQ					13
+#define NANDC_CORE_FREQ			200000000
+#define NANDC_MAX_CE			8
+#define NANDC_MAX_CHANNEL 			1 // 2 //HW config
+#define NANDC_NUM_BMC_REGION		1 // 2 //HW config
+#define NANDC_BASE				0xF8120000 //0xF8120000 //RF_AMBA(288, 0)
+#define NANDC_DATA_PORT_BASE		0xFB000000
+//#define	NANDC_IRQ					13
 
 #define Trans_Read						0
 #define Trans_Write						1
@@ -47,7 +47,7 @@
 #define Trans_Err_DMA					2
 #define Trans_Err_Other					3
 
-// Define the following four for the return value in FTNANDC024_compare_data
+// Define the following four for the return value in NANDC_compare_data
 #define Compare_ok				        0
 #define Compare_spare_fail			    1
 #define Compare_data_fail		 	    2
@@ -84,12 +84,12 @@
 #define DMA_To_Dev						0
 #define DMA_From_Dev					1
 
-#define FTNANDC024_32BIT(offset)		*((volatile UINT32 *)(FTNANDC024_BASE + offset))
-#define FTNANDC024_16BIT(offset)		*((volatile UINT16 *)(FTNANDC024_BASE + offset))
-#define FTNANDC024_8BIT(offset)			*((volatile UINT8 *)(FTNANDC024_BASE + offset))
+#define NANDC_32BIT(offset)		*((volatile UINT32 *)(NANDC_BASE + offset))
+#define NANDC_16BIT(offset)		*((volatile UINT16 *)(NANDC_BASE + offset))
+#define NANDC_8BIT(offset)			*((volatile UINT8 *)(NANDC_BASE + offset))
 
 /* Offset for the region */
-#define FTNANDC024_DATA_PORT(offset)	*((volatile UINT32 *)(FTNANDC024_DATA_PORT_BASE + offset))
+#define NANDC_DATA_PORT(offset)	*((volatile UINT32 *)(NANDC_DATA_PORT_BASE + offset))
 
 #define OFFSET_ECC_STATUS				0x0000	//Read only
 
@@ -322,7 +322,7 @@
 #define data_scrambler_enable			1
 
 #define OFFSET_MEM_ATTR_SET1		0x0108
-#define BI_byte_mask				(0x7 << 19)  //lichun@add, from FTNANDC024 v2.3
+#define BI_byte_mask				(0x7 << 19)  //lichun@add, from NANDC v2.3
 #define device_size_1page_per_ce		0
 #define device_size_2page_per_ce		1
 #define device_size_4page_per_ce		2
@@ -403,7 +403,7 @@
 #define OFFSET_SW_RESET				0x0184
 #define OFFSET_AUTO_CMP_PAT			0x018C
 #define OFFSET_VAR_ADDR				0x01D0
-#define OFFSET_EXT_CTRL					0x01E0	//lichun@add, from FTNANDC024 v2.4
+#define OFFSET_EXT_CTRL					0x01E0	//lichun@add, from NANDC v2.4
 #define Seed_sel(ch)			(1 << ch)
 #define OFFSET_CMDQ_STS				0x0200
 #define OFFSET_CMDQ_FLUSH				0x0204
@@ -440,8 +440,8 @@
 
 	/* Spare area size (just for page mode) */
 #define Spare_size_Byte(x)		(((x - 1) &0x1F) << 19)
-#define Spare_size_ExByte(x)		((((x - 1) >> 5) &0x3) << 24)  //from FTNANDC024 v2.4, the extended spare_num is 0x304 b[25:24]
-#define Scramble_seed_val1(x)	((x & 0xff) << 24)  //from FTNANDC024 v2.4, FW to program scramble seed
+#define Spare_size_ExByte(x)		((((x - 1) >> 5) &0x3) << 24)  //from NANDC v2.4, the extended spare_num is 0x304 b[25:24]
+#define Scramble_seed_val1(x)	((x & 0xff) << 24)  //from NANDC v2.4, FW to program scramble seed
 #define Scramble_seed_val2(x)	(((x & 0x3fff) >> 8) << 26)
     /* Command Index */
 #define Command(index)					(UINT16)index
@@ -485,7 +485,7 @@
 
 #define OFFSET_REV_NUM					0x0500	//revision
 #define OFFSET_FEATURE					0x0504
-#define Max_Spare_Data_128Byte			(1 << 15)  //lichun@add, from FTNANDC024 v2.4
+#define Max_Spare_Data_128Byte			(1 << 15)  //lichun@add, from NANDC v2.4
 #define AHB_Slave_Port_Sync				0
 #define	AHB_Slave_Port_Async			1
 

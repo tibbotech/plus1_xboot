@@ -193,7 +193,7 @@ struct bootinfo {
 	/* nand/para_nand.c */
 	struct flash_info flash_readable_info;
 	UINT32 g_u32_ahb_memory_space;
-	struct channel_status ftnandc024_status;
+	struct channel_status para_nand_status;
 #endif
 
 	/* nand/nfdriver.c */
