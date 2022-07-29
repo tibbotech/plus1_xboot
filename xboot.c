@@ -30,11 +30,11 @@
 
 //#define OTP_TEST
 #if defined(PLATFORM_Q645)
-#define PLLD_333MHz
+//#define PLLD_333MHz
 //#define PLLD_400MHz
 //#define PLLD_600MHz
 //#define PLLD_650MHz
-//#define PLLD_800MHz
+#define PLLD_800MHz
 #endif
 /*
  * TOC
