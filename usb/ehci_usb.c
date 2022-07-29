@@ -918,8 +918,8 @@ UINT32 USB_transfer(UINT32 wLen, BYTE *buffer)
 		addr = (UINT32)ADDRESS_CONVERT(buffer);
 		EHCI_TD.hw_buf[0] = addr;
 
-		//cnt = cnt-(4*1024-addr&0xfff);
-		cnt -= 4096;
+		cnt = cnt-((4*1024)-(addr&0xfff));
+		//cnt -= 4096;
 		addr = (addr + 4096) & (~0xfff);
 
 		for (i = 1; i < 5; i++) {

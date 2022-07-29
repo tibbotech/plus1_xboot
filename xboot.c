@@ -1061,30 +1061,11 @@ static int fat_load_uhdr_image(fat_info *finfo, const char *img_name, void *dst,
 
 	/* read header first */
 	len = 64;
-
-#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
-	if ((g_bootinfo.gbootRom_boot_mode == USB_ISP) && (g_bootinfo.bootdev_port == USB2_PORT)) {
-		ret = fat_read_file(fileindex, finfo, buf, img_offs, len, dst + 64);
-		if (ret == FAIL) {
-			prn_string("load hdr failed\n");
-			return -1;
-		}
-
-		memcpy((u8 *)dst, (u8 *)(dst + 64), len);
-	} else {
-		ret = fat_read_file(fileindex, finfo, buf, img_offs, len, dst);
-		if (ret == FAIL) {
-			prn_string("load hdr failed\n");
-			return -1;
-		}
-	}
-#else
 	ret = fat_read_file(fileindex, finfo, buf, img_offs, len, dst);
 	if (ret == FAIL) {
 		prn_string("load hdr failed\n");
 		return -1;
 	}
-#endif
 
 	/* magic check */
 	if (!image_check_magic(hdr)) {
@@ -1109,29 +1090,11 @@ static int fat_load_uhdr_image(fat_info *finfo, const char *img_name, void *dst,
 		return -1;
 	}
 
-#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
-	if ((g_bootinfo.gbootRom_boot_mode == USB_ISP) && (g_bootinfo.bootdev_port == USB2_PORT)) {
-		ret = fat_read_file(fileindex, finfo, buf, img_offs + 64, len + SIGN_DATA_SIZE, dst + 128);
-		if (ret == FAIL) {
-			prn_string("load body failed\n");
-			return -1;
-		}
-
-		memcpy((u8 *)(dst + 64), (u8 *)(dst + 128), len+SIGN_DATA_SIZE);
-	} else {
-		ret = fat_read_file(fileindex, finfo, buf, img_offs + 64, len + SIGN_DATA_SIZE, dst + 64);
-		if (ret == FAIL) {
-			prn_string("load body failed\n");
-			return -1;
-		}
-	}
-#else
 	ret = fat_read_file(fileindex, finfo, buf, img_offs + 64, len + SIGN_DATA_SIZE, dst + 64);
 	if (ret == FAIL) {
 		prn_string("load body failed\n");
 		return -1;
 	}
-#endif
 
 	/* verify image data */
 	if (!image_check_dcrc(hdr)) {
