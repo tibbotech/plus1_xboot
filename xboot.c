@@ -2019,6 +2019,15 @@ static void init_uart(void)
 	UART1_REG->div_h = UART_BAUD_DIV_H(BAUDRATE, UART_SRC_CLK);
 
 	UA2AXI_REG->axi_en = 0; // Turn off UART2AXI , UADBG default active
+
+	//MOON2_REG->sft_cfg[2] = RF_MASK_V((1 << 13), (1 << 13)); // UA0 clk_sel 200M
+	//MOON2_REG->sft_cfg[2] = RF_MASK_V((1 << 14), (1 << 14)); // UA1 clk_sel 200M
+	//MOON2_REG->sft_cfg[2] = RF_MASK_V((1 << 15), (1 << 15)); // UA2 clk_sel 200M
+	//MOON2_REG->sft_cfg[3] = RF_MASK_V((1 << 0), (1 << 0)); // UA3 clk_sel 200M
+	//MOON2_REG->sft_cfg[3] = RF_MASK_V((1 << 1), (1 << 1)); // UADBG clk_sel 200M
+	//MOON2_REG->sft_cfg[12] = RF_MASK_V((1 << 0), (1 << 0)); // UA6 clk_sel 200M
+	//MOON2_REG->sft_cfg[12] = RF_MASK_V((1 << 1), (1 << 1)); // UA7 clk_sel 200M
+	//MOON2_REG->sft_cfg[12] = RF_MASK_V((1 << 2), (1 << 2)); // UA8 clk_sel 200M
 #endif
 #ifdef PLATFORM_SP7350
 	/* uart1 pinmux : UA1_TX, UA1_RX */
