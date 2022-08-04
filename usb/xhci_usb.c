@@ -2543,7 +2543,7 @@ void usb_test_unit_ready(void)
 		g_io_buf.usb.xhci.reserved[0] = SCSICMD_REQUEST_SENSE;
 		g_io_buf.usb.xhci.reserved[1] = g_io_buf.usb.xhci.udev.lun << 5;
 		g_io_buf.usb.xhci.reserved[4] = 18;
-		if (stor_BBB_transport(18, 12, 0, NULL) == 0) {
+		if (stor_BBB_transport(18, 12, 1, NULL) == 0) {
 			prn_string("\nRequest sense return\n");
 			prn_dword(g_io_buf.usb.cmd_buf[2]);
 			prn_dword(g_io_buf.usb.cmd_buf[12]);
@@ -2822,12 +2822,16 @@ void usb_select_config(pUSB_DevDesc pDev)
 	prn_string("  	pDev->iSerialNumber "); prn_dword(pDev->iSerialNumber);
 #endif
 	g_io_buf.usb.xhci.udev.string_langid = 0;
-	usb_string(pDev->iManufacturer, g_io_buf.usb.xhci.udev.mf, sizeof(g_io_buf.usb.xhci.udev.mf));
-	usb_string(pDev->iProduct, g_io_buf.usb.xhci.udev.prod, sizeof(g_io_buf.usb.xhci.udev.prod));
-	usb_string(pDev->iSerialNumber, g_io_buf.usb.xhci.udev.serial, sizeof(g_io_buf.usb.xhci.udev.serial));
+	if (pDev->iManufacturer)
+		usb_string(pDev->iManufacturer, g_io_buf.usb.xhci.udev.mf, sizeof(g_io_buf.usb.xhci.udev.mf));
+	if (pDev->iProduct)
+		usb_string(pDev->iProduct, g_io_buf.usb.xhci.udev.prod, sizeof(g_io_buf.usb.xhci.udev.prod));
+	if (pDev->iSerialNumber)
+		usb_string(pDev->iSerialNumber, g_io_buf.usb.xhci.udev.serial, sizeof(g_io_buf.usb.xhci.udev.serial));
 	prn_string("\nMF:     "); prn_string(g_io_buf.usb.xhci.udev.mf);
 	prn_string("\nProd:   "); prn_string(g_io_buf.usb.xhci.udev.prod);
 	prn_string("\nSerial: "); prn_string(g_io_buf.usb.xhci.udev.serial);
+	prn_string("\n");
 }
 
 void usb_storage()
