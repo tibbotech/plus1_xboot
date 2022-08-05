@@ -3125,6 +3125,11 @@ int usb_init(int port, int next_port_in_hub)
 #ifdef XHCI_DEBUG
 		prn_string("\n**<xhci_start>**");
 #endif
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
+		// Force usb3 disc recognizes as usb2 disk
+		dwc3_reg->g_usb3pipectl[0] |= (1<<17);
+		g_io_buf.usb.xhci.hcor->portregs[1].or_portsc |= 2;
+#endif
 		tmp1 = g_io_buf.usb.xhci.hcor->or_usbcmd;
 		tmp1 |= (CMD_RUN);
 		g_io_buf.usb.xhci.hcor->or_usbcmd = tmp1;
