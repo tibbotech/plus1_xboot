@@ -478,11 +478,6 @@ check_next_port:
 		info->read_sector(info->startSector, 1, (u32 *)buffer);
 	} else {
 		prn_string("no MBR\n");
-#if defined(CONFIG_HAVE_USB_DISK) || defined(CONFIG_HAVE_SNPS_USB3_DISK)
-		if ((type == USB_ISP) && (next_port_in_hub))
-			goto check_next_port;
-#endif
-		return FAIL;
 	}
 
 	dbg_info();
