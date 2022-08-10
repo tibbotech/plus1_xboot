@@ -309,23 +309,22 @@ u32 lba2sec_for_training_fw(u32 lba) {
 }
 
 #if 0	//for debug
-static void prn_data(u8 *buffer, int length)
+static void prn_data(u32 addr, u8 *buffer, int length)
 {
 	int i;
-	u32 j = 0;	/* initial address */
 
 	for (i = 0; i < length; i++) {
 		if (i == 0) {
-			prn_dword0(j); prn_string(" : ");
+			prn_dword0(addr); prn_string(" : ");
 			prn_byte(buffer[i]);
-			j += 0x10;
+			addr += 0x10;
 		} else if ((((i + 1) % 16) == 0)) {
 			prn_byte(buffer[i]);
 			prn_string("\n");
 
 			if (i < (length - 1)) {
-				prn_dword0(j); prn_string(" : ");
-				j += 0x10;
+				prn_dword0(addr); prn_string(" : ");
+				addr += 0x10;
 			}
 		} else if (((i + 1) % 8) == 0) {
 			prn_byte(buffer[i]);
@@ -447,7 +446,7 @@ check_next_port:
 
 #if 0	//for debug
 	prn_string("/* MBR */\n");
-	prn_data(buffer, 512);
+	prn_data(info->startSector, buffer, 512);
 #endif
 
 	/*
@@ -484,7 +483,7 @@ check_next_port:
 
 #if 0	//for debug
 	prn_string("/* DBR */\n");
-	prn_data(buffer, 512);
+	prn_data(info->startSector, buffer, 512);
 #endif
 
 	/*
