@@ -294,8 +294,10 @@ static void init_hw(void)
 	// SDIO         : 34, 35, 36, 37, 38, 39
 	for (i = 28; i <= 33; i++)
 		set_pad_driving_strength(i, 4);
-	for (i = 23; i <= 39; i++)
+	for (i = 34; i <= 39; i++)
 		set_pad_driving_strength(i, 5);
+
+
 	delay_1ms(1);
 	
 #elif defined(PLATFORM_SP7350)
