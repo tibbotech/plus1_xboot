@@ -289,6 +289,15 @@ static void init_hw(void)
 	//Set EVDN VCCM to be correct value(0xB1000000) that comes from EV71 IP config within arc.tcf file.
 	MOON2_REG->sft_cfg[22] = RF_MASK_V(0xffff, 0x0000);//EVDN VCCM base address low byte
 	MOON2_REG->sft_cfg[23] = RF_MASK_V(0xffff, 0xB100);//EVDN VCCM base address high byte
+	
+	// SD-CARD      : 28, 29, 30, 31, 32, 33
+	// SDIO         : 34, 35, 36, 37, 38, 39
+	for (i = 28; i <= 33; i++)
+		set_pad_driving_strength(i, 4);
+	for (i = 23; i <= 39; i++)
+		set_pad_driving_strength(i, 5);
+	delay_1ms(1);
+	
 #elif defined(PLATFORM_SP7350)
 	*(volatile u32 *)ARM_TSGEN_WR_BASE = 3; //EN = 1 and HDBG = 1
 	*(volatile u32 *)(ARM_TSGEN_WR_BASE + 0x08) = 0; // CNTCV[31:0]
