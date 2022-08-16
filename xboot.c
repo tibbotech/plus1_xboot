@@ -289,7 +289,7 @@ static void init_hw(void)
 	//Set EVDN VCCM to be correct value(0xB1000000) that comes from EV71 IP config within arc.tcf file.
 	MOON2_REG->sft_cfg[22] = RF_MASK_V(0xffff, 0x0000);//EVDN VCCM base address low byte
 	MOON2_REG->sft_cfg[23] = RF_MASK_V(0xffff, 0xB100);//EVDN VCCM base address high byte
-	
+
 	// SD-CARD      : 28, 29, 30, 31, 32, 33
 	// SDIO         : 34, 35, 36, 37, 38, 39
 	for (i = 28; i <= 33; i++)
@@ -299,7 +299,7 @@ static void init_hw(void)
 
 
 	delay_1ms(1);
-	
+
 #elif defined(PLATFORM_SP7350)
 	*(volatile u32 *)ARM_TSGEN_WR_BASE = 3; //EN = 1 and HDBG = 1
 	*(volatile u32 *)(ARM_TSGEN_WR_BASE + 0x08) = 0; // CNTCV[31:0]
@@ -831,11 +831,71 @@ static void go_a32_to_a64(u32 ap_addr)
 }
 #endif
 
+//#define TZC_TEST
+#ifdef TZC_TEST
+#if defined(PLATFORM_Q645)
+static void tzc_test(void)
+{
+	SECGRP1_MAIN_REG->MAIN_SDPROT_S01 = 0xc0000000; // reserved mem for N78
+	prn_string("MAIN_SDPROT_S01="); prn_dword(SECGRP1_MAIN_REG->MAIN_SDPROT_S01);
+	SECGRP1_MAIN_REG->MAIN_SDPROT_S03 = 0xfffffffe; // 1st 32mb is secure, others are non-secure
+	prn_string("MAIN_SDPROT_S03="); prn_dword(SECGRP1_MAIN_REG->MAIN_SDPROT_S03);
+}
+#elif defined(PLATFORM_SP7350)
+#define REG(a)		(*(volatile u32 *)(a))
+#define TZC_BASE	0xf8c40000
+#define TZC(offset)	REG(TZC_BASE + (offset))
+
+static void ca55_dram_basic(u32 base, u32 mask)
+{
+	u32 addr, rdata, wdata;
+	int i;
+
+	prn_dword0(base); prn_string(": RW test ");
+	for (i = 0; i < 32; i = i + 4) {
+		addr = base + i;
+		wdata = ((i+3)<<24) + ((i+2)<<16) + ((i+1)<<8) + i;
+		REG(addr) = wdata;
+		rdata = REG(addr);
+		if (rdata != (wdata & mask)) {
+			prn_string("fail!\n");
+			return;
+		}
+	}
+	prn_string("OK!\n");
+}
+
+static void tzc_test(void)
+{
+	// Region 1: 0x78000000 ~ 0x7fffffff
+	TZC(0x120) = 0x78000000; // BASE_LOW
+	TZC(0x124) = 0x00000000; // BASE_HIGH
+	TZC(0x128) = 0x7fffffff; // TOP_LOW
+	TZC(0x12c) = 0x00000000; // TOP_HIGH
+	TZC(0x134) = 0x00000000; // ID_ACCESS disable
+
+	TZC(0x130) = 0x0000000f; // ATTR: secure access disable
+	delay_1ms(1);
+	prn_string("Secure Disable: ");
+	ca55_dram_basic(TZC(0x120), 0xffffffff);
+
+	TZC(0x130) = 0xc000000f; // ATTR: secure access enable
+	delay_1ms(1);
+	prn_string("Secure Enable : ");
+	ca55_dram_basic(TZC(0x120), 0xffffffff);
+}
+#endif
+#endif
+
 /* Assume u-boot has been loaded */
 static void boot_uboot(void)
 {
 	__attribute__((unused)) int is_for_A = 0;
 	const struct image_header *hdr = (struct image_header *)UBOOT_LOAD_ADDR;
+
+#ifdef TZC_TEST
+	tzc_test();
+#endif
 
 #ifdef CONFIG_SECURE_BOOT_SIGN
 	prn_string("start verify in xboot!\n");
