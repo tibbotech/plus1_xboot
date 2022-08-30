@@ -112,7 +112,7 @@ u32 fat_read_file(u32 idx, fat_info *info, u8 *buffer, u32 offset, u32 length, u
 
 		if (info->fatType == FAT_32) {
 			sector = info->clust0Sect +
-					((cluster - info->rootClus) * info->sectPerClus);
+					((cluster - FAT_DATA_1ST_CLUS_NUM) * info->sectPerClus);
 		}
 #ifdef CONFIG_HAVE_FS_FAT16
 		else if (info->fatType == FAT_16) {
@@ -144,7 +144,7 @@ u32 fat_read_file(u32 idx, fat_info *info, u8 *buffer, u32 offset, u32 length, u
 	if (off & (info->sectPerClus - 1)) { // Not on cluster
 		if (info->fatType == FAT_32) {
 			sector = off + info->clust0Sect +
-					((cluster - info->rootClus) * info->sectPerClus);
+					((cluster - FAT_DATA_1ST_CLUS_NUM) * info->sectPerClus);
 		}
 #ifdef CONFIG_HAVE_FS_FAT16
 		else if (info->fatType == FAT_16) {
@@ -189,7 +189,7 @@ u32 fat_read_file(u32 idx, fat_info *info, u8 *buffer, u32 offset, u32 length, u
 		size -= bytesPerClus;
 		if (info->fatType == FAT_32) {
 			sector = info->clust0Sect +
-					((cluster - info->rootClus) * info->sectPerClus);
+					((cluster - FAT_DATA_1ST_CLUS_NUM) * info->sectPerClus);
 		}
 #ifdef CONFIG_HAVE_FS_FAT16
 		else if (info->fatType == FAT_16) {
@@ -215,7 +215,7 @@ u32 fat_read_file(u32 idx, fat_info *info, u8 *buffer, u32 offset, u32 length, u
 
 	if (info->fatType == FAT_32) {
 		sector = info->clust0Sect +
-				((cluster - info->rootClus) * info->sectPerClus);
+				((cluster - FAT_DATA_1ST_CLUS_NUM) * info->sectPerClus);
 	}
 #ifdef CONFIG_HAVE_FS_FAT16
 	else if (info->fatType == FAT_16) {
@@ -272,7 +272,7 @@ int fat_read_fat_for_training_fw(fat_info *info, u8 *buffer, u32 start_lba)
 		else
 #endif
 		{
-			sector = info->clust0Sect + ((cluster - info->rootClus) * info->sectPerClus);
+			sector = info->clust0Sect + ((cluster - FAT_DATA_1ST_CLUS_NUM) * info->sectPerClus);
 		}
 
 		for (j = 0; j < info->sectPerClus; j++, sector++) {
@@ -313,6 +313,9 @@ static void prn_data(u32 addr, u8 *buffer, int length)
 {
 	int i;
 
+	/* assume 1 sector = 512 bytes */
+	addr = addr * 512;
+
 	for (i = 0; i < length; i++) {
 		if (i == 0) {
 			prn_dword0(addr); prn_string(" : ");
@@ -326,9 +329,6 @@ static void prn_data(u32 addr, u8 *buffer, int length)
 				prn_dword0(addr); prn_string(" : ");
 				addr += 0x10;
 			}
-		} else if (((i + 1) % 8) == 0) {
-			prn_byte(buffer[i]);
-			prn_string(" ");
 		} else
 			prn_byte(buffer[i]);
 	}
@@ -596,9 +596,8 @@ static u32 search_fat32_files(fat_info *info, u8 *buffer, u8 type)
 		while (sectOffset < info->sectPerClus) {
 			dbg_info();
 			fdbOffset = 0;
-			currentSect = info->clust0Sect +
-				((nextClus - info->rootClus) * info->sectPerClus) +
-				sectOffset;
+			currentSect = info->clust0Sect + ((nextClus - FAT_DATA_1ST_CLUS_NUM) * info->sectPerClus)
+													+ sectOffset;
 			info->read_sector(currentSect, 1, (u32 *)buffer);
 			while (fdbOffset < info->bytePerSect) {
 				fdb = (fdb_info*)(&buffer[fdbOffset]);
@@ -607,7 +606,7 @@ static u32 search_fat32_files(fat_info *info, u8 *buffer, u8 type)
 						info->fileInfo[i].size = fdb->fileSize;
 						info->fileInfo[i].cluster = (fdb->clusterH << 16) + fdb->clusterL;
 						info->fileInfo[i].sectPos = info->clust0Sect +
-							((info->fileInfo[i].cluster - info->rootClus) * info->sectPerClus);
+							((info->fileInfo[i].cluster - FAT_DATA_1ST_CLUS_NUM) * info->sectPerClus);
 						count++;
 						if(type == USB_ISP && info->fileInfo[0].size != 0) {
 							dbg_info();
