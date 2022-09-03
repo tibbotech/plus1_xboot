@@ -1237,7 +1237,7 @@ static void do_fat_boot(u32 type, u32 port)
 			type = SDCARD_BOOT;
 		} else if (type == USB_ISP) {
 			g_bootinfo.gbootRom_boot_mode = USB_BOOT;
-			type = SDCARD_BOOT;
+			type = USB_BOOT;
 		}
 	}
 #else
