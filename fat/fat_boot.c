@@ -715,7 +715,7 @@ u8 fat_sdcard_check_boot_mode(fat_info *info)
 {
 
 #if defined (PLATFORM_Q645) || defined(PLATFORM_SP7350)
-	if(info->fileInfo[0].size > 0x28000)
+	if(info->fileInfo[0].size > 0x40000)
 #else
 	if(info->fileInfo[0].size != 0x10000)
 #endif
