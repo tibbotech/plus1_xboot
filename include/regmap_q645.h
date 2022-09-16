@@ -48,6 +48,22 @@ struct moon5_regs {
 };
 #define MOON5_REG ((volatile struct moon5_regs *)RF_GRP(5, 0))
 
+struct gpio_master_regs {
+	unsigned int gpio_master[13];
+};
+#define GPIO_MASTER_REG ((volatile struct gpio_master_regs *)RF_GRP(5, 0)) // 5.0 ~ 5.12
+
+struct gpio_oe_regs {
+	unsigned int gpio_oe[13];
+};
+#define GPIO_OE_REG ((volatile struct gpio_oe_regs *)RF_GRP(5, 13)) // 5.13 ~ 5.25
+
+struct gpio_out_regs {
+	unsigned int gpio_out[13];
+};
+#define GPIO_OUT_REG ((volatile struct gpio_out_regs *)RF_GRP(5, 26)) // 5.26 ~ 6.6
+
+
 struct pad_ctl_regs {
 	unsigned int pull_down_enable[4];  // 101.0 - 101.3
 	unsigned int driving_selector0[4]; // 101.4 - 101.7

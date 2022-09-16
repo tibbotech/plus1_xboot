@@ -400,6 +400,15 @@ static int run_draminit(void)
 		mon_shell();
 		return -1;
 	}
+	
+#if(0)   // AP6256 GPIO reset pin
+	GPIO_MASTER_REG->gpio_master[53 / 16] = 0x10001 << (53 % 16);
+	GPIO_OUT_REG->gpio_out[53 / 16] = 0x10000 << (53 % 16);
+	GPIO_OE_REG->gpio_oe[53 / 16] = 0x10001 << (53 % 16);	
+	PAD_CTL_REG->gpio_first[53 / 32] |=  1 << (53 % 32);
+	prn_string("set pin53 " __DATE__ " " __TIME__ "\n");
+#endif
+	
 	return 0;
 }
 
