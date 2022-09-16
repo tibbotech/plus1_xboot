@@ -183,6 +183,14 @@ u32 fat_read_file(u32 idx, fat_info *info, u8 *buffer, u32 offset, u32 length, u
 	#endif
 	}
 #endif
+	if (info->read_sector == ReadSDSector) {
+		if (!(info->sectPerClus % 8))
+			txfer_sects = 8;
+		else if (!(info->sectPerClus % 2))
+			txfer_sects = 2;
+		else if ((info->sectPerClus < 8) && (info->sectPerClus > 2))
+			txfer_sects = info->sectPerClus;
+	}
 
 	/* deal with blocks whose size is bigger or equal to a cluster */
 	while (size >= bytesPerClus) {
