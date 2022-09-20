@@ -293,10 +293,24 @@ static void init_hw(void)
 	// SD-CARD      : 28, 29, 30, 31, 32, 33
 	// SDIO         : 34, 35, 36, 37, 38, 39
 	for (i = 28; i <= 33; i++)
-		set_pad_driving_strength(i, 4);
+		set_pad_driving_strength(i, 5);
 	for (i = 34; i <= 39; i++)
 		set_pad_driving_strength(i, 5);
 
+#if(0)   // set SPI driving strength.
+        //SPI0 SPI1
+	for (i = 54; i <= 61; i++)
+		set_pad_driving_strength(i, 4);
+        //SPI3 SPI4 
+	for (i = 63; i <= 66; i++)
+		set_pad_driving_strength(i, 4);
+        //SPI3 SPI4 
+	for (i = 67; i <= 74; i++)
+		set_pad_driving_strength(i, 4);
+        //SPI5 
+	for (i = 77; i <= 80; i++)
+		set_pad_driving_strength(i, 4);
+#endif
 
 	delay_1ms(1);
 
