@@ -55,6 +55,13 @@ static inline void set_spi_nand_pinmux(int pin_x)
 	MOON1_REG_AO->sft_cfg[1] = RF_MASK_V(0x3 << 2, pin_x << 2);
 #elif defined(PLATFORM_Q645)
 	MOON1_REG->sft_cfg[1] = RF_MASK_V(0x3 << 4, pin_x << 4);
+
+	/* Set CLK softpad delay to reduce data output skew issue for X1 pinmux.
+	 * Enable CLK softpad fucntion and set the delay to 15 (Max).
+	 */
+	if (pin_x == 1)
+		*(volatile u32 *)(0xF8003300) = 0x0010001E;
+	prn_string("F8003300: "); prn_dword(*(volatile u32 *)(0xF8003300));
 #else
 	MOON1_REG->sft_cfg[1] = RF_MASK_V(1 << 4, pin_x << 4);
 #endif
