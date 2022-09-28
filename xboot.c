@@ -1469,6 +1469,7 @@ static void emmc_boot(void)
 	SetBootDev(DEVICE_EMMC, 1, 0);
 
 #if defined(PLATFORM_Q645)
+	//MOON2_REG->sft_cfg[3] = RF_MASK_V((1 << 7), (1 << 7)); //CLKEMMC source is PLLD 
 	// Set driving strength of following pins to 3 (min.: 8.8mA, typ.: 11.5mA).
 	// eMMC: 12, 13, 14, 15, 16, 17, 18, 19, 20, 21
 	for (i = 12; i <= 21; i++)
