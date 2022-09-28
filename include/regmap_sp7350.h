@@ -120,11 +120,21 @@ struct uart_regs {
 };
 #define UART0_REG    ((volatile struct uart_regs *)RF_GRP_AO(50, 0))
 #define UART1_REG    ((volatile struct uart_regs *)RF_GRP_AO(51, 0))
-#define UART2_REG    ((volatile struct uart_regs *)RF_GRP_AO(52, 0))
-#define UART3_REG    ((volatile struct uart_regs *)RF_GRP_AO(53, 0))
+#define UART2_REG    ((volatile struct uart_regs *)RF_GRP_AO(55, 0))
+#define UART3_REG    ((volatile struct uart_regs *)RF_GRP_AO(59, 0))
+#define UART6_REG    ((volatile struct uart_regs *)RF_GRP_AO(63, 0))
+#define UART7_REG    ((volatile struct uart_regs *)RF_GRP_AO(67, 0))
 
-#define UART4_REG    ((volatile struct uart_regs *)RF_GRP(17, 0))
 #define UADBG_REG    ((volatile struct uart_regs *)RF_GRP(498, 0))
+
+struct ua2axi_regs {
+	unsigned int timeout_cycle;
+	unsigned int timeout_remain_cnt;
+	unsigned int debug_mode;
+	unsigned int axi_en;
+	unsigned int encode_base;
+};
+#define UA2AXI_REG    ((volatile struct ua2axi_regs *)RF_GRP(499, 0))
 
 struct stc_regs {
 	unsigned int stc_31_0;       // 12.0
