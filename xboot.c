@@ -241,9 +241,9 @@ static void init_hw(void)
 	/* reset[all] = clear */
 	for (i = 0; i < sizeof(MOON0_REG_AO->reset) / 4; i++)
 		MOON0_REG_AO->reset[i] = RF_MASK_V_CLR(0xffff);
-	
+
 	i = MOON4_REG_AO->sft_cfg[1];
-	i |= 0x100; 	
+	i |= 0x100;
 	MOON4_REG_AO->sft_cfg[1] = RF_MASK_V_SET(i); //u3 phy SSC on
 #else
 #ifdef CONFIG_PARTIAL_CLKEN
@@ -272,7 +272,7 @@ static void init_hw(void)
 		MOON0_REG->reset[i] = RF_MASK_V_CLR(0xffff);
 #if defined(PLATFORM_Q645)
 	i = MOON3_REG->sft_cfg[3];
-	i |= 0x80;		
+	i |= 0x80;
 	MOON3_REG->sft_cfg[3] = RF_MASK_V_SET(i); //u3 phy SSC on
 #endif
 #endif
@@ -310,13 +310,13 @@ static void init_hw(void)
         //SPI0 SPI1
 	for (i = 54; i <= 61; i++)
 		set_pad_driving_strength(i, 4);
-        //SPI3 SPI4 
+        //SPI3 SPI4
 	for (i = 63; i <= 66; i++)
 		set_pad_driving_strength(i, 4);
-        //SPI3 SPI4 
+        //SPI3 SPI4
 	for (i = 67; i <= 74; i++)
 		set_pad_driving_strength(i, 4);
-        //SPI5 
+        //SPI5
 	for (i = 77; i <= 80; i++)
 		set_pad_driving_strength(i, 4);
 #endif
@@ -423,15 +423,15 @@ static int run_draminit(void)
 		mon_shell();
 		return -1;
 	}
-	
+
 #if(0)   // AP6256 GPIO reset pin
 	GPIO_MASTER_REG->gpio_master[53 / 16] = 0x10001 << (53 % 16);
 	GPIO_OUT_REG->gpio_out[53 / 16] = 0x10000 << (53 % 16);
-	GPIO_OE_REG->gpio_oe[53 / 16] = 0x10001 << (53 % 16);	
+	GPIO_OE_REG->gpio_oe[53 / 16] = 0x10001 << (53 % 16);
 	PAD_CTL_REG->gpio_first[53 / 32] |=  1 << (53 % 32);
 	prn_string("set pin53 " __DATE__ " " __TIME__ "\n");
 #endif
-	
+
 	return 0;
 }
 
@@ -1478,7 +1478,7 @@ static void emmc_boot(void)
 	SetBootDev(DEVICE_EMMC, 1, 0);
 
 #if defined(PLATFORM_Q645)
-	//MOON2_REG->sft_cfg[3] = RF_MASK_V((1 << 7), (1 << 7)); //CLKEMMC source is PLLD 
+	//MOON2_REG->sft_cfg[3] = RF_MASK_V((1 << 7), (1 << 7)); //CLKEMMC source is PLLD
 	// Set driving strength of following pins to 3 (min.: 8.8mA, typ.: 11.5mA).
 	// eMMC: 12, 13, 14, 15, 16, 17, 18, 19, 20, 21
 	for (i = 12; i <= 21; i++)
