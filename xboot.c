@@ -241,6 +241,10 @@ static void init_hw(void)
 	/* reset[all] = clear */
 	for (i = 0; i < sizeof(MOON0_REG_AO->reset) / 4; i++)
 		MOON0_REG_AO->reset[i] = RF_MASK_V_CLR(0xffff);
+	
+	i = MOON4_REG_AO->sft_cfg[1];
+	i |= 0x100; 	
+	MOON4_REG_AO->sft_cfg[1] = RF_MASK_V_SET(i); //u3 phy SSC on
 #else
 #ifdef CONFIG_PARTIAL_CLKEN
 	prn_string("partial clken\n");
@@ -266,6 +270,11 @@ static void init_hw(void)
 	/* reset[all] = clear */
 	for (i = 0; i < sizeof(MOON0_REG->reset) / 4; i++)
 		MOON0_REG->reset[i] = RF_MASK_V_CLR(0xffff);
+#if defined(PLATFORM_Q645)
+	i = MOON3_REG->sft_cfg[3];
+	i |= 0x80;		
+	MOON3_REG->sft_cfg[3] = RF_MASK_V_SET(i); //u3 phy SSC on
+#endif
 #endif
 
 #ifdef PLATFORM_I143
