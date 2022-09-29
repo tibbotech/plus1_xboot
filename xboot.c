@@ -243,7 +243,7 @@ static void init_hw(void)
 		MOON0_REG_AO->reset[i] = RF_MASK_V_CLR(0xffff);
 
 	i = MOON4_REG_AO->sft_cfg[1];
-	i |= 0x100;
+	i |= 0x80;
 	MOON4_REG_AO->sft_cfg[1] = RF_MASK_V_SET(i); //u3 phy SSC on
 #else
 #ifdef CONFIG_PARTIAL_CLKEN
