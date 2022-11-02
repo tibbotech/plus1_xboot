@@ -31,6 +31,7 @@
 /*
  * timer
  */
+void _delay_1ms(UINT32 period);
 void delay_1ms(UINT32 period);
 
 /*

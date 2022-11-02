@@ -362,6 +362,26 @@ static void init_hw(void)
 	delay_1ms(1);
 
 #elif defined(PLATFORM_SP7350)
+	/* Set PLLC to 1.5G */
+	prn_string("Set PLLC to 1.5GHz\n");
+	MOON3_REG_AO->rsvd[1] = RF_MASK_V_SET(0x0001);                    // Switch CPU clock to PLLS_CK200M.
+	MOON3_REG_AO->pllc_cfg[0] = RF_MASK_V((0xff << 7), (0x38 << 7));  // FBKDIV = 0x38
+	MOON3_REG_AO->pllc_cfg[0] = RF_MASK_V_CLR(0x0018);                // PSTDIV = 0
+	_delay_1ms(1);
+	MOON3_REG_AO->rsvd[1] = RF_MASK_V_CLR(0x0001);                    // Switch CPU clock back to PLLC.
+	//prn_string("PLLC[0] = "); prn_dword(MOON3_REG_AO->pllc_cfg[0]);
+	//prn_string("PLLC[1] = "); prn_dword(MOON3_REG_AO->pllc_cfg[1]);
+
+	/* Set PLLL3 to 1.2G */
+	prn_string("Set PLLL3 to 1.2GHz\n");
+	MOON3_REG_AO->rsvd[0] = RF_MASK_V((0xf << 12), (0x8 << 12));      // Switch L3 clock to PLLS_CK200M.
+	MOON3_REG_AO->plll3_cfg[0] = RF_MASK_V((0xff << 7), (0x20 << 7)); // FBKDIV = 0x20
+	MOON3_REG_AO->plll3_cfg[0] = RF_MASK_V_CLR(0x0018);               // PSTDIV = 0
+	_delay_1ms(1);
+	MOON3_REG_AO->rsvd[0] = RF_MASK_V((0xf << 12), (0x0 << 12));      // Switch L3 clock back to PLLL3.
+	//prn_string("PLLL3[0] = "); prn_dword(MOON3_REG_AO->plll3_cfg[0]);
+	//prn_string("PLLL3[1] = "); prn_dword(MOON3_REG_AO->plll3_cfg[1]);
+
 	MOON4_REG_AO->sft_cfg[1] = RF_MASK_V_SET(0x80);  // U3PHY SSC on
 
 	*(volatile u32 *)ARM_TSGEN_WR_BASE = 3;          // EN = 1 and HDBG = 1
