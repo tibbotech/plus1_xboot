@@ -198,7 +198,7 @@ static void init_hw(void)
 	*(volatile u32 *)(0xf8000b18) = *(volatile u32 *)(0xf8000b18) & 0xfffeffff;
 #endif
 
-#if defined(PLATFORM_Q628)|| defined(PLATFORM_I143)
+#if defined(PLATFORM_Q628) || defined(PLATFORM_I143)
 	__attribute__((unused)) int is_A = 0;
 	dbg();
 	*(volatile unsigned int *) (0x9C000000 +0x2EC) = 0x01c30000;// set DC12_CTL_1(G5.27) to default,for DCIN_1.2V set.
@@ -207,9 +207,7 @@ static void init_hw(void)
 #ifdef PLATFORM_Q628
 	// Set clock polarity of RMII of L2SW.
 	*(volatile u32 *)(0x9c000294) = *(volatile u32 *)(0x9c000294) | ((0xf<<16) | 0xf);
-#endif
 
-#ifdef PLATFORM_Q628
 	if ((cpu_main_id() & 0xfff0) == 0x9260) {
 		prn_string("-- B --\n");
 	}
@@ -241,10 +239,6 @@ static void init_hw(void)
 	/* reset[all] = clear */
 	for (i = 0; i < sizeof(MOON0_REG_AO->reset) / 4; i++)
 		MOON0_REG_AO->reset[i] = RF_MASK_V_CLR(0xffff);
-
-	i = MOON4_REG_AO->sft_cfg[1];
-	i |= 0x80;
-	MOON4_REG_AO->sft_cfg[1] = RF_MASK_V_SET(i); //u3 phy SSC on
 #else
 #ifdef CONFIG_PARTIAL_CLKEN
 	prn_string("partial clken\n");
@@ -270,14 +264,43 @@ static void init_hw(void)
 	/* reset[all] = clear */
 	for (i = 0; i < sizeof(MOON0_REG->reset) / 4; i++)
 		MOON0_REG->reset[i] = RF_MASK_V_CLR(0xffff);
-#if defined(PLATFORM_Q645)
-	i = MOON3_REG->sft_cfg[3];
-	i |= 0x80;
-	MOON3_REG->sft_cfg[3] = RF_MASK_V_SET(i); //u3 phy SSC on
-#endif
 #endif
 
 #ifdef PLATFORM_I143
+	//*(volatile u32 *)(0x9C000230) = 0x3F001800;  // Down CPU FREQ to 168.75 MHz.
+	*(volatile u32 *)(0x9C000224) = 0x000C0000; // Clear G2 & G1 to 0.
+	*(volatile u32 *)(0x9C000228) = 0xFF00A000; // Down PLLFLA FREQ to 222.75 MHz.
+
+	prn_string("9C000230: "); prn_dword(*(volatile u32 *)(0x9C000230));
+	prn_string("9C000224: "); prn_dword(*(volatile u32 *)(0x9C000224));
+	prn_string("9C000228: "); prn_dword(*(volatile u32 *)(0x9C000228));
+
+	//*(volatile u32 *)(0x9C000228) = 0x00010001;  // power on FLA pll
+	//prn_string("9C000228: "); prn_dword(*(volatile u32 *)(0x9C000228));
+	*(volatile unsigned int *) (0x9C000000 +0x204) = 0xFE008600; // 0xFE008600;  0xFE00FE00
+	*(volatile unsigned int *) (0x9C000000 +0x208) = 0x00010001; // set SD CARD DS
+	*(volatile unsigned int *) (0x9C000000 +0x20C) = 0x07E007E0; // SD CARD smith tri
+
+	prn_string("9C000204: "); prn_dword(*(volatile u32 *)(0x9C000204));
+	prn_string("9C000208: "); prn_dword(*(volatile u32 *)(0x9C000208));
+	prn_string("9C00020C: "); prn_dword(*(volatile u32 *)(0x9C00020C));
+
+	*(volatile unsigned int *) (0x9C000000 +0x214) = 0xFE00FE00; // 0xFE008600;  0xFE00FE00
+	*(volatile unsigned int *) (0x9C000000 +0x218) = 0x001F001F; // set SD CARD DS 0x00010001  0x001F001F
+	*(volatile unsigned int *) (0x9C000000 +0x21C) = 0x07E007E0; // SDIO smith tri
+
+	prn_string("9C000204: "); prn_dword(*(volatile u32 *)(0x9C000204));
+	prn_string("9C000208: "); prn_dword(*(volatile u32 *)(0x9C000218));
+	prn_string("9C00020C: "); prn_dword(*(volatile u32 *)(0x9C00020C));
+
+	// for GL2SW
+	*(volatile u32 *)(0x9C000238) = 0x00800000;  // Clear CK250M_EN to 0.
+	*(volatile u32 *)(0x9C000078) = 0x00800080;  // Set GL2SW_RESET to 1.
+	STC_delay_us(100);
+	*(volatile u32 *)(0x9C000078) = 0x00800000;  // Clear GL2SW_RESET to 0.
+	//prn_string("9C000238: "); prn_dword(*(volatile u32 *)(0x9C000238));
+	//prn_string("9C000078: "); prn_dword(*(volatile u32 *)(0x9C000078));
+
 	/* GPU driver (if not,all the date that gpu output to frame buffer is 0) by xt*/
 	MOON5_REG->sft_cfg[2] = RF_MASK_V_SET((1 << 0) | (1 << 1));
 #endif
@@ -291,7 +314,22 @@ static void init_hw(void)
 #endif
 
 #if defined(PLATFORM_Q645)
-	*(volatile u32 *)ARM_TSGEN_WR_BASE = 3; //EN = 1 and HDBG = 1
+	MOON1_REG->sft_cfg[2] = RF_MASK_V_CLR(0x3c);   // Disable all JTAG pins
+
+	UA2AXI_REG->axi_en = 0; // Turn off UART2AXI, UADBG default active
+
+	//MOON2_REG->sft_cfg[2] = RF_MASK_V((1 << 13), (1 << 13)); // UA0 clk_sel 200M
+	//MOON2_REG->sft_cfg[2] = RF_MASK_V((1 << 14), (1 << 14)); // UA1 clk_sel 200M
+	//MOON2_REG->sft_cfg[2] = RF_MASK_V((1 << 15), (1 << 15)); // UA2 clk_sel 200M
+	//MOON2_REG->sft_cfg[3] = RF_MASK_V((1 << 0), (1 << 0));   // UA3 clk_sel 200M
+	//MOON2_REG->sft_cfg[3] = RF_MASK_V((1 << 1), (1 << 1));   // UADBG clk_sel 200M
+	//MOON2_REG->sft_cfg[12] = RF_MASK_V((1 << 0), (1 << 0));  // UA6 clk_sel 200M
+	//MOON2_REG->sft_cfg[12] = RF_MASK_V((1 << 1), (1 << 1));  // UA7 clk_sel 200M
+	//MOON2_REG->sft_cfg[12] = RF_MASK_V((1 << 2), (1 << 2));  // UA8 clk_sel 200M
+
+	MOON3_REG->sft_cfg[3] = RF_MASK_V_SET(0x80);     // U3PHY SSC on
+
+	*(volatile u32 *)ARM_TSGEN_WR_BASE = 3;          // EN = 1 and HDBG = 1
 	*(volatile u32 *)(ARM_TSGEN_WR_BASE + 0x08) = 0; // CNTCV[31:0]
 	*(volatile u32 *)(ARM_TSGEN_WR_BASE + 0x0C) = 0; // CNTCV[63:32]
 
@@ -324,7 +362,9 @@ static void init_hw(void)
 	delay_1ms(1);
 
 #elif defined(PLATFORM_SP7350)
-	*(volatile u32 *)ARM_TSGEN_WR_BASE = 3; //EN = 1 and HDBG = 1
+	MOON4_REG_AO->sft_cfg[1] = RF_MASK_V_SET(0x80);  // U3PHY SSC on
+
+	*(volatile u32 *)ARM_TSGEN_WR_BASE = 3;          // EN = 1 and HDBG = 1
 	*(volatile u32 *)(ARM_TSGEN_WR_BASE + 0x08) = 0; // CNTCV[31:0]
 	*(volatile u32 *)(ARM_TSGEN_WR_BASE + 0x0C) = 0; // CNTCV[63:32]
 #endif
@@ -753,7 +793,7 @@ static void set_module_nonsecure(void)
 	AMBA_SECURE_REG->cfg[5] &= ~(3<<29); // u3phy0,1 non-secure
 
 	// Set cbdma sram to be all non-secure
-	SET_CBDMA0_S01(0);		// [0  ,   0] secure
+	SET_CBDMA0_S01(0);		// [0,       0] secure
 	SET_CBDMA0_S02(0xffffffff);	// [256K, 256K] secure
 
 	// Master IP : overwrite as secure(0) or non_secure(1)
@@ -2114,26 +2154,13 @@ static void init_uart(void)
 	UART1_REG->div_h = UART_BAUD_DIV_H(BAUDRATE, UART_SRC_CLK);
 #endif
 #ifdef PLATFORM_Q645
-	MOON1_REG->sft_cfg[2] = RF_MASK_V_CLR(0x3c);   // disable JTAG
-
 	/* uart1 pinmux : UA1_TX, UA1_RX */
 	MOON1_REG->sft_cfg[1] = RF_MASK_V_SET(1 << 9); // UA1_SEL=1
 	MOON0_REG->reset[3] = RF_MASK_V_CLR(1 << 0);   // UA1_RESET=0
 	UART1_REG->div_l = UART_BAUD_DIV_L(BAUDRATE, UART_SRC_CLK);
 	UART1_REG->div_h = UART_BAUD_DIV_H(BAUDRATE, UART_SRC_CLK);
-
-	UA2AXI_REG->axi_en = 0; // Turn off UART2AXI , UADBG default active
-
-	//MOON2_REG->sft_cfg[2] = RF_MASK_V((1 << 13), (1 << 13)); // UA0 clk_sel 200M
-	//MOON2_REG->sft_cfg[2] = RF_MASK_V((1 << 14), (1 << 14)); // UA1 clk_sel 200M
-	//MOON2_REG->sft_cfg[2] = RF_MASK_V((1 << 15), (1 << 15)); // UA2 clk_sel 200M
-	//MOON2_REG->sft_cfg[3] = RF_MASK_V((1 << 0), (1 << 0)); // UA3 clk_sel 200M
-	//MOON2_REG->sft_cfg[3] = RF_MASK_V((1 << 1), (1 << 1)); // UADBG clk_sel 200M
-	//MOON2_REG->sft_cfg[12] = RF_MASK_V((1 << 0), (1 << 0)); // UA6 clk_sel 200M
-	//MOON2_REG->sft_cfg[12] = RF_MASK_V((1 << 1), (1 << 1)); // UA7 clk_sel 200M
-	//MOON2_REG->sft_cfg[12] = RF_MASK_V((1 << 2), (1 << 2)); // UA8 clk_sel 200M
 #endif
-#ifdef PLATFORM_SP7350
+#if defined(PLATFORM_SP7350) && defined(CONFIG_BOOT_ON_ZEBU)
 	/* uart1 pinmux : UA1_TX, UA1_RX */
 	MOON1_REG_AO->sft_cfg[2] = RF_MASK_V((3 << 4), (1 << 4)); // UA1_SEL=1
 	MOON0_REG_AO->reset[5] = RF_MASK_V_CLR(1 << 7);           // UA1_RESET=0
@@ -2145,62 +2172,20 @@ static void init_uart(void)
 	UART1_REG->dr = 'T';
 	UART1_REG->dr = '1';
 #endif
-
-#endif
 #ifdef PLATFORM_I143
-	UART0_REG->div_l = UART_BAUD_DIV_L(BAUDRATE, UART_SRC_CLK);	/* baud rate */
-	UART0_REG->div_h = UART_BAUD_DIV_H(BAUDRATE, UART_SRC_CLK);
-
-	//prn_string("UART0 div_l: ");
-	//prn_dword(UART0_REG->div_l);
-	//prn_string("UART0 div_h: ");
-	//prn_dword(UART0_REG->div_h);
-
-	//*(volatile u32 *)(0x9C000230) = 0x3F001800;  // Down CPU FREQ to 168.75 MHz.
-	*(volatile u32 *)(0x9C000224) = 0x000C0000;  // Clear G2 & G1 to 0.
-	*(volatile u32 *)(0x9C000228) = 0xFF00A000; // Down PLLFLA FREQ to 222.75 MHz.
-
-	prn_string("9C000230: "); prn_dword(*(volatile u32 *)(0x9C000230));
-	prn_string("9C000224: "); prn_dword(*(volatile u32 *)(0x9C000224));
-	prn_string("9C000228: "); prn_dword(*(volatile u32 *)(0x9C000228));
-
-	//*(volatile u32 *)(0x9C000228) = 0x00010001;  // power on FLA pll
-	//prn_string("9C000228: "); prn_dword(*(volatile u32 *)(0x9C000228));
-	*(volatile unsigned int *) (0x9C000000 +0x204) = 0xFE008600;// 	//0xFE008600;  0xFE00FE00
-	*(volatile unsigned int *) (0x9C000000 +0x208) = 0x00010001;// 	set SD CARD DS
-	*(volatile unsigned int *) (0x9C000000 +0x20C) = 0x07E007E0;//  SD CARD smith tri
-
-	prn_string("9C000204: "); prn_dword(*(volatile u32 *)(0x9C000204));
-	prn_string("9C000208: "); prn_dword(*(volatile u32 *)(0x9C000208));
-	prn_string("9C00020C: "); prn_dword(*(volatile u32 *)(0x9C00020C));
-
-	*(volatile unsigned int *) (0x9C000000 +0x214) = 0xFE00FE00;// 	//0xFE008600;  0xFE00FE00
-	*(volatile unsigned int *) (0x9C000000 +0x218) = 0x001F001F;// 	set SD CARD DS 0x00010001  0x001F001F
-	*(volatile unsigned int *) (0x9C000000 +0x21C) = 0x07E007E0;//  SDIO smith tri
-
-	prn_string("9C000204: "); prn_dword(*(volatile u32 *)(0x9C000204));
-	prn_string("9C000208: "); prn_dword(*(volatile u32 *)(0x9C000218));
-	prn_string("9C00020C: "); prn_dword(*(volatile u32 *)(0x9C00020C));
-
-	// for GL2SW
-	*(volatile u32 *)(0x9C000238) = 0x00800000;  // Clear CK250M_EN to 0.
-	*(volatile u32 *)(0x9C000078) = 0x00800080;  // Set GL2SW_RESET to 1.
-	STC_delay_us(100);
-	*(volatile u32 *)(0x9C000078) = 0x00800000;  // Clear GL2SW_RESET to 0.
-	//prn_string("9C000238: "); prn_dword(*(volatile u32 *)(0x9C000238));
-	//prn_string("9C000078: "); prn_dword(*(volatile u32 *)(0x9C000078));
-
-	MOON1_REG->sft_cfg[1] = RF_MASK_V_SET(1 << 12);
-	MOON0_REG->reset[1] = RF_MASK_V_CLR(1 << 9);	/* reset of UA1 */
-	MOON0_REG->reset[1] = RF_MASK_V_CLR(1 << 15);	/* reset of UADMA */
-	MOON0_REG->reset[1] = RF_MASK_V_CLR(1 << 13);	/* reset of BUF_UA */
-	UART1_REG->div_l = UART_BAUD_DIV_L(BAUDRATE, UART_SRC_CLK);	/* baud rate */
+	/* uart1 pinmux : UA1_TX, UA1_RX */
+	MOON1_REG->sft_cfg[1] = RF_MASK_V_SET(1 << 12); /* UA1_SEL=1 */
+	MOON0_REG->reset[1] = RF_MASK_V_CLR(1 << 9);	/* UA1_RESET=0 */
+	MOON0_REG->reset[1] = RF_MASK_V_CLR(1 << 15);	/* UADMA_RESET=0 */
+	MOON0_REG->reset[1] = RF_MASK_V_CLR(1 << 13);	/* BUF_UA_RESET=0 */
+	UART1_REG->div_l = UART_BAUD_DIV_L(BAUDRATE, UART_SRC_CLK);
 	UART1_REG->div_h = UART_BAUD_DIV_H(BAUDRATE, UART_SRC_CLK);
 	UART1_REG->dr = 'U';
 	UART1_REG->dr = 'A';
 	UART1_REG->dr = 'R';
 	UART1_REG->dr = 'T';
 	UART1_REG->dr = '1';
+#endif
 #endif
 }
 
