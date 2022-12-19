@@ -490,6 +490,7 @@ static int run_draminit(void)
 	GPIO_OE_REG->gpio_oe[53 / 16] = 0x10001 << (53 % 16);
 	PAD_CTL_REG->gpio_first[53 / 32] |=  1 << (53 % 32);
 	prn_string("set pin53 " __DATE__ " " __TIME__ "\n");
+	GPIO_OUT_REG->gpio_out[53 / 16] = 0x10001 << (53 % 16);
 #endif
 
 	return 0;
