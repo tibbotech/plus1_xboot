@@ -385,6 +385,11 @@ ifeq ($(CONFIG_HAVE_MMC), y)
 CSOURCES += sdmmc/drv_sd_mmc.c  sdmmc/hal_sd_mmc.c sdmmc/hw_sd.c
 endif
 
+# I2C
+ifeq ($(CONFIG_HAVE_I2C), y)
+CSOURCES += i2c/sp_i2c.c
+endif
+
 # OTP
 ifeq ($(CONFIG_HAVE_OTP), y)
 CSOURCES += otp/sp_otp.c

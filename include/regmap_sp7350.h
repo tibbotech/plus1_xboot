@@ -586,6 +586,61 @@ struct emmc_ctl_regs {
 #define CARD0_CTL_REG ((volatile int  *)RF_GRP(118, 0))
 #define CARD1_CTL_REG ((volatile int  *)RF_GRP(125, 0))
 
+struct dw_i2c_regs {
+	unsigned int ic_con;		/* 00 */
+	unsigned int ic_tar;		/* 01 */
+	unsigned int ic_sar;		/* 02 */
+	unsigned int hs_maddr;		/* 03 */
+	unsigned int ic_data_cmd;	/* 04 */
+	unsigned int ic_ss_scl_hcnt;	/* 05 */
+	unsigned int ic_ss_scl_lcnt;	/* 06 */
+	unsigned int ic_fs_scl_hcnt;	/* 07 */
+	unsigned int ic_fs_scl_lcnt;	/* 08 */
+	unsigned int ic_hs_scl_hcnt;	/* 09 */
+	unsigned int ic_hs_scl_lcnt;	/* 10 */
+	unsigned int ic_intr_stat;	/* 11 */
+	unsigned int ic_intr_mask;	/* 12 0x30*/
+	unsigned int ic_raw_intr_stat;	/* 13 */
+	unsigned int ic_rx_tl;		/* 14 */
+	unsigned int ic_tx_tl;		/* 15 */
+	unsigned int ic_clr_intr;	/* 16 0x40*/
+	unsigned int ic_clr_rx_under;	/* 17 */
+	unsigned int ic_clr_rx_over;	/* 18 */
+	unsigned int ic_clr_tx_over;	/* 19 */
+	unsigned int ic_clr_rd_req;	/* 20 0x50*/
+	unsigned int ic_clr_tx_abrt;	/* 21 */
+	unsigned int ic_clr_rx_done;	/* 22 */
+	unsigned int ic_clr_tx_activity;	/* 23 */
+	unsigned int ic_clr_stop_det;	/* 24 0x60*/
+	unsigned int ic_clr_start_dft;	/* 25 */
+	unsigned int ic_clr_gen_call;	/* 26 */
+	unsigned int ic_enable;		/* 27 */
+	unsigned int ic_status;		/* 28 0x70*/
+	unsigned int ic_txflr;		/* 29 */
+	unsigned int ic_rxflr;		/* 30 */
+	unsigned int ic_sda_hold;	/* 31*/
+	unsigned int ic_tx_abrt_source;	/* 32 0x80*/
+	unsigned int g40_reserved_0[6];	/* 38 */
+	unsigned int ic_enable_status;	/* 39 0x9c*/
+	unsigned int g40_reserved_1[2];	/* 40 */
+	unsigned int ic_clr_restart_det;	/* 42 0xa8*/
+	unsigned int g40_reserved_2[18];	/* 43 */
+	unsigned int ic_comp_param_1;	/* 61 0xf4*/
+	unsigned int ic_comp_version;	/* 62 0xf8*/
+	unsigned int ic_comp_type;	/* 63 0xfc*/
+
+} I2C_MAS_REG;
+#define I2C0_REG_AO ((volatile struct dw_i2c_regs *)RF_GRP(40, 0))
+#define I2C1_REG_AO ((volatile struct dw_i2c_regs *)RF_GRP(41, 0))
+#define I2C2_REG_AO ((volatile struct dw_i2c_regs *)RF_GRP(42, 0))
+#define I2C3_REG_AO ((volatile struct dw_i2c_regs *)RF_GRP(43, 0))
+#define I2C4_REG_AO ((volatile struct dw_i2c_regs *)RF_GRP(44, 0))
+#define I2C5_REG_AO ((volatile struct dw_i2c_regs *)RF_GRP(45, 0))
+#define I2C6_REG_AO ((volatile struct dw_i2c_regs *)RF_GRP(46, 0))
+#define I2C7_REG_AO ((volatile struct dw_i2c_regs *)RF_GRP(47, 0))
+#define I2C8_REG_AO ((volatile struct dw_i2c_regs *)RF_GRP(48, 0))
+#define I2C9_REG_AO ((volatile struct dw_i2c_regs *)RF_GRP(49, 0))
+
 /* sd card regs */
 struct card_ctl_regs {
 	unsigned int card_mediatype;     // 0
