@@ -390,6 +390,11 @@ ifeq ($(CONFIG_HAVE_I2C), y)
 CSOURCES += i2c/sp_i2c.c
 endif
 
+# ADC
+ifeq ($(CONFIG_HAVE_ADC), y)
+CSOURCES += adc/sp_adc.c
+endif
+
 # OTP
 ifeq ($(CONFIG_HAVE_OTP), y)
 CSOURCES += otp/sp_otp.c

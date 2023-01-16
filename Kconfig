@@ -87,6 +87,12 @@ config HAVE_I2C
 	help
 	  I2C driver.
 
+config HAVE_ADC
+	bool "ADC driver"
+	depends on PLATFORM_SP7350
+	help
+	  ADC driver.
+
 config HAVE_SDCARD
 	bool "SD Card driver"
 	select HAVE_MMC

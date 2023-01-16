@@ -629,7 +629,7 @@ struct dw_i2c_regs {
 	unsigned int ic_comp_version;	/* 62 0xf8*/
 	unsigned int ic_comp_type;	/* 63 0xfc*/
 
-} I2C_MAS_REG;
+};
 #define I2C0_REG_AO ((volatile struct dw_i2c_regs *)RF_GRP(40, 0))
 #define I2C1_REG_AO ((volatile struct dw_i2c_regs *)RF_GRP(41, 0))
 #define I2C2_REG_AO ((volatile struct dw_i2c_regs *)RF_GRP(42, 0))
@@ -640,6 +640,33 @@ struct dw_i2c_regs {
 #define I2C7_REG_AO ((volatile struct dw_i2c_regs *)RF_GRP(47, 0))
 #define I2C8_REG_AO ((volatile struct dw_i2c_regs *)RF_GRP(48, 0))
 #define I2C9_REG_AO ((volatile struct dw_i2c_regs *)RF_GRP(49, 0))
+
+struct dw_adc_regs {
+	unsigned int adc_cfg00;			/* 00 */
+	unsigned int adc_cfg01;			/* 01 */
+	unsigned int adc_cfg02;			/* 02 */
+	unsigned int adc_cfg03;			/* 03 */
+	unsigned int adc_cfg04;			/* 04 */
+	unsigned int adc_cfg05;			/* 05 */
+	unsigned int adc_cfg06;			/* 06 */
+	unsigned int adc_cfg07;			/* 07 */
+	unsigned int adc_cfg08;			/* 08 */
+	unsigned int adc_cfg09;			/* 09 */
+	unsigned int adc_cfg0a;			/* 10 */
+	unsigned int adc_cfg0b;			/* 11 */
+	unsigned int adc_cfg0c;			/* 12 0x30*/
+	unsigned int adc_cfg0d;			/* 13 */
+	unsigned int adc_cfg0e;			/* 14 */
+	unsigned int adc_cfg0f;			/* 15 */
+	unsigned int adc_cfg10;			/* 16 0x40*/
+	unsigned int adc_cfg11;			/* 17 */
+	unsigned int adc_cfg12;			/* 18 */
+	unsigned int adc_cfg13;			/* 19 */
+	unsigned int adc_cfg14;			/* 20 0x50*/
+	unsigned int adc_reserved[20];		/*43 */
+
+};
+#define ADC_REG_AO ((volatile struct dw_adc_regs *)RF_GRP(94, 0))
 
 /* sd card regs */
 struct card_ctl_regs {
