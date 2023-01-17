@@ -81,6 +81,18 @@ config HAVE_MMC
 	help
 	  Common MMC code for SD Card or eMMC.
 
+config HAVE_I2C
+	bool "I2C driver"
+	depends on PLATFORM_SP7350
+	help
+	  I2C driver.
+
+config HAVE_ADC
+	bool "ADC driver"
+	depends on PLATFORM_SP7350
+	help
+	  ADC driver.
+
 config HAVE_SDCARD
 	bool "SD Card driver"
 	select HAVE_MMC
