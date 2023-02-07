@@ -81,7 +81,7 @@ void sp_i2c_en(unsigned int i2c_no)
 	switch (i2c_no) {
 		case 0:
 			i2c_mas_ctlr[i2c_no].reg = I2C0_REG_AO;
-			MOON1_REG_AO->sft_cfg[3] = RF_MASK_V(0x3 << 3, 0x3 << 3); // cfg3[4:3]=1  i2c1 pin
+			MOON1_REG_AO->sft_cfg[3] = RF_MASK_V(0x1 << 3, 0x1 << 3); // cfg3[4:3]=1  i2c1 pin
 			MOON2_REG_AO->clken[8] =  RF_MASK_V_SET(1 << 9);
 			MOON2_REG_AO->gclken[8] = RF_MASK_V_CLR(1 << 9);
 			MOON0_REG_AO->reset[8] = RF_MASK_V_CLR(1 << 9);
@@ -95,7 +95,7 @@ void sp_i2c_en(unsigned int i2c_no)
 		break;
 		case 2:
 			i2c_mas_ctlr[i2c_no].reg = I2C2_REG_AO;
-			MOON1_REG_AO->sft_cfg[3] = RF_MASK_V(0x3 << 6, 0x3 << 6);
+			MOON1_REG_AO->sft_cfg[3] = RF_MASK_V(0x1 << 6, 0x1 << 6);
 			MOON2_REG_AO->clken[8] =  RF_MASK_V_SET(1 << 11);
 			MOON2_REG_AO->gclken[8] = RF_MASK_V_CLR(1 << 11);
 			MOON0_REG_AO->reset[8] = RF_MASK_V_CLR(1 << 11);
@@ -123,28 +123,28 @@ void sp_i2c_en(unsigned int i2c_no)
 		break;
 		case 6:
 			i2c_mas_ctlr[i2c_no].reg = I2C6_REG_AO;
-			MOON1_REG_AO->sft_cfg[3] = RF_MASK_V(0x3 << 11, 0x3 << 11);
+			MOON1_REG_AO->sft_cfg[3] = RF_MASK_V(0x1 << 11, 0x1 << 11);
 			MOON2_REG_AO->clken[8] =  RF_MASK_V_SET(1 << 15);
 			MOON2_REG_AO->gclken[8] = RF_MASK_V_CLR(1 << 15);
 			MOON0_REG_AO->reset[8] = RF_MASK_V_CLR(1 << 15);
 		break;
 		case 7:
 			i2c_mas_ctlr[i2c_no].reg = I2C7_REG_AO;
-			MOON1_REG_AO->sft_cfg[3] = RF_MASK_V(0x3 << 13, 0x3 << 13);
+			MOON1_REG_AO->sft_cfg[3] = RF_MASK_V(0x1 << 13, 0x1 << 13);
 			MOON2_REG_AO->clken[9] =  RF_MASK_V_SET(1 << 0);
 			MOON2_REG_AO->gclken[9] = RF_MASK_V_CLR(1 << 0);
 			MOON0_REG_AO->reset[9] = RF_MASK_V_CLR(1 << 0);
 		break;
 		case 8:
 			i2c_mas_ctlr[i2c_no].reg = I2C8_REG_AO;
-			MOON1_REG_AO->sft_cfg[4] = RF_MASK_V(0x3 << 0, 0x3 << 0);
+			MOON1_REG_AO->sft_cfg[4] = RF_MASK_V(0x1 << 0, 0x1 << 0);
 			MOON2_REG_AO->clken[9] =  RF_MASK_V_SET(1 << 1);
 			MOON2_REG_AO->gclken[9] = RF_MASK_V_CLR(1 << 1);
 			MOON0_REG_AO->reset[9] = RF_MASK_V_CLR(1 << 1);
 		break;
 		case 9:
 			i2c_mas_ctlr[i2c_no].reg = I2C9_REG_AO;
-			MOON1_REG_AO->sft_cfg[4] = RF_MASK_V(0x3 << 2, 0x3 << 2);
+			MOON1_REG_AO->sft_cfg[4] = RF_MASK_V(0x1 << 2, 0x1 << 2);
 			MOON2_REG_AO->clken[9] =  RF_MASK_V_SET(1 << 2);
 			MOON2_REG_AO->gclken[9] = RF_MASK_V_CLR(1 << 2);
 			MOON0_REG_AO->reset[9] = RF_MASK_V_CLR(1 << 2);
@@ -190,9 +190,13 @@ void sp_i2c_write(unsigned int i2c_no, u8  slave_addr , u8  *data_buf , unsigned
 	{
 		stat = i2c_sp_read_clear_intrbits(i2c_no ,i2c_regs);
 		if (stat & SP_IC_INTR_TX_ABRT) {
+			i2c_dw_handle_tx_abort(i2c_no);
 			i2c_regs->ic_intr_mask = 0;
-			break;
+			temp_reg = i2c_regs->ic_clr_intr;
+			i2c_regs->ic_enable = 0;
+			return;
 		}
+
 		xfer_cnt = I2C_TX_FIFO_DEPTH - i2c_regs->ic_txflr;
 		while(xfer_cnt >0 && i2c_mas_ctlr[i2c_no].DataTotalLen > 0)
 		{
@@ -204,29 +208,20 @@ void sp_i2c_write(unsigned int i2c_no, u8  slave_addr , u8  *data_buf , unsigned
 		}
 	}
 
-	stat = i2c_sp_read_clear_intrbits(i2c_no ,i2c_regs);
-	if (stat & SP_IC_INTR_TX_ABRT) {
-		i2c_dw_handle_tx_abort(i2c_no);
-		i2c_regs->ic_intr_mask = 0;
-		temp_reg = i2c_regs->ic_clr_intr;
-		i2c_regs->ic_enable = 0;
-		return;
-	}
-		stat = i2c_regs->ic_raw_intr_stat;
-		diag_printf("RAW_INTR_STAT00 %x\n",stat);
-
 	while(i2c_mas_ctlr[i2c_no].xfet_action)
 	{
 		stat = i2c_regs->ic_status;
-
-		if (stat & SP_IC_STATUS_TFE)
+		if ((stat & SP_IC_STATUS_MST_ACT) != SP_IC_STATUS_MST_ACT)
 			i2c_mas_ctlr[i2c_no].xfet_action = 0;
 		
 		//diag_printf("RAW_INTR_STAT %x  action : %d \n",stat ,i2c_mas_ctlr[i2c_no].xfet_action);
 		stat = i2c_sp_read_clear_intrbits(i2c_no , i2c_regs);
 		if (stat & SP_IC_INTR_TX_ABRT) {
+			i2c_dw_handle_tx_abort(i2c_no);
 			i2c_regs->ic_intr_mask = 0;
-			break;
+			temp_reg = i2c_regs->ic_clr_intr;
+			i2c_regs->ic_enable = 0;
+			return;
 		}		
 	}
 
@@ -276,8 +271,11 @@ void sp_i2c_read(unsigned int i2c_no, u8  slave_addr , u8  *data_buf , unsigned 
 	{
 		stat = i2c_sp_read_clear_intrbits(i2c_no ,i2c_regs);
 		if (stat & SP_IC_INTR_TX_ABRT) {
+			i2c_dw_handle_tx_abort(i2c_no);
 			i2c_regs->ic_intr_mask = 0;
-			break;
+			temp_reg = i2c_regs->ic_clr_intr;
+			i2c_regs->ic_enable = 0;
+			return;
 		}
 		xfer_cnt = I2C_TX_FIFO_DEPTH - i2c_regs->ic_txflr;
 		while(xfer_cnt >0 && i2c_mas_ctlr[i2c_no].DataTotalLen > 0)
@@ -295,16 +293,6 @@ void sp_i2c_read(unsigned int i2c_no, u8  slave_addr , u8  *data_buf , unsigned 
 		}
 	}
 
-	stat = i2c_sp_read_clear_intrbits(i2c_no ,i2c_regs);
-	if (stat & SP_IC_INTR_TX_ABRT) {
-		i2c_dw_handle_tx_abort(i2c_no);
-		i2c_regs->ic_intr_mask = 0;
-		temp_reg = i2c_regs->ic_clr_intr;
-		i2c_regs->ic_enable = 0;
-		return;
-	}
-		stat = i2c_regs->ic_raw_intr_stat;
-
 	while(i2c_mas_ctlr[i2c_no].xfet_action)
 	{
 		stat = i2c_regs->ic_status;
@@ -315,8 +303,11 @@ void sp_i2c_read(unsigned int i2c_no, u8  slave_addr , u8  *data_buf , unsigned 
 		//diag_printf("RAW_INTR_STAT %x  action : %d \n",stat ,i2c_mas_ctlr[i2c_no].xfet_action);
 		stat = i2c_sp_read_clear_intrbits(i2c_no , i2c_regs);
 		if (stat & SP_IC_INTR_TX_ABRT) {
+			i2c_dw_handle_tx_abort(i2c_no);
 			i2c_regs->ic_intr_mask = 0;
-			break;
+			temp_reg = i2c_regs->ic_clr_intr;
+			i2c_regs->ic_enable = 0;
+			return;
 		}		
 	}
 

@@ -630,16 +630,16 @@ struct dw_i2c_regs {
 	unsigned int ic_comp_type;	/* 63 0xfc*/
 
 };
-#define I2C0_REG_AO ((volatile struct dw_i2c_regs *)RF_GRP(40, 0))
-#define I2C1_REG_AO ((volatile struct dw_i2c_regs *)RF_GRP(41, 0))
-#define I2C2_REG_AO ((volatile struct dw_i2c_regs *)RF_GRP(42, 0))
-#define I2C3_REG_AO ((volatile struct dw_i2c_regs *)RF_GRP(43, 0))
-#define I2C4_REG_AO ((volatile struct dw_i2c_regs *)RF_GRP(44, 0))
-#define I2C5_REG_AO ((volatile struct dw_i2c_regs *)RF_GRP(45, 0))
-#define I2C6_REG_AO ((volatile struct dw_i2c_regs *)RF_GRP(46, 0))
-#define I2C7_REG_AO ((volatile struct dw_i2c_regs *)RF_GRP(47, 0))
-#define I2C8_REG_AO ((volatile struct dw_i2c_regs *)RF_GRP(48, 0))
-#define I2C9_REG_AO ((volatile struct dw_i2c_regs *)RF_GRP(49, 0))
+#define I2C0_REG_AO ((volatile struct dw_i2c_regs *)RF_GRP_I2C(0, 0))
+#define I2C1_REG_AO ((volatile struct dw_i2c_regs *)RF_GRP_I2C(1, 0))
+#define I2C2_REG_AO ((volatile struct dw_i2c_regs *)RF_GRP_I2C(2, 0))
+#define I2C3_REG_AO ((volatile struct dw_i2c_regs *)RF_GRP_I2C(3, 0))
+#define I2C4_REG_AO ((volatile struct dw_i2c_regs *)RF_GRP_I2C(4, 0))
+#define I2C5_REG_AO ((volatile struct dw_i2c_regs *)RF_GRP_I2C(5, 0))
+#define I2C6_REG_AO ((volatile struct dw_i2c_regs *)RF_GRP_I2C(6, 0))
+#define I2C7_REG_AO ((volatile struct dw_i2c_regs *)RF_GRP_I2C(7, 0))
+#define I2C8_REG_AO ((volatile struct dw_i2c_regs *)RF_GRP_I2C(8, 0))
+#define I2C9_REG_AO ((volatile struct dw_i2c_regs *)RF_GRP_I2C(9, 0))
 
 struct dw_adc_regs {
 	unsigned int adc_cfg00;			/* 00 */

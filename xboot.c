@@ -11,6 +11,7 @@
 #include <image.h>
 #include <misc.h>
 #include <otp/sp_otp.h>
+#include <i2c/sp_i2c.h>
 
 #ifdef CONFIG_HAVE_EMMC
 #include <sdmmc_boot/drv_sd_mmc.h>    /* initDriver_SD */
