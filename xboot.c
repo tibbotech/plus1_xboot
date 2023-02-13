@@ -399,6 +399,8 @@ static void init_hw(void)
 	*(volatile u32 *)(ARM_TSGEN_WR_BASE + 0x08) = 0; // CNTCV[31:0]
 	*(volatile u32 *)(ARM_TSGEN_WR_BASE + 0x0C) = 0; // CNTCV[63:32]
 
+	PAD_CTL2_REG->cfg[31] = 0x00000000; // GMAC Softpad control register 1 : bit31-->0 ,non-GPIO mode 
+
 #ifdef PLLD_266MHz
 	prn_string("PLLD: 266.6MHz\n");
 	MOON3_REG_AO->plld_cfg[0] = RF_MASK_V(0xFFFF, 0x2012);

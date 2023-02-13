@@ -811,4 +811,9 @@ struct amba_secure_regs {
 /* TSGEN Write/Read */
 #define ARM_TSGEN_WR_BASE  0xf810a000
 
+struct softpad_regs {
+	unsigned int cfg[32];              // 102.0~31
+};
+#define PAD_CTL2_REG    ((volatile struct softpad_regs *)RF_GRP_AO(102, 0))
+
 #endif /* __INC_REGMAP_SP7350_H */
