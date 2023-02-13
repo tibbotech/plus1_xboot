@@ -37,6 +37,16 @@
 //#define PLLD_650MHz
 #define PLLD_800MHz
 #endif
+#if defined(PLATFORM_SP7350)
+//#define PLLD_266MHz
+//#define PLLD_533MHz
+//#define PLLD_366MHz
+//#define PLLD_800MHz
+//#define PLLD_600MHz
+//#define PLLD_466MHz
+//#define PLLD_400MHz
+#endif
+
 /*
  * TOC
  * ---------------------
@@ -388,6 +398,50 @@ static void init_hw(void)
 	*(volatile u32 *)ARM_TSGEN_WR_BASE = 3;          // EN = 1 and HDBG = 1
 	*(volatile u32 *)(ARM_TSGEN_WR_BASE + 0x08) = 0; // CNTCV[31:0]
 	*(volatile u32 *)(ARM_TSGEN_WR_BASE + 0x0C) = 0; // CNTCV[63:32]
+
+#ifdef PLLD_266MHz
+	prn_string("PLLD: 266.6MHz\n");
+	MOON3_REG_AO->plld_cfg[0] = RF_MASK_V(0xFFFF, 0x2012);
+	MOON3_REG_AO->plld_cfg[1] = RF_MASK_V(0xFFFF, 0xC0BD);
+	MOON3_REG_AO->plld_cfg[2] = RF_MASK_V(0xFFFF, 0x0107);
+#endif
+#ifdef PLLD_533MHz
+	prn_string("PLLD: 533.3MHz\n");
+	MOON3_REG_AO->plld_cfg[0] = RF_MASK_V(0xFFFF, 0x200A);
+	MOON3_REG_AO->plld_cfg[1] = RF_MASK_V(0xFFFF, 0xC0BD);
+	MOON3_REG_AO->plld_cfg[2] = RF_MASK_V(0xFFFF, 0x0107);
+#endif
+#ifdef PLLD_366MHz
+	prn_string("PLLD: 366.6MHz\n");
+	MOON3_REG_AO->plld_cfg[0] = RF_MASK_V(0xFFFF, 0x0C0A);
+	MOON3_REG_AO->plld_cfg[1] = RF_MASK_V(0xFFFF, 0xC0BC);
+	MOON3_REG_AO->plld_cfg[2] = RF_MASK_V(0xFFFF, 0x0107);
+#endif
+#ifdef PLLD_800MHz
+	prn_string("PLLD: 800MHz\n");
+	MOON3_REG_AO->plld_cfg[0] = RF_MASK_V(0xFFFF, 0x1008);
+	MOON3_REG_AO->plld_cfg[1] = RF_MASK_V(0xFFFF, 0xC0BE);
+	MOON3_REG_AO->plld_cfg[2] = RF_MASK_V(0xFFFF, 0x0107);
+#endif
+#ifdef PLLD_600MHz
+	prn_string("PLLD: 600MHz\n");
+	MOON3_REG_AO->plld_cfg[0] = RF_MASK_V(0xFFFF, 0x0408);
+	MOON3_REG_AO->plld_cfg[1] = RF_MASK_V(0xFFFF, 0xC0BD);
+	MOON3_REG_AO->plld_cfg[2] = RF_MASK_V(0xFFFF, 0x0107);
+#endif
+#ifdef PLLD_466MHz
+	prn_string("PLLD: 466.6MHz\n");
+	MOON3_REG_AO->plld_cfg[0] = RF_MASK_V(0xFFFF, 0x180A);
+	MOON3_REG_AO->plld_cfg[1] = RF_MASK_V(0xFFFF, 0xC0BC);
+	MOON3_REG_AO->plld_cfg[2] = RF_MASK_V(0xFFFF, 0x0107);
+#endif
+#ifdef PLLD_400MHz
+	prn_string("PLLD: 400MHz\n");
+	MOON3_REG_AO->plld_cfg[0] = RF_MASK_V(0xFFFF, 0x100A);
+	MOON3_REG_AO->plld_cfg[1] = RF_MASK_V(0xFFFF, 0xC0BC);
+	MOON3_REG_AO->plld_cfg[2] = RF_MASK_V(0xFFFF, 0x0107);
+#endif
+
 #endif
 
 #if defined(PLATFORM_Q645)
