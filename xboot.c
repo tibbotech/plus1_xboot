@@ -38,13 +38,16 @@
 #define PLLD_800MHz
 #endif
 #if defined(PLATFORM_SP7350)
-//#define PLLD_266MHz
-//#define PLLD_533MHz
-//#define PLLD_366MHz
 //#define PLLD_800MHz
+//#define PLLD_666MHz
 //#define PLLD_600MHz
+//#define PLLD_533MHz
 //#define PLLD_466MHz
 //#define PLLD_400MHz
+//#define PLLD_366MHz
+//#define PLLD_333MHz
+//#define PLLD_266MHz
+//#define PLLD_233MHz
 #endif
 
 /*
@@ -401,49 +404,66 @@ static void init_hw(void)
 
 	PAD_CTL2_REG->cfg[31] = 0x00000000; // GMAC Softpad control register 1 : bit31-->0 ,non-GPIO mode 
 
-#ifdef PLLD_266MHz
-	prn_string("PLLD: 266.6MHz\n");
-	MOON3_REG_AO->plld_cfg[0] = RF_MASK_V(0xFFFF, 0x2012);
-	MOON3_REG_AO->plld_cfg[1] = RF_MASK_V(0xFFFF, 0xC0BD);
-	MOON3_REG_AO->plld_cfg[2] = RF_MASK_V(0xFFFF, 0x0107);
-#endif
-#ifdef PLLD_533MHz
-	prn_string("PLLD: 533.3MHz\n");
-	MOON3_REG_AO->plld_cfg[0] = RF_MASK_V(0xFFFF, 0x200A);
-	MOON3_REG_AO->plld_cfg[1] = RF_MASK_V(0xFFFF, 0xC0BD);
-	MOON3_REG_AO->plld_cfg[2] = RF_MASK_V(0xFFFF, 0x0107);
-#endif
-#ifdef PLLD_366MHz
-	prn_string("PLLD: 366.6MHz\n");
-	MOON3_REG_AO->plld_cfg[0] = RF_MASK_V(0xFFFF, 0x0C0A);
-	MOON3_REG_AO->plld_cfg[1] = RF_MASK_V(0xFFFF, 0xC0BC);
-	MOON3_REG_AO->plld_cfg[2] = RF_MASK_V(0xFFFF, 0x0107);
-#endif
 #ifdef PLLD_800MHz
-	prn_string("PLLD: 800MHz\n");
+	prn_string("PLLD: 800MHz, DATARATE:3200\n");
 	MOON3_REG_AO->plld_cfg[0] = RF_MASK_V(0xFFFF, 0x1008);
 	MOON3_REG_AO->plld_cfg[1] = RF_MASK_V(0xFFFF, 0xC0BE);
 	MOON3_REG_AO->plld_cfg[2] = RF_MASK_V(0xFFFF, 0x0107);
 #endif
+#ifdef PLLD_666MHz
+	prn_string("PLLD: 666.6MHz, DATARATE:2666\n");
+	MOON3_REG_AO->plld_cfg[0] = RF_MASK_V(0xFFFF, 0x0808);
+	MOON3_REG_AO->plld_cfg[1] = RF_MASK_V(0xFFFF, 0xC0BE);
+	MOON3_REG_AO->plld_cfg[2] = RF_MASK_V(0xFFFF, 0x0107);
+#endif
 #ifdef PLLD_600MHz
-	prn_string("PLLD: 600MHz\n");
+	prn_string("PLLD: 600MHz, DATARATE:2400\n");
 	MOON3_REG_AO->plld_cfg[0] = RF_MASK_V(0xFFFF, 0x0408);
 	MOON3_REG_AO->plld_cfg[1] = RF_MASK_V(0xFFFF, 0xC0BD);
 	MOON3_REG_AO->plld_cfg[2] = RF_MASK_V(0xFFFF, 0x0107);
 #endif
+#ifdef PLLD_533MHz
+	prn_string("PLLD: 533.3MHz, DATARATE:2133.2\n");
+	MOON3_REG_AO->plld_cfg[0] = RF_MASK_V(0xFFFF, 0x200A);
+	MOON3_REG_AO->plld_cfg[1] = RF_MASK_V(0xFFFF, 0xC0BD);
+	MOON3_REG_AO->plld_cfg[2] = RF_MASK_V(0xFFFF, 0x0107);
+#endif
 #ifdef PLLD_466MHz
-	prn_string("PLLD: 466.6MHz\n");
+	prn_string("PLLD: 466.6MHz, DATARATE:1866.4\n");
 	MOON3_REG_AO->plld_cfg[0] = RF_MASK_V(0xFFFF, 0x180A);
 	MOON3_REG_AO->plld_cfg[1] = RF_MASK_V(0xFFFF, 0xC0BC);
 	MOON3_REG_AO->plld_cfg[2] = RF_MASK_V(0xFFFF, 0x0107);
 #endif
 #ifdef PLLD_400MHz
-	prn_string("PLLD: 400MHz\n");
+	prn_string("PLLD: 400MHz, DATARATE:1600\n");
 	MOON3_REG_AO->plld_cfg[0] = RF_MASK_V(0xFFFF, 0x100A);
 	MOON3_REG_AO->plld_cfg[1] = RF_MASK_V(0xFFFF, 0xC0BC);
 	MOON3_REG_AO->plld_cfg[2] = RF_MASK_V(0xFFFF, 0x0107);
 #endif
-
+#ifdef PLLD_366MHz
+	prn_string("PLLD: 366.6MHz, DATARATE:1466.4\n");
+	MOON3_REG_AO->plld_cfg[0] = RF_MASK_V(0xFFFF, 0x0C0A);
+	MOON3_REG_AO->plld_cfg[1] = RF_MASK_V(0xFFFF, 0xC0BC);
+	MOON3_REG_AO->plld_cfg[2] = RF_MASK_V(0xFFFF, 0x0107);
+#endif
+#ifdef PLLD_333MHz
+	prn_string("PLLD: 333.3MHz, DATARATE:1333\n");
+	MOON3_REG_AO->plld_cfg[0] = RF_MASK_V(0xFFFF, 0x080A);
+	MOON3_REG_AO->plld_cfg[1] = RF_MASK_V(0xFFFF, 0xC0BC);
+	MOON3_REG_AO->plld_cfg[2] = RF_MASK_V(0xFFFF, 0x0107);
+#endif
+#ifdef PLLD_266MHz
+	prn_string("PLLD: 266.6MHz, DATARATE:1066.4\n");
+	MOON3_REG_AO->plld_cfg[0] = RF_MASK_V(0xFFFF, 0x2012);
+	MOON3_REG_AO->plld_cfg[1] = RF_MASK_V(0xFFFF, 0xC0BD);
+	MOON3_REG_AO->plld_cfg[2] = RF_MASK_V(0xFFFF, 0x0107);
+#endif
+#ifdef PLLD_233MHz
+	prn_string("PLLD: 233.3MHz, DATARATE:933\n");
+	MOON3_REG_AO->plld_cfg[0] = RF_MASK_V(0xFFFF, 0x1812);
+	MOON3_REG_AO->plld_cfg[1] = RF_MASK_V(0xFFFF, 0xC0BC);
+	MOON3_REG_AO->plld_cfg[2] = RF_MASK_V(0xFFFF, 0x0107);
+#endif
 #endif
 
 #if defined(PLATFORM_Q645)
