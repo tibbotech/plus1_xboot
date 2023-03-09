@@ -496,6 +496,7 @@ ifeq ($(CONFIG_PLATFORM_Q645),y)
 endif
 ifeq ($(CONFIG_PLATFORM_SP7350),y)
 	@$(MAKE) -C arch/arm/sp7350/a64up/ clean
+	@$(MAKE) -C warmboot clean
 endif
 	@$(MAKE) -C ../draminit $(DRAMINIT_TARGET) ARCH=$(ARCH) CROSS=$(CROSS) $@
 	@rm -rf .depend $(LD_GEN) $(OBJS) *.o *.d>/dev/null

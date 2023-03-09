@@ -346,6 +346,13 @@
 
 #define XBOOT_A64_ADDR   (BOOT_RAM_BASE + (97 * 1024))
 
+#ifdef PLATFORM_SP7350
+/* for sp7350 warmboot */
+#define WARMBOOT_XBOOT_ADDR     0x100000
+#define WARMBOOT_XBOOT_SIZE     (4*1024)
+#define WARMBOOT_A64_ADDR       (WARMBOOT_XBOOT_ADDR + WARMBOOT_XBOOT_SIZE)
+#define WARMBOOT_A64_SIZE       (4*1024)
+#endif
 #endif
 
 /**********************

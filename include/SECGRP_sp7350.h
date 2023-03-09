@@ -12,7 +12,7 @@
 #ifndef __INC_SECGRP1_SP7350_H
 #define __INC_SECGRP1_SP7350_H
 
-#include <common.h>
+//#include <common.h>
 
 //=======================================================
 //

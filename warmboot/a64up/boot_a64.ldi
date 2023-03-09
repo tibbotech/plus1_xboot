@@ -1,0 +1,29 @@
+#include "../../include/config.h"
+
+OUTPUT_FORMAT("elf64-littleaarch64", "elf64-littleaarch64", "elf64-littleaarch64")
+OUTPUT_ARCH(aarch64)
+ENTRY(_start_a64)
+
+
+MEMORY
+{
+	ram : ORIGIN = WARMBOOT_A64_ADDR, LENGTH = 4k
+}
+
+
+SECTIONS
+{
+	.stext : {
+		__stext = .;
+		start_a64.o (.text)
+		*(.text*)
+		*(.rodata*)
+		__etext = .;
+	} > ram
+
+	.stack : {
+		__init_stack_N = ORIGIN(ram) + LENGTH(ram);
+		PROVIDE(__stack = __init_stack_N);
+	} > ram
+
+}

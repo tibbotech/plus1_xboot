@@ -1,0 +1,44 @@
+#include "../../include/config.h"
+
+OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
+OUTPUT_ARCH(arm)
+ENTRY(_start)
+
+
+MEMORY
+{
+	// cb sram last 1K
+	ram : ORIGIN = WARMBOOT_XBOOT_ADDR, LENGTH = WARMBOOT_XBOOT_SIZE
+	a64up : ORIGIN = WARMBOOT_A64_ADDR,   LENGTH = WARMBOOT_A64_SIZE          /*     4K  @ 97K     */
+}
+
+SECTIONS
+{
+	.stext : {
+		__stext = .;
+		*(.text*)
+		*(.rodata*)
+		. = ALIGN(4);
+		__a64rom = .;
+		KEEP(../a64up/a64bin.o (.a64bin));
+		. = ALIGN(4);
+		__a64rom_end = .;
+		__etext = .;
+	} > ram
+	
+	.bss :
+	{
+		. = ALIGN(4);
+		_sbss = .;
+		__bss_start__ = _sbss;
+		*(.bss*)
+		*(COMMON)
+		. = ALIGN(4);
+		_ebss = .;
+		__bss_end__ = _ebss;
+	} >ram
+	
+	.stack : {
+		_estack = ORIGIN(ram) + LENGTH(ram);
+	} > ram
+}
