@@ -18,3 +18,14 @@ arch/arm/sp7350/a64up/a64up.dis
 arch/arm/sp7350/a64up/a64up.map
 arch/arm/sp7350/a64up/boot_a64.ld
 secure/
+warmboot/warmboot
+warmboot/a64up/a64up
+warmboot/a64up/a64up.bin
+warmboot/a64up/a64up.dis
+warmboot/a64up/a64up.map
+warmboot/a64up/boot_a64.ld
+warmboot/xboot/xboot
+warmboot/xboot/xboot.bin
+warmboot/xboot/xboot.dis
+warmboot/xboot/xboot.ld
+warmboot/xboot/xboot.map
