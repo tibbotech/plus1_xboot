@@ -60,15 +60,11 @@ static u32 i2c_sp_read_clear_intrbits(unsigned int i2c_no, volatile struct dw_i2
 void i2c_dw_handle_tx_abort(unsigned int i2c_no)
 {
 	unsigned int abort_source = i2c_mas_ctlr[i2c_no].Abort_Source;
-	int i;
 
 	if (abort_source & SP_IC_TX_ABRT_NOACK) {
-		for(i = 0 ; i <=4 ; i++)
 			prn_string("NACK fail \n");
 		return;
 	}
-
-	for(i = 5 ; i <=13 ; i++)
 		prn_string("NACK fail 02\n");
 
 	return;
@@ -188,15 +184,6 @@ void sp_i2c_write(unsigned int i2c_no, u8  slave_addr , u8  *data_buf , unsigned
 
 	while(i2c_mas_ctlr[i2c_no].DataTotalLen)
 	{
-		stat = i2c_sp_read_clear_intrbits(i2c_no ,i2c_regs);
-		if (stat & SP_IC_INTR_TX_ABRT) {
-			i2c_dw_handle_tx_abort(i2c_no);
-			i2c_regs->ic_intr_mask = 0;
-			temp_reg = i2c_regs->ic_clr_intr;
-			i2c_regs->ic_enable = 0;
-			return;
-		}
-
 		xfer_cnt = I2C_TX_FIFO_DEPTH - i2c_regs->ic_txflr;
 		while(xfer_cnt >0 && i2c_mas_ctlr[i2c_no].DataTotalLen > 0)
 		{
@@ -205,6 +192,16 @@ void sp_i2c_write(unsigned int i2c_no, u8  slave_addr , u8  *data_buf , unsigned
 			i2c_mas_ctlr[i2c_no].DataTotalLen--;
 			xfer_cnt--;
 			//diag_printf("xfer_cnt %d\n",xfer_cnt);
+		}
+		stat = i2c_regs->ic_status;
+		while((stat & SP_IC_STATUS_MST_ACT) != SP_IC_STATUS_MST_ACT){
+			stat = i2c_regs->ic_status;
+		}
+		stat = i2c_sp_read_clear_intrbits(i2c_no ,i2c_regs);
+		if (stat & SP_IC_INTR_TX_ABRT) {
+			i2c_dw_handle_tx_abort(i2c_no);
+			i2c_mas_ctlr[i2c_no].xfet_action = 0;
+			break;
 		}
 	}
 
@@ -218,10 +215,8 @@ void sp_i2c_write(unsigned int i2c_no, u8  slave_addr , u8  *data_buf , unsigned
 		stat = i2c_sp_read_clear_intrbits(i2c_no , i2c_regs);
 		if (stat & SP_IC_INTR_TX_ABRT) {
 			i2c_dw_handle_tx_abort(i2c_no);
-			i2c_regs->ic_intr_mask = 0;
-			temp_reg = i2c_regs->ic_clr_intr;
-			i2c_regs->ic_enable = 0;
-			return;
+			i2c_mas_ctlr[i2c_no].xfet_action = 0;
+			break;
 		}		
 	}
 
@@ -269,14 +264,6 @@ void sp_i2c_read(unsigned int i2c_no, u8  slave_addr , u8  *data_buf , unsigned 
 
 	while(i2c_mas_ctlr[i2c_no].DataTotalLen)
 	{
-		stat = i2c_sp_read_clear_intrbits(i2c_no ,i2c_regs);
-		if (stat & SP_IC_INTR_TX_ABRT) {
-			i2c_dw_handle_tx_abort(i2c_no);
-			i2c_regs->ic_intr_mask = 0;
-			temp_reg = i2c_regs->ic_clr_intr;
-			i2c_regs->ic_enable = 0;
-			return;
-		}
 		xfer_cnt = I2C_TX_FIFO_DEPTH - i2c_regs->ic_txflr;
 		while(xfer_cnt >0 && i2c_mas_ctlr[i2c_no].DataTotalLen > 0)
 		{
@@ -285,12 +272,22 @@ void sp_i2c_read(unsigned int i2c_no, u8  slave_addr , u8  *data_buf , unsigned 
 			xfer_cnt--;
 		}
 		stat = i2c_regs->ic_status;
+		while((stat & SP_IC_STATUS_MST_ACT) != SP_IC_STATUS_MST_ACT){
+			stat = i2c_regs->ic_status;
+		}
+		stat = i2c_regs->ic_status;
 		if (stat & SP_IC_STATUS_RFNE){
 			i2c_mas_ctlr[i2c_no].buf[i2c_mas_ctlr[i2c_no].DataIndex] = i2c_regs->ic_data_cmd;
 			i2c_mas_ctlr[i2c_no].DataIndex++;
 			//diag_printf("data 0x%x\n", i2c_regs->ic_data_cmd);
 			i2c_mas_ctlr[i2c_no].ReadTxlen--;
 		}
+		stat = i2c_sp_read_clear_intrbits(i2c_no ,i2c_regs);
+		if (stat & SP_IC_INTR_TX_ABRT) {
+			i2c_dw_handle_tx_abort(i2c_no);
+			i2c_mas_ctlr[i2c_no].xfet_action = 0;
+			break;
+		}		
 	}
 
 	while(i2c_mas_ctlr[i2c_no].xfet_action)
@@ -304,10 +301,8 @@ void sp_i2c_read(unsigned int i2c_no, u8  slave_addr , u8  *data_buf , unsigned 
 		stat = i2c_sp_read_clear_intrbits(i2c_no , i2c_regs);
 		if (stat & SP_IC_INTR_TX_ABRT) {
 			i2c_dw_handle_tx_abort(i2c_no);
-			i2c_regs->ic_intr_mask = 0;
-			temp_reg = i2c_regs->ic_clr_intr;
-			i2c_regs->ic_enable = 0;
-			return;
+			i2c_mas_ctlr[i2c_no].xfet_action = 0;
+			break;
 		}		
 	}
 
