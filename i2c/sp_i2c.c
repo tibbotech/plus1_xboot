@@ -152,8 +152,9 @@ void sp_i2c_write(unsigned int i2c_no, u8  slave_addr , u8  *data_buf , unsigned
 {
 
         unsigned int temp_reg;			
-        unsigned int xfer_cnt;	
-	u32 stat;
+        unsigned int xfer_cnt;
+        unsigned int xfer_wait;
+        u32 stat;
 
 	volatile struct dw_i2c_regs *i2c_regs = i2c_mas_ctlr[i2c_no].reg;
 	i2c_mas_ctlr[i2c_no].buf = data_buf;
@@ -194,8 +195,12 @@ void sp_i2c_write(unsigned int i2c_no, u8  slave_addr , u8  *data_buf , unsigned
 			//diag_printf("xfer_cnt %d\n",xfer_cnt);
 		}
 		stat = i2c_regs->ic_status;
+		xfer_wait = 0;
 		while((stat & SP_IC_STATUS_MST_ACT) != SP_IC_STATUS_MST_ACT){
 			stat = i2c_regs->ic_status;
+			xfer_wait++;
+			if(xfer_wait > (4*I2C_TX_FIFO_DEPTH))
+				break;
 		}
 		stat = i2c_sp_read_clear_intrbits(i2c_no ,i2c_regs);
 		if (stat & SP_IC_INTR_TX_ABRT) {
@@ -228,8 +233,9 @@ void sp_i2c_write(unsigned int i2c_no, u8  slave_addr , u8  *data_buf , unsigned
 void sp_i2c_read(unsigned int i2c_no, u8  slave_addr , u8  *data_buf , unsigned int len)
 {
         unsigned int temp_reg;
-        unsigned int xfer_cnt;	
-	u32 stat;
+        unsigned int xfer_cnt;
+        unsigned int xfer_wait;
+        u32 stat;
 
 	volatile struct dw_i2c_regs *i2c_regs = i2c_mas_ctlr[i2c_no].reg;
 	//diag_printf("i2c_regs %x\n",i2c_regs);
@@ -272,8 +278,12 @@ void sp_i2c_read(unsigned int i2c_no, u8  slave_addr , u8  *data_buf , unsigned 
 			xfer_cnt--;
 		}
 		stat = i2c_regs->ic_status;
+		xfer_wait = 0;
 		while((stat & SP_IC_STATUS_MST_ACT) != SP_IC_STATUS_MST_ACT){
 			stat = i2c_regs->ic_status;
+			xfer_wait++;
+			if(xfer_wait > (4*I2C_TX_FIFO_DEPTH))
+				break;
 		}
 		stat = i2c_regs->ic_status;
 		if (stat & SP_IC_STATUS_RFNE){
