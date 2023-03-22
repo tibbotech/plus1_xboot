@@ -25,6 +25,38 @@ choice
 		bool "SP7350"
 endchoice
 
+choice
+prompt "Dram type"
+default LPDDR4
+config  LPDDR4
+	bool "LPDDR4"
+config DDR4
+	bool "DDR4"
+config LPDDR3
+	bool "LPDDR3"
+config DDR3
+	bool "DDR3"
+endchoice
+
+choice
+prompt "Dram FBGA code"
+default NANYA
+config  NANYA
+	bool "NANYA"
+config D9WHT
+	bool "D9WHT"
+	help
+		MT53D1024M32D4, 2 rank,FBGA code = D9WHT
+config D9ZQX
+	bool "D9ZQX"
+	help
+		MT53E1G32D2_A, 1 rank,FBGA code = D9ZQX
+config D8CJG
+	bool "D8CJG"
+	help
+		MT53E1G32D2_B, 2 rank, FBGA code = D8CJG
+endchoice
+
 config PLATFORM_IC_REV
 	int "IC revision number"
 	range 1 2
