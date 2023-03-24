@@ -39,20 +39,20 @@ config DDR3
 endchoice
 
 choice
-prompt "Dram FBGA code"
-default NANYA
-config  NANYA
-	bool "NANYA"
-config D9WHT
-	bool "D9WHT"
+prompt "Dram part number"
+default NT6AN1024F32AV 
+config  NT6AN1024F32AV
+	bool "NT6AN1024F32AV"
+config MT53D1024M32D4
+	bool "MT53D1024M32D4 D9WHT"
 	help
 		MT53D1024M32D4, 2 rank,FBGA code = D9WHT
-config D9ZQX
-	bool "D9ZQX"
+config MT53E1G32D2_A
+	bool "MT53E1G32D2_A D9ZQX"
 	help
 		MT53E1G32D2_A, 1 rank,FBGA code = D9ZQX
-config D8CJG
-	bool "D8CJG"
+config MT53E1G32D2_B
+	bool "MT53E1G32D2_B D8CJG"
 	help
 		MT53E1G32D2_B, 2 rank, FBGA code = D8CJG
 endchoice
