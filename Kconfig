@@ -26,7 +26,7 @@ choice
 endchoice
 
 choice
-prompt "Dram type"
+prompt "DRAM type"
 default LPDDR4
 config  LPDDR4
 	bool "LPDDR4"
@@ -39,22 +39,24 @@ config DDR3
 endchoice
 
 choice
-prompt "Dram part number"
+prompt "DRAM part number"
 default NT6AN1024F32AV 
 config  NT6AN1024F32AV
 	bool "NT6AN1024F32AV"
+	help
+	  Nanya NT6AN1024F32AV, 1Gbx32, 2 rank
 config MT53D1024M32D4
 	bool "MT53D1024M32D4 D9WHT"
 	help
-		MT53D1024M32D4, 2 rank,FBGA code = D9WHT
+	  Micron MT53D1024M32D4, 1Gbx32, 2 rank, FBGA code = D9WHT
 config MT53E1G32D2_A
 	bool "MT53E1G32D2_A D9ZQX"
 	help
-		MT53E1G32D2_A, 1 rank,FBGA code = D9ZQX
+	  Micron MT53E1G32D2_A, 1Gbx32, 1 rank, FBGA code = D9ZQX
 config MT53E1G32D2_B
 	bool "MT53E1G32D2_B D8CJG"
 	help
-		MT53E1G32D2_B, 2 rank, FBGA code = D8CJG
+	  Micron MT53E1G32D2_B, 1Gbx32, 2 rank, FBGA code = D8CJG
 endchoice
 
 config PLATFORM_IC_REV
