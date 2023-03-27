@@ -545,6 +545,12 @@ list:
 auto_config: chkconfig
 	@echo "  [KCFG] $@.h"
 	$(AUTOCONFH) .config include/$@.h
+ifeq ($(CONFIG_PLATFORM_Q645),y)
+	$(AUTOCONFH) .config ../draminit/dwc/include/$@.h
+endif
+ifeq ($(CONFIG_PLATFORM_SP7350),y)
+	$(AUTOCONFH) .config ../draminit/dwc/include/$@.h
+endif
 
 chkconfig:
 	@if [ ! -f .config ];then \
