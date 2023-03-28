@@ -16,10 +16,12 @@
 #if defined(PLATFORM_Q645)
 #define SPI_DTB_OFFSET        0x048000   // 288K
 #define SPI_UBOOT_OFFSET      0x068000   // 416K
+#define SPI_FIP_OFFSET        0x180000   // 1.5M
 #define SPI_LINUX_OFFSET      0x220000   // 2M+128K
 #elif defined(PLATFORM_SP7350)
 #define SPI_DTB_OFFSET        0x048000   // 288K
 #define SPI_UBOOT_OFFSET      0x068000   // 416K
+#define SPI_FIP_OFFSET        0x180000   // 1.5M
 #define SPI_LINUX_OFFSET      0x200000   // 2M
 #else
 #define SPI_DTB_OFFSET        0x020000   // 128K
@@ -47,13 +49,15 @@
 
 #if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
 // u-boot
-#define UBOOT_REAL_LOAD_ADDR    0x300000 /*u-boot.img load addr*/
-#define UBOOT_LOAD_ADDR         (UBOOT_REAL_LOAD_ADDR - 0x40)  /* header(64) + u-boot.img(header+data) + BL31.img(header+data) + sign data */
-#define UBOOT_RUN_ADDR          (UBOOT_REAL_LOAD_ADDR + 0x40)
+#define UBOOT_LOAD_ADDR         0x500000
+#define UBOOT_RUN_ADDR          (UBOOT_LOAD_ADDR + 0x40)
 #define UBOOT_MAX_LEN           0x100000
 
 #define BL31_RUN_ADDR           0x200000
-#define BL31_LOAD_ADDR          (BL31_RUN_ADDR - 0x40)
+#define OPTEE_RUN_ADDR          0x300000
+#define FIP_MAX_LEN             0x200000
+#define FIP_LOAD_ADDR           0x1000000
+
 #define SMP_CORES 4
 
 // DTB
@@ -136,6 +140,7 @@
 #define ISP_IMG_OFF_XBOOT    (0)
 #if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
 #define ISP_IMG_OFF_UBOOT    (192 * 1024)
+#define ISP_IMG_OFF_HEADER   (1*1024*1024)
 #else
 #define ISP_IMG_OFF_UBOOT    (64 * 1024)
 #endif

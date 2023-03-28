@@ -235,6 +235,17 @@ extern  u8                 g_boothead[GLOBAL_HEADER_SIZE];
 #define p_desc_comm               (g_bootinfo.nand_desc_comm)
 
 void boot_next_no_stack(void);
-int xboot_verify_uboot(const struct image_header  *hdr);
+int xboot_verify_next_image(const struct image_header  *hdr);
 
+struct partition_info_s {
+	u8 file_name[32];  // file name of source (basename only)
+	u8 md5sum[36];
+	u32 file_offset;                // offset in output file
+	u64 file_size;                  // file size of the partition
+	u32 partition_start_addr;       // partition's start address in NAND, there will be an offset added in U-Boot script ($isp_nand_addr_1st_part), less than 4GB is expected.
+	u64 partition_size;             // reserved size for this partition, less than 4GB is expected.
+	u32 flags;
+	u32 emmc_partition_start;       // Unit: block
+	u32 reserved[7];                // let size of this structure == SIZE_PARTITION_INFO_S
+}__attribute__((packed));;
 #endif /* _COMMON_INC_ */

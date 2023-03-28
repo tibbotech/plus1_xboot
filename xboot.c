@@ -12,6 +12,7 @@
 #include <misc.h>
 #include <otp/sp_otp.h>
 #include <i2c/sp_i2c.h>
+#include "fip.h"
 
 #ifdef CONFIG_HAVE_EMMC
 #include <sdmmc_boot/drv_sd_mmc.h>    /* initDriver_SD */
@@ -869,33 +870,37 @@ static void cm4_init()
 #endif
 
 }
-static int copy_bl31_from_uboot_img(void* dst)
+static int load_tfa_optee(void)
 {
-	void* bl31_src;
-	int i,step;
-	int bl31_len,uboot_len;
-	struct image_header *bl31_hdr;
+#ifndef CONFIG_USE_ZMEM
 
-	prn_string("load BL31,len=");
+	uuid_t optee = UUID_SECURE_PAYLOAD_BL32;
+	uuid_t bl31 = UUID_EL3_RUNTIME_FIRMWARE_BL31;
+	uuid_t uuid_null = { {0} };
 
-	const struct image_header *uboot_hdr = (struct image_header *)UBOOT_REAL_LOAD_ADDR;
-	uboot_len = image_get_size(uboot_hdr);
-
-	bl31_src = (UINT32*)(UBOOT_REAL_LOAD_ADDR+uboot_len+sizeof(struct image_header));
-	bl31_hdr = (struct image_header *)bl31_src;
-	bl31_len = image_get_size(bl31_hdr);
-	prn_dword(bl31_len);
-#ifdef CSIM_NEW
-	step = 2048;
-#else
-	step = 256 * 1024;
-#endif
-	for (i = 0; i < bl31_len; i += step) {
-		prn_string(".");
-		memcpy32(dst + sizeof(*bl31_hdr) + i, bl31_src + sizeof(*bl31_hdr) + i,
-			 (bl31_len - i < step) ? (bl31_len - i + 3) / 4 : step / 4);
+	fip_toc_header_t *fip_hdr = (fip_toc_header_t *)(FIP_LOAD_ADDR + sizeof(struct image_header));
+	if(fip_hdr->name != TOC_HEADER_NAME)
+	{
+		mon_shell();
+		return -1;
 	}
-	prn_string("\n");
+	fip_toc_entry_t *fip_entry = (fip_toc_entry_t  *)((u32)fip_hdr + sizeof(fip_toc_header_t));
+
+	while(memcmp((u8 *)&(fip_entry->uuid),(u8 *)&uuid_null,sizeof(uuid_t) != 0))
+	{
+		if(memcmp((u8 *)&(fip_entry->uuid),(u8 *)&optee,sizeof(uuid_t)) == 0)
+		{
+			memcpy((u8 *)OPTEE_RUN_ADDR,(u8 *)((u32)fip_hdr + (u32)fip_entry->offset_address),fip_entry->size);
+		}
+		if(memcmp((u8 *)&(fip_entry->uuid),(u8 *)&bl31,sizeof(uuid_t)) == 0 )
+		{
+			memcpy((u8 *)BL31_RUN_ADDR,(u8 *)((u32)fip_hdr + (u32)fip_entry->offset_address),fip_entry->size);
+	}
+		fip_entry += 1;
+	};
+#endif
+
+
 	return 0;
 }
 
@@ -1093,11 +1098,18 @@ static void boot_uboot(void)
 
 #ifdef CONFIG_SECURE_BOOT_SIGN
 	prn_string("start verify in xboot!\n");
-	int ret = xboot_verify_uboot(hdr);
+	int ret = xboot_verify_next_image((struct image_header *)UBOOT_LOAD_ADDR);
 	if (ret) {
 		mon_shell();
 		halt();
 	}
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
+	ret = xboot_verify_next_image((struct image_header *)FIP_LOAD_ADDR);
+	if (ret) {
+		mon_shell();
+		halt();
+	}
+#endif
 #endif
 #ifdef PLATFORM_I143
 	u32 reg = *(volatile unsigned int *)HW_CFG_REG; /* = MOON0_REG->hw_cfg */
@@ -1127,8 +1139,7 @@ static void boot_uboot(void)
 	prn_string((const char *)image_get_name(hdr)); prn_string("\n");
 	prn_string("Run uboot@");prn_dword(UBOOT_RUN_ADDR);
 	/* boot aarch64 uboot */
-	copy_bl31_from_uboot_img((void*)BL31_LOAD_ADDR);
-
+	load_tfa_optee();
 	cm4_init();
 	go_a32_to_a64(UBOOT_RUN_ADDR);
 
@@ -1248,7 +1259,17 @@ static void spi_nor_uboot(void)
 #ifdef CONFIG_USE_ZMEM
 	zmem_check_uboot();
 #else
-	int len = nor_load_uhdr_image("uboot", (void *)UBOOT_LOAD_ADDR,
+	int len;
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
+	len = nor_load_uhdr_image("fip", (void *)FIP_LOAD_ADDR,
+				      (void *)(SPI_FLASH_BASE + SPI_FIP_OFFSET), 1);
+	if (len <= 0 ){
+		prn_string("load tfa optee failed \n");
+		mon_shell();
+		return;
+	}
+#endif
+	len = nor_load_uhdr_image("uboot", (void *)UBOOT_LOAD_ADDR,
 				      (void *)(SPI_FLASH_BASE + SPI_UBOOT_OFFSET), 1);
 	if (len <= 0) {
 		mon_shell();
@@ -1321,9 +1342,15 @@ static int fat_load_uhdr_image(fat_info *finfo, const char *img_name, void *dst,
 		}
 	}
 
-	/* ISPBOOOT.BIN file index is 0,uboot.img is 1*/
-	fileindex = (type == SDCARD_BOOT) ? FAT_UBOOT_INDEX : FAT_ISPBOOOT_INDEX;
-
+	/* ISPBOOOT.BIN file index is 0,uboot.img is 1 fip.img is 2*/
+	if(type == SDCARD_BOOT)
+	{
+		fileindex = (memcmp(img_name,"fip",strlen("fip")) != 0) ? FAT_UBOOT_INDEX : FAT_FIP_INDEX;
+	}
+	else
+	{
+		fileindex = FAT_ISPBOOOT_INDEX;
+	}
 	/* read header first */
 	len = 64;
 	ret = fat_read_file(fileindex, finfo, buf, img_offs, len, dst);
@@ -1370,6 +1397,48 @@ static int fat_load_uhdr_image(fat_info *finfo, const char *img_name, void *dst,
 
 	return len;
 }
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
+static int fat_load_fip(u32 type)
+{
+	int i=0,fip_offset=0;
+	int ret;
+	struct partition_info_s *isp_file_header = (struct partition_info_s *)(FIP_LOAD_ADDR + ISP_FILEINFO_OFFSET);
+	u8 *buf = g_io_buf.usb.sect_buf;
+	if(type != SDCARD_BOOT)
+	{
+		prn_string("load isp file header data \n");
+		ret = fat_read_file(0, &g_finfo, buf, ISP_IMG_OFF_HEADER, 0x1000, (void *)FIP_LOAD_ADDR);
+		if (ret == FAIL) {
+			prn_string("load hdr failed\n");
+			return -1;
+		}
+		prn_dword(*(volatile u32 *)FIP_LOAD_ADDR);
+		if (*(volatile u32 *)FIP_LOAD_ADDR != 0x746E6550) {
+			prn_string("bad magic\n");
+			return -1;
+		}
+		while(isp_file_header[i].file_name[0] != 0)
+		{
+			if(memcmp(isp_file_header[i].file_name,"fip",strlen("fip")) == 0)
+			{
+				fip_offset = isp_file_header[i].file_offset;
+				break;
+			}
+			i++;
+		}
+		if(i > NUM_OF_PARTITION)
+		{
+			prn_string("not found fip image! \n");
+			return -1;
+		}
+	}
+	if (fat_load_uhdr_image(&g_finfo, "fip", (void *)FIP_LOAD_ADDR, ((type==SDCARD_BOOT)?0:fip_offset), FIP_MAX_LEN,type) <= 0) {
+		prn_string("failed to load fip \n");
+		return -1;
+	}
+	return 0;
+}
+#endif
 
 static void do_fat_boot(u32 type, u32 port)
 {
@@ -1459,6 +1528,13 @@ static void do_fat_boot(u32 type, u32 port)
 	zmem_check_uboot();
 #else
 	/* load u-boot from usb */
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
+	if(fat_load_fip(type) < 0)
+	{
+		prn_string("failed to load fip \n");
+		return;
+	}
+#endif
 	if (fat_load_uhdr_image(&g_finfo, "uboot", (void *)UBOOT_LOAD_ADDR, ((type==SDCARD_BOOT)?0:ISP_IMG_OFF_UBOOT), UBOOT_MAX_LEN,type) <= 0) {
 		prn_string("failed to load uboot\n");
 		return;
@@ -1761,6 +1837,14 @@ static void emmc_boot(void)
 	}
 #endif
 
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350) /* load fip image */
+	len = emmc_load_uhdr_image("fip", (void *)FIP_LOAD_ADDR, 0,
+				   EMMC_FIP_LBA, 0, FIP_MAX_LEN, MMC_USER_AREA);
+	if (len <= 0) {
+		prn_string("bad fip\n");
+		return;
+	}
+#endif
 	boot_uboot();
 }
 #endif /* CONFIG_HAVE_EMMC */
@@ -2062,6 +2146,17 @@ static void nand_uboot(u32 type)
 	}
 #endif
 
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350) /* load fip image */
+	blk_start = (NAND_FIP_OFFSET + blk_use_sz - 1) / blk_use_sz / 2;
+
+	hdr = (struct image_header *)FIP_LOAD_ADDR;
+	len = nand_load_uhdr_image(type, "fip", (void *)hdr, blk_start,
+			10, &blk_end, 0);
+	if (len <= 0) {
+		prn_string("not found good uboot\n");
+		return;
+	}
+#endif
 	boot_uboot();
 }
 
@@ -2281,6 +2376,12 @@ static void init_uart(void)
 	MOON0_REG->reset[3] = RF_MASK_V_CLR(1 << 0);   // UA1_RESET=0
 	UART1_REG->div_l = UART_BAUD_DIV_L(BAUDRATE, UART_SRC_CLK);
 	UART1_REG->div_h = UART_BAUD_DIV_H(BAUDRATE, UART_SRC_CLK);
+	MOON1_REG->sft_cfg[1] = RF_MASK_V_SET(1 << 12); // UADBG_SEL=1
+	MOON0_REG->reset[3] = RF_MASK_V_CLR(1 << 5);   // UADBG_RESET=0
+	UADBG_REG->div_l = UART_BAUD_DIV_L(BAUDRATE, UART_SRC_CLK);
+	UADBG_REG->div_h = UART_BAUD_DIV_H(BAUDRATE, UART_SRC_CLK);
+	*(volatile int *)0xf800f98c = 0; // disable ua2axi,enable uadgb
+
 #endif
 #if defined(PLATFORM_SP7350) && defined(CONFIG_BOOT_ON_ZEBU)
 	/* uart1 pinmux : UA1_TX, UA1_RX */
@@ -2293,6 +2394,11 @@ static void init_uart(void)
 	UART1_REG->dr = 'R';
 	UART1_REG->dr = 'T';
 	UART1_REG->dr = '1';
+	MOON1_REG_AO->sft_cfg[2] = RF_MASK_V_SET(1 << 14); /* UADBG_SEL=1 */
+	MOON0_REG_AO->reset[5] = RF_MASK_V_CLR(1 << 10);   // UADBG_RESET=0
+	UADBG_REG->div_l = UART_BAUD_DIV_L(BAUDRATE, UART_SRC_CLK);
+	UADBG_REG->div_h = UART_BAUD_DIV_H(BAUDRATE, UART_SRC_CLK);
+	*(volatile int *)0xf800f98c = 0; // disable ua2axi,enable uadgb
 #endif
 #ifdef PLATFORM_I143
 	/* uart1 pinmux : UA1_TX, UA1_RX */

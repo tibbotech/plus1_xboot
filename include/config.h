@@ -486,3 +486,9 @@
 #define XB_HSMK_PTR_ADDR  (XBOOT_ADDR + 32 + XB_HSMK_PTR_OFFS) // 32: xhdr size
 #endif
 
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
+#define NUM_OF_PARTITION        (111)
+#define ISP_FILEINFO_OFFSET     (0x880)
+#define EMMC_FIP_LBA            0x1022
+#define NAND_FIP_OFFSET         (0x400000)
+#endif

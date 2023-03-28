@@ -149,7 +149,7 @@ static struct sb_info *q654_get_sb_info(const struct image_header  *hdr)
 	return xsb;
 }
 
-static int q654_verify_uboot_signature(const struct image_header *hdr, struct sb_info *xsb)
+static int q654_verify_image_signature(const struct image_header *hdr, struct sb_info *xsb)
 {
 	__ALIGN4
 	u8 h_val[64], sig[64];
@@ -226,7 +226,7 @@ static int q654_verify_uboot_signature(const struct image_header *hdr, struct sb
 	return ret;
 }
 
-static int q654_decrypt_uboot(const struct image_header *hdr, struct sb_info *xsb, u8 *cipher_bin)
+static int q654_decrypt_image(const struct image_header *hdr, struct sb_info *xsb, u8 *cipher_bin)
 {
 	__ALIGN4
 	u8 dev_Kpriv[32];
@@ -321,7 +321,7 @@ clr_out:
 }
 
 /* Return ROM_SUCCESS(=0) if ok */
-int q654_uboot_verify_decrypt(const struct image_header  *hdr)
+int q654_image_verify_decrypt(const struct image_header  *hdr)
 {
 	int ret = 0;
 	int mmu = 0;
@@ -370,7 +370,7 @@ int q654_uboot_verify_decrypt(const struct image_header  *hdr)
 
 	/* Verify signature */
 
-	if (q654_verify_uboot_signature(hdr, xsb)) {
+	if (q654_verify_image_signature(hdr, xsb)) {
 		CSTAMP(0x23490009);
 
 		// Bad signature
@@ -394,7 +394,7 @@ int q654_uboot_verify_decrypt(const struct image_header  *hdr)
 	}
 
 	/* Decrypt uboot */
-	if (q654_decrypt_uboot(hdr, xsb, (u8 *)hdr + sizeof(struct image_header))) {
+	if (q654_decrypt_image(hdr, xsb, (u8 *)hdr + sizeof(struct image_header))) {
 		CSTAMP(0x2349000c);
 
 		prn_string("fail to decrypt uboot\n");
@@ -534,7 +534,7 @@ static struct sb_info *q645_get_sb_info(const struct image_header  *hdr)
 	return xsb;
 }
 
-static int q645_verify_uboot_signature(const struct image_header *hdr, struct sb_info *xsb)
+static int q645_verify_image_signature(const struct image_header *hdr, struct sb_info *xsb)
 {
 	__ALIGN4
 	u8 h_val[64], sig[64];
@@ -611,7 +611,7 @@ static int q645_verify_uboot_signature(const struct image_header *hdr, struct sb
 	return ret;
 }
 
-static int q645_decrypt_uboot(const struct image_header *hdr, struct sb_info *xsb, u8 *cipher_bin)
+static int q645_decrypt_image(const struct image_header *hdr, struct sb_info *xsb, u8 *cipher_bin)
 {
 	__ALIGN4
 	u8 dev_Kpriv[32];
@@ -706,7 +706,7 @@ clr_out:
 }
 
 /* Return ROM_SUCCESS(=0) if ok */
-int q645_uboot_verify_decrypt(const struct image_header  *hdr)
+int q645_image_verify_decrypt(const struct image_header  *hdr)
 {
 	int ret = 0;
 	int mmu = 0;
@@ -755,7 +755,7 @@ int q645_uboot_verify_decrypt(const struct image_header  *hdr)
 
 	/* Verify signature */
 
-	if (q645_verify_uboot_signature(hdr, xsb)) {
+	if (q645_verify_image_signature(hdr, xsb)) {
 		CSTAMP(0x23490009);
 
 		// Bad signature
@@ -779,7 +779,7 @@ int q645_uboot_verify_decrypt(const struct image_header  *hdr)
 	}
 
 	/* Decrypt uboot */
-	if (q645_decrypt_uboot(hdr, xsb, (u8 *)hdr + sizeof(struct image_header))) {
+	if (q645_decrypt_image(hdr, xsb, (u8 *)hdr + sizeof(struct image_header))) {
 		CSTAMP(0x2349000c);
 
 		prn_string("fail to decrypt uboot\n");
@@ -892,13 +892,13 @@ out:
 }
 #endif
 
-int xboot_verify_uboot(const struct image_header  *hdr)
+int xboot_verify_next_image(const struct image_header  *hdr)
 {
 	int ret = -1;
 #if defined(PLATFORM_SP7350)
-	ret = q654_uboot_verify_decrypt(hdr);
+	ret = q654_image_verify_decrypt(hdr);
 #elif defined(PLATFORM_Q645)
-	ret = q645_uboot_verify_decrypt(hdr);
+	ret = q645_image_verify_decrypt(hdr);
 #else
 	ret = q628_verify_uboot_signature(hdr);
 #endif	

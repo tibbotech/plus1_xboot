@@ -1,0 +1,57 @@
+/*
+ * Copyright (c) 2014-2020, ARM Limited and Contributors. All rights reserved.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
+#ifndef __FIP_H_
+#define __FIP_H_
+
+#include <stdint.h>
+#include <config.h>
+
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
+
+/* This is used as a signature to validate the blob header */
+#define TOC_HEADER_NAME	0xAA640001
+
+
+/* ToC Entry UUIDs */
+#define UUID_EL3_RUNTIME_FIRMWARE_BL31 \
+	{{0x47,  0xd4, 0x08, 0x6d}, {0x4c, 0xfe}, {0x98, 0x46}, 0x9b, 0x95, {0x29, 0x50, 0xcb, 0xbd, 0x5a, 0x00} }
+#define UUID_SECURE_PAYLOAD_BL32 \
+	{{0x05,  0xd0, 0xe1, 0x89}, {0x53, 0xdc}, {0x13, 0x47}, 0x8d, 0x2b, {0x50, 0x0a, 0x4b, 0x7a, 0x3e, 0x38} }
+#define UUID_SECURE_PAYLOAD_BL32_EXTRA1 \
+	{{0x0b,  0x70, 0xc2, 0x9b}, {0x2a, 0x5a}, {0x78, 0x40}, 0x9f, 0x65, {0x0a, 0x56, 0x82, 0x73, 0x82, 0x88} }
+#define UUID_SECURE_PAYLOAD_BL32_EXTRA2 \
+	{{0x8e,  0xa8, 0x7b, 0xb1}, {0xcf, 0xa2}, {0x3f, 0x4d}, 0x85, 0xfd, {0xe7, 0xbb, 0xa5, 0x02, 0x20, 0xd9} }
+#define UUID_NON_TRUSTED_FIRMWARE_BL33 \
+	{{0xd6,  0xd0, 0xee, 0xa7}, {0xfc, 0xea}, {0xd5, 0x4b}, 0x97, 0x82, {0x99, 0x34, 0xf2, 0x34, 0xb6, 0xe4} }
+
+struct uuid {
+	uint8_t		time_low[4];
+	uint8_t		time_mid[2];
+	uint8_t		time_hi_and_version[2];
+	uint8_t		clock_seq_hi_and_reserved;
+	uint8_t		clock_seq_low;
+	uint8_t		node[6];
+};
+
+typedef struct uuid uuid_t;
+
+typedef struct fip_toc_header {
+	uint32_t	name;
+	uint32_t	serial_number;
+	uint64_t	flags;
+} fip_toc_header_t;
+
+typedef struct fip_toc_entry {
+	uuid_t		uuid;
+	uint64_t	offset_address;
+	uint64_t	size;
+	uint64_t	flags;
+} fip_toc_entry_t;
+
+#endif
+
+#endif /* FIP_H */

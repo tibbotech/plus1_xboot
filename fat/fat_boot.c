@@ -17,7 +17,11 @@ unsigned int xboot_start_secotr = 0;
 
 static const unsigned char FILENAMES[FAT_FILES][12] =
 {
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
+	"ISPBOOOTBIN","U-BOOT  IMG","FIP     IMG"
+#else
 	"ISPBOOOTBIN","U-BOOT  IMG"
+#endif
 };
 
 static u32 search_fat32_files(fat_info *info, u8 *buffer, u8 type);
