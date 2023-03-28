@@ -28,6 +28,7 @@ endchoice
 choice
 prompt "DRAM type"
 default LPDDR4
+depends on PLATFORM_Q645 || PLATFORM_SP7350
 config  LPDDR4
 	bool "LPDDR4"
 config DDR4
@@ -40,7 +41,8 @@ endchoice
 
 choice
 prompt "DRAM part number"
-default NT6AN1024F32AV 
+default NT6AN1024F32AV
+depends on PLATFORM_Q645 || PLATFORM_SP7350
 config  NT6AN1024F32AV
 	bool "NT6AN1024F32AV"
 	help
