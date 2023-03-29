@@ -59,6 +59,22 @@ config MT53E1G32D2_B
 	bool "MT53E1G32D2_B D8CJG"
 	help
 	  Micron MT53E1G32D2_B, 1Gbx32, 2 rank, FBGA code = D8CJG
+config MT40A2G16SKL_B
+	bool "MT40A2G16SKL_B D9XQF"
+	help
+	  Micron MT40A2G16SKL_B, 2Gbx16, 1 rank, FBGA code = D9XQF
+config MT41K512M16VRP
+	bool "MT41K512M16VRP D9ZWN"
+	help
+	  Micron MT41K512M16VRP, 512Mx16, 1 rank, FBGA code = D9ZWN
+config K4AAG165WA
+	bool "K4AAG165WA"
+	help
+	  SAMSUNG K4AAG165WA, 1Gx16, 1 rank
+config K4B8G1646D
+	bool "K4B8G1646D"
+	help
+	  SAMSUNG K4B8G1646D, 512Mx16, 2 rank
 endchoice
 
 config PLATFORM_IC_REV
