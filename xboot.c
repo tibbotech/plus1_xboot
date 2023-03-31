@@ -391,7 +391,7 @@ static void init_hw(void)
 	buf[0] = 0;
 	sp_i2c_write(7, 0x02, buf, 1);
 	sp_i2c_read(7, 0x02, buf, 1);
-	prn_string("ID = "); prn_dword((int*)*buf);
+	prn_string("ID = "); prn_dword((int)*buf);
 	//buf[0] = 0x82;
 	if (buf[0] == 0x82) {
 		buf[0] = 0x02;                  // Set VID to 0x14.

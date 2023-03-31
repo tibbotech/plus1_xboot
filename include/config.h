@@ -74,10 +74,9 @@
 #define AHB_GRP(_ahb_grp, _grp, _reg)   ((((_grp) * 32 + (_reg)) * 4) + ((_ahb_grp) * 0x1000) + AHB0_REG_BASE)
 
 #ifdef PLATFORM_SP7350
-#define REG_BASE_AO           0xF8800000
-#define RF_GRP_AO(_grp, _reg)              ((((_grp) * 32 + (_reg)) * 4) + REG_BASE_AO)
-#define REG_BASE_I2C          0xF8828000
-#define RF_GRP_I2C(_grp, _reg)             ((((_grp) * 32 + (_reg)) * 128) + REG_BASE_I2C)
+#define REG_BASE_AO       0xF8800000
+#define RF_GRP_AO(_grp, _reg)           ((((_grp) * 32 + (_reg)) * 4) + REG_BASE_AO)
+#define RF_AMBA_AO(_grp, _reg)          ((((_grp) * 1024 + (_reg)) * 4) + REG_BASE_AO)
 #endif
 
 #define A_REG_BASE                      0x9ec00000
