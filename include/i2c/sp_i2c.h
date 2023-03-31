@@ -14,7 +14,7 @@
 #define I2C_NO	10
 #endif
 
-#define I2C_TX_FIFO_DEPTH	32
+#define I2C_TX_FIFO_DEPTH	8
 #define I2C_READ_TX_DATA	0x100
 
 /* I2C Frequency Modes */
