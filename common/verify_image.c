@@ -8,7 +8,7 @@
 #ifdef CONFIG_SECURE_BOOT_SIGN
 
 // u-boot.img =|header+data+sbinf0|
-#define SB_INFO_SIZE	200 
+#define SB_INFO_SIZE	200
 
 #define VERIFY_SIGN_MAGIC_DATA	(0x7369676E)  //SIGN
 
@@ -134,7 +134,7 @@ static struct sb_info *q654_get_sb_info(const struct image_header  *hdr)
 	struct sb_info *xsb = NULL;
 
 	int imgsize=image_get_size(hdr);
-	
+
 	// offs_sb is offset to sb_info after uboot_hdr
 	xsb =(struct sb_info *)(((u8 *)hdr) + imgsize  + sizeof(struct image_header) - SB_INFO_SIZE);
 	if (((u32)xsb & 0x3) || (xsb->magic != SB_MAGIC)) {
@@ -296,7 +296,7 @@ static int q654_decrypt_image(const struct image_header *hdr, struct sb_info *xs
 	} else {
 		prn_string("ok\n");
 
-		prn_string("Decrypting uboot, len=");
+		prn_string("Decrypting uboot/fip, len=");
 		prn_dword(xsb->body_cipher_len);
 
 		t1 = AV1_GetStc32();
@@ -326,14 +326,14 @@ int q654_image_verify_decrypt(const struct image_header  *hdr)
 	int ret = 0;
 	int mmu = 0;
 	struct sb_info *xsb;
-	
+
 	CSTAMP(0x23490001);
 
 	if(CONFIG_COMPILE_WITH_SECURE == 0){
 		prn_string("not Secure image\n");
 		return ROM_SUCCESS;
 	}
-	
+
 	if (!IS_IC_SECURE_ENABLE()) {
 		prn_string("Error: non-secure IC can't boot Secure image\n");
 		return ROM_FAIL;
@@ -347,7 +347,7 @@ int q654_image_verify_decrypt(const struct image_header  *hdr)
 	 */
 
 	CSTAMP(0x23490004);
-	
+
 	/* Is SB info appended */
 	prn_string("read SB info\n");
 	xsb = q654_get_sb_info(hdr);
@@ -385,7 +385,7 @@ int q654_image_verify_decrypt(const struct image_header  *hdr)
 
 	CSTAMP(0x2349000b);
 
-	
+
 	/* Is encrypted ? */
 	if ((xsb->sb_flags & SB_FLAG_ENCRYPTED) == 0) {
 		prn_string("SB img: no encrypted flag\n");
@@ -393,16 +393,16 @@ int q654_image_verify_decrypt(const struct image_header  *hdr)
 		goto sb_out;
 	}
 
-	/* Decrypt uboot */
+	/* Decrypt uboot/fip */
 	if (q654_decrypt_image(hdr, xsb, (u8 *)hdr + sizeof(struct image_header))) {
 		CSTAMP(0x2349000c);
 
-		prn_string("fail to decrypt uboot\n");
+		prn_string("fail to decrypt uboot/fip\n");
 		ret = ROM_FAIL;
 		goto sb_out;
 	}
 
-	prn_string("Decrypted valid uboot\n");
+	prn_string("Decrypted valid uboot/fip\n");
 
 	CSTAMP(0x2349000d);
 
@@ -519,7 +519,7 @@ static struct sb_info *q645_get_sb_info(const struct image_header  *hdr)
 	struct sb_info *xsb = NULL;
 
 	int imgsize=image_get_size(hdr);
-	
+
 	// offs_sb is offset to sb_info after uboot_hdr
 	xsb =(struct sb_info *)(((u8 *)hdr) + imgsize  + sizeof(struct image_header) - SB_INFO_SIZE);
 	if (((u32)xsb & 0x3) || (xsb->magic != SB_MAGIC)) {
@@ -681,7 +681,7 @@ static int q645_decrypt_image(const struct image_header *hdr, struct sb_info *xs
 	} else {
 		prn_string("ok\n");
 
-		prn_string("Decrypting uboot, len=");
+		prn_string("Decrypting uboot/fip, len=");
 		prn_dword(xsb->body_cipher_len);
 
 		t1 = AV1_GetStc32();
@@ -711,14 +711,14 @@ int q645_image_verify_decrypt(const struct image_header  *hdr)
 	int ret = 0;
 	int mmu = 0;
 	struct sb_info *xsb;
-	
+
 	CSTAMP(0x23490001);
 
 	if(CONFIG_COMPILE_WITH_SECURE == 0){
 		prn_string("not Secure image\n");
 		return ROM_SUCCESS;
 	}
-	
+
 	if (!IS_IC_SECURE_ENABLE()) {
 		prn_string("Error: non-secure IC can't boot Secure image\n");
 		return ROM_FAIL;
@@ -732,7 +732,7 @@ int q645_image_verify_decrypt(const struct image_header  *hdr)
 	 */
 
 	CSTAMP(0x23490004);
-	
+
 	/* Is SB info appended */
 	prn_string("read SB info\n");
 	xsb = q645_get_sb_info(hdr);
@@ -770,7 +770,7 @@ int q645_image_verify_decrypt(const struct image_header  *hdr)
 
 	CSTAMP(0x2349000b);
 
-	
+
 	/* Is encrypted ? */
 	if ((xsb->sb_flags & SB_FLAG_ENCRYPTED) == 0) {
 		prn_string("SB img: no encrypted flag\n");
@@ -778,16 +778,16 @@ int q645_image_verify_decrypt(const struct image_header  *hdr)
 		goto sb_out;
 	}
 
-	/* Decrypt uboot */
+	/* Decrypt uboot/fip */
 	if (q645_decrypt_image(hdr, xsb, (u8 *)hdr + sizeof(struct image_header))) {
 		CSTAMP(0x2349000c);
 
-		prn_string("fail to decrypt uboot\n");
+		prn_string("fail to decrypt uboot/fip\n");
 		ret = ROM_FAIL;
 		goto sb_out;
 	}
 
-	prn_string("Decrypted valid uboot\n");
+	prn_string("Decrypted valid uboot/fip\n");
 
 	CSTAMP(0x2349000d);
 
@@ -901,10 +901,14 @@ int xboot_verify_next_image(const struct image_header  *hdr)
 	ret = q645_image_verify_decrypt(hdr);
 #else
 	ret = q628_verify_uboot_signature(hdr);
-#endif	
+#endif
 	if(ret)
 	{
+#if defined(PLATFORM_SP7350) || defined(PLATFORM_Q645)
+		prn_string("\n xboot verify uboot/fip fail !! \nhalt!");
+#else
 		prn_string("\n xboot verify uboot fail !! \nhalt!");
+#endif
 	}
 	return ret;
 }
