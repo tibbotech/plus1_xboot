@@ -886,7 +886,7 @@ static int load_tfa_optee(void)
 	}
 	fip_toc_entry_t *fip_entry = (fip_toc_entry_t  *)((u32)fip_hdr + sizeof(fip_toc_header_t));
 
-	while(memcmp((u8 *)&(fip_entry->uuid),(u8 *)&uuid_null,sizeof(uuid_t) != 0))
+	while(memcmp((u8 *)&(fip_entry->uuid),(u8 *)&uuid_null,sizeof(uuid_t)) != 0)
 	{
 		if(memcmp((u8 *)&(fip_entry->uuid),(u8 *)&optee,sizeof(uuid_t)) == 0)
 		{
