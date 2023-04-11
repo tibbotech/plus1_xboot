@@ -872,8 +872,6 @@ static void cm4_init()
 }
 static int load_tfa_optee(void)
 {
-#ifndef CONFIG_USE_ZMEM
-
 	uuid_t optee = UUID_SECURE_PAYLOAD_BL32;
 	uuid_t bl31 = UUID_EL3_RUNTIME_FIRMWARE_BL31;
 	uuid_t uuid_null = { {0} };
@@ -895,12 +893,9 @@ static int load_tfa_optee(void)
 		if(memcmp((u8 *)&(fip_entry->uuid),(u8 *)&bl31,sizeof(uuid_t)) == 0 )
 		{
 			memcpy((u8 *)BL31_RUN_ADDR,(u8 *)((u32)fip_hdr + (u32)fip_entry->offset_address),fip_entry->size);
-	}
+		}
 		fip_entry += 1;
 	};
-#endif
-
-
 	return 0;
 }
 
@@ -2153,7 +2148,7 @@ static void nand_uboot(u32 type)
 	len = nand_load_uhdr_image(type, "fip", (void *)hdr, blk_start,
 			10, &blk_end, 0);
 	if (len <= 0) {
-		prn_string("not found good uboot\n");
+		prn_string("not found fip\n");
 		return;
 	}
 #endif
