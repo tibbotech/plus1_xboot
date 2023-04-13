@@ -112,8 +112,11 @@ release debug: all
 
 BIN     := bin
 TARGET  := xboot
+MAKE 	= make
 
-all:  $(TARGET)
+all: chkconfig auto_config
+	@$(MAKE) $(TARGET)
+
 	@# 32-byte xboot header
 ifeq ($(CONFIG_PLATFORM_Q645),y)
 	@bash ./add_xhdr.sh ../draminit/dwc/firmware/Q645/lpddr4_pmu_train_imem.bin $(BIN)/lpddr4_pmu_train_imem.img 0 im1d
@@ -448,7 +451,7 @@ endif
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-a64bin: prepare
+a64bin:
 	@echo "Build a64 bin"
 ifeq ($(CONFIG_PLATFORM_Q645),y)
 	@$(MAKE) -C arch/arm/q645/a64up/
@@ -472,7 +475,7 @@ ifeq ($(SECURE),1)
 	@$(CROSS)objcopy -I binary -O elf32-littlearm -B arm --rename-section .data=.hsmk $(HSMK_BIN) $(HSMK_OBJ)
 endif
 
-I143_C_P: prepare
+I143_C_P:
 	@echo "build arm ca7 !!!"
 	@$(CROSS_ARM)gcc $(CFLAGS_C_P) -c -o $(START_C_P_PATH)/start_c_p.o $(START_C_P_PATH)/start_c_p.S
 	@$(CROSS_ARM)cpp -P $(CFLAGS_C_P) $(START_C_P_PATH)/boot_c_p.ldi $(START_C_P_PATH)/boot_c_p.ld
@@ -518,11 +521,11 @@ distclean: clean
 # configurations
 .PHONY: prepare
 ifeq ($(CONFIG_PLATFORM_Q645),y)
-prepare: auto_config dwc
+prepare: dwc
 else ifeq ($(CONFIG_PLATFORM_SP7350),y)
-prepare: auto_config dwc
+prepare: dwc
 else
-prepare: auto_config build_draminit
+prepare: build_draminit
 endif
 	@mkdir -p $(BIN)
 
@@ -542,7 +545,7 @@ $(config_list):
 list:
 	@echo "$(config_list)" | sed 's/ /\n/g'
 
-auto_config: chkconfig
+auto_config: 
 	@echo "  [KCFG] $@.h"
 	$(AUTOCONFH) .config include/$@.h
 ifeq ($(CONFIG_PLATFORM_Q645),y)
