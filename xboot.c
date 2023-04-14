@@ -982,6 +982,24 @@ static void set_module_nonsecure(void)
 #endif
 }
 
+// set optee-os memory to trust zone by TZC
+void set_memory_secure(void)
+{
+
+#ifdef PLATFORM_SP7350
+
+	#define TZC_REGION_ID				(1)
+
+	*(volatile u32 *)(0xf8c40100 + 0x20 * TZC_REGION_ID) = OPTEE_RUN_ADDR;            // BASE_LOW
+	*(volatile u32 *)(0xf8c40104 + 0x20 * TZC_REGION_ID) = 0x00000000;                // BASE_HIGH
+	*(volatile u32 *)(0xf8c40108 + 0x20 * TZC_REGION_ID) = OPTEE_RUN_ADDR + 0x200000; // TOP_LOW
+	*(volatile u32 *)(0xf8c4010c + 0x20 * TZC_REGION_ID) = 0x00000000;                // TOP_HIGH
+	*(volatile u32 *)(0xf8c40110 + 0x20 * TZC_REGION_ID) = 0xc000000f;                // ATTR: secure access enable
+	*(volatile u32 *)(0xf8c40114 + 0x20 * TZC_REGION_ID) = 0x00000000;                // ID_ACCESS disable
+
+#endif
+}
+
 /*
  * Switch from aarch32 to aarch64.
  */
@@ -996,6 +1014,8 @@ static void go_a32_to_a64(u32 ap_addr)
 	prn_string("32->64\n");
 
 	set_module_nonsecure();
+
+	set_memory_secure();
 
 	// ap_addr will be used by BL31
 	*(volatile u32 *)CORE0_CPU_START_POS = ap_addr;
