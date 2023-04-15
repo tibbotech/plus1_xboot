@@ -2372,28 +2372,22 @@ static void init_uart(void)
 	UART1_REG->div_l = UART_BAUD_DIV_L(BAUDRATE, UART_SRC_CLK);
 	UART1_REG->div_h = UART_BAUD_DIV_H(BAUDRATE, UART_SRC_CLK);
 	MOON1_REG->sft_cfg[1] = RF_MASK_V_SET(1 << 12); // UADBG_SEL=1
-	MOON0_REG->reset[3] = RF_MASK_V_CLR(1 << 5);   // UADBG_RESET=0
+	MOON0_REG->reset[3] = RF_MASK_V_CLR(1 << 5);    // UADBG_RESET=0
 	UADBG_REG->div_l = UART_BAUD_DIV_L(BAUDRATE, UART_SRC_CLK);
 	UADBG_REG->div_h = UART_BAUD_DIV_H(BAUDRATE, UART_SRC_CLK);
-	*(volatile int *)0xf800f98c = 0; // disable ua2axi,enable uadgb
-
+	*(volatile int *)0xf800f98c = 0; // Disable UA2AXI and enable UADBG.
 #endif
-#if defined(PLATFORM_SP7350) && defined(CONFIG_BOOT_ON_ZEBU)
+#if defined(PLATFORM_SP7350)
 	/* uart1 pinmux : UA1_TX, UA1_RX */
 	MOON1_REG_AO->sft_cfg[2] = RF_MASK_V((3 << 4), (1 << 4)); // UA1_SEL=1
 	MOON0_REG_AO->reset[5] = RF_MASK_V_CLR(1 << 7);           // UA1_RESET=0
 	UART1_REG->div_l = UART_BAUD_DIV_L(BAUDRATE, UART_SRC_CLK);
 	UART1_REG->div_h = UART_BAUD_DIV_H(BAUDRATE, UART_SRC_CLK);
-	UART1_REG->dr = 'U';
-	UART1_REG->dr = 'A';
-	UART1_REG->dr = 'R';
-	UART1_REG->dr = 'T';
-	UART1_REG->dr = '1';
 	MOON1_REG_AO->sft_cfg[2] = RF_MASK_V_SET(1 << 14); /* UADBG_SEL=1 */
 	MOON0_REG_AO->reset[5] = RF_MASK_V_CLR(1 << 10);   // UADBG_RESET=0
 	UADBG_REG->div_l = UART_BAUD_DIV_L(BAUDRATE, UART_SRC_CLK);
 	UADBG_REG->div_h = UART_BAUD_DIV_H(BAUDRATE, UART_SRC_CLK);
-	*(volatile int *)0xf800f98c = 0; // disable ua2axi,enable uadgb
+	*(volatile int *)0xf800f98c = 0; // Disable UA2AXI and enable UADBG.
 #endif
 #ifdef PLATFORM_I143
 	/* uart1 pinmux : UA1_TX, UA1_RX */
