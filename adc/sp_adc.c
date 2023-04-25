@@ -26,7 +26,7 @@ void sp_adc_read(unsigned int adc_chan, unsigned int *adc_buf)
 	temp_reg &= ~SP_ADC_CLK_DIV_MASK;
 	adc_regs->adc_cfg02 = temp_reg;		// set clk div = 0
 
-	adc_regs->adc_cfg14 = SP_ADC_CHAN_SET; 	// set adc chan
+	adc_regs->adc_cfg0e = SP_ADC_CHAN_SET; 	// set adc chan
 
 	temp_reg = adc_regs->adc_cfg0b;
 	temp_reg |= SP_ADC_SRFS;
