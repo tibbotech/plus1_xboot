@@ -46,6 +46,17 @@ _start_a64:
 
 	STAMP(0xa6401001);
 
+	// clear xboot code buf
+	ldr	x0, = SRAM0_BASE
+	ldr	x1, = (SRAM0_BASE + XBOOT_BUF_SIZE)
+	mov	x2, #0
+clear_s:
+	cmp	x0, x1
+	b.hs	clear_e
+	str	w2, [x0]
+	add	x0, x0, #4
+	b	clear_s
+clear_e:
 	// core 0 path : wake_cpuN
 	bl	wake_cpuN
 
