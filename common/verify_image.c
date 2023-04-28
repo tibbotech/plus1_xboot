@@ -381,10 +381,10 @@ int q654_image_verify_decrypt(const struct image_header  *hdr)
 		goto sb_out;
 	}
 
-	prn_string("Verified signature\n");
+	if((uint32_t)hdr == UBOOT_LOAD_ADDR) //uboot do signature only
+		goto sb_out;
 
 	CSTAMP(0x2349000b);
-
 
 	/* Is encrypted ? */
 	if ((xsb->sb_flags & SB_FLAG_ENCRYPTED) == 0) {
@@ -766,10 +766,10 @@ int q645_image_verify_decrypt(const struct image_header  *hdr)
 		goto sb_out;
 	}
 
-	prn_string("Verified signature\n");
+	if((uint32_t)hdr == UBOOT_LOAD_ADDR) //uboot do signature only
+		goto sb_out;
 
 	CSTAMP(0x2349000b);
-
 
 	/* Is encrypted ? */
 	if ((xsb->sb_flags & SB_FLAG_ENCRYPTED) == 0) {
