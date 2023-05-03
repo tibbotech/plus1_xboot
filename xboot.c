@@ -377,26 +377,26 @@ static void init_hw(void)
 	delay_1ms(1);
 
 #elif defined(PLATFORM_SP7350)
-	#if 0//!defined(CONFIG_BOOT_ON_CSIM) && !defined(CONFIG_BOOT_ON_ZEBU)
+	#if 1//!defined(CONFIG_BOOT_ON_CSIM) && !defined(CONFIG_BOOT_ON_ZEBU)
 	// Set CA55 power (VDD_CA55) to 0.8V.
 	// RT5759 is connected at I2C7.
 
 	u8 buf[2];
 
 	// Initialize I2C7.
-	sp_i2c_en(7);
+	sp_i2c_en(7, I2C_PIN_MODE0);
 	_delay_1ms(1);
 
 	// Read ID of RT5759 (addr = 0x2). ID of RT5759 should be 0x82.
 	buf[0] = 0;
-	sp_i2c_write(7, 0x02, buf, 1);
-	sp_i2c_read(7, 0x02, buf, 1);
+	sp_i2c_write(7, 0x02, buf, 1, SP_I2C_SPEED_STD);
+	sp_i2c_read(7, 0x02, buf, 1, SP_I2C_SPEED_STD);
 	prn_string("ID = "); prn_dword((int)*buf);
 	//buf[0] = 0x82;
 	if (buf[0] == 0x82) {
 		buf[0] = 0x02;                  // Set VID to 0x14.
 		buf[1] = 0x14;                  //
-		sp_i2c_write(7, 0x02, buf, 2);     //
+		sp_i2c_write(7, 0x02, buf, 2, SP_I2C_SPEED_STD);     //
 		_delay_1ms(1);
 	}
 	#endif

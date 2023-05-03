@@ -14,6 +14,16 @@
 #define I2C_NO	10
 #endif
 
+enum sp_i2c_speed {
+	SP_I2C_SPEED_STD = 0,
+	SP_I2C_SPEED_FAST = 1,
+};
+
+enum sp_i2c_pin_mode {
+	I2C_PIN_MODE0 = 0,
+	I2C_PIN_MODE1 = 1,
+};
+
 #define I2C_TX_FIFO_DEPTH	8
 #define I2C_READ_TX_DATA	0x100
 
@@ -99,8 +109,8 @@ struct i2c_master_ctlr {
 };
 struct i2c_master_ctlr i2c_mas_ctlr[I2C_NO];
 
-void sp_i2c_en(unsigned int i2c_no);
-void sp_i2c_write(unsigned int i2c_no, u8  slave_addr , u8  *data_buf , unsigned int len);
-void sp_i2c_read(unsigned int i2c_no, u8  slave_addr , u8  *data_buf , unsigned int len);
+void sp_i2c_en(unsigned int i2c_no, enum sp_i2c_pin_mode mode);
+void sp_i2c_write(unsigned int i2c_no, u8  slave_addr, u8  *data_buf, unsigned int len, enum sp_i2c_speed speed);
+void sp_i2c_read(unsigned int i2c_no, u8  slave_addr, u8  *data_buf, unsigned int len, enum sp_i2c_speed speed);
 
-#endif		//DRV_SD_MMC_H
+#endif

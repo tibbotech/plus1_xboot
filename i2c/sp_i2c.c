@@ -71,13 +71,16 @@ void i2c_dw_handle_tx_abort(unsigned int i2c_no)
 
 }
 
-void sp_i2c_en(unsigned int i2c_no)
+void sp_i2c_en(unsigned int i2c_no, enum sp_i2c_pin_mode mode)
 {
 
 	switch (i2c_no) {
 		case 0:
 			i2c_mas_ctlr[i2c_no].reg = I2C0_REG_AO;
-			MOON1_REG_AO->sft_cfg[3] = RF_MASK_V(0x1 << 3, 0x1 << 3); // cfg3[4:3]=1  i2c1 pin
+			if (mode == I2C_PIN_MODE1)
+				MOON1_REG_AO->sft_cfg[3] = RF_MASK_V(1 << 4, 1 << 4); // cfg3[4:3]=1  i2c1
+			else
+				MOON1_REG_AO->sft_cfg[3] = RF_MASK_V(1 << 3, 1 << 3); // cfg3[4:3]=1  i2c1 pin
 			MOON2_REG_AO->clken[8] =  RF_MASK_V_SET(1 << 9);
 			MOON2_REG_AO->gclken[8] = RF_MASK_V_CLR(1 << 9);
 			MOON0_REG_AO->reset[8] = RF_MASK_V_CLR(1 << 9);
@@ -91,7 +94,10 @@ void sp_i2c_en(unsigned int i2c_no)
 		break;
 		case 2:
 			i2c_mas_ctlr[i2c_no].reg = I2C2_REG_AO;
-			MOON1_REG_AO->sft_cfg[3] = RF_MASK_V(0x1 << 6, 0x1 << 6);
+			if (mode == I2C_PIN_MODE1)
+				MOON1_REG_AO->sft_cfg[3] = RF_MASK_V(1 << 7, 1 << 7);
+			else
+				MOON1_REG_AO->sft_cfg[3] = RF_MASK_V(1 << 6, 1 << 6);
 			MOON2_REG_AO->clken[8] =  RF_MASK_V_SET(1 << 11);
 			MOON2_REG_AO->gclken[8] = RF_MASK_V_CLR(1 << 11);
 			MOON0_REG_AO->reset[8] = RF_MASK_V_CLR(1 << 11);
@@ -119,28 +125,40 @@ void sp_i2c_en(unsigned int i2c_no)
 		break;
 		case 6:
 			i2c_mas_ctlr[i2c_no].reg = I2C6_REG_AO;
-			MOON1_REG_AO->sft_cfg[3] = RF_MASK_V(0x1 << 11, 0x1 << 11);
+			if (mode == I2C_PIN_MODE1)
+				MOON1_REG_AO->sft_cfg[3] = RF_MASK_V(1 << 12, 1 << 12);
+			else
+				MOON1_REG_AO->sft_cfg[3] = RF_MASK_V(1 << 11, 1 << 11);
 			MOON2_REG_AO->clken[8] =  RF_MASK_V_SET(1 << 15);
 			MOON2_REG_AO->gclken[8] = RF_MASK_V_CLR(1 << 15);
 			MOON0_REG_AO->reset[8] = RF_MASK_V_CLR(1 << 15);
 		break;
 		case 7:
 			i2c_mas_ctlr[i2c_no].reg = I2C7_REG_AO;
-			MOON1_REG_AO->sft_cfg[3] = RF_MASK_V(0x1 << 13, 0x1 << 13);
+			if (mode == I2C_PIN_MODE1)
+				MOON1_REG_AO->sft_cfg[3] = RF_MASK_V(1 << 14, 1 << 14);
+			else
+				MOON1_REG_AO->sft_cfg[3] = RF_MASK_V(1 << 13, 1 << 13);
 			MOON2_REG_AO->clken[9] =  RF_MASK_V_SET(1 << 0);
 			MOON2_REG_AO->gclken[9] = RF_MASK_V_CLR(1 << 0);
 			MOON0_REG_AO->reset[9] = RF_MASK_V_CLR(1 << 0);
 		break;
 		case 8:
 			i2c_mas_ctlr[i2c_no].reg = I2C8_REG_AO;
-			MOON1_REG_AO->sft_cfg[4] = RF_MASK_V(0x1 << 0, 0x1 << 0);
+			if (mode == I2C_PIN_MODE1)
+				MOON1_REG_AO->sft_cfg[4] = RF_MASK_V(1 << 1, 1 << 1);
+			else
+				MOON1_REG_AO->sft_cfg[4] = RF_MASK_V(1 << 0, 1 << 0);
 			MOON2_REG_AO->clken[9] =  RF_MASK_V_SET(1 << 1);
 			MOON2_REG_AO->gclken[9] = RF_MASK_V_CLR(1 << 1);
 			MOON0_REG_AO->reset[9] = RF_MASK_V_CLR(1 << 1);
 		break;
 		case 9:
 			i2c_mas_ctlr[i2c_no].reg = I2C9_REG_AO;
-			MOON1_REG_AO->sft_cfg[4] = RF_MASK_V(0x1 << 2, 0x1 << 2);
+			if (mode == I2C_PIN_MODE1)
+				MOON1_REG_AO->sft_cfg[4] = RF_MASK_V(1 << 3, 1 << 3);
+			else
+				MOON1_REG_AO->sft_cfg[4] = RF_MASK_V(1 << 2, 1 << 2);
 			MOON2_REG_AO->clken[9] =  RF_MASK_V_SET(1 << 2);
 			MOON2_REG_AO->gclken[9] = RF_MASK_V_CLR(1 << 2);
 			MOON0_REG_AO->reset[9] = RF_MASK_V_CLR(1 << 2);
@@ -148,7 +166,7 @@ void sp_i2c_en(unsigned int i2c_no)
 		}
 }
 
-void sp_i2c_write(unsigned int i2c_no, u8  slave_addr , u8  *data_buf , unsigned int len)
+void sp_i2c_write(unsigned int i2c_no, u8  slave_addr , u8  *data_buf , unsigned int len, enum sp_i2c_speed speed)
 {
 
         unsigned int temp_reg;			
@@ -169,7 +187,10 @@ void sp_i2c_write(unsigned int i2c_no, u8  slave_addr , u8  *data_buf , unsigned
 	//i2c_regs->SP_IC_RX_TL = 0;
 
         temp_reg = SP_IC_CON_MASTER | SP_IC_CON_SLAVE_DISABLE | SP_IC_CON_RESTART_EN;
-	temp_reg |= SP_IC_CON_SPEED_STD;
+	if(speed == SP_I2C_SPEED_FAST)
+		temp_reg |= SP_IC_CON_SPEED_FAST;
+	else
+		temp_reg |= SP_IC_CON_SPEED_STD;
 
 	i2c_regs->ic_con = temp_reg;
 	i2c_regs->ic_tar = slave_addr;
@@ -230,7 +251,7 @@ void sp_i2c_write(unsigned int i2c_no, u8  slave_addr , u8  *data_buf , unsigned
 	i2c_regs->ic_enable = 0;
 }
 
-void sp_i2c_read(unsigned int i2c_no, u8  slave_addr , u8  *data_buf , unsigned int len)
+void sp_i2c_read(unsigned int i2c_no, u8  slave_addr , u8  *data_buf , unsigned int len, enum sp_i2c_speed speed)
 {
         unsigned int temp_reg;
         unsigned int xfer_cnt;
@@ -254,7 +275,10 @@ void sp_i2c_read(unsigned int i2c_no, u8  slave_addr , u8  *data_buf , unsigned 
 	i2c_regs->ic_rx_tl = 0;
 
         temp_reg = SP_IC_CON_MASTER | SP_IC_CON_SLAVE_DISABLE | SP_IC_CON_RESTART_EN;
-	temp_reg |= SP_IC_CON_SPEED_STD;
+	if(speed == SP_I2C_SPEED_FAST)
+		temp_reg |= SP_IC_CON_SPEED_FAST;
+	else
+		temp_reg |= SP_IC_CON_SPEED_STD;
 
 	i2c_regs->ic_con = temp_reg;
 	i2c_regs->ic_tar = slave_addr;
