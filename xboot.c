@@ -377,7 +377,7 @@ static void init_hw(void)
 	delay_1ms(1);
 
 #elif defined(PLATFORM_SP7350)
-	#if 1//!defined(CONFIG_BOOT_ON_CSIM) && !defined(CONFIG_BOOT_ON_ZEBU)
+	#if 0//!defined(CONFIG_BOOT_ON_CSIM) && !defined(CONFIG_BOOT_ON_ZEBU)
 	// Set CA55 power (VDD_CA55) to 0.8V.
 	// RT5759 is connected at I2C7.
 
