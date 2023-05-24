@@ -666,7 +666,7 @@ struct dw_adc_regs {
 	unsigned int adc_reserved[20];		/*43 */
 
 };
-#define ADC_REG_AO ((volatile struct dw_adc_regs *)RF_GRP(94, 0))
+#define ADC_REG_AO ((volatile struct dw_adc_regs *)RF_GRP_AO(94, 0))
 
 /* sd card regs */
 struct card_ctl_regs {
