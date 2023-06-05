@@ -45,17 +45,38 @@ struct moon4_regs_ao {
 struct moon5_regs {
 	unsigned int sft_cfg[32];
 };
-#define MOON5_REG ((volatile struct moon5_regs *)RF_GRP(5, 0))
+#define MOON5_REG ((volatile struct moon5_regs *)RF_GRP_AO(5, 0))
+
+struct gpio_master_regs {
+	unsigned int gpio_master[13];
+};
+#define GPIO_MASTER_REG ((volatile struct gpio_master_regs *)RF_GRP_AO(103, 0)) // 5.0 ~ 5.12
+
+struct gpio_oe_regs {
+	unsigned int gpio_oe[13];
+};
+#define GPIO_OE_REG ((volatile struct gpio_oe_regs *)RF_GRP_AO(103, 13)) // 5.13 ~ 5.25
+
+struct gpio_out_regs {
+	unsigned int gpio_out[13];
+};
+#define GPIO_OUT_REG ((volatile struct gpio_out_regs *)RF_GRP_AO(103, 26)) // 5.26 ~ 6.6
 
 struct pad_ctl_regs {
-	unsigned int reserved[20];         // 101.0
-	unsigned int spi_flash_sftpad_ctl; // 101.20
-	unsigned int spi_nd_sftpad_ctl;    // 101.21
-	unsigned int reserved_21[4];       // 101.21
-	unsigned int gpio_first[4];        // 101.25
-	unsigned int reserved_29[3];       // 101.29
+	unsigned int st_enable[4];		// 101.0 - 101.3
+	unsigned int driving_selector0[4];	// 101.4 - 101.7
+	unsigned int driving_selector1[4];	// 101.8 - 101.11
+	unsigned int driving_selector2[4];	// 101.12 - 101.15
+	unsigned int driving_selector3[4];	// 101.16 - 101.19
+	unsigned int xtal_config; 		// 101.20
+	unsigned int reserved_20;		// 101.21
+	unsigned int sd_config;			// 101.22
+	unsigned int sdio_config;		// 101.23
+	unsigned int reserved_24;		// 101.24
+	unsigned int gpio_first[4];		// 101.25 - 101.28
+	unsigned int reserved_29[3];		// 101.29 - 101.31
 };
-#define PAD_CTL_REG ((volatile struct pad_ctl_regs *)RF_GRP(101, 0))
+#define PAD_CTL_REG ((volatile struct pad_ctl_regs *)RF_GRP_AO(101, 0))
 
 struct hb_gp_regs {
 	unsigned int hb_otp_data0;
