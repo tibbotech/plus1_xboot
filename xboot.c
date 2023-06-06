@@ -168,7 +168,11 @@ static void prn_A_setup(void)
 	prn_string("A_G0.18(ioctrl): "); prn_dword(ABIO_IOCTRL_CFG);
 }
 
-#if defined(PLATFORM_Q645)
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
+// SP7350 pin setting
+// G_MX0 ~ G_MX49	: 0 ~ 49
+// AO_MX0 ~ AO_MX48	: 50 ~ 98
+// IV_MX0 ~ IV_MX6	: 99 ~ 104
 static void set_pad_driving_strength(u32 pin, u32 strength)
 {
 	int reg_off = pin / 32;
@@ -400,6 +404,12 @@ static void init_hw(void)
 		_delay_1ms(1);
 	}
 	#endif
+	// SD-CARD      : 38, 39, 40, 41, 42, 43
+	// SDIO         : 44, 45, 46, 47, 48, 49
+	for (i = 38; i <= 43; i++)
+		set_pad_driving_strength(i, 5);
+	for (i = 44; i <= 49; i++)
+		set_pad_driving_strength(i, 5);
 
 	/* Set PLLC to 1.5G */
 	prn_string("Set PLLC to 1.5GHz\n");
