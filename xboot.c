@@ -47,8 +47,10 @@
 //#define PLLD_400MHz
 //#define PLLD_366MHz
 //#define PLLD_333MHz
+//#define PLLD_300MHz
 //#define PLLD_266MHz
 //#define PLLD_233MHz
+//#define PLLD_200MHz
 #endif
 
 /*
@@ -487,6 +489,12 @@ static void init_hw(void)
 	MOON3_REG_AO->plld_cfg[1] = RF_MASK_V(0xFFFF, 0xC0BC);
 	MOON3_REG_AO->plld_cfg[2] = RF_MASK_V(0xFFFF, 0x0107);
 #endif
+#ifdef PLLD_300MHz
+	prn_string("PLLD: 300MHz, DATARATE:1200\n");
+	MOON3_REG_AO->plld_cfg[0] = RF_MASK_V(0xFFFF, 0x8412);
+	MOON3_REG_AO->plld_cfg[1] = RF_MASK_V(0xFFFF, 0xC0BD);
+	MOON3_REG_AO->plld_cfg[2] = RF_MASK_V(0xFFFF, 0x0107);
+#endif
 #ifdef PLLD_266MHz
 	prn_string("PLLD: 266.6MHz, DATARATE:1066.4\n");
 	MOON3_REG_AO->plld_cfg[0] = RF_MASK_V(0xFFFF, 0x2012);
@@ -499,6 +507,13 @@ static void init_hw(void)
 	MOON3_REG_AO->plld_cfg[1] = RF_MASK_V(0xFFFF, 0xC0BC);
 	MOON3_REG_AO->plld_cfg[2] = RF_MASK_V(0xFFFF, 0x0107);
 #endif
+#ifdef PLLD_200MHz
+	prn_string("PLLD: 200MHz, DATARATE:800\n");
+	MOON3_REG_AO->plld_cfg[0] = RF_MASK_V(0xFFFF, 0x1012);
+	MOON3_REG_AO->plld_cfg[1] = RF_MASK_V(0xFFFF, 0xC0BC);
+	MOON3_REG_AO->plld_cfg[2] = RF_MASK_V(0xFFFF, 0x0107);
+#endif
+
 #endif
 
 #if defined(PLATFORM_Q645)
