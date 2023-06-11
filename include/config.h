@@ -396,7 +396,7 @@
 /**********************
  * UART
  *********************/
-#if defined(CONFIG_BOOT_ON_CSIM) || defined(CONFIG_BOOT_ON_ZEBU)
+#if 1 //defined(CONFIG_BOOT_ON_CSIM) || defined(CONFIG_BOOT_ON_ZEBU)
 #define UART_SRC_CLK        (32 * 1000 * 1000 / 2)	// set 32M, for zebu
 #else
 #define UART_SRC_CLK        (XTAL_CLK)
@@ -410,7 +410,7 @@
 #define UART_BAUD_DIV_H(baud, sclk)     ((((sclk) + ((baud) / 2)) / (baud)) >> 12)
 #define UART_BAUD_DIV_L(baud, sclk)     ((((((sclk) + ((baud) / 2)) / (baud)) & 0xf) << 12) | \
 					 ((((((sclk) + ((baud) / 2)) / (baud)) >> 4) & 0xff) - 1))
-#ifdef SPEED_UP_UART_BAUDRATE
+#if 1 //def SPEED_UP_UART_BAUDRATE
 #define BAUDRATE            921600
 #else
 #define BAUDRATE            115200
