@@ -37,7 +37,7 @@
 #endif
 
 /* Zebu build: speed up options */
-#ifdef CONFIG_BOOT_ON_ZEBU
+#if 1 //def CONFIG_BOOT_ON_ZEBU
 #define SPEED_UP_UART_BAUDRATE
 #define SPEED_UP_SPI_NOR_CLK    /* speed up SPI_NOR flash (eg. Zebu) */
 #endif
