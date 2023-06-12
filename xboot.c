@@ -46,7 +46,7 @@
 //#define PLLD_466MHz
 //#define PLLD_400MHz
 //#define PLLD_366MHz
-//#define PLLD_333MHz
+#define PLLD_333MHz
 //#define PLLD_300MHz
 //#define PLLD_266MHz
 //#define PLLD_233MHz
