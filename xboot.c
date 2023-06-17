@@ -441,6 +441,18 @@ static void init_hw(void)
 
 	PAD_CTL2_REG->cfg[31] = 0x00000000; // GMAC Softpad control register 1 : bit31-->0 ,non-GPIO mode
 
+	// Turn on power of NPU (NPU_PWR_EN, GPIO65).
+	GPIO_MASTER_REG->gpio_master[65 / 16] = 0x10001 << (65 % 16);
+	GPIO_OUT_REG->gpio_out[65 / 16]       = 0x10001 << (65 % 16);
+	GPIO_OE_REG->gpio_oe[65 / 16]         = 0x10001 << (65 % 16);
+	PAD_CTL_REG->gpio_first[65 / 32]     |=       1 << (65 % 32);
+
+	// Turn on power of Video codec (VV_PWR_EN, GPIO66).
+	GPIO_MASTER_REG->gpio_master[66 / 16] = 0x10001 << (66 % 16);
+	GPIO_OUT_REG->gpio_out[66 / 16]       = 0x10001 << (66 % 16);
+	GPIO_OE_REG->gpio_oe[66 / 16]         = 0x10001 << (66 % 16);
+	PAD_CTL_REG->gpio_first[66 / 32]     |=       1 << (66 % 32);
+
 #ifdef PLLD_800MHz
 	prn_string("PLLD: 800MHz, DATARATE:3200\n");
 	MOON3_REG_AO->plld_cfg[0] = RF_MASK_V(0xFFFF, 0x1008);
