@@ -453,6 +453,12 @@ static void init_hw(void)
 	GPIO_OE_REG->gpio_oe[66 / 16]         = 0x10001 << (66 % 16);
 	PAD_CTL_REG->gpio_first[66 / 32]     |=       1 << (66 % 32);
 
+	// Turn on power of Main (MAIN_PWR_EN, GPIO67).
+	GPIO_MASTER_REG->gpio_master[67 / 16] = 0x10001 << (67 % 16);
+	GPIO_OUT_REG->gpio_out[67 / 16]       = 0x10001 << (67 % 16);
+	GPIO_OE_REG->gpio_oe[67 / 16]         = 0x10001 << (67 % 16);
+	PAD_CTL_REG->gpio_first[67 / 32]     |=       1 << (67 % 32);
+
 #ifdef PLLD_800MHz
 	prn_string("PLLD: 800MHz, DATARATE:3200\n");
 	MOON3_REG_AO->plld_cfg[0] = RF_MASK_V(0xFFFF, 0x1008);
