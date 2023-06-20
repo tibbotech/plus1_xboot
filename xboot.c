@@ -174,7 +174,7 @@ static void prn_A_setup(void)
 // SP7350 pin setting
 // G_MX0 ~ G_MX49	: 0 ~ 49
 // AO_MX0 ~ AO_MX48	: 50 ~ 98
-// IV_MX0 ~ IV_MX6	: 99 ~ 104
+// IV_MX0 ~ IV_MX6	: 99 ~ 105
 static void set_pad_driving_strength(u32 pin, u32 strength)
 {
 	int reg_off = pin / 32;
@@ -412,6 +412,13 @@ static void init_hw(void)
 		set_pad_driving_strength(i, 5);
 	for (i = 44; i <= 49; i++)
 		set_pad_driving_strength(i, 5);
+
+	// G-MAC: TXD0(7), TXD1(8), MDC(9), TXC(10), TXEN(11), MDIO(12), TXD2(15), TXD3(16)
+	// Set driving strength to 5 (min.: 14.2mA, typ.: 18.9mA).
+	for (i = 7; i <= 12; i++)
+		set_pad_driving_strength(i, 5);
+	set_pad_driving_strength(15, 5);
+	set_pad_driving_strength(16, 5);
 
 	/* Set PLLC to 1.5G */
 	prn_string("Set PLLC to 1.5GHz\n");
