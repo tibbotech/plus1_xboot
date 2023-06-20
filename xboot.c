@@ -1350,8 +1350,16 @@ static void spi_nor_boot(int pin_x)
 	int i;
 
 	// Set driving strength of following pins to 3 (min.: 8.8mA, typ.: 11.5mA).
-	// SPI-NOR  (X1):  6,  7,  8,  9, 10, 11
+	// SPI-NOR (X1):  6,  7,  8,  9, 10, 11
 	for (i = 6; i <= 11; i++)
+		set_pad_driving_strength(i, 3);
+	delay_1ms(1);
+#elif defined(PLATFORM_SP7350)
+	int i;
+
+	// Set driving strength of following pins to 3 (min.: 10.1mA, typ.: 15.6mA).
+	// SPI-NOR (X1): 21, 22, 23, 24, 25, 26
+	for (i = 21; i <= 26; i++)
 		set_pad_driving_strength(i, 3);
 	delay_1ms(1);
 #endif
@@ -1586,6 +1594,20 @@ static void do_fat_boot(u32 type, u32 port)
 			set_pad_driving_strength(i, 3);
 		delay_1ms(1);
 	}
+#elif defined(PLATFORM_SP7350)
+	if ((type == SDCARD_ISP) || (type == USB_ISP)) {
+		int i;
+
+		// Set driving strength of following pins to 3 (min.: 10.1mA, typ.: 15.6mA).
+		// SPI-NOR  (X1): 21, 22, 23, 24, 25, 26
+		// SPI-NAND (X1): 30, 31, 32, 33, 34, 35
+		// SPI-NAND (X2): 21, 22, 23, 24, 25, 26
+		// 8-bit NAND:    21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36
+		// eMMC:          20, 28, 29, 30, 31, 32, 33, 34, 35, 36
+		for (i = 20; i <= 36; i++)
+			set_pad_driving_strength(i, 3);
+		delay_1ms(1);
+	}
 #endif
 
 #ifdef CONFIG_USE_ZMEM
@@ -1772,7 +1794,7 @@ static void emmc_boot(void)
 	u32 blk_start1 = -1, blk_start2 = -1;
 	int res, len = 0;
 #endif
-#if !defined(CONFIG_USE_ZMEM) || defined(PLATFORM_Q645)
+#if !defined(CONFIG_USE_ZMEM) || defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
 	int i;
 #endif
 
@@ -1781,9 +1803,17 @@ static void emmc_boot(void)
 
 #if defined(PLATFORM_Q645)
 	//MOON2_REG->sft_cfg[3] = RF_MASK_V((1 << 7), (1 << 7)); //CLKEMMC source is PLLD
+
 	// Set driving strength of following pins to 3 (min.: 8.8mA, typ.: 11.5mA).
 	// eMMC: 12, 13, 14, 15, 16, 17, 18, 19, 20, 21
 	for (i = 12; i <= 21; i++)
+		set_pad_driving_strength(i, 3);
+	delay_1ms(1);
+#elif defined(PLATFORM_SP7350)
+	// Set driving strength of following pins to 3 (min.: 10.1mA, typ.: 15.6mA).
+	// eMMC: 20, 28, 29, 30, 31, 32, 33, 34, 35, 36
+	set_pad_driving_strength(20, 3);
+	for (i = 28; i <= 36; i++)
 		set_pad_driving_strength(i, 3);
 	delay_1ms(1);
 #endif
@@ -2148,6 +2178,26 @@ static void nand_uboot(u32 type)
 	else
 		for (i = 16; i <= 21; i++)
 			set_pad_driving_strength(i, 3);
+	delay_1ms(1);
+#elif defined(PLATFORM_SP7350)
+	int i;
+
+	if (type == SPINAND_BOOT) {
+		// Set driving strength of following pins to 3 (min.: 10.1A, typ.: 15.6mA).
+		// SPI-NAND (X1): 30, 31, 32, 33, 34, 35
+		// SPI-NAND (X2): 21, 22, 23, 24, 25, 26
+		if (get_spi_nand_pinmux() == 2)
+			for (i = 21; i <= 26; i++)
+				set_pad_driving_strength(i, 3);
+		else
+			for (i = 30; i <= 35; i++)
+				set_pad_driving_strength(i, 3);
+	} else {
+		// Set driving strength of following pins to 3 (min.: 10.1A, typ.: 15.6mA).
+		// 8-bit NAND: 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36
+		for (i = 21; i <= 36; i++)
+			set_pad_driving_strength(i, 3);
+	}
 	delay_1ms(1);
 #endif
 
