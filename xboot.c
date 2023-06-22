@@ -383,6 +383,9 @@ static void init_hw(void)
 	delay_1ms(1);
 
 #elif defined(PLATFORM_SP7350)
+	// Remap DRAM (0xf0000000 ~ 0xffffffff) to (0x100000000 ~ 0x10fffffff).
+	MOON5_REG->sft_cfg[0] = RF_MASK_V((1 << 0), (1 << 0));
+
 	#if 0//!defined(CONFIG_BOOT_ON_CSIM) && !defined(CONFIG_BOOT_ON_ZEBU)
 	// Set CA55 power (VDD_CA55) to 0.8V.
 	// RT5759 is connected at I2C7.
