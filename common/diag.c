@@ -82,6 +82,23 @@ void prn_dword0(unsigned int w)
 	}
 }
 
+void prn_byte0(unsigned char b)
+{
+	char c, i;
+
+	if (g_bootinfo.mp_flag) {
+		return;
+	}
+
+	UART_put_byte('0');
+	UART_put_byte('x');
+	for (i = 1; i <= 2; i++) {
+		c = (b >> (8 - (i<<2))) & 0xF;
+		if (c < 0xA) UART_put_byte(c + 0x30);
+		else UART_put_byte(c + 0x37);
+	}
+}
+
 void prn_dword(unsigned int w)
 {
 	if (g_bootinfo.mp_flag) {
@@ -167,7 +184,7 @@ void prn_string_for_lpddr4(const char *str, unsigned int a, unsigned int b)
 		if (*str == '%')
 		{
 			str++;
-			if(*str == 'd')	
+			if(*str == 'd')
 			{
 				prn_decimal(a);
 			}

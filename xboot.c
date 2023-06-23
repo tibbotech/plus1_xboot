@@ -402,7 +402,7 @@ static void init_hw(void)
 	buf[0] = 0;
 	sp_i2c_write(RT5759_I2C_CH, RT5759_I2C_ADDR, buf, 1, SP_I2C_SPEED_STD);
 	sp_i2c_read(RT5759_I2C_CH, RT5759_I2C_ADDR, buf, 1, SP_I2C_SPEED_STD);
-	//prn_string("ID = "); prn_dword((int)*buf);
+	prn_string("ID of RT5759 = "); prn_byte0(buf[0]); prn_string("\n");
 	if (buf[0] == 0x82) {
 		buf[0] = 0x02;                  // Set VID to 0x14.
 		buf[1] = 0x14;                  //

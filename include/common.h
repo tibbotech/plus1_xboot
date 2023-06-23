@@ -44,6 +44,7 @@ void prn_string(const char *);
 void prn_byte(unsigned char);
 void prn_dword(unsigned int);
 void prn_dword0(unsigned int);
+void prn_byte0(unsigned char b);
 void prn_decimal(unsigned int);
 void prn_decimal_ln(unsigned int);
 void prn_dump_buffer(unsigned char *buf, int len);
