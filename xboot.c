@@ -648,6 +648,16 @@ static int run_draminit(void)
 	GPIO_OUT_REG->gpio_out[53 / 16] = 0x10001 << (53 % 16);
 #endif
 
+//#if defined(PLATFORM_SP7350)   // AP6256 GPIO reset pin for SP7350 EVB
+#if(0)
+	GPIO_MASTER_REG->gpio_master[56 / 16] = 0x10001 << (56 % 16);
+	GPIO_OUT_REG->gpio_out[56 / 16] = 0x10000 << (56 % 16);
+	GPIO_OE_REG->gpio_oe[56 / 16] = 0x10001 << (56 % 16);
+	PAD_CTL_REG->gpio_first[56 / 32] |=  1 << (56 % 32);
+	prn_string("set pin53 " __DATE__ " " __TIME__ "\n");
+	GPIO_OUT_REG->gpio_out[56 / 16] = 0x10001 << (56 % 16);
+#endif
+
 	return 0;
 }
 

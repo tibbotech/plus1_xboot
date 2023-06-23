@@ -342,6 +342,13 @@ void sp_i2c_read(unsigned int i2c_no, u8  slave_addr , u8  *data_buf , unsigned 
 
 	while((i2c_mas_ctlr[i2c_no].ReadTxlen > 0) && (i2c_mas_ctlr[i2c_no].xfet_action == 1))
 	{
+
+		stat = i2c_sp_read_clear_intrbits(i2c_no , i2c_regs);
+		if (stat & SP_IC_INTR_TX_ABRT) {
+			i2c_dw_handle_tx_abort(i2c_no);
+			i2c_mas_ctlr[i2c_no].xfet_action = 0;
+			break;
+		}	
 		stat = i2c_regs->ic_status;
 		if (stat & SP_IC_STATUS_RFNE){
 			i2c_mas_ctlr[i2c_no].buf[i2c_mas_ctlr[i2c_no].DataIndex] = i2c_regs->ic_data_cmd;
