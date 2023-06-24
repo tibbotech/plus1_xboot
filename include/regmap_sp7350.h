@@ -837,4 +837,23 @@ struct softpad_regs {
 };
 #define PAD_CTL2_REG    ((volatile struct softpad_regs *)RF_GRP_AO(102, 0))
 
+struct gpio_first_regs {
+	unsigned int gpio_first[7];
+};
+#define GPIO_FIRST_REG ((volatile struct gpio_first_regs *)RF_GRP_AO(101, 25)) // 101.25 ~ 101.31
+
+struct gpio_in_regs {
+	unsigned int gpio_in[7];
+};
+#define GPIO_IN_REG ((volatile struct gpio_in_regs *)RF_GRP_AO(104, 7)) // 104.7 ~ 104.13
+
+struct pad_dvio_regs {
+	unsigned int gmx_21_27:1;    /* spi-nor spi_nand X2 p-nand x1*/
+	unsigned int gmx_28_37:1;    /* emmc spi_nand X1 p-nand x1*/
+	unsigned int ao_mx_0_9:1;    /* uart 0/1/2 */
+	unsigned int ao_mx_10_19:1;  /* pwm2/3 uart3 spi_cb0 i2c0 */
+	unsigned int ao_mx_20_29:1;  /* i2c1 spi_cb4 i2c2 pwm0/1  */
+	unsigned int reserved2:27;
+};
+#define PAD_DVIO_REG ((volatile struct pad_dvio_regs *)RF_GRP_AO(102, 12))
 #endif /* __INC_REGMAP_SP7350_H */

@@ -20,6 +20,10 @@
 #endif
 #include <SECGRP1.h>
 
+#if defined(PLATFORM_SP7350)
+#include <hal_gpio.h>
+#endif
+
 #ifdef CONFIG_SECURE_BOOT_SIGN
 #ifdef PLATFORM_Q628
 #define SIGN_DATA_SIZE	(64+8)  // |header+data+flag(8)+sign(64)|
@@ -425,6 +429,11 @@ static void init_hw(void)
 	set_pad_driving_strength(15, 5);
 	set_pad_driving_strength(16, 5);
 
+	//eMMC
+	set_pad_driving_strength(20, 5);
+	for (i = 28; i <= 36; i++)
+		set_pad_driving_strength(i, 5);
+	delay_1ms(1);
 	/* Set PLLC to 1.5G */
 	prn_string("Set PLLC to 1.5GHz\n");
 	MOON3_REG_AO->rsvd[1] = RF_MASK_V_SET(0x0001);                    // Switch CPU clock to PLLS_CK200M.
@@ -1622,6 +1631,27 @@ static void do_fat_boot(u32 type, u32 port)
 		for (i = 20; i <= 36; i++)
 			set_pad_driving_strength(i, 3);
 		delay_1ms(1);
+
+		/*
+			GPIO82=1 3.3V MS=0 default
+			GPIO82=0 1.8v MS=1
+		*/
+		HAL_GPIO_GPI(82);
+		delay_1ms(1);
+		if(HAL_GPIO_I_GET(82) == 0)
+		{
+			PAD_DVIO_REG->gmx_21_27 = 1;
+			PAD_DVIO_REG->gmx_28_37 = 1;
+			prn_string("gmx_21_27 gmx_28_37 = 1\n");
+		}
+		else
+		{
+			PAD_DVIO_REG->gmx_21_27 = 0;
+			PAD_DVIO_REG->gmx_28_37 = 0;
+			prn_string("gmx_21_27 gmx_28_37 = 0\n");
+		}
+		HAL_GPIO_RESET(82);
+
 	}
 #endif
 
