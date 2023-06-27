@@ -12,6 +12,7 @@
 #include <misc.h>
 #include <otp/sp_otp.h>
 #include <i2c/sp_i2c.h>
+#include <sp_adc.h>
 #include "fip.h"
 
 #ifdef CONFIG_HAVE_EMMC
@@ -414,7 +415,20 @@ static void init_hw(void)
 		_delay_1ms(1);
 	}
 	#endif
+	#if(0)
+	u32 adc_buf[4];
 
+	sp_adc_read(0, &adc_buf[0]);
+	sp_adc_read(1, &adc_buf[1]);
+	sp_adc_read(2, &adc_buf[2]);
+	sp_adc_read(3, &adc_buf[3]);
+
+	diag_printf("adc0 %d\n",adc_buf[0]);
+	diag_printf("adc1 %d\n",adc_buf[1]);
+	diag_printf("adc2 %d\n",adc_buf[2]);
+	diag_printf("adc3 %d\n",adc_buf[3]);
+
+	#endif
 	// SD-CARD      : 38, 39, 40, 41, 42, 43
 	// SDIO         : 44, 45, 46, 47, 48, 49
 	for (i = 38; i <= 43; i++)
@@ -659,8 +673,7 @@ static int run_draminit(void)
 	GPIO_OUT_REG->gpio_out[53 / 16] = 0x10001 << (53 % 16);
 #endif
 
-//#if defined(PLATFORM_SP7350)   // AP6256 GPIO reset pin for SP7350 EVB
-#if(0)
+#if defined(PLATFORM_SP7350)   // AP6256 GPIO reset pin for SP7350 EVB
 	GPIO_MASTER_REG->gpio_master[56 / 16] = 0x10001 << (56 % 16);
 	GPIO_OUT_REG->gpio_out[56 / 16] = 0x10000 << (56 % 16);
 	GPIO_OE_REG->gpio_oe[56 / 16] = 0x10001 << (56 % 16);
