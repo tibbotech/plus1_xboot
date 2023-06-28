@@ -444,6 +444,7 @@ static void init_hw(void)
 	set_pad_driving_strength(16, 5);
 
 	//eMMC
+	//MOON3_REG_AO->clkgen[0] = RF_MASK_V((1 << 1), (1 << 1)); //CLKEMMC source is 800M
 	set_pad_driving_strength(20, 5);
 	for (i = 28; i <= 36; i++)
 		set_pad_driving_strength(i, 5);
@@ -1868,6 +1869,7 @@ static void emmc_boot(void)
 		set_pad_driving_strength(i, 3);
 	delay_1ms(1);
 #elif defined(PLATFORM_SP7350)
+	//MOON3_REG_AO->clkgen[0] = RF_MASK_V((1 << 1), (1 << 1)); //CLKEMMC source is 800M
 	// Set driving strength of following pins to 3 (min.: 10.1mA, typ.: 15.6mA).
 	// eMMC: 20, 28, 29, 30, 31, 32, 33, 34, 35, 36
 	set_pad_driving_strength(20, 3);
