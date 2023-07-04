@@ -27,7 +27,7 @@ XBOOT_LDFLAGS  = -L $(shell dirname `$(GCC) -print-libgcc-file-name`) -lgcc
 XBOOT_LDFLAGS += -Wl,--gc-sections
 
 
-XBOOT_ASRC  = 
+XBOOT_ASRC  = start.S
 XBOOT_CSRC  = main.c
 XBOOT_CSRC += common.c
 

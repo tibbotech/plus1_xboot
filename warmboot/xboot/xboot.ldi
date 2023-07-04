@@ -16,6 +16,7 @@ SECTIONS
 {
 	.stext : {
 		__stext = .;
+		start.o (.text) ;
 		*(.text*)
 		*(.rodata*)
 		. = ALIGN(4);

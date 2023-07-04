@@ -3,17 +3,40 @@
 #include <config_xboot.h>
 #include <regmap.h>
 
-#if defined(PLATFORM_Q645)
-#include <SECGRP_q645.h>
-#elif defined(PLATFORM_SP7350)
 #include <SECGRP_sp7350.h>
-#endif
 
 #include <string.h>
 #include "common.h"
 
+#define PM_DATA_SAVE_ADDRESS   0xFA29E000   /* Save the maindomain register and User data */
+#define CPU_START_ADDRESS       0xfa23fc00
+#define CPU_START_POS(core_id)	((CPU_START_ADDRESS - 0x10) - ((core_id) * 8))
 
+void restore_save_data()
+{
+	uint8_t *save_data = (uint8_t *)PM_DATA_SAVE_ADDRESS;
 
+	memcpy((void *)RGST_SECURE_REG,(void *)save_data, sizeof(uint32_t) * 32);
+	save_data += sizeof(uint32_t) * 32;
+	memcpy((void *)SECGRP1_MAIN_REG, (void *)save_data,  sizeof(uint32_t) * 3 * 32);
+	save_data += sizeof(uint32_t) * 3 * 32;
+	memcpy((void *)CPU_START_POS(3),(void *)save_data, (CPU_START_POS(0)-CPU_START_POS(3)));
+	save_data += (CPU_START_POS(0)-CPU_START_POS(3));
+	#define TZC_REGION_ID							(1)
+	*(volatile u32 *)(0xf8c40100 + 0x20 * TZC_REGION_ID) = OPTEE_RUN_ADDR;					// BASE_LOW
+	*(volatile u32 *)(0xf8c40104 + 0x20 * TZC_REGION_ID) = 0x00000000;						// BASE_HIGH
+	*(volatile u32 *)(0xf8c40108 + 0x20 * TZC_REGION_ID) = OPTEE_RUN_ADDR + (0x200000 - 1); // TOP_LOW
+	*(volatile u32 *)(0xf8c4010c + 0x20 * TZC_REGION_ID) = 0x00000000;						// TOP_HIGH
+	*(volatile u32 *)(0xf8c40110 + 0x20 * TZC_REGION_ID) = 0xc000000f;						// ATTR: secure access enable
+	*(volatile u32 *)(0xf8c40114 + 0x20 * TZC_REGION_ID) = 0x00000000;						// ID_ACCESS disable
+	UADBG_REG->div_l = UART_BAUD_DIV_L(BAUDRATE, UART_SRC_CLK);
+	UADBG_REG->div_h = UART_BAUD_DIV_H(BAUDRATE, UART_SRC_CLK);
+	UA2AXI_REG->axi_en = 0; // Disable UA2AXI and enable UADBG.
+	volatile u32 *r = (void *)0xf810a000;
+	r[2] = 0xfffffff0; // set cntl
+	r[3] = 0xf; // set cntu
+	r[0] = 0x3; // en=1 & hdbg=1
+}
 int main()
 {
 	extern void *__a64rom, *__a64rom_end;
@@ -23,14 +46,11 @@ int main()
 
 	prn_string("+++[wakeup xboot]" __DATE__ " " __TIME__ "\n");
 
+	restore_save_data();
 	// restore SECGRP register
 	memcpy((void *)WARMBOOT_A64_ADDR, beg, end - beg);
 	start64_addr = (u32)WARMBOOT_A64_ADDR;
 
-	volatile u32 *r = (void *)0xf810a000;  // enable system timer
-	r[2] = 0xfffffff0; // set cntl
-	r[3] = 0xf; // set cntu
-	r[0] = 0x3; // en=1 & hdbg=1
 
 	// xboot -> a64up -> BL31
 	prn_string("a64up@"); prn_dword(start64_addr);
@@ -54,18 +74,7 @@ int main()
 	return 0;
 }
 
-extern uint32_t _estack, _sbss, _ebss;
-__attribute__((naked)) void _start(void)
-{
     // set stack pointer
-    __asm volatile ("ldr r0, =_estack");
-    __asm volatile ("mov sp, r0");
 
     // zero out .bss section
-    for (uint32_t *dest = &_sbss; dest < &_ebss;)
-    {
-        *dest++ = 0;
-    }
     // jump to board initialisation
-    main();
-}
