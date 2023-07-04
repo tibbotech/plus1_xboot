@@ -564,7 +564,7 @@ UINT8 Check_command_status(UINT8 u8_channel)
 				/* clear status_failed */
 				NANDC_8BIT(OFFSET_INTR_STATUS) |= u8_status_failed;
 				// handle the status failed
-				prn_string("Status is failed\n");
+				//prn_string("Status is failed\n");
 				Abort_operation(u8_channel);
 			}
 
@@ -572,13 +572,13 @@ UINT8 Check_command_status(UINT8 u8_channel)
 			if (u8_ecc_correction_failed_for_data) {
 				u8_error_record |= Cmd_status_ecc_correct_failed;
 				NANDC_8BIT(OFFSET_ECC_INTR_STS) = u8_ecc_correction_failed_for_data;
-				prn_string("ECC correction is failed\n");
+				//prn_string("ECC correction is failed\n");
 			}
 			u8_ecc_correction_failed_for_spare = NANDC_8BIT(OFFSET_ECC_INTR_STS_SP);
 			if (u8_ecc_correction_failed_for_spare) {
 				u8_error_record |= Cmd_status_ecc_correct_failed_in_spare;
 				NANDC_8BIT(OFFSET_ECC_INTR_STS_SP) = u8_ecc_correction_failed_for_spare;
-				prn_string("ECC correction for spare is failed\n");
+				//prn_string("ECC correction for spare is failed\n");
 			}
 			break;
 		}

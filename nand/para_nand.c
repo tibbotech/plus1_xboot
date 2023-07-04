@@ -189,13 +189,45 @@ SINT32 PNAND_InitDriver(void)
 	return ROM_SUCCESS;
 }
 
+#include <config.h>
+#include <types.h>
+#include <regmap.h>
+static void uart0_wait(void)
+{
+	unsigned int lsr = 0;
+
+	while (!lsr) {
+		lsr = UART0_REG->lsr;
+		lsr &= 1;
+	}
+}
+
+void uart0_putc(unsigned char c)
+{
+	uart0_wait();
+	UART0_REG->dr = c;
+}
+#define UART_put_byte(x) uart0_putc(x)
+void prn_dword0_byte(unsigned int w)
+{
+	char c, i;
+
+	for (i = 7; i <= 8; i++) {
+		c = (w >> (32 - (i << 2))) & 0xF;
+		if (c < 0xA)
+			UART_put_byte(c + 0x30);
+		else
+			UART_put_byte(c + 0x37);
+	}
+}
+
 UINT8 PNAND_ReadPage(UINT32 u32_row_addr, UINT16 u16_sector_offset,
 			  UINT16 u16_sector_cnt, struct collect_data_buf * read_data_buf,
 			  struct flash_info * flash_readable_info)
 {
 	UINT8 u8_channel = 0;
 	UINT8 u8_starting_ce = 0;
-
+	UINT8 check_data_0xFF = 1;
 	UINT8 u8_cmd_status;
 	struct command_queue_feature cmd_feature = { 0 };
 	//To solve warning: dereferencing type-punned pointer will break strict-aliasing rules [-Wstrict-aliasing]
@@ -240,13 +272,51 @@ UINT8 PNAND_ReadPage(UINT32 u32_row_addr, UINT16 u16_sector_offset,
 	}
 	ECC_clear_spare_error_status(u8_channel);
 
-	if(u8_cmd_status & (Cmd_status_ecc_correct_failed)){
-		prn_string("Page num:");
-		prn_decimal_ln(u32_row_addr);
-		if(ECC_error_status(u8_channel) != 0) {
-			prn_string("Error bit:(for reference only)");
-			prn_dword(ECC_error_status(u8_channel));
+	if(u8_cmd_status & (Cmd_status_ecc_correct_failed)) {
+		/* Consider the case that data is 0xFF */
+		u32 ecc_original_setting = NANDC_32BIT(OFFSET_ECC_CTRL);
+		/* Disable the ECC engine, temporarily */
+		u32 val = NANDC_32BIT(OFFSET_ECC_CTRL);
+		val = val & ~(0xFF << 8);
+		NANDC_32BIT(OFFSET_ECC_CTRL) = val;
+
+		Page_read_setting(u8_channel, u32_row_addr, (UINT8)u16_sector_offset, read_data_buf);
+		Setting_feature_and_fire(u8_channel, Command(PAGE_READ), u8_starting_ce, *((u32 *)p_cmd_feature));
+
+		Check_command_status(u8_channel);
+		Data_read(u8_channel, read_data_buf, 1, 0, flash_readable_info);
+
+		for(int i = 0; i < (read_data_buf->u32_data_length_in_bytes >> 2) ; i++) {
+			val = *((volatile u32 *)read_data_buf->u8_data_buf + i);
+			if(val != 0xFFFFFFFF) {
+				check_data_0xFF = 0;
+				break;
+			}
 		}
+#if 0/* Dump data */
+		for(int j = 0; j < 3072 / 16; j++) {
+			prn_dword0(j * 16);prn_string(":");
+			for(int i = 0; i < 16; i++) {
+				val = *(read_data_buf->u8_data_buf + i + j*16);
+				prn_dword0_byte(val);prn_string(" ");
+			}
+			prn_string("\n");
+		}
+#endif
+		if(check_data_0xFF) {
+			u8_cmd_status &= ~(Cmd_status_ecc_correct_failed);
+		} else {
+			prn_string("ECC correction is failed\n");
+			prn_string("Page num:");
+			prn_decimal_ln(u32_row_addr);
+			if(ECC_error_status(u8_channel) != 0) {
+				prn_string("Error bit:(for reference only)");
+				prn_dword(ECC_error_status(u8_channel));
+			}
+		}
+
+		// Restore the ecc original setting.
+		NANDC_32BIT(OFFSET_ECC_CTRL) = ecc_original_setting;
 	}
 	ECC_clear_error_status(u8_channel);
 
