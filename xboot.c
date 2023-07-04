@@ -420,7 +420,8 @@ static void init_hw(void)
 		_delay_1ms(1);
 	}
 	#endif
-	#if(0)
+
+	#if (0)
 	u32 adc_buf[4];
 
 	sp_adc_read(0, &adc_buf[0]);
@@ -432,8 +433,16 @@ static void init_hw(void)
 	diag_printf("adc1 %d\n",adc_buf[1]);
 	diag_printf("adc2 %d\n",adc_buf[2]);
 	diag_printf("adc3 %d\n",adc_buf[3]);
-
 	#endif
+
+	// MS control-bits
+	// Set to 1 if 1.8V is used.
+	//PAD_DVIO_REG->gmx_21_27 = 1;		// SPI-NOR, SPI-NAND (X2), 8-bit NAND
+	//PAD_DVIO_REG->gmx_28_37 = 1;		// eMMC, SPI-NAND (X2), 8-bit NAND
+	//PAD_DVIO_REG->ao_mx_0_9 = 1;
+	//PAD_DVIO_REG->ao_mx_10_19 = 1;
+	//PAD_DVIO_REG->ao_mx_20_29 = 1;
+
 	// SD-CARD      : 38, 39, 40, 41, 42, 43
 	// SDIO         : 44, 45, 46, 47, 48, 49
 	for (i = 38; i <= 43; i++)
@@ -452,7 +461,33 @@ static void init_hw(void)
 	set_pad_driving_strength(20, 5);
 	for (i = 28; i <= 36; i++)
 		set_pad_driving_strength(i, 5);
+
+	// I2C0
+	// Set driving strength to 4 (min.: 12.1mA, typ.: 18.7mA).
+	set_pad_driving_strength(68, 4);
+	set_pad_driving_strength(69, 4);
+
+	// I2C1
+	// Set driving strength to 4 (min.: 12.1mA, typ.: 18.7mA).
+	set_pad_driving_strength(70, 4);
+	set_pad_driving_strength(71, 4);
+
+	// I2C2
+	// Set driving strength to 4 (min.: 12.1mA, typ.: 18.7mA).
+	set_pad_driving_strength(76, 4);
+	set_pad_driving_strength(77, 4);
+
+	// I2C3
+	// Set driving strength to 4 (min.: 12.2mA, typ.: 16.2mA).
+	set_pad_driving_strength(88, 4);
+	set_pad_driving_strength(89, 4);
+
+	// I2C7
+	// Set driving strength to 4 (min.: 12.2mA, typ.: 16.2mA).
+	set_pad_driving_strength(86, 4);
+	set_pad_driving_strength(87, 4);
 	delay_1ms(1);
+
 	/* Set PLLC to 1.5G */
 	prn_string("Set PLLC to 1.5GHz\n");
 	MOON3_REG_AO->rsvd[1] = RF_MASK_V_SET(0x0001);                    // Switch CPU clock to PLLS_CK200M.
@@ -1651,8 +1686,8 @@ static void do_fat_boot(u32 type, u32 port)
 		delay_1ms(1);
 
 		/*
-			GPIO82=1 3.3V MS=0 default
-			GPIO82=0 1.8v MS=1
+		 GPIO82=1 3.3V MS=0 default
+		 GPIO82=0 1.8v MS=1
 		*/
 		HAL_GPIO_GPI(82);
 		delay_1ms(1);
@@ -1669,7 +1704,6 @@ static void do_fat_boot(u32 type, u32 port)
 			prn_string("gmx_21_27 gmx_28_37 = 0\n");
 		}
 		HAL_GPIO_RESET(82);
-
 	}
 #endif
 
