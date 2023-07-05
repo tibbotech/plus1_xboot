@@ -462,17 +462,17 @@ static void init_hw(void)
 	for (i = 28; i <= 36; i++)
 		set_pad_driving_strength(i, 5);
 
-	// I2C0
+	// I2C0 (X1)
 	// Set driving strength to 4 (min.: 12.1mA, typ.: 18.7mA).
 	set_pad_driving_strength(68, 4);
 	set_pad_driving_strength(69, 4);
 
-	// I2C1
+	// I2C1 (X1)
 	// Set driving strength to 4 (min.: 12.1mA, typ.: 18.7mA).
 	set_pad_driving_strength(70, 4);
 	set_pad_driving_strength(71, 4);
 
-	// I2C2
+	// I2C2 (X1)
 	// Set driving strength to 4 (min.: 12.1mA, typ.: 18.7mA).
 	set_pad_driving_strength(76, 4);
 	set_pad_driving_strength(77, 4);
@@ -482,10 +482,20 @@ static void init_hw(void)
 	set_pad_driving_strength(88, 4);
 	set_pad_driving_strength(89, 4);
 
-	// I2C7
+	// I2C7 (X1)
 	// Set driving strength to 4 (min.: 12.2mA, typ.: 16.2mA).
 	set_pad_driving_strength(86, 4);
 	set_pad_driving_strength(87, 4);
+
+	// UA0 (X1)
+	// Set driving strength to 4 (min.: 12.2mA, typ.: 16.2mA).
+	set_pad_driving_strength(50, 4);
+	set_pad_driving_strength(51, 4);
+
+	// UA6 (X1)
+	// Set driving strength to 4 (min.: 12.2mA, typ.: 16.2mA).
+	set_pad_driving_strength(80, 4);
+	set_pad_driving_strength(81, 4);
 	delay_1ms(1);
 
 	/* Set PLLC to 1.5G */
