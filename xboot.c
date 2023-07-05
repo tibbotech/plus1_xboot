@@ -449,6 +449,23 @@ static void init_hw(void)
 		set_pad_driving_strength(i, 5);
 	for (i = 44; i <= 49; i++)
 		set_pad_driving_strength(i, 5);
+	#if(0)
+	//SPI0
+	for (i = 64; i <= 67; i++)
+		set_pad_driving_strength(i, 5);
+	//SPI1
+	for (i = 80; i <= 83; i++)
+		set_pad_driving_strength(i, 3);
+	//SPI2
+	for (i = 88; i <= 92; i++)
+		set_pad_driving_strength(i, 5);
+	//SPI3
+	for (i = 52; i <= 55; i++)
+		set_pad_driving_strength(i, 5);
+	//SPI4
+	for (i = 72; i <= 75; i++)
+		set_pad_driving_strength(i, 5);
+	#endif
 
 	// G-MAC: TXD0(7), TXD1(8), MDC(9), TXC(10), TXEN(11), MDIO(12), TXD2(15), TXD3(16)
 	// Set driving strength to 5 (min.: 14.2mA, typ.: 18.9mA).
