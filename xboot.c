@@ -548,7 +548,9 @@ static void init_hw(void)
 	*(volatile u32 *)(ARM_TSGEN_WR_BASE + 0x08) = 0; // CNTCV[31:0]
 	*(volatile u32 *)(ARM_TSGEN_WR_BASE + 0x0C) = 0; // CNTCV[63:32]
 
-	PAD_CTL2_REG->cfg[31] = 0x00000000; // GMAC Softpad control register 1 : bit31-->0 ,non-GPIO mode
+	PAD_CTL2_REG->cfg[30] = 0x00044800; // GMAC Softpad control register 0 : bit31-->0 ,TXC non-GPIO mode
+	PAD_CTL2_REG->cfg[31] = 0x80000000; // GMAC Softpad control register 1 : bit31-->1 ,RXC GPIO mode
+	MOON3_REG_AO->clkgen[0] = RF_MASK_V_CLR(0x1000); //G3.23 bit12 GMAC_PHYSEL-->0 ,set GMAC to use RGMII PHY Interface.
 
 	// Turn on power of NPU (NPU_PWR_EN, GPIO65).
 	GPIO_MASTER_REG->gpio_master[65 / 16] = 0x10001 << (65 % 16);
@@ -594,8 +596,8 @@ static void init_hw(void)
 #endif
 #ifdef PLLD_466MHz
 	prn_string("PLLD: 466.6MHz, DATARATE:1866.4\n");
-	MOON3_REG_AO->plld_cfg[0] = RF_MASK_V(0xFFFF, 0x180A);
-	MOON3_REG_AO->plld_cfg[1] = RF_MASK_V(0xFFFF, 0xC0BC);
+	MOON3_REG_AO->plld_cfg[0] = RF_MASK_V(0xFFFF, 0x9812);
+	MOON3_REG_AO->plld_cfg[1] = RF_MASK_V(0xFFFF, 0xC0BF);
 	MOON3_REG_AO->plld_cfg[2] = RF_MASK_V(0xFFFF, 0x0107);
 #endif
 #ifdef PLLD_400MHz
@@ -640,7 +642,9 @@ static void init_hw(void)
 	MOON3_REG_AO->plld_cfg[1] = RF_MASK_V(0xFFFF, 0xC0BC);
 	MOON3_REG_AO->plld_cfg[2] = RF_MASK_V(0xFFFF, 0x0107);
 #endif
-
+	prn_dword(MOON3_REG_AO->plld_cfg[0]);
+	prn_dword(MOON3_REG_AO->plld_cfg[1]);
+	prn_dword(MOON3_REG_AO->plld_cfg[2]);
 #endif
 
 #if defined(PLATFORM_Q645)
