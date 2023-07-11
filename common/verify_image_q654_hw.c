@@ -194,6 +194,7 @@ static volatile struct sp_crypto_reg *reg = (void *)SP_CRYPTO_REG_BASE;
 static u8 *rsakey_E, *rsakey_N;
 static u8 *dst, *p2;
 
+#ifdef CONFIG_ENCRYPTION
 #if 0 // FOR TEST
 #define sp_load_keys()
 #include "../../../build/tools/secure_hsm/secure/otp_Device_keys/x_priv_0.inc"
@@ -233,6 +234,7 @@ static void sp_aes(u8 *src, u8 *key, int len, u32 mode)
 		len -= bs;
 	}
 }
+#endif
 
 static u8 *sp_hash(u8 *data, int len)
 {
@@ -359,6 +361,7 @@ int q654_image_verify_decrypt(const struct image_header  *hdr)
 	/* verify sign */
 	ret = memcmp(dst, src, HASH_SZ);
 
+#ifdef CONFIG_ENCRYPTION
 	/* aes decrypt data */
 	sp_load_keys();
 	//prn_dump("x_priv_0n", x_priv_0, 32);
@@ -369,6 +372,7 @@ int q654_image_verify_decrypt(const struct image_header  *hdr)
 	//prn_dump("key3", rsakey_N, 32);
 	memcpy(rsakey_E, x_priv_0, 32);
 	sp_aes(data, rsakey_N, data_size, M_DEC);	// data key:key3 iv:key1
+#endif
 
 	t1 = get_timer(t0);
 

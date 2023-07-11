@@ -77,6 +77,9 @@ CFLAGS  += -DCONFIG_SECURE_BOOT_SIGN=1
 else
 CFLAGS  += -DCONFIG_COMPILE_WITH_SECURE=0
 endif
+ifeq ($(ENCRYPTION),1)
+CFLAGS  += -DCONFIG_ENCRYPTION
+endif
 endif
 
 ################## RISCV C+P config ##################
@@ -551,7 +554,7 @@ $(config_list):
 list:
 	@echo "$(config_list)" | sed 's/ /\n/g'
 
-auto_config: 
+auto_config:
 	@echo "  [KCFG] $@.h"
 	$(AUTOCONFH) .config include/$@.h
 ifeq ($(CONFIG_PLATFORM_Q645),y)
