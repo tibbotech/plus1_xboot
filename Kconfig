@@ -62,11 +62,11 @@ config MT53E1G32D2_B
 	bool "MT53E1G32D2_B D8CJG"
 	help
 	  Micron MT53E1G32D2_B, 1Gbx32, 2 rank, FBGA code = D8CJG
-config MT40A2G16SKL_B
+config MT40A512M16TB
 	depends on DDR4
-	bool "MT40A2G16SKL_B D9XQF"
+	bool "MT40A512M16TB D8BPK"
 	help
-	  Micron MT40A2G16SKL_B, 2Gbx16, 1 rank, FBGA code = D9XQF
+	  Micron MT40A512M16TB, 512Mx16, 1 rank, FBGA code = D8BPK
 config MT41K512M16VRP
 	depends on DDR3
 	bool "MT41K512M16VRP D9ZWN"
