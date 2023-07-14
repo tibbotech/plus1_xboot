@@ -44,7 +44,14 @@
 #define PLLD_800MHz
 #endif
 #if defined(PLATFORM_SP7350)
+#if defined(CONFIG_LPDDR4)
 #define PLLD_800MHz
+#elif defined(CONFIG_DDR4)
+#define PLLD_666MHz
+#elif defined(CONFIG_DDR3)
+#define PLLD_466MHz
+#endif
+//#define PLLD_800MHz
 //#define PLLD_666MHz
 //#define PLLD_600MHz
 //#define PLLD_533MHz
