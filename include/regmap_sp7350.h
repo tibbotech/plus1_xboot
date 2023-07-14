@@ -177,15 +177,13 @@ struct stc_regs {
 	unsigned int timer2_cnt;     // 12.16
 	unsigned int timer2_reload;  // 12.17
 	unsigned int timer3_ctl;     // 12.18
-	unsigned int timer3_cnt;     // 12.19
-	unsigned int timer3_reload;  // 12.20
-	unsigned int stcl_31_0;      // 12.21
-	unsigned int stcl_32;        // 12.22
-	unsigned int atc_31_0;       // 12.23
-	unsigned int atc_33_32;      // 12.24
-	unsigned int timer2_pres_val;// 12.25
-	unsigned int timer3_pres_val;// 12.26
-	unsigned int reserve[5];     // 12.27 --12.31
+	unsigned int timer3_cnt31_0; // 12.19
+	unsigned int timer3_cnt63_32;// 12.20
+	unsigned int timer3_reload31_0;// 12.21
+	unsigned int timer3_reload63_32;// 12.22
+	unsigned int stcl_31_0;       // 12.23
+	unsigned int stcl_32;         // 12.24
+
 };
 
 #define STC_REG     ((volatile struct stc_regs *)RF_GRP_AO(23, 0))
