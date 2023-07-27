@@ -57,8 +57,8 @@
 #define RD_OTP_ADDRESS                  0x1F
 
 
-#define OTP_READ_TIMEOUT                200
-#define OTP_WRITE_TIMEOUT               200
+#define OTP_READ_TIMEOUT                400
+#define OTP_WRITE_TIMEOUT               400
 
 int otprx_read(volatile struct hb_gp_regs *otp_data, volatile struct otprx_regs *regs, int addr, char *value);
 #if defined(PLATFORM_SP7350)
