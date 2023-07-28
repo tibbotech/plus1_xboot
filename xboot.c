@@ -382,17 +382,18 @@ static void init_hw(void)
 	for (i = 34; i <= 39; i++)
 		set_pad_driving_strength(i, 5);
 
-#if(0)   // set SPI driving strength.
-        //SPI0 SPI1
+#if 0
+	// Set SPI driving strength.
+	// SPI0 SPI1
 	for (i = 54; i <= 61; i++)
 		set_pad_driving_strength(i, 4);
-        //SPI3 SPI4
+	// SPI3 SPI4
 	for (i = 63; i <= 66; i++)
 		set_pad_driving_strength(i, 4);
-        //SPI3 SPI4
+	// SPI3 SPI4
 	for (i = 67; i <= 74; i++)
 		set_pad_driving_strength(i, 4);
-        //SPI5
+	// SPI5
 	for (i = 77; i <= 80; i++)
 		set_pad_driving_strength(i, 4);
 #endif
@@ -450,32 +451,43 @@ static void init_hw(void)
 	//PAD_DVIO_REG->ao_mx_10_19 = 1;
 	//PAD_DVIO_REG->ao_mx_20_29 = 1;
 
-	// SD-CARD      : 38, 39, 40, 41, 42, 43
-	// SDIO         : 44, 45, 46, 47, 48, 49
+	// SD-CARD (DVIO): 38, 39, 40, 41, 42, 43
+	// SDIO    (DVIO): 44, 45, 46, 47, 48, 49
+	// Set driving-strength to 5 (min: 6.5, typ: 17.7mA).
 	for (i = 38; i <= 43; i++)
 		set_pad_driving_strength(i, 5);
 	for (i = 44; i <= 49; i++)
 		set_pad_driving_strength(i, 5);
+
 	#if (0)
-	//SPI0
+	// SPI0,X1 (DVIO): 64, 65, 66, 67
+	// Set driving-strength to 4 (min: 5.6mA, typ:15.2mA).
 	for (i = 64; i <= 67; i++)
-		set_pad_driving_strength(i, 5);
-	//SPI1
+		set_pad_driving_strength(i, 4);
+
+	// SPI1,X1 (GPIO): 80, 81, 82, 83
+	// Set driving-strength to 9 (min: 10.2, typ:14.8mA).
 	for (i = 80; i <= 83; i++)
-		set_pad_driving_strength(i, 3);
-	//SPI2
-	for (i = 88; i <= 92; i++)
-		set_pad_driving_strength(i, 5);
-	//SPI3
+		set_pad_driving_strength(i, 9);
+
+	// SPI2,X1 (GPIO): 88, 89, 90, 91
+	// Set driving-strength to 9 (min: 10.2, typ:14.8mA).
+	for (i = 88; i <= 91; i++)
+		set_pad_driving_strength(i, 9);
+
+	// SPI3,X2 (DVIO): 52, 53, 54, 55
+	// Set driving-strength to 4 (min: 5.6mA, typ:15.2mA).
 	for (i = 52; i <= 55; i++)
-		set_pad_driving_strength(i, 5);
-	//SPI4
+		set_pad_driving_strength(i, 4);
+
+	// SPI4,X1 (DVIO): 72, 73, 74, 75
+	// Set driving-strength to 4 (min: 5.6mA, typ:15.2mA).
 	for (i = 72; i <= 75; i++)
-		set_pad_driving_strength(i, 5);
+		set_pad_driving_strength(i, 4);
 	#endif
 
-	// GMAC: TXD0(7), TXD1(8), TXC(10), TXEN(11), TXD2(15), TXD3(16)
-	// Set driving strength to 5 (min.: 25.4mA, typ.: 34.9mA).
+	// GMAC (GPIO): TXD0(7), TXD1(8), TXC(10), TXEN(11), TXD2(15), TXD3(16)
+	// Set driving strength to 10 (min: 11.3mA, typ: 16.4mA).
 	set_pad_driving_strength(7, 10);
 	set_pad_driving_strength(8, 10);
 	set_pad_driving_strength(10, 10);
@@ -483,48 +495,49 @@ static void init_hw(void)
 	set_pad_driving_strength(15, 10);
 	set_pad_driving_strength(16, 10);
 
-	// G-MAC: MDC(9), MDIO(12)
-	// Set driving strength to 5 (min.: 14.2mA, typ.: 18.9mA).
+	// G-MAC (GPIO): MDC(9), MDIO(12)
+	// Set driving strength to 5 (min: 5.7mA, typ: 8.2mA).
 	set_pad_driving_strength(9, 5);
 	set_pad_driving_strength(12, 5);
 
-	//eMMC
+	// eMMC (DVIO): 28, 29, 30, 31, 32, 33, 34, 35, 36
+	// Set driving-strength to 5 (min: 6.5mA, typ:17.7mA).
 	set_pad_driving_strength(20, 5);
 	for (i = 28; i <= 36; i++)
 		set_pad_driving_strength(i, 5);
 
-	// I2C0 (X1)
-	// Set driving strength to 4 (min.: 12.1mA, typ.: 18.7mA).
+	// I2C0,X1 (DVIO): 68, 69
+	// Set driving strength to 4 (min: 5.6mA, typ: 15.2mA).
 	set_pad_driving_strength(68, 4);
 	set_pad_driving_strength(69, 4);
 
-	// I2C1 (X1)
-	// Set driving strength to 4 (min.: 12.1mA, typ.: 18.7mA).
+	// I2C1,X1 (DVIO): 70, 71
+	// Set driving strength to 4 (min: 5.6mA, typ: 15.2mA).
 	set_pad_driving_strength(70, 4);
 	set_pad_driving_strength(71, 4);
 
-	// I2C2 (X1)
-	// Set driving strength to 4 (min.: 12.1mA, typ.: 18.7mA).
+	// I2C2,X1 (DVIO): 76, 77
+	// Set driving strength to 4 (min: 5.6mA, typ: 15.2mA).
 	set_pad_driving_strength(76, 4);
 	set_pad_driving_strength(77, 4);
 
-	// I2C3
-	// Set driving strength to 4 (min.: 12.2mA, typ.: 16.2mA).
-	set_pad_driving_strength(88, 4);
-	set_pad_driving_strength(89, 4);
+	// I2C3    (GPIO): 88, 89
+	// Set driving strength to 6 (min: 6.8mA, typ: 9.9mA).
+	set_pad_driving_strength(88, 6);
+	set_pad_driving_strength(89, 6);
 
-	// I2C7 (X1)
-	// Set driving strength to 4 (min.: 12.2mA, typ.: 16.2mA).
-	set_pad_driving_strength(86, 4);
-	set_pad_driving_strength(87, 4);
+	// I2C7,X1 (GPIO): 86, 87
+	// Set driving strength to 6 (min: 6.8mA, typ: 9.9mA).
+	set_pad_driving_strength(86, 6);
+	set_pad_driving_strength(87, 6);
 
-	// UA0 (X1)
-	// Set driving strength to 4 (min.: 12.2mA, typ.: 16.2mA).
+	// UA0,X1 (DVIO): 50, 51
+	// Set driving strength to 4 (min: 5.6mA, typ: 15.2mA).
 	set_pad_driving_strength(50, 4);
 	set_pad_driving_strength(51, 4);
 
-	// UA6 (X1)
-	// Set driving strength to 4 (min.: 12.2mA, typ.: 16.2mA).
+	// UA6,X1 (GPIO): 80, 81
+	// Set driving strength to 4 (min: 4.5mA, typ: 6.6mA).
 	set_pad_driving_strength(80, 4);
 	set_pad_driving_strength(81, 4);
 	delay_1ms(1);
@@ -1471,18 +1484,18 @@ static void spi_nor_boot(int pin_x)
 #if defined(PLATFORM_Q645)
 	int i;
 
-	// Set driving strength of following pins to 3 (min.: 8.8mA, typ.: 11.5mA).
-	// SPI-NOR (X1):  6,  7,  8,  9, 10, 11
+	// SPI-NOR (GPIO):  6,  7,  8,  9, 10, 11
+	// Set driving strength of following pins to 3 (min: 8.8mA, typ: 11.5mA).
 	for (i = 6; i <= 11; i++)
 		set_pad_driving_strength(i, 3);
 	delay_1ms(1);
 #elif defined(PLATFORM_SP7350)
 	int i;
 
-	// Set driving strength of following pins to 3 (min.: 10.1mA, typ.: 15.6mA).
-	// SPI-NOR (X1): 21, 22, 23, 24, 25, 26
+	// SPI-NOR (DVIO): 21, 22, 23, 24, 25, 26
+	// Set driving strength of following pins to 4 (min: 5.6mA, typ: 15.2mA).
 	for (i = 21; i <= 26; i++)
-		set_pad_driving_strength(i, 3);
+		set_pad_driving_strength(i, 4);
 	delay_1ms(1);
 #endif
 
@@ -1707,11 +1720,11 @@ static void do_fat_boot(u32 type, u32 port)
 	if ((type == SDCARD_ISP) || (type == USB_ISP)) {
 		int i;
 
-		// Set driving strength of following pins to 3 (min.: 8.8mA, typ.: 11.5mA).
-		// SPI-NOR  (X1):  6,  7,  8,  9, 10, 11
-		// SPI-NAND (X1): 16, 17, 18, 19, 20, 21
-		// SPI-NAND (X2):  6,  7,  8,  9, 10, 11
-		// eMMC:          12, 13, 14, 15, 16, 17, 18, 19, 20, 21
+		// SPI-NOR     (GPIO):  6,  7,  8,  9, 10, 11
+		// SPI-NAND,X1 (GPIO): 16, 17, 18, 19, 20, 21
+		// SPI-NAND,X2 (GPIO):  6,  7,  8,  9, 10, 11
+		// eMMC        (DVIO): 12, 13, 14, 15, 16, 17, 18, 19, 20, 21
+		// Set driving strength of following pins to 3 (min: 8.8mA, typ: 11.5mA).
 		for (i = 6; i <= 21; i++)
 			set_pad_driving_strength(i, 3);
 		delay_1ms(1);
@@ -1720,14 +1733,14 @@ static void do_fat_boot(u32 type, u32 port)
 	if ((type == SDCARD_ISP) || (type == USB_ISP)) {
 		int i;
 
-		// Set driving strength of following pins to 3 (min.: 10.1mA, typ.: 15.6mA).
-		// SPI-NOR  (X1): 21, 22, 23, 24, 25, 26
-		// SPI-NAND (X1): 30, 31, 32, 33, 34, 35
-		// SPI-NAND (X2): 21, 22, 23, 24, 25, 26
-		// 8-bit NAND:    21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36
-		// eMMC:          20, 28, 29, 30, 31, 32, 33, 34, 35, 36
+		// SPI-NOR,    (DVIO): 21, 22, 23, 24, 25, 26
+		// SPI-NAND,X1 (DVIO): 30, 31, 32, 33, 34, 35
+		// SPI-NAND,X2 (DVIO): 21, 22, 23, 24, 25, 26
+		// 8-bit NAND  (DVIO): 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36
+		// eMMC        (DVIO): 20, 28, 29, 30, 31, 32, 33, 34, 35, 36
+		// Set driving strength of following pins to 4 (min: 5.6mA, typ: 15.2mA).
 		for (i = 20; i <= 36; i++)
-			set_pad_driving_strength(i, 3);
+			set_pad_driving_strength(i, 4);
 		delay_1ms(1);
 
 		/*
@@ -1946,8 +1959,8 @@ static void emmc_boot(void)
 #if defined(PLATFORM_Q645)
 	//MOON2_REG->sft_cfg[3] = RF_MASK_V((1 << 7), (1 << 7)); //CLKEMMC source is PLLD
 
-	// Set driving strength of following pins to 3 (min.: 8.8mA, typ.: 11.5mA).
-	// eMMC: 12, 13, 14, 15, 16, 17, 18, 19, 20, 21
+	// eMMC (DVIO): 12, 13, 14, 15, 16, 17, 18, 19, 20, 21
+	// Set driving strength of following pins to 3 (min: 8.8mA, typ: 11.5mA).
 	for (i = 12; i <= 21; i++)
 		set_pad_driving_strength(i, 3);
 	delay_1ms(1);
@@ -1964,11 +1977,11 @@ static void emmc_boot(void)
 #ifdef CLKGEN_EMMC_716M
 	MOON3_REG_AO->clkgen[0] = RF_MASK_V(3, 3); //CLKEMMC source is 716M
 #endif
-	// Set driving strength of following pins to 3 (min.: 10.1mA, typ.: 15.6mA).
-	// eMMC: 20, 28, 29, 30, 31, 32, 33, 34, 35, 36
-	set_pad_driving_strength(20, 3);
+	// Set driving strength of following pins to 4 (min: 5.6mA, typ: 15.2mA).
+	// eMMC (DVIO): 20, 28, 29, 30, 31, 32, 33, 34, 35, 36
+	set_pad_driving_strength(20, 4);
 	for (i = 28; i <= 36; i++)
-		set_pad_driving_strength(i, 3);
+		set_pad_driving_strength(i, 4);
 	delay_1ms(1);
 #endif
 
@@ -2323,9 +2336,9 @@ static void nand_uboot(u32 type)
 #if defined(PLATFORM_Q645)
 	int i;
 
-	// Set driving strength of following pins to 3 (min.: 8.8mA, typ.: 11.5mA).
-	// SPI-NAND (X1): 16, 17, 18, 19, 20, 21
-	// SPI-NAND (X2):  6,  7,  8,  9, 10, 11
+	// SPI-NAND,X1 (GPIO): 16, 17, 18, 19, 20, 21
+	// SPI-NAND,X2 (GPIO):  6,  7,  8,  9, 10, 11
+	// Set driving strength of following pins to 3 (min: 8.8mA, typ: 11.5mA).
 	if (get_spi_nand_pinmux() == 2)
 		for (i = 6; i <= 11; i++)
 			set_pad_driving_strength(i, 3);
@@ -2337,20 +2350,20 @@ static void nand_uboot(u32 type)
 	int i;
 
 	if (type == SPINAND_BOOT) {
-		// Set driving strength of following pins to 3 (min.: 10.1A, typ.: 15.6mA).
-		// SPI-NAND (X1): 30, 31, 32, 33, 34, 35
-		// SPI-NAND (X2): 21, 22, 23, 24, 25, 26
+		// SPI-NAND,X1 (DVIO): 30, 31, 32, 33, 34, 35
+		// SPI-NAND,X2 (DVIO): 21, 22, 23, 24, 25, 26
+		// Set driving strength of following pins to 4 (min: 5.6mA, typ: 15.2mA).
 		if (get_spi_nand_pinmux() == 2)
 			for (i = 21; i <= 26; i++)
-				set_pad_driving_strength(i, 3);
+				set_pad_driving_strength(i, 4);
 		else
 			for (i = 30; i <= 35; i++)
-				set_pad_driving_strength(i, 3);
+				set_pad_driving_strength(i, 4);
 	} else {
-		// Set driving strength of following pins to 3 (min.: 10.1A, typ.: 15.6mA).
-		// 8-bit NAND: 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36
+		// 8-bit NAND (DVIO): 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36
+		// Set driving strength of following pins to 4 (min: 5.6mA, typ: 15.2mA).
 		for (i = 21; i <= 36; i++)
-			set_pad_driving_strength(i, 3);
+			set_pad_driving_strength(i, 4);
 	}
 	delay_1ms(1);
 #endif
