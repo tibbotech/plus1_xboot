@@ -495,7 +495,7 @@ static void init_hw(void)
 	set_pad_driving_strength(15, 10);
 	set_pad_driving_strength(16, 10);
 
-	// G-MAC (GPIO): MDC(9), MDIO(12)
+	// GMAC (GPIO): MDC(9), MDIO(12)
 	// Set driving strength to 5 (min: 5.7mA, typ: 8.2mA).
 	set_pad_driving_strength(9, 5);
 	set_pad_driving_strength(12, 5);
@@ -568,9 +568,9 @@ static void init_hw(void)
 	*(volatile u32 *)(ARM_TSGEN_WR_BASE + 0x08) = 0; // CNTCV[31:0]
 	*(volatile u32 *)(ARM_TSGEN_WR_BASE + 0x0C) = 0; // CNTCV[63:32]
 
-	PAD_CTL2_REG->cfg[30] = 0x00044800; // GMAC Softpad control register 0 : bit31-->0 ,TXC non-GPIO mode
-	PAD_CTL2_REG->cfg[31] = 0x80000000; // GMAC Softpad control register 1 : bit31-->1 ,RXC GPIO mode
-	MOON3_REG_AO->clkgen[0] = RF_MASK_V_CLR(0x1000); //G3.23 bit12 GMAC_PHYSEL-->0 ,set GMAC to use RGMII PHY Interface.
+	PAD_CTL2_REG->cfg[30] = 0x00024600;              // GMAC TXC softpad (G102.30) = 0x00024600, Set TXC to non-GPIO mode, delay 1.2 nS
+	PAD_CTL2_REG->cfg[31] = 0x80000000;              // GMAC RXC softpad (G102.31) = 0x80000000, Set RXC to GPIO mode
+	MOON3_REG_AO->clkgen[0] = RF_MASK_V_CLR(0x1000); // GMAC_PHYSEL (G3.23[12]) = 0, Set GMAC to use RGMII interface.
 
 	// Turn on power of NPU (NPU_PWR_EN, GPIO65).
 	GPIO_MASTER_REG->gpio_master[65 / 16] = 0x10001 << (65 % 16);
