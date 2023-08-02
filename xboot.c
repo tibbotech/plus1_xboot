@@ -610,7 +610,7 @@ static void init_hw(void)
 #endif
 #ifdef PLLD_533MHz
 	prn_string("PLLD: 533.3MHz, DATARATE:2133.2\n");
-	MOON3_REG_AO->plld_cfg[0] = RF_MASK_V(0xFFFF, 0x200A);
+	MOON3_REG_AO->plld_cfg[0] = RF_MASK_V(0xFFFF, 0x800A);
 	MOON3_REG_AO->plld_cfg[1] = RF_MASK_V(0xFFFF, 0xC0BD);
 	MOON3_REG_AO->plld_cfg[2] = RF_MASK_V(0xFFFF, 0x0107);
 #endif
