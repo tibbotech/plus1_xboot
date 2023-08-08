@@ -568,9 +568,15 @@ static void init_hw(void)
 	*(volatile u32 *)(ARM_TSGEN_WR_BASE + 0x08) = 0; // CNTCV[31:0]
 	*(volatile u32 *)(ARM_TSGEN_WR_BASE + 0x0C) = 0; // CNTCV[63:32]
 
+#if 1 // RGMII interface
 	PAD_CTL2_REG->cfg[30] = 0x00024600;              // GMAC TXC softpad (G102.30) = 0x00024600, Set TXC to non-GPIO mode, delay 1.2 nS
 	PAD_CTL2_REG->cfg[31] = 0x80000000;              // GMAC RXC softpad (G102.31) = 0x80000000, Set RXC to GPIO mode
 	MOON3_REG_AO->clkgen[0] = RF_MASK_V_CLR(0x1000); // GMAC_PHYSEL (G3.23[12]) = 0, Set GMAC to use RGMII interface.
+#else // RMII interface
+	PAD_CTL2_REG->cfg[30] = 0x00046000;              // GMAC TXC softpad (G102.30) = 0x00046000, Set TXC to non-GPIO mode, delay -8 nS
+	PAD_CTL2_REG->cfg[31] = 0x00046000;              // GMAC RXC softpad (G102.31) = 0x00046000, Set RXC to non-GPIO mode, delay -8 nS
+	MOON3_REG_AO->clkgen[0] = RF_MASK_V_SET(0x1000); // GMAC_PHYSEL (G3.23[12]) = 1, Set GMAC to use RMII interface.
+#endif
 
 	// Turn on power of NPU (NPU_PWR_EN, GPIO65).
 	GPIO_MASTER_REG->gpio_master[65 / 16] = 0x10001 << (65 % 16);
