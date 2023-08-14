@@ -78,6 +78,25 @@ struct pad_ctl_regs {
 };
 #define PAD_CTL_REG ((volatile struct pad_ctl_regs *)RF_GRP_AO(101, 0))
 
+struct pad_ctl2_regs {
+	unsigned int sl[2];			// 102.0 - 102.1
+	unsigned int gpio_pe[2];		// 102.2 - 102.3
+	unsigned int gpio_ps[2];		// 102.4 - 102.5
+	unsigned int gpio_spu[2];		// 102.6 - 102.7
+	unsigned int dvio_pu[2];		// 102.8 - 102.9
+	unsigned int dvio_pd[2]; 		// 102.10 - 102.11
+	unsigned int ms;			// 102.12
+	unsigned int sdio_pad_power_down;	// 102.13
+	unsigned int reserved_14[6];		// 102.14 - 102.19
+	unsigned int pnand_softpad_ctrl;	// 102.20
+	unsigned int emmc_softpad_ctrl[3];	// 102.21 - 102.23
+	unsigned int spi_softpad_ctrl[2];	// 102.24 - 102.25
+	unsigned int sd_softpad_ctrl[2];	// 102.26 - 102.27
+	unsigned int sdio_softpad_ctrl[2];	// 102.28 - 102.29
+	unsigned int gmac_softpad_ctrl[2];	// 102.30 - 102.31
+};
+#define PAD_CTL2_REG ((volatile struct pad_ctl2_regs *)RF_GRP_AO(102, 0))
+
 struct hb_gp_regs {
 	unsigned int hb_otp_data0;
 	unsigned int hb_otp_data1;
@@ -829,11 +848,6 @@ struct amba_secure_regs {
 
 /* TSGEN Write/Read */
 #define ARM_TSGEN_WR_BASE  0xf810a000
-
-struct softpad_regs {
-	unsigned int cfg[32];              // 102.0~31
-};
-#define PAD_CTL2_REG    ((volatile struct softpad_regs *)RF_GRP_AO(102, 0))
 
 struct gpio_first_regs {
 	unsigned int gpio_first[7];
