@@ -371,7 +371,7 @@ unsigned int hwSdIdleWait(void)
 void SetMediaTypeMode(unsigned char ActFlash, unsigned short PageSize)
 {
 	CARD_MEDIA_TYPE_SET(ActFlash);
-#ifdef PLATFORM_8388
+#if 0
 	DMA_SIZE_SET((PageSize - 1) & 0x7ff);	/*setup dma buffer size*/
 #endif
 }

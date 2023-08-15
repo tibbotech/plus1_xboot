@@ -11,8 +11,6 @@ choice
 	default PLATFORM_Q628
 	config PLATFORM_Q628
 		bool "Q628"
-	config PLATFORM_8388
-		bool "8388"
 	config PLATFORM_I137
 		bool "I137"
 	config PLATFORM_3502
