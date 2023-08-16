@@ -11,7 +11,6 @@
 // * CSIM iBoot:  CSIM_NEW
 // * Zebu iBoot:  CSIM_NEW + CONFIG_BOOT_ON_ZEBU
 // * NOR_iBoot:   PLATFORM_SPIBAREMETAL
-// * 8388_iBoot:  PLATFORM_SPIBAREMETAL & PLATFORM_8388
 //////////////////////////////////////////////////
 #endif
 
