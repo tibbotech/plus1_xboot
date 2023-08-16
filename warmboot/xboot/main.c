@@ -2,15 +2,38 @@
 #include <types.h>
 #include <config_xboot.h>
 #include <regmap.h>
+#include "hal_gpio.h"
+#include "stc.h"
 
 #include <SECGRP_sp7350.h>
 
 #include <string.h>
 #include "common.h"
 
+/* Output peripheral-reset signal (low-active) */
+#define OUTPUT_PER_RESETB
+
 #define PM_DATA_SAVE_ADDRESS   0xFA29E000   /* Save the maindomain register and User data */
 #define CPU_START_ADDRESS       0xfa23fc00
 #define CPU_START_POS(core_id)	((CPU_START_ADDRESS - 0x10) - ((core_id) * 8))
+
+/* STC 90kHz : 1 tick = 11.11 us */
+inline void STC_delay_ticks(u32 ticks)
+{
+#ifdef PLATFORM_SP7350
+	STC_REG->stc_31_0 = 0;
+	while (STC_REG->stc_31_0 < ticks);
+#else
+	STC_REG->stc_15_0 = 0;
+	while (STC_REG->stc_15_0 < ticks);
+#endif
+}
+
+/* STC 90kHz : max delay = 728 ms */
+void STC_delay_1ms(u32 msec)
+{
+	STC_delay_ticks(msec * 90);
+}
 
 void restore_save_data()
 {
@@ -46,11 +69,27 @@ int main()
 
 	prn_string("+++[wakeup xboot]" __DATE__ " " __TIME__ "\n");
 
+#ifdef OUTPUT_PER_RESETB
+	prn_string("RESETB" "\n");
+	// GPIO settings for PER_RESETB (GPIO2)
+	HAL_GPIO_GPO(2, 0);   // Output LOW.
+	#if !defined(CONFIG_BOOT_ON_CSIM) && !defined(CONFIG_BOOT_ON_ZEBU)
+	STC_delay_1ms(25);
+	#endif
+	HAL_GPIO_O_SET(2, 1); // Output HIGH.
+	#if !defined(CONFIG_BOOT_ON_CSIM) && !defined(CONFIG_BOOT_ON_ZEBU)
+	STC_delay_1ms(1);
+	#endif
+	HAL_GPIO_E_SET(2, 0); // Output Hi-Z.
+	#if !defined(CONFIG_BOOT_ON_CSIM) && !defined(CONFIG_BOOT_ON_ZEBU)
+	STC_delay_1ms(24);
+	#endif
+#endif	
+
 	restore_save_data();
 	// restore SECGRP register
 	memcpy((void *)WARMBOOT_A64_ADDR, beg, end - beg);
 	start64_addr = (u32)WARMBOOT_A64_ADDR;
-
 
 	// xboot -> a64up -> BL31
 	prn_string("a64up@"); prn_dword(start64_addr);
