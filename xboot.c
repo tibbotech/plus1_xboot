@@ -526,6 +526,11 @@ static void init_hw(void)
 	set_pad_driving_strength(88, 6);
 	set_pad_driving_strength(89, 6);
 
+	// I2C6,X1 (GPIO): 84, 85
+	// Set driving strength to 6 (min: 6.8mA, typ: 9.9mA).
+	set_pad_driving_strength(84, 6);
+	set_pad_driving_strength(85, 6);
+
 	// I2C7,X1 (GPIO): 86, 87
 	// Set driving strength to 6 (min: 6.8mA, typ: 9.9mA).
 	set_pad_driving_strength(86, 6);
