@@ -354,8 +354,6 @@ static void init_hw(void)
 #if defined(PLATFORM_Q645)
 	MOON1_REG->sft_cfg[2] = RF_MASK_V_CLR(0x3c);   // Disable all JTAG pins
 
-	UA2AXI_REG->axi_en = 0; // Turn off UART2AXI, UADBG default active
-
 	//MOON2_REG->sft_cfg[2] = RF_MASK_V((1 << 13), (1 << 13)); // UA0 clk_sel 200M
 	//MOON2_REG->sft_cfg[2] = RF_MASK_V((1 << 14), (1 << 14)); // UA1 clk_sel 200M
 	//MOON2_REG->sft_cfg[2] = RF_MASK_V((1 << 15), (1 << 15)); // UA2 clk_sel 200M
@@ -2689,7 +2687,7 @@ static void init_uart(void)
 	MOON0_REG->reset[3] = RF_MASK_V_CLR(1 << 5);    // UADBG_RESET=0
 	UADBG_REG->div_l = UART_BAUD_DIV_L(BAUDRATE, UART_SRC_CLK);
 	UADBG_REG->div_h = UART_BAUD_DIV_H(BAUDRATE, UART_SRC_CLK);
-	*(volatile int *)0xf800f98c = 0; // Disable UA2AXI and enable UADBG.
+	UA2AXI_REG->axi_en = 0; // Disable UA2AXI and enable UADBG.
 #endif
 #if defined(PLATFORM_SP7350)
 	/* uart6 pinmux : UA6_TX, UA6_RX  used for CM4 debug message  */
@@ -2702,7 +2700,7 @@ static void init_uart(void)
 	MOON0_REG_AO->reset[5] = RF_MASK_V_CLR(1 << 10);   // UADBG_RESET=0
 	UADBG_REG->div_l = UART_BAUD_DIV_L(BAUDRATE, UART_SRC_CLK);
 	UADBG_REG->div_h = UART_BAUD_DIV_H(BAUDRATE, UART_SRC_CLK);
-	*(volatile int *)0xf800f98c = 0; // Disable UA2AXI and enable UADBG.
+	UA2AXI_REG->axi_en = 0; // Disable UA2AXI and enable UADBG.
 #endif
 #endif
 #ifdef PLATFORM_I143
