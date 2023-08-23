@@ -65,7 +65,7 @@ static void sp_qctrl_accept_test(int led)
 		int pass = 0;
 
 		if (n == 0 || n == 39) continue; // SKIP CA55/CA55SCUL3
-		if (n == 3  || n == 4  ||
+		if (n == 4  ||
 		    n == 6  || n == 18 ||
 		    n == 20 || n == 34 ||
 		    n == 38 || n == 42) continue; // SKIP Reserved
