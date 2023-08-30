@@ -456,6 +456,10 @@ static void init_hw(void)
 		set_pad_driving_strength(i, 5);
 	for (i = 44; i <= 49; i++)
 		set_pad_driving_strength(i, 5);
+	MOON3_REG_AO->clkgen[4] = RF_MASK_V((0x0F << 6), (0x00 << 6));  // set i2c spi source clk 100M  400M
+	MOON3_REG_AO->clkgen[5] = RF_MASK_V((0x07 << 6), (0x00 << 6));   // set AO sys clk
+	diag_printf("clkgen[4] 0x%x clkgen[4] addr 0x%x\n",MOON3_REG_AO->clkgen[4],&MOON3_REG_AO->clkgen[4]);
+	diag_printf("clkgen[5] 0x%x clkgen[5] addr 0x%x\n",MOON3_REG_AO->clkgen[5],&MOON3_REG_AO->clkgen[5]);
 
 	#if (0)
 	// SPI0,X1 (DVIO): 64, 65, 66, 67

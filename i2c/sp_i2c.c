@@ -192,6 +192,12 @@ void sp_i2c_write(unsigned int i2c_no, u8  slave_addr , u8  *data_buf , unsigned
 	else
 		temp_reg |= SP_IC_CON_SPEED_STD;
 
+	MOON3_REG_AO->clkgen[4] = RF_MASK_V((0x03 << 6), (0x00 << 6));  // set i2c source clk 100M
+	i2c_regs->ic_ss_scl_hcnt = 397;
+	i2c_regs->ic_ss_scl_lcnt = 496;
+	i2c_regs->ic_fs_scl_hcnt = 57;
+	i2c_regs->ic_fs_scl_lcnt = 129;
+
 	i2c_regs->ic_con = temp_reg;
 	i2c_regs->ic_tar = slave_addr;
 	i2c_regs->ic_enable = 1;
@@ -279,6 +285,12 @@ void sp_i2c_read(unsigned int i2c_no, u8  slave_addr , u8  *data_buf , unsigned 
 		temp_reg |= SP_IC_CON_SPEED_FAST;
 	else
 		temp_reg |= SP_IC_CON_SPEED_STD;
+
+	MOON3_REG_AO->clkgen[4] = RF_MASK_V((0x03 << 6), (0x00 << 6));  // set i2c source clk 100M
+	i2c_regs->ic_ss_scl_hcnt = 397;
+	i2c_regs->ic_ss_scl_lcnt = 496;
+	i2c_regs->ic_fs_scl_hcnt = 57;
+	i2c_regs->ic_fs_scl_lcnt = 129;
 
 	i2c_regs->ic_con = temp_reg;
 	i2c_regs->ic_tar = slave_addr;
