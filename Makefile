@@ -421,6 +421,11 @@ CSOURCES += otp/sp_otp.c
 CSOURCES += otp/mon_rw_otp.c
 endif
 
+# CPIO
+ifeq ($(CONFIG_PLATFORM_SP7350), y)
+CSOURCES += cpio/cpio.c
+endif
+
 CSOURCES += draminit/dram_test.c
 
 ifeq ($(CONFIG_PLATFORM_Q628),y)

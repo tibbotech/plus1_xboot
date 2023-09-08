@@ -868,4 +868,37 @@ struct pad_dvio_regs {
 	unsigned int reserved2:27;
 };
 #define PAD_DVIO_REG ((volatile struct pad_dvio_regs *)RF_GRP_AO(102, 12))
+
+struct rgst_cpio {
+	unsigned int CH0_ADDR;
+	unsigned int CH0_CTRL;
+	unsigned int CH1_ADDR;
+	unsigned int CH1_CTRL;
+	unsigned int DMA_RSVD[8];
+	unsigned int IO_CTRL;
+	unsigned int IO_STS;
+	unsigned int SRC_ADR;
+	unsigned int DST_ADR;
+	unsigned int IO_TCTL;
+	unsigned int RA_AMSK;
+	unsigned int ARB_CTL;
+	unsigned int IO_RSVD0;
+	unsigned int INT_IT[4];
+	unsigned int INT_OT[4];
+	unsigned int IO_RSVD1[35];
+	unsigned int I2C_CTRL;
+	unsigned int IO_RSVD2[64];
+	unsigned int TEST_D[6];
+	unsigned int TEST_C[2];
+	unsigned int IOP_STS;
+	unsigned int PHY_CTRL;
+	unsigned int IO_SNL;
+	unsigned int IO_SNH;
+	unsigned int AFE_CTL[8];
+	unsigned int AFE_STS[2];
+	unsigned int IO_RSVD3[34];
+	unsigned int IO_DBG[8];
+};
+#define cpior_reg ((volatile struct rgst_cpio *)0xf8106000)
+
 #endif /* __INC_REGMAP_SP7350_H */

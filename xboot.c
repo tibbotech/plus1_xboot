@@ -23,6 +23,7 @@
 
 #if defined(PLATFORM_SP7350)
 #include <hal_gpio.h>
+#include <cpio.h>
 #endif
 
 #ifdef CONFIG_SECURE_BOOT_SIGN
@@ -2774,6 +2775,16 @@ void xboot_main(void)
 
 #ifdef CONFIG_HAVE_OTP
 	mon_rw_otp();
+#endif
+
+#if 0 // Enable CPIO master mode.
+	cpio_master();
+#endif
+#if 0 // Enable CPIO slave mode.
+	cpio_slave();
+#endif
+#if 0 // Enable CPIO test.
+	cpio_test();
 #endif
 
 	/* start boot flow */
