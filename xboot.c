@@ -23,6 +23,8 @@
 
 #if defined(PLATFORM_SP7350)
 #include <hal_gpio.h>
+#endif
+#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
 #include <cpio.h>
 #endif
 

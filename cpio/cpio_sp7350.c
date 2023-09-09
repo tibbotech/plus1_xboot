@@ -261,9 +261,9 @@ void cpio_reset(int re_cfg)
 {
 	prn_string("Reset CPIO controller\n");
 
-	*(volatile u32 *)(0xf8000058) = ((0x6<<16) | 0x6);
+	*(volatile u32 *)(0xf8800008) = ((0x2<<16) | 0x1);
 	STC_delay_us (1);
-	*(volatile u32 *)(0xf8000058) = (0x6<<16);
+	*(volatile u32 *)(0xf8800008) = (0x2<<16);
 	cpior_reg->AFE_CTL[7] |= 0x1;		// enable test clock output
 	prn_dword(cpior_reg->PHY_CTRL);
 	cpior_reg->PHY_CTRL = (0x1<<19);	// Disable auto initial;
@@ -290,9 +290,9 @@ void cpio_reset1(int dly0, int dly1)
 {
 	prn_string("Reset CPIO controller"); prn_dword0 (dly0); prn_dword(dly1);
 
-	*(volatile u32 *)(0xf8000058) = ((0x6<<16) | 0x6);
+	*(volatile u32 *)(0xf8800008) = ((0x2<<16) | 0x2);
 	STC_delay_us (1);
-	*(volatile u32 *)(0xf8000058) = (0x6<<16);
+	*(volatile u32 *)(0xf8800008) = (0x2<<16);
 	cpior_reg->AFE_CTL[7] |= 0x1;		// enable test clock output
 	prn_dword(cpior_reg->PHY_CTRL);
 	cpior_reg->PHY_CTRL = (0x1<<19);	// Disable auto initial;
@@ -946,15 +946,12 @@ void cpio_slave(void)
 	unsigned int data_tmp;
 
 	prn_string("\n\n----CPIO slave mode Begin----\n\n");
-	*(volatile u32 *)(0xf80001E4) = 0xC0000000;	// Disable MIPI enable
-	*(volatile u32 *)(0xf8000084) = 0x2000000;	// Close UA1 pinmux
-	*(volatile u32 *)(0xf8000180) = 0x3F0002;	// Select CPIOR probeout
-	*(volatile u32 *)(0xf8000098) = 0x8000800;	// Enable probe pinmux;
+	*(volatile u32 *)(0xf880025C) = 0x00080000;	// EN_MIPI0_RX = 0
 
-	data_tmp = *(volatile u32 *)(0xf8000058);
-	if ((data_tmp & 0x6) != 0x0) {
+	data_tmp = *(volatile u32 *)(0xf8800008);
+	if ((data_tmp & 0x2) != 0x0) {
 		prn_string("CPIO system reset not released, releasing!!\n");
-		*(volatile u32 *)(0xf8000058) = (0x6<<16);
+		*(volatile u32 *)(0xf8800008) = (0x2<<16);
 		STC_delay_us (100);
 	}
 
@@ -1021,15 +1018,12 @@ void cpio_master(void)
 	unsigned int data_tmp;
 
 	prn_string("\n\n----CPIO master mode Begin----\n\n");
-	*(volatile u32 *)(0xf80001E4) = 0xC0000000;	// Disable MIPI enable
-	*(volatile u32 *)(0xf8000084) = 0x2000000;	// Close UA1 pinmux
-	*(volatile u32 *)(0xf8000180) = 0x3F0002;	// Select CPIOR probeout
-	*(volatile u32 *)(0xf8000098) = 0x8000800;	// Enable probe pinmux;
+	*(volatile u32 *)(0xf880025C) = 0x00080000;	// EN_MIPI0_RX = 0
 
-	data_tmp = *(volatile u32 *)(0xf8000058);
-	if ((data_tmp & 0x6) != 0x0) {
+	data_tmp = *(volatile u32 *)(0xf8800008);
+	if ((data_tmp & 0x2) != 0x0) {
 		prn_string("CPIO system reset not released, releasing!!\n");
-		*(volatile u32 *)(0xf8000058) = (0x6<<16);
+		*(volatile u32 *)(0xf8800008) = (0x2<<16);
 		STC_delay_us (100);
 	}
 
@@ -1102,16 +1096,18 @@ void cpio_test(void)
 	//int j, k, m, n;
 
 	prn_string("\n\n---CPIO test Begin----\n\n");
-	*(volatile u32 *)(0xf80001E4) = 0xC0000000;	// Disable MIPI enable
-	*(volatile u32 *)(0xf8000084) = 0x2000000;	// Close UA1 pinmux
-	*(volatile u32 *)(0xf8000180) = 0x3F0002;	// Select CPIOR probeout
-	*(volatile u32 *)(0xf8000098) = 0x8000800;  	// Enable probe pinmux;
+	*(volatile u32 *)(0xf880025C) = 0x00080000;	// EN_MIPI0_RX = 0
+#if 0 // Enable CPIOR_CLK
+	*(volatile u32 *)(0xf8800084) = 0x02000000;	// GMAC_SEL_SEL = 0
+	*(volatile u32 *)(0xf880026C) = 0x003F0002;	// Select CPIOR_CLK to CLK_PROBE
+	*(volatile u32 *)(0xf88000A8) = 0x00100010;  	// PROBE_PORT_SEL = 1
 	cpior_reg->AFE_CTL[7] |= 0x1;			// enable test clock output
-	data_tmp = *(volatile u32 *)(0xf8000058);
+#endif
 
-	if ((data_tmp & 0x6) != 0x0) {
+	data_tmp = *(volatile u32 *)(0xf8800008);
+	if ((data_tmp & 0x2) != 0x0) {
 		prn_string("CPIO system reset not released, releasing!!\n");
-		*(volatile u32 *)(0xf8000058) = (0x6<<16);
+		*(volatile u32 *)(0xf8800008) = (0x2<<16);
 		STC_delay_us (100);
 	}
 
