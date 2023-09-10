@@ -15,17 +15,20 @@ void cpio_taxi(int tcnt, int ecnt)
 	cpiol_reg->IO_TCTL &= ~(0xF<<2);
 	cpiol_reg->IO_TCTL |= (tcnt<<2);
 	cpiol_reg->IO_TCTL |= 0x1;
+
 	data_tmp = cpiol_reg->IO_TCTL;
 	while ((data_tmp & 0x1) == 0x0) {
 		STC_delay_us(100);
 		prn_string("Test run == 0x0\n");
 		data_tmp = cpiol_reg->IO_TCTL;
 	}
+
 	data_tmp = cpiol_reg->IO_TCTL;
 	if (tcnt == 0x0) {
 		STC_delay_1ms (0x100);
 		cpiol_reg->IO_TCTL &= ~(0x1);
 	}
+
 	data_tmp = cpiol_reg->IO_TCTL;
 	i = 0x10;
 	while (((data_tmp & 0x1) != 0x0) && (i != 0x0)) {
@@ -40,6 +43,7 @@ void cpio_taxi(int tcnt, int ecnt)
 		prn_dword(cpiol_reg->IO_TCTL);
 		while (1);
 	}
+
 	data_tmp = cpiol_reg->IO_TCTL;
 	if ((data_tmp & (0x3F << 11)) != (ecnt << 11)) {
 		prn_string("Test error count check fail:\n");
@@ -64,7 +68,7 @@ void cpio_taxi_0(void)
 	cpio_taxi(0x0, 0x20);
 	prn_string("Fake AXI test without error insertion\n\n");
 	cpiol_reg->IO_TCTL &= ~(0x1<<9);	// Disable error insert
-	cpiol_reg->IO_TCTL |= (0x5<<6);		// Set sieze to random;
+	cpiol_reg->IO_TCTL |= (0x5<<6);		// Set size to random;
 	cpio_taxi(0xF, 0x0);
 	for (i = 0x0; i < 0x10; i++) {
 		cpio_taxi(0x0, 0x0);
@@ -119,7 +123,7 @@ void cpio_cfg_pll(void)
 	cpiol_reg->AFE_CTL[4] = 0x000000D2;
 	cpiol_reg->AFE_CTL[5] = 0x00006801;
 	cpiol_reg->AFE_CTL[6] = 0x12C18C33;
-	cpiol_reg->AFE_CTL[7] = 0x00003009;	LL
+	cpiol_reg->AFE_CTL[7] = 0x00003009;
 #endif
 #if 0
 	//VCO: 9.6G, PLL: 4.8G
@@ -945,7 +949,7 @@ void cpio_slave(void)
 	int dly_cnt0, dly_cnt1;
 	unsigned int data_tmp;
 
-	prn_string("\n\n----CPIO slave mode Begin----\n\n");
+	prn_string("\n\n---- CPIO-L slave mode Begin ----\n\n");
 	*(volatile u32 *)(0xf80001E4) = 0xC0000000;	// Disable MIPI enable
 	*(volatile u32 *)(0xf8000084) = 0x02000000;	// Close UA1 pinmux
 	*(volatile u32 *)(0xf8000180) = 0x003F0001;	// Select CPIOL probeout
@@ -1020,7 +1024,7 @@ void cpio_master(void)
 	int dly_cnt0, dly_cnt1;
 	unsigned int data_tmp;
 
-	prn_string("\n\n----CPIO master mode Begin----\n\n");
+	prn_string("\n\n---- CPIO-L master mode Begin ----\n\n");
 	*(volatile u32 *)(0xf80001E4) = 0xC0000000;	// Disable MIPI enable
 	*(volatile u32 *)(0xf8000084) = 0x02000000;	// Close UA1 pinmux
 	*(volatile u32 *)(0xf8000180) = 0x003F0001;	// Select CPIOL probeout
@@ -1099,9 +1103,8 @@ void cpio_test(void)
 
 	unsigned int data_tmp;
 	int i;
-	//int j, k, m, n;
 
-	prn_string("\n\n---CPIO test Begin----\n\n");
+	prn_string("\n\n--- CPIO-L test Begin ----\n\n");
 	*(volatile u32 *)(0xf80001E4) = 0xC0000000;	// Disable MIPI enable
 	*(volatile u32 *)(0xf8000084) = 0x02000000;	// Close UA1 pinmux
 	*(volatile u32 *)(0xf8000180) = 0x003F0001;	// Select CPIOL probeout
@@ -1198,6 +1201,8 @@ void cpio_test(void)
 	ana_test1(0x0, 0x0, 0x0, 0x0, 0x0, 0x0);
 	while (1);
 
+	int j, k, m, n;
+
 	for (i = 0; i < 8; i++) {
 		for (j = 0; j < 8; j++) {
 			for (k = 0; k < 8; k++) {
@@ -1247,13 +1252,15 @@ void cpio_test(void)
 	prn_string("Switch to high speed in DPHY loopback mode\n");
 	cpiol_reg->PHY_CTRL |= 0x1;
 	STC_delay_us (100);
+
 	data_tmp = cpiol_reg->PHY_CTRL;
 	if ((data_tmp & 0x1) == 0x0) {
-		prn_string("Mode Not switched to hign speed mode\n");
+		prn_string("Mode Not switched to high speed mode\n");
 		prn_dword(cpiol_reg->PHY_CTRL);
 		prn_dword(cpiol_reg->IOP_STS);
 		while (1);
 	}
+
 	data_tmp = cpiol_reg->IOP_STS;
 	if (((data_tmp & 0x1) == 0x0) || ((data_tmp & (0x1<<5)) != 0x0) || ((data_tmp & (0x1<<2)) != 0x0)) {
 		prn_string("PHY Status check fail\n");
@@ -1262,6 +1269,7 @@ void cpio_test(void)
 	}
 	prn_string("Mode switch pass\n");
 	STC_delay_us (1);
+
 	cpio_taxi_0();
 
 	prn_string("All Digital Loopback Test Finished!!!\n\n");
@@ -1274,21 +1282,20 @@ void cpio_test(void)
 //	prn_dword(k);
 	prn_string("Enable APHY loopback in low speed\n\n");
 	cpiol_reg->IO_TCTL |= (0x3<<18);
-//	cpiol_reg->IO_TCTL |= (0x4<<18);
+	//cpiol_reg->IO_TCTL |= (0x4<<18);
 	STC_delay_us (1);
 	cpio_taxi_0();
-
 	STC_delay_us (5);
-
 	prn_dword(cpiol_reg->AFE_CTL[5]);
 
 	prn_string("Switch to high speed in APHY loopback mode\n");
 	cpiol_reg->PHY_CTRL |= 0x1;
 	//cpiol_reg->PHY_CTRL |= ((0x1<<5) | (0x1<<(5+16)));
 	STC_delay_us (100);
+
 	data_tmp = cpiol_reg->PHY_CTRL;
 	if ((data_tmp & 0x1) == 0x0) {
-		prn_string("Mode Not switched to hign speed mode\n");
+		prn_string("Mode Not switched to high speed mode\n");
 		prn_dword(cpiol_reg->PHY_CTRL);
 		prn_dword(cpiol_reg->IOP_STS);
 		cpiol_reg->PHY_CTRL |= 0x1;
@@ -1302,6 +1309,7 @@ void cpio_test(void)
 		//continue;
 		while (1);
 	}
+
 	data_tmp = cpiol_reg->IOP_STS;
 	if (((data_tmp & 0x1) == 0x0) || ((data_tmp & (0x1<<5)) != 0x0) || ((data_tmp & (0x1<<2)) != 0x0)) {
 		prn_string("PHY Status check fail\n");
