@@ -574,6 +574,11 @@ static void init_hw(void)
 
 	MOON4_REG_AO->sft_cfg[1] = RF_MASK_V_SET(0x80);  // U3PHY SSC on
 
+#if 0 // CPIO analog macro mux
+	/* Switch the shared analog macros to MIPI RX mode for MIPI-CSI RX2/3 */
+	MOON4_REG_AO->sft_cfg[23] = RF_MASK_V((1 << 3), (1 << 3));
+#endif
+
 	*(volatile u32 *)ARM_TSGEN_WR_BASE = 3;          // EN = 1 and HDBG = 1
 	*(volatile u32 *)(ARM_TSGEN_WR_BASE + 0x08) = 0; // CNTCV[31:0]
 	*(volatile u32 *)(ARM_TSGEN_WR_BASE + 0x0C) = 0; // CNTCV[63:32]
@@ -687,7 +692,7 @@ static void init_hw(void)
 	// Remap DRAM (0xe0000000 ~ 0xffffffff) to (0x100000000 ~ 0x11fffffff).
 	MOON2_REG->sft_cfg[3] = RF_MASK_V((1 << 12), (1 << 12));
 
-	/* Switch the shared analog macros to MIPI RX mode for MIPI-CSI0/2 */
+	/* Switch the shared analog macros to MIPI RX mode for MIPI-CSI RX0/2 */
 	MOON3_REG->sft_cfg[25] = RF_MASK_V((3 << 14), (3 << 14));
 
 #ifdef PLLD_333MHz
