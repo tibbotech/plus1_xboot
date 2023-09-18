@@ -115,7 +115,7 @@ void cpio_cfg_pll(void)
 {
 	prn_string("Config CPIO PLL and analog\n");
 #if 0
-	//VCO: 9.6G, PLL: 2.4G
+	prn_string("VCO: 9.6G, PLL: 2.4G\n");
 	cpiol_reg->AFE_CTL[0] = 0x248083FE;
 	cpiol_reg->AFE_CTL[1] = 0x4527BDF9;
 	cpiol_reg->AFE_CTL[2] = 0x00000C00;
@@ -126,7 +126,7 @@ void cpio_cfg_pll(void)
 	cpiol_reg->AFE_CTL[7] = 0x00003009;
 #endif
 #if 0
-	//VCO: 9.6G, PLL: 4.8G
+	prn_string("VCO: 9.6G, PLL: 4.8G\n");
 	cpiol_reg->AFE_CTL[0] = 0x2C8083FA;
 	cpiol_reg->AFE_CTL[1] = 0x252001FB;
 	cpiol_reg->AFE_CTL[2] = 0x00000C00;
@@ -137,7 +137,7 @@ void cpio_cfg_pll(void)
 	cpiol_reg->AFE_CTL[7] = 0x00003001;
 #endif
 #if 1
-	//VCO: 9.6G, PLL: 9.6G
+	prn_string("VCO: 9.6G, PLL: 9.6G\n");
 	cpiol_reg->AFE_CTL[0] = 0x2C8083FA;
 	cpiol_reg->AFE_CTL[1] = 0x2527BDFB;
 	cpiol_reg->AFE_CTL[2] = 0x00000C00;
@@ -148,7 +148,7 @@ void cpio_cfg_pll(void)
 	cpiol_reg->AFE_CTL[7] = 0x00003001;
 #endif
 #if 0
-	//VCO: 6.4G, PLL: 6.4G
+	prn_string("VCO: 6.4G, PLL: 6.4G\n");
 	cpiol_reg->AFE_CTL[1] = 0x2520013B;
 	cpiol_reg->AFE_CTL[2] = 0x00000C00;
 	cpiol_reg->AFE_CTL[3] = 0x48081000;
@@ -159,7 +159,7 @@ void cpio_cfg_pll(void)
 	cpiol_reg->AFE_CTL[0] = 0x2C8083FA;
 #endif
 #if 0
-	// VCO: 4.1G, PLL: 4.1G
+	prn_string("VCO: 4.1G, PLL: 4.1G\n");
 	cpiol_reg->AFE_CTL[0] = 0x248083FA;
 	cpiol_reg->AFE_CTL[1] = 0x4527BDF9;
 	cpiol_reg->AFE_CTL[2] = 0x00000C00;
@@ -170,7 +170,7 @@ void cpio_cfg_pll(void)
 	cpiol_reg->AFE_CTL[7] = 0x00003001;
 #endif
 #if 0
-	// VCO 14.8G, PLL 7.4G
+	prn_string("VCO: 14.8G, PLL: 7.4G\n");
 	cpiol_reg->AFE_CTL[0] = 0x2C8083FA;
 	cpiol_reg->AFE_CTL[1] = 0x2527BDFB;
 	cpiol_reg->AFE_CTL[2] = 0x00000C00;
@@ -181,7 +181,7 @@ void cpio_cfg_pll(void)
 	cpiol_reg->AFE_CTL[7] = 0x00003001;
 #endif
 #if 0
-	// VCO 12.6G, PLL 12.6G
+	prn_string("VCO: 12.6G, PLL: 12.6G\n");
 	cpiol_reg->AFE_CTL[0] = 0x2C8083FA;
 	cpiol_reg->AFE_CTL[1] = 0x2527BDFB;
 	cpiol_reg->AFE_CTL[2] = 0x00000C00;
@@ -192,7 +192,7 @@ void cpio_cfg_pll(void)
 	cpiol_reg->AFE_CTL[7] = 0x00000001;
 #endif
 #if 0
-	// VCO 10G, PLL 10G
+	prn_string("VCO: 10G, PLL: 10G\n");
 	cpiol_reg->AFE_CTL[0] = 0x2C8083FA;
 	cpiol_reg->AFE_CTL[1] = 0x2527BDFB;
 	cpiol_reg->AFE_CTL[2] = 0x00000C00;
@@ -203,7 +203,7 @@ void cpio_cfg_pll(void)
 	cpiol_reg->AFE_CTL[7] = 0x00003001;
 #endif
 #if 0
-	//VCO: 3.2G, PLL: 0.4G
+	prn_string("VCO: 3.2G, PLL: 0.4G\n");
 	cpiol_reg->AFE_CTL[0] = 0x240183FA;
 	cpiol_reg->AFE_CTL[1] = 0x2527BEF9;
 	cpiol_reg->AFE_CTL[2] = 0x00000000;
@@ -214,7 +214,7 @@ void cpio_cfg_pll(void)
 	cpiol_reg->AFE_CTL[7] = 0x00001009;
 #endif
 #if 0
-	//VCO: 3.2G, PLL: 0.8G
+	prn_string("VCO: 3.2G, PLL: 0.8G\n");
 	cpiol_reg->AFE_CTL[0] = 0x240183FA;
 	cpiol_reg->AFE_CTL[1] = 0x2527BEF9;
 	cpiol_reg->AFE_CTL[2] = 0x00000000;
@@ -225,7 +225,7 @@ void cpio_cfg_pll(void)
 	cpiol_reg->AFE_CTL[7] = 0x00001009;
 #endif
 #if 0
-	//VCO: 3.2G, PLL: 1.6G
+	prn_string("VCO: 3.2G, PLL: 1.6G\n");
 	cpiol_reg->AFE_CTL[0] = 0x240183FA;
 	cpiol_reg->AFE_CTL[1] = 0x2527BEF9;
 	cpiol_reg->AFE_CTL[2] = 0x00000000;
@@ -236,7 +236,7 @@ void cpio_cfg_pll(void)
 	cpiol_reg->AFE_CTL[7] = 0x00001001;
 #endif
 #if 0
-	//VCO: 5.0G, PLL: 2.5G
+	prn_string("VCO: 5.0G, PLL: 2.5G\n");
 	cpiol_reg->AFE_CTL[0] = 0x240183FA;
 	cpiol_reg->AFE_CTL[1] = 0x2527BEF9;
 	cpiol_reg->AFE_CTL[2] = 0x00000000;
@@ -247,7 +247,7 @@ void cpio_cfg_pll(void)
 	cpiol_reg->AFE_CTL[7] = 0x00001001;
 #endif
 #if 0
-	//VCO: 5.0G, PLL: 1.25G
+	prn_string("VCO: 5.0G, PLL: 1.25G\n");
 	cpiol_reg->AFE_CTL[0] = 0x240183FA;
 	cpiol_reg->AFE_CTL[1] = 0x2527BEF9;
 	cpiol_reg->AFE_CTL[2] = 0x00000000;
@@ -359,7 +359,7 @@ void ana_test(int xover)
 	//cpiol_reg->TEST_D[2] = 0x815FA815;
 	//cpiol_reg->TEST_D[3] = 0x815FA815;
 #if 0
-	// VCO: 4.1G, PLL: 4.1G
+	prn_string("VCO: 4.1G, PLL: 4.1G\n");
 	cpiol_reg->AFE_CTL[0] = 0x248083FA;
 	cpiol_reg->AFE_CTL[1] = 0x4527BDF9;
 	cpiol_reg->AFE_CTL[2] = 0x00000C00;
@@ -370,7 +370,7 @@ void ana_test(int xover)
 	cpiol_reg->AFE_CTL[7] = 0x00003001;
 #endif
 #if 1
-	//VCO: 9.6G, PLL: 9.6G
+	prn_string("VCO: 9.6G, PLL: 9.6G\n");
 	cpiol_reg->AFE_CTL[0] = 0x2C8083FA;
 	cpiol_reg->AFE_CTL[1] = 0x2527BDFB;
 	cpiol_reg->AFE_CTL[2] = 0x00000C00;
@@ -381,7 +381,7 @@ void ana_test(int xover)
 	cpiol_reg->AFE_CTL[7] = 0x00003001;
 #endif
 #if 0
-	//VCO: 9.6G, PLL: 2.4G
+	prn_string("VCO: 9.6G, PLL: 2.4G\n");
 	cpiol_reg->AFE_CTL[0] = 0x248183FA;
 	//cpiol_reg->AFE_CTL[0] = 0x248103FA;
 	cpiol_reg->AFE_CTL[1] = 0x4527BDF9;
@@ -393,7 +393,7 @@ void ana_test(int xover)
 	cpiol_reg->AFE_CTL[7] = 0x00003009;
 #endif
 #if 0
-	// VCO 14.8G, PLL 7.4G
+	prn_string("VCO: 14.8G, PLL: 7.4G\n");
 	cpiol_reg->AFE_CTL[0] = 0x2C8083FA;
 	cpiol_reg->AFE_CTL[1] = 0x2527BDFB;
 	cpiol_reg->AFE_CTL[2] = 0x00000C00;
@@ -404,7 +404,7 @@ void ana_test(int xover)
 	cpiol_reg->AFE_CTL[7] = 0x00003001;
 #endif
 #if 0
-	// VCO 12.6G, PLL 12.6G
+	prn_string("VCO: 12.6G, PLL: 12.6G\n");
 	cpiol_reg->AFE_CTL[0] = 0x2C8083FA;
 	cpiol_reg->AFE_CTL[1] = 0x2527BDFB;
 	cpiol_reg->AFE_CTL[2] = 0x00000C00;
@@ -415,7 +415,7 @@ void ana_test(int xover)
 	cpiol_reg->AFE_CTL[7] = 0x00001001;
 #endif
 #if 0
-	//VCO: 3.2G, PLL: 0.4G
+	prn_string("VCO: 3.2G, PLL: 0.4G\n");
 	cpiol_reg->AFE_CTL[0] = 0x240183FA;
 	cpiol_reg->AFE_CTL[1] = 0x2527BEF9;
 	cpiol_reg->AFE_CTL[2] = 0x00000000;
@@ -426,7 +426,7 @@ void ana_test(int xover)
 	cpiol_reg->AFE_CTL[7] = 0x00001009;
 #endif
 #if 0
-	//VCO: 5.0G, PLL: 2.5G
+	prn_string("VCO: 5.0G, PLL: 2.5G\n");
 	cpiol_reg->AFE_CTL[0] = 0x240183FA;
 	cpiol_reg->AFE_CTL[1] = 0x2527BEF9;
 	cpiol_reg->AFE_CTL[2] = 0x00000000;
@@ -437,7 +437,7 @@ void ana_test(int xover)
 	cpiol_reg->AFE_CTL[7] = 0x00001001;
 #endif
 #if 0
-	//VCO: 3.2G, PLL: 0.8G
+	prn_string("VCO: 3.2G, PLL: 0.8G\n");
 	cpiol_reg->AFE_CTL[0] = 0x240183FF;
 	cpiol_reg->AFE_CTL[1] = 0x2527BEF9;
 	cpiol_reg->AFE_CTL[2] = 0x00000000;
@@ -448,7 +448,7 @@ void ana_test(int xover)
 	cpiol_reg->AFE_CTL[7] = 0x00001009;
 #endif
 #if 0
-	//VCO: 3.2G, PLL: 0.4G
+	prn_string("VCO: 3.2G, PLL: 0.4G\n");
 	cpiol_reg->AFE_CTL[0] = 0x240183FA;
 	cpiol_reg->AFE_CTL[1] = 0x2527BEF9;
 	cpiol_reg->AFE_CTL[2] = 0x00000000;
@@ -459,7 +459,7 @@ void ana_test(int xover)
 	cpiol_reg->AFE_CTL[7] = 0x00001009;
 #endif
 #if 0
-	//VCO: 5.0G, PLL: 1.25G
+	prn_string("VCO: 5.0G, PLL: 1.25G\n");
 	cpiol_reg->AFE_CTL[0] = 0x240183FF;
 	cpiol_reg->AFE_CTL[1] = 0x2527BEF9;
 	cpiol_reg->AFE_CTL[2] = 0x00000000;
@@ -668,7 +668,7 @@ void ana_test1(int re_cfg, int cfg_v, int cfg_v0, int cfg_v1, int cfg_v2, int cf
 	//cpiol_reg->TEST_D[3] = 0xAAAAAAAA;
 
 #if 0
-	//VCO: 3.2G, PLL: 0.4G
+	prn_string("VCO: 3.2G, PLL: 0.4G\n");
 	cpiol_reg->AFE_CTL[0] = 0x240103FA;
 	cpiol_reg->AFE_CTL[1] = 0x2527BEF9;
 	cpiol_reg->AFE_CTL[2] = 0x00000000;
@@ -679,7 +679,7 @@ void ana_test1(int re_cfg, int cfg_v, int cfg_v0, int cfg_v1, int cfg_v2, int cf
 	cpiol_reg->AFE_CTL[7] = 0x00001009;
 #endif
 #if 1
-	//VCO: 3.2G, PLL: 0.8G
+	prn_string("VCO: 3.2G, PLL: 0.8G\n");
 	cpiol_reg->AFE_CTL[0] = 0x240183FF;
 	cpiol_reg->AFE_CTL[1] = 0x2527BEF9;
 	cpiol_reg->AFE_CTL[2] = 0x00000000;
@@ -690,7 +690,7 @@ void ana_test1(int re_cfg, int cfg_v, int cfg_v0, int cfg_v1, int cfg_v2, int cf
 	cpiol_reg->AFE_CTL[7] = 0x00001009;
 #endif
 #if 0
-	//VCO: 3.2G, PLL: 1.6G
+	prn_string("VCO: 3.2G, PLL: 1.6G\n");
 	cpiol_reg->AFE_CTL[0] = 0x240183FA;
 	cpiol_reg->AFE_CTL[1] = 0x2527BEF9;
 	cpiol_reg->AFE_CTL[2] = 0x00000000;
@@ -701,7 +701,7 @@ void ana_test1(int re_cfg, int cfg_v, int cfg_v0, int cfg_v1, int cfg_v2, int cf
 	cpiol_reg->AFE_CTL[7] = 0x00001001;
 #endif
 #if 0
-	//VCO: 5.0G, PLL: 2.5G
+	prn_string("VCO: 5.0G, PLL: 2.5G\n");
 	cpiol_reg->AFE_CTL[0] = 0x240183FA;
 	cpiol_reg->AFE_CTL[1] = 0x2527BEF9;
 	cpiol_reg->AFE_CTL[2] = 0x00000000;
@@ -712,7 +712,7 @@ void ana_test1(int re_cfg, int cfg_v, int cfg_v0, int cfg_v1, int cfg_v2, int cf
 	cpiol_reg->AFE_CTL[7] = 0x00001001;
 #endif
 #if 0
-	//VCO: 5.0G, PLL: 1.25G
+	prn_string("VCO: 5.0G, PLL: 1.25G\n");
 	cpiol_reg->AFE_CTL[0] = 0x240183FA;
 	cpiol_reg->AFE_CTL[1] = 0x2527BEF9;
 	cpiol_reg->AFE_CTL[2] = 0x00000000;
@@ -966,7 +966,7 @@ void cpio_slave(void)
 	*(volatile u32 *)(0xf8105228) = 0xA5AA;
 	*(volatile u32 *)(0xf810522C) = 0x5A5A;
 
-	//VCO: 3.2G, PLL: 0.8G
+	prn_string("VCO: 3.2G, PLL: 0.8G\n");
 	*(volatile u32 *)(0xf8105230) = 0x2401FFFA;
 	*(volatile u32 *)(0xf8105234) = 0x2527BEF9;
 	*(volatile u32 *)(0xf8105238) = 0x00000000;
@@ -1041,7 +1041,7 @@ void cpio_master(void)
 	*(volatile u32 *)(0xf8105228) = 0xA5AA;
 	*(volatile u32 *)(0xf810522C) = 0x80005A5A;
 
-	//VCO: 3.2G, PLL: 0.8G
+	prn_string("VCO: 3.2G, PLL: 0.8G\n");
 	*(volatile u32 *)(0xf8105230) = 0x240183FA;
 	*(volatile u32 *)(0xf8105234) = 0x2527BEF9;
 	*(volatile u32 *)(0xf8105238) = 0x00000000;
