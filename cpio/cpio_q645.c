@@ -5,6 +5,7 @@
 
 //#define CPIO_ANA_DBG
 
+#ifdef CPIO_TEST
 void cpio_taxi(int tcnt, int ecnt)
 {
 	unsigned int data_tmp;
@@ -944,156 +945,6 @@ void gpo_test1(void)
 	}
 }
 
-void cpio_slave(void)
-{
-	int dly_cnt0, dly_cnt1;
-	unsigned int data_tmp;
-
-	prn_string("\n\n---- CPIO-L slave mode Begin ----\n\n");
-	*(volatile u32 *)(0xf80001E4) = 0xC0000000;	// Disable MIPI enable
-	*(volatile u32 *)(0xf8000084) = 0x02000000;	// Close UA1 pinmux
-	*(volatile u32 *)(0xf8000180) = 0x003F0001;	// Select CPIOL probeout
-	*(volatile u32 *)(0xf8000098) = 0x08000800;	// Enable probe pinmux;
-
-	data_tmp = *(volatile u32 *)(0xf8000058);
-	if ((data_tmp & 0x6) != 0x0) {
-		prn_string("CPIO system reset not released, releasing!!\n");
-		*(volatile u32 *)(0xf8000058) = (0x6<<16);
-		STC_delay_us (100);
-	}
-
-	// Change SN
-	*(volatile u32 *)(0xf8105228) = 0xA5AA;
-	*(volatile u32 *)(0xf810522C) = 0x5A5A;
-
-	prn_string("VCO: 3.2G, PLL: 0.8G\n");
-	*(volatile u32 *)(0xf8105230) = 0x2401FFFA;
-	*(volatile u32 *)(0xf8105234) = 0x2527BEF9;
-	*(volatile u32 *)(0xf8105238) = 0x00000000;
-	*(volatile u32 *)(0xf810523C) = 0x90000000;
-	*(volatile u32 *)(0xf8105240) = 0x000000E4;
-	*(volatile u32 *)(0xf8105244) = 0x00004801;
-	*(volatile u32 *)(0xf8105248) = 0x1F330B23;
-	*(volatile u32 *)(0xf810524C) = 0x00001209;
-
-	// Force XOVER
-	*(volatile u32 *)(0xf810521C) |= (0x1<<9);
-
-	STC_delay_1ms (100);
-
-	AV1_STC_init();	// initial STC1
-
-	// Release RESET
-	dly_cnt0 = AV1_GetStc32();
-	*(volatile u32 *)(0xf8105224) = 0x80;//(0x1<<7);
-	while (((*(volatile u32 *)(0xf8105220) & 0x7F) == 0x0)) {
-		//prn_dword(*(volatile u32 *)(0xf8105220));
-	}
-	dly_cnt1 = AV1_GetStc32();
-	data_tmp = *(volatile u32 *)(0xf8105220);
-	prn_string("PHY status change: "); prn_dword(data_tmp);
-	if ((data_tmp & 0x7E) != 0x0) {
-		prn_string("PHY status check fail!!!\n");
-		if ((data_tmp & 0x2) != 0x0)
-			prn_string("Low power status changed\n");
-		if ((data_tmp & 0x4) != 0x0)
-			prn_string("Decode Error!!!\n");
-		if ((data_tmp & 0x8) != 0x0)
-			prn_string("Connection detection fail!!!\n");
-		if ((data_tmp & 0x10) != 0x0)
-			prn_string("Lane detection fail!!!\n");
-		if ((data_tmp & 0x20) != 0x0)
-			prn_string("Mode switch fail!!!\n");
-		if ((data_tmp & 0x40) != 0x0)
-			prn_string("Location detection timeout!!!\n");
-		prn_string("CPIO Initial Finished\n");
-	} else {
-		prn_string("PHY status check Passed\n");
-		prn_string("CPIO Initial Finished\n");
-	}
-	data_tmp = *(volatile u32 *)(0xf8105224);
-	prn_string("PHY Mode: "); prn_dword(data_tmp);
-	prn_string("Timer start: "); prn_dword(dly_cnt0);
-	prn_string("Timer End: "); prn_dword(dly_cnt1);
-
-	while (1);
-}
-
-void cpio_master(void)
-{
-	int dly_cnt0, dly_cnt1;
-	unsigned int data_tmp;
-
-	prn_string("\n\n---- CPIO-L master mode Begin ----\n\n");
-	*(volatile u32 *)(0xf80001E4) = 0xC0000000;	// Disable MIPI enable
-	*(volatile u32 *)(0xf8000084) = 0x02000000;	// Close UA1 pinmux
-	*(volatile u32 *)(0xf8000180) = 0x003F0001;	// Select CPIOL probeout
-	*(volatile u32 *)(0xf8000098) = 0x08000800;	// Enable probe pinmux;
-
-	data_tmp = *(volatile u32 *)(0xf8000058);
-	if ((data_tmp & 0x6) != 0x0) {
-		prn_string("CPIO system reset not released, releasing!!\n");
-		*(volatile u32 *)(0xf8000058) = (0x6<<16);
-		STC_delay_us (100);
-	}
-
-	// Change SN
-	*(volatile u32 *)(0xf8105228) = 0xA5AA;
-	*(volatile u32 *)(0xf810522C) = 0x80005A5A;
-
-	prn_string("VCO: 3.2G, PLL: 0.8G\n");
-	*(volatile u32 *)(0xf8105230) = 0x240183FA;
-	*(volatile u32 *)(0xf8105234) = 0x2527BEF9;
-	*(volatile u32 *)(0xf8105238) = 0x00000000;
-	*(volatile u32 *)(0xf810523C) = 0x90000000;
-	*(volatile u32 *)(0xf8105240) = 0x000000E4;
-	*(volatile u32 *)(0xf8105244) = 0x00004801;
-	*(volatile u32 *)(0xf8105248) = 0x1F330B23;
-	*(volatile u32 *)(0xf810524C) = 0x00001209;
-
-	// Force XOVER
-	//*(volatile u32 *)(0xf810521C) |= (0x1<<9);
-
-	STC_delay_1ms (100);
-
-	AV1_STC_init();	// initial STC1
-
-	// Release RESET
-	dly_cnt0 = AV1_GetStc32();
-	*(volatile u32 *)(0xf8105224) = 0x80;//(0x1<<7);
-	while (((*(volatile u32 *)(0xf8105220) & 0x7F) == 0x0)) {
-		//prn_dword(*(volatile u32 *)(0xf8105220));
-	}
-	dly_cnt1 = AV1_GetStc32();
-	data_tmp = *(volatile u32 *)(0xf8105220);
-	prn_string("PHY status change: "); prn_dword(data_tmp);
-	if ((data_tmp & 0x7E) != 0x0) {
-		prn_string("PHY status check fail!!!\n");
-		if ((data_tmp & 0x2) != 0x0)
-			prn_string("Low power status changed\n");
-		if ((data_tmp & 0x4) != 0x0)
-			prn_string("Decode Error!!!\n");
-		if ((data_tmp & 0x8) != 0x0)
-			prn_string("Connection detection fail!!!\n");
-		if ((data_tmp & 0x10) != 0x0)
-			prn_string("Lane detection fail!!!\n");
-		if ((data_tmp & 0x20) != 0x0)
-			prn_string("Mode switch fail!!!\n");
-		if ((data_tmp & 0x40) != 0x0)
-			prn_string("Location detection timeout!!!\n");
-		prn_string("CPIO Initial Finished\n");
-	} else {
-		prn_string("PHY status check Passed\n");
-		prn_string("CPIO Initial Finished\n");
-	}
-	data_tmp = *(volatile u32 *)(0xf8105224);
-	prn_string("PHY Mode: "); prn_dword(data_tmp);
-	prn_string("Timer start: "); prn_dword(dly_cnt0);
-	prn_string("Timer End: "); prn_dword(dly_cnt1);
-
-	while (1);
-}
-
 void cpio_test(void)
 {
 #if 0
@@ -1336,5 +1187,156 @@ void cpio_test(void)
 	//cpio_taxi_1();
 
 	prn_string("Loopback Test Finished!!!\n\n");
+	while (1);
+}
+#endif // CPIO_TEST
+
+void cpio_slave(void)
+{
+	int dly_cnt0, dly_cnt1;
+	unsigned int data_tmp;
+
+	prn_string("\n\n---- CPIO-L slave mode Begin ----\n\n");
+	*(volatile u32 *)(0xf80001E4) = 0xC0000000;	// Disable MIPI enable
+	*(volatile u32 *)(0xf8000084) = 0x02000000;	// Close UA1 pinmux
+	*(volatile u32 *)(0xf8000180) = 0x003F0001;	// Select CPIOL probeout
+	*(volatile u32 *)(0xf8000098) = 0x08000800;	// Enable probe pinmux;
+
+	data_tmp = *(volatile u32 *)(0xf8000058);
+	if ((data_tmp & 0x6) != 0x0) {
+		prn_string("CPIO system reset not released, releasing!!\n");
+		*(volatile u32 *)(0xf8000058) = (0x6<<16);
+		STC_delay_us (100);
+	}
+
+	// Change SN
+	*(volatile u32 *)(0xf8105228) = 0xA5AA;
+	*(volatile u32 *)(0xf810522C) = 0x5A5A;
+
+	prn_string("VCO: 3.2G, PLL: 0.8G\n");
+	*(volatile u32 *)(0xf8105230) = 0x2401FFFA;
+	*(volatile u32 *)(0xf8105234) = 0x2527BEF9;
+	*(volatile u32 *)(0xf8105238) = 0x00000000;
+	*(volatile u32 *)(0xf810523C) = 0x90000000;
+	*(volatile u32 *)(0xf8105240) = 0x000000E4;
+	*(volatile u32 *)(0xf8105244) = 0x00004801;
+	*(volatile u32 *)(0xf8105248) = 0x1F330B23;
+	*(volatile u32 *)(0xf810524C) = 0x00001209;
+
+	// Force XOVER
+	*(volatile u32 *)(0xf810521C) |= (0x1<<9);
+
+	STC_delay_1ms (100);
+
+	AV1_STC_init();	// initial STC1
+
+	// Release RESET
+	dly_cnt0 = AV1_GetStc32();
+	*(volatile u32 *)(0xf8105224) = 0x80;//(0x1<<7);
+	while (((*(volatile u32 *)(0xf8105220) & 0x7F) == 0x0)) {
+		//prn_dword(*(volatile u32 *)(0xf8105220));
+	}
+	dly_cnt1 = AV1_GetStc32();
+	data_tmp = *(volatile u32 *)(0xf8105220);
+	prn_string("PHY status change: "); prn_dword(data_tmp);
+	if ((data_tmp & 0x7E) != 0x0) {
+		prn_string("PHY status check fail!!!\n");
+		if ((data_tmp & 0x2) != 0x0)
+			prn_string("Low power status changed\n");
+		if ((data_tmp & 0x4) != 0x0)
+			prn_string("Decode Error!!!\n");
+		if ((data_tmp & 0x8) != 0x0)
+			prn_string("Connection detection fail!!!\n");
+		if ((data_tmp & 0x10) != 0x0)
+			prn_string("Lane detection fail!!!\n");
+		if ((data_tmp & 0x20) != 0x0)
+			prn_string("Mode switch fail!!!\n");
+		if ((data_tmp & 0x40) != 0x0)
+			prn_string("Location detection timeout!!!\n");
+		prn_string("CPIO Initial Finished\n");
+	} else {
+		prn_string("PHY status check Passed\n");
+		prn_string("CPIO Initial Finished\n");
+	}
+	data_tmp = *(volatile u32 *)(0xf8105224);
+	prn_string("PHY Mode: "); prn_dword(data_tmp);
+	prn_string("Timer start: "); prn_dword(dly_cnt0);
+	prn_string("Timer End: "); prn_dword(dly_cnt1);
+
+	while (1);
+}
+
+void cpio_master(void)
+{
+	int dly_cnt0, dly_cnt1;
+	unsigned int data_tmp;
+
+	prn_string("\n\n---- CPIO-L master mode Begin ----\n\n");
+	*(volatile u32 *)(0xf80001E4) = 0xC0000000;	// Disable MIPI enable
+	*(volatile u32 *)(0xf8000084) = 0x02000000;	// Close UA1 pinmux
+	*(volatile u32 *)(0xf8000180) = 0x003F0001;	// Select CPIOL probeout
+	*(volatile u32 *)(0xf8000098) = 0x08000800;	// Enable probe pinmux;
+
+	data_tmp = *(volatile u32 *)(0xf8000058);
+	if ((data_tmp & 0x6) != 0x0) {
+		prn_string("CPIO system reset not released, releasing!!\n");
+		*(volatile u32 *)(0xf8000058) = (0x6<<16);
+		STC_delay_us (100);
+	}
+
+	// Change SN
+	*(volatile u32 *)(0xf8105228) = 0xA5AA;
+	*(volatile u32 *)(0xf810522C) = 0x80005A5A;
+
+	prn_string("VCO: 3.2G, PLL: 0.8G\n");
+	*(volatile u32 *)(0xf8105230) = 0x240183FA;
+	*(volatile u32 *)(0xf8105234) = 0x2527BEF9;
+	*(volatile u32 *)(0xf8105238) = 0x00000000;
+	*(volatile u32 *)(0xf810523C) = 0x90000000;
+	*(volatile u32 *)(0xf8105240) = 0x000000E4;
+	*(volatile u32 *)(0xf8105244) = 0x00004801;
+	*(volatile u32 *)(0xf8105248) = 0x1F330B23;
+	*(volatile u32 *)(0xf810524C) = 0x00001209;
+
+	// Force XOVER
+	//*(volatile u32 *)(0xf810521C) |= (0x1<<9);
+
+	STC_delay_1ms (100);
+
+	AV1_STC_init();	// initial STC1
+
+	// Release RESET
+	dly_cnt0 = AV1_GetStc32();
+	*(volatile u32 *)(0xf8105224) = 0x80;//(0x1<<7);
+	while (((*(volatile u32 *)(0xf8105220) & 0x7F) == 0x0)) {
+		//prn_dword(*(volatile u32 *)(0xf8105220));
+	}
+	dly_cnt1 = AV1_GetStc32();
+	data_tmp = *(volatile u32 *)(0xf8105220);
+	prn_string("PHY status change: "); prn_dword(data_tmp);
+	if ((data_tmp & 0x7E) != 0x0) {
+		prn_string("PHY status check fail!!!\n");
+		if ((data_tmp & 0x2) != 0x0)
+			prn_string("Low power status changed\n");
+		if ((data_tmp & 0x4) != 0x0)
+			prn_string("Decode Error!!!\n");
+		if ((data_tmp & 0x8) != 0x0)
+			prn_string("Connection detection fail!!!\n");
+		if ((data_tmp & 0x10) != 0x0)
+			prn_string("Lane detection fail!!!\n");
+		if ((data_tmp & 0x20) != 0x0)
+			prn_string("Mode switch fail!!!\n");
+		if ((data_tmp & 0x40) != 0x0)
+			prn_string("Location detection timeout!!!\n");
+		prn_string("CPIO Initial Finished\n");
+	} else {
+		prn_string("PHY status check Passed\n");
+		prn_string("CPIO Initial Finished\n");
+	}
+	data_tmp = *(volatile u32 *)(0xf8105224);
+	prn_string("PHY Mode: "); prn_dword(data_tmp);
+	prn_string("Timer start: "); prn_dword(dly_cnt0);
+	prn_string("Timer End: "); prn_dword(dly_cnt1);
+
 	while (1);
 }

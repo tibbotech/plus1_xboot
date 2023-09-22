@@ -2790,7 +2790,7 @@ void xboot_main(void)
 #if 0 // Enable CPIO slave mode.
 	cpio_slave();
 #endif
-#if 0 // Enable CPIO test.
+#ifdef CPIO_TEST
 	cpio_test();
 #endif
 
