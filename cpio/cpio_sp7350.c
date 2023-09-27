@@ -172,17 +172,6 @@ void cpio_cfg_pll(void)
 	cpior_reg->AFE_CTL[7] = 0x00007000;
 #endif
 #if 0
-	prn_string("VCO: 5.0G, PLL: 2.5G\n");
-	cpior_reg->AFE_CTL[0] = 0x240183FA;
-	cpior_reg->AFE_CTL[1] = 0x2527BCF9;
-	cpior_reg->AFE_CTL[2] = 0x00000000;
-	cpior_reg->AFE_CTL[3] = 0x90081000;
-	cpior_reg->AFE_CTL[4] = 0x000000E4;
-	cpior_reg->AFE_CTL[5] = 0x00004801;
-	cpior_reg->AFE_CTL[6] = 0xBF330CA3;
-	cpior_reg->AFE_CTL[7] = 0x00005000;
-#endif
-#if 0
 	prn_string("VCO: 5.0G, PLL: 1.25G\n");
 	cpior_reg->AFE_CTL[0] = 0x240183FA;
 	cpior_reg->AFE_CTL[1] = 0x2527BCF9;
@@ -192,6 +181,17 @@ void cpio_cfg_pll(void)
 	cpior_reg->AFE_CTL[5] = 0x00004801;
 	cpior_reg->AFE_CTL[6] = 0xDF330CA3;
 	cpior_reg->AFE_CTL[7] = 0x00005008;
+#endif
+#if 0
+	prn_string("VCO: 5.0G, PLL: 2.5G\n");
+	cpior_reg->AFE_CTL[0] = 0x240183FA;
+	cpior_reg->AFE_CTL[1] = 0x2527BCF9;
+	cpior_reg->AFE_CTL[2] = 0x00000000;
+	cpior_reg->AFE_CTL[3] = 0x90081000;
+	cpior_reg->AFE_CTL[4] = 0x000000E4;
+	cpior_reg->AFE_CTL[5] = 0x00004801;
+	cpior_reg->AFE_CTL[6] = 0xBF330CA3;
+	cpior_reg->AFE_CTL[7] = 0x00005000;
 #endif
 #if 1
 	prn_string("VCO: 6.4G, PLL: 6.4G\n");
@@ -1272,8 +1272,20 @@ void cpio_slave(void)
 	cpior_reg->IO_SNL = 0x0000A5AA;
 	cpior_reg->IO_SNH = 0x00005A5A;
 
+#if 0
+	prn_string("VCO: 3.2G, PLL: 0.4G\n");
+	cpior_reg->AFE_CTL[0] = 0x240183FA;
+	cpior_reg->AFE_CTL[1] = 0x2527BCF9;
+	cpior_reg->AFE_CTL[2] = 0x00000000;
+	cpior_reg->AFE_CTL[3] = 0x90000000;
+	cpior_reg->AFE_CTL[4] = 0x000000E4;
+	cpior_reg->AFE_CTL[5] = 0x00004801;
+	cpior_reg->AFE_CTL[6] = 0xFF330823;
+	cpior_reg->AFE_CTL[7] = 0x00005008;
+#endif
+#if 1
 	prn_string("VCO: 3.2G, PLL: 0.8G\n");
-	cpior_reg->AFE_CTL[0] = 0x2401FFFA;
+	cpior_reg->AFE_CTL[0] = 0x240183FA;
 	cpior_reg->AFE_CTL[1] = 0x2527BEF9;
 	cpior_reg->AFE_CTL[2] = 0x00000000;
 	cpior_reg->AFE_CTL[3] = 0x90000000;
@@ -1281,21 +1293,82 @@ void cpio_slave(void)
 	cpior_reg->AFE_CTL[5] = 0x00004801;
 	cpior_reg->AFE_CTL[6] = 0xDF330B23;
 	cpior_reg->AFE_CTL[7] = 0x00005208;
+#endif
+#if 0
+	prn_string("VCO: 5.0G, PLL: 1.25G\n");
+	cpior_reg->AFE_CTL[0] = 0x240183FA;
+	cpior_reg->AFE_CTL[1] = 0x2527BCF9;
+	cpior_reg->AFE_CTL[2] = 0x00000000;
+	cpior_reg->AFE_CTL[3] = 0x90081000;
+	cpior_reg->AFE_CTL[4] = 0x000000E4;
+	cpior_reg->AFE_CTL[5] = 0x00004801;
+	cpior_reg->AFE_CTL[6] = 0xDF330CA3;
+	cpior_reg->AFE_CTL[7] = 0x00005008;
+#endif
+#if 0
+	prn_string("VCO: 3.2G, PLL: 1.6G\n");
+	cpior_reg->AFE_CTL[0] = 0x240183FA;
+	cpior_reg->AFE_CTL[1] = 0x2527BCF9;
+	cpior_reg->AFE_CTL[2] = 0x00000000;
+	cpior_reg->AFE_CTL[3] = 0x90000000;
+	cpior_reg->AFE_CTL[4] = 0x000000E4;
+	cpior_reg->AFE_CTL[5] = 0x00004801;
+	cpior_reg->AFE_CTL[6] = 0xBF330823;
+	cpior_reg->AFE_CTL[7] = 0x00005000;
+#endif
+#if 0
+	prn_string("VCO: 9.6G, PLL: 2.4G\n");
+	cpior_reg->AFE_CTL[0] = 0x248183FE;
+	cpior_reg->AFE_CTL[1] = 0x4527BDF9;
+	cpior_reg->AFE_CTL[2] = 0x00000C00;
+	cpior_reg->AFE_CTL[3] = 0x48081000;
+	cpior_reg->AFE_CTL[4] = 0x000000D2;
+	cpior_reg->AFE_CTL[5] = 0x00006801;
+	cpior_reg->AFE_CTL[6] = 0xD2C18C33;
+	cpior_reg->AFE_CTL[7] = 0x00007008;
+#endif
+#if 0
+	prn_string("VCO: 5.0G, PLL: 2.5G\n");
+	cpior_reg->AFE_CTL[0] = 0x240183FA;
+	cpior_reg->AFE_CTL[1] = 0x2527BCF9;
+	cpior_reg->AFE_CTL[2] = 0x00000000;
+	cpior_reg->AFE_CTL[3] = 0x90081000;
+	cpior_reg->AFE_CTL[4] = 0x000000E4;
+	cpior_reg->AFE_CTL[5] = 0x00004801;
+	cpior_reg->AFE_CTL[6] = 0xBF330CA3;
+	cpior_reg->AFE_CTL[7] = 0x00005000;
+#endif
+#if 0
+	prn_string("VCO: 3.2G, PLL: 3.2G\n");
+	cpior_reg->AFE_CTL[0] = 0x240183FA;
+	cpior_reg->AFE_CTL[1] = 0x2527BCF9;
+	cpior_reg->AFE_CTL[2] = 0x00000000;
+	cpior_reg->AFE_CTL[3] = 0x90000000;
+	cpior_reg->AFE_CTL[4] = 0x000000E4;
+	cpior_reg->AFE_CTL[5] = 0x00004801;
+	cpior_reg->AFE_CTL[6] = 0x9F330823;
+	cpior_reg->AFE_CTL[7] = 0x00005000;
+#endif
 
-	// Force XOVER
-	cpior_reg->TEST_C[1] |= (0x1<<9);
+#if 0	// XOVER mode (CK, RDY, DA: cross-over)
+	cpior_reg->AFE_CTL[0] |= (0x1F<<10);	// XOVER_CK = 1, XOVER_DA = 1
+#endif
+#if 0	// Slave: SWAP mode (Swap TXD0 and TXD3; Swap, TXD1 and TXD2; Swap RXD0 and RXD3; Swap RXD1 and RXD2)
+	cpior_reg->TEST_C[1] |= (0x7<<9);	// CON_MF = 1, TSW_F = 1, RSW = 1
+#endif
 
 	STC_delay_1ms (100);
 
 	AV1_STC_init();	// initial STC1
 
-	// Release RESET
+	// Release PHY RESET
 	dly_cnt0 = AV1_GetStc32();
-	cpior_reg->PHY_CTRL = 0x80;//(0x1<<7);
+	cpior_reg->PHY_CTRL = 0x80;	// RST_RLS = 1
 	while (((cpior_reg->IOP_STS & 0x7F) == 0x0)) {
 		//prn_dword(cpior_reg->IOP_STS);
 	}
 	dly_cnt1 = AV1_GetStc32();
+
 	data_tmp = cpior_reg->IOP_STS;
 	prn_string("PHY status change: "); prn_dword(data_tmp);
 	if ((data_tmp & 0x7E) != 0x0) {
@@ -1317,12 +1390,12 @@ void cpio_slave(void)
 		prn_string("PHY status check Passed\n");
 		prn_string("CPIO Initial Finished\n");
 	}
-	data_tmp = cpior_reg->PHY_CTRL;
-	prn_string("PHY Mode: "); prn_dword(data_tmp);
+
+	prn_string("PHY Mode: "); prn_dword(cpior_reg->PHY_CTRL);
 	prn_string("Timer start: "); prn_dword(dly_cnt0);
 	prn_string("Timer End: "); prn_dword(dly_cnt1);
 
-	while (1);
+	//while (1);
 }
 
 void cpio_master(void)
@@ -1344,6 +1417,18 @@ void cpio_master(void)
 	cpior_reg->IO_SNL = 0x0000A5AA;
 	cpior_reg->IO_SNH = 0x80005A5A;
 
+#if 0
+	prn_string("VCO: 3.2G, PLL: 0.4G\n");
+	cpior_reg->AFE_CTL[0] = 0x240183FA;
+	cpior_reg->AFE_CTL[1] = 0x2527BCF9;
+	cpior_reg->AFE_CTL[2] = 0x00000000;
+	cpior_reg->AFE_CTL[3] = 0x90000000;
+	cpior_reg->AFE_CTL[4] = 0x000000E4;
+	cpior_reg->AFE_CTL[5] = 0x00004801;
+	cpior_reg->AFE_CTL[6] = 0xFF330823;
+	cpior_reg->AFE_CTL[7] = 0x00005008;
+#endif
+#if 1
 	prn_string("VCO: 3.2G, PLL: 0.8G\n");
 	cpior_reg->AFE_CTL[0] = 0x240183FA;
 	cpior_reg->AFE_CTL[1] = 0x2527BEF9;
@@ -1353,21 +1438,75 @@ void cpio_master(void)
 	cpior_reg->AFE_CTL[5] = 0x00004801;
 	cpior_reg->AFE_CTL[6] = 0xDF330B23;
 	cpior_reg->AFE_CTL[7] = 0x00005208;
-
-	// Force XOVER
-	//cpior_reg->TEST_C[1] |= (0x1<<9);
+#endif
+#if 0
+	prn_string("VCO: 5.0G, PLL: 1.25G\n");
+	cpior_reg->AFE_CTL[0] = 0x240183FA;
+	cpior_reg->AFE_CTL[1] = 0x2527BCF9;
+	cpior_reg->AFE_CTL[2] = 0x00000000;
+	cpior_reg->AFE_CTL[3] = 0x90081000;
+	cpior_reg->AFE_CTL[4] = 0x000000E4;
+	cpior_reg->AFE_CTL[5] = 0x00004801;
+	cpior_reg->AFE_CTL[6] = 0xDF330CA3;
+	cpior_reg->AFE_CTL[7] = 0x00005008;
+#endif
+#if 0
+	prn_string("VCO: 3.2G, PLL: 1.6G\n");
+	cpior_reg->AFE_CTL[0] = 0x240183FA;
+	cpior_reg->AFE_CTL[1] = 0x2527BCF9;
+	cpior_reg->AFE_CTL[2] = 0x00000000;
+	cpior_reg->AFE_CTL[3] = 0x90000000;
+	cpior_reg->AFE_CTL[4] = 0x000000E4;
+	cpior_reg->AFE_CTL[5] = 0x00004801;
+	cpior_reg->AFE_CTL[6] = 0xBF330823;
+	cpior_reg->AFE_CTL[7] = 0x00005000;
+#endif
+#if 0
+	prn_string("VCO: 9.6G, PLL: 2.4G\n");
+	cpior_reg->AFE_CTL[0] = 0x248183FE;
+	cpior_reg->AFE_CTL[1] = 0x4527BDF9;
+	cpior_reg->AFE_CTL[2] = 0x00000C00;
+	cpior_reg->AFE_CTL[3] = 0x48081000;
+	cpior_reg->AFE_CTL[4] = 0x000000D2;
+	cpior_reg->AFE_CTL[5] = 0x00006801;
+	cpior_reg->AFE_CTL[6] = 0xD2C18C33;
+	cpior_reg->AFE_CTL[7] = 0x00007008;
+#endif
+#if 0
+	prn_string("VCO: 5.0G, PLL: 2.5G\n");
+	cpior_reg->AFE_CTL[0] = 0x240183FA;
+	cpior_reg->AFE_CTL[1] = 0x2527BCF9;
+	cpior_reg->AFE_CTL[2] = 0x00000000;
+	cpior_reg->AFE_CTL[3] = 0x90081000;
+	cpior_reg->AFE_CTL[4] = 0x000000E4;
+	cpior_reg->AFE_CTL[5] = 0x00004801;
+	cpior_reg->AFE_CTL[6] = 0xBF330CA3;
+	cpior_reg->AFE_CTL[7] = 0x00005000;
+#endif
+#if 0
+	prn_string("VCO: 3.2G, PLL: 3.2G\n");
+	cpior_reg->AFE_CTL[0] = 0x240183FA;
+	cpior_reg->AFE_CTL[1] = 0x2527BCF9;
+	cpior_reg->AFE_CTL[2] = 0x00000000;
+	cpior_reg->AFE_CTL[3] = 0x90000000;
+	cpior_reg->AFE_CTL[4] = 0x000000E4;
+	cpior_reg->AFE_CTL[5] = 0x00004801;
+	cpior_reg->AFE_CTL[6] = 0x9F330823;
+	cpior_reg->AFE_CTL[7] = 0x00005000;
+#endif
 
 	STC_delay_1ms (100);
 
 	AV1_STC_init();	// initial STC1
 
-	// Release RESET
+	// Release PHY RESET
 	dly_cnt0 = AV1_GetStc32();
-	cpior_reg->PHY_CTRL = 0x80;//(0x1<<7);
+	cpior_reg->PHY_CTRL = 0x80;	// RST_RLS = 1
 	while (((cpior_reg->IOP_STS & 0x7F) == 0x0)) {
 		//prn_dword(cpior_reg->IOP_STS);
 	}
 	dly_cnt1 = AV1_GetStc32();
+
 	data_tmp = cpior_reg->IOP_STS;
 	prn_string("PHY status change: "); prn_dword(data_tmp);
 	if ((data_tmp & 0x7E) != 0x0) {
@@ -1389,10 +1528,10 @@ void cpio_master(void)
 		prn_string("PHY status check Passed\n");
 		prn_string("CPIO Initial Finished\n");
 	}
-	data_tmp = cpior_reg->PHY_CTRL;
-	prn_string("PHY Mode: "); prn_dword(data_tmp);
+
+	prn_string("PHY Mode: "); prn_dword(cpior_reg->PHY_CTRL);
 	prn_string("Timer start: "); prn_dword(dly_cnt0);
 	prn_string("Timer End: "); prn_dword(dly_cnt1);
 
-	while (1);
+	//while (1);
 }
