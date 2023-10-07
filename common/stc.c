@@ -10,15 +10,15 @@
 
 static void STC_hw_init(volatile struct stc_regs *regs)
 {
-	regs->stc_config = 0;
 #ifdef PLATFORM_SP7350
-	regs->stc_divisor = (0 << 15) |                  /* system clock is 25M(AO domain) */
-		((XTAL_CLK / (TIMER_KHZ * 1000)) - 1);   /* divisor = (150 -1) */
+	regs->stc_config = 0x289;    /* Refer to the datasheet for the value */
+	regs->stc_divisor = (1 << 15);   /* ext_refclk*/
 
 	regs->stc_64 = 0;
 	regs->stc_31_0 = 0;
 	regs->stc_63_32 = 0;
 #else
+	regs->stc_config = 0;
 	regs->stc_divisor = (1 << 15) |                      /* source = EXT_REFCLK / 2 */
 		((XTAL_CLK / 2 / (TIMER_KHZ * 1000)) - 1);   /* divisor = (150 -1) */
 
