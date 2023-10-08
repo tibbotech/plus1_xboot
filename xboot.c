@@ -460,6 +460,11 @@ static void init_hw(void)
 	for (i = 44; i <= 49; i++)
 		set_pad_driving_strength(i, 5);
 	MOON3_REG_AO->clkgen[4] = RF_MASK_V((0x0F << 6), (0x00 << 6));  // set i2c spi source clk 100M  400M
+	MOON3_REG_AO->clkgen[5] = RF_MASK_V((0x07 << 6), (0x00 << 6));   // set AO sys clk
+
+	/* reset stc config because AO sysclk is change from 25M to 200M */
+	STC_init();
+	AV1_STC_init();
 
 	diag_printf("clkgen[4] 0x%x clkgen[4] addr 0x%x\n",MOON3_REG_AO->clkgen[4],&MOON3_REG_AO->clkgen[4]);
 	diag_printf("clkgen[5] 0x%x clkgen[5] addr 0x%x\n",MOON3_REG_AO->clkgen[5],&MOON3_REG_AO->clkgen[5]);
@@ -733,11 +738,6 @@ static void init_hw(void)
 	delay_1ms(1);
 #endif
 
-	/* set AO sysclk to 200M for I2C high speed mode  git id:70a5fc */
-	MOON3_REG_AO->clkgen[5] = RF_MASK_V((0x07 << 6), (0x00 << 6));   // set AO sys clk
-	/* reset stc config because AO sysclk is change from 25M to 200M */
-	STC_init();
-	AV1_STC_init();
 	dbg();
 }
 
