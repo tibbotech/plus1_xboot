@@ -452,6 +452,15 @@ static void init_hw(void)
 	//PAD_DVIO_REG->ao_mx_10_19 = 1;
 	//PAD_DVIO_REG->ao_mx_20_29 = 1;
 
+	MOON3_REG_AO->clkgen[4] = RF_MASK_V((0x0F << 6), (0x00 << 6));   // Set source clock of I2C and SPI to 100 MHz and 400MHz, respectively.
+	MOON3_REG_AO->clkgen[5] = RF_MASK_V((0x07 << 6), (0x00 << 6));   // Set AO system clock to 200 MHz
+	diag_printf("clkgen[4] 0x%x clkgen[4] addr 0x%x\n",MOON3_REG_AO->clkgen[4], &MOON3_REG_AO->clkgen[4]);
+	diag_printf("clkgen[5] 0x%x clkgen[5] addr 0x%x\n",MOON3_REG_AO->clkgen[5], &MOON3_REG_AO->clkgen[5]);
+
+	/* reset stc config because AO sysclk is change from 25M to 200M */
+	STC_init();
+	AV1_STC_init();
+
 	// SD-CARD (DVIO): 38, 39, 40, 41, 42, 43
 	// SDIO    (DVIO): 44, 45, 46, 47, 48, 49
 	// Set driving-strength to 5 (min: 6.5, typ: 17.7mA).
@@ -459,15 +468,6 @@ static void init_hw(void)
 		set_pad_driving_strength(i, 5);
 	for (i = 44; i <= 49; i++)
 		set_pad_driving_strength(i, 5);
-	MOON3_REG_AO->clkgen[4] = RF_MASK_V((0x0F << 6), (0x00 << 6));  // set i2c spi source clk 100M  400M
-	MOON3_REG_AO->clkgen[5] = RF_MASK_V((0x07 << 6), (0x00 << 6));   // set AO sys clk
-
-	/* reset stc config because AO sysclk is change from 25M to 200M */
-	STC_init();
-	AV1_STC_init();
-
-	diag_printf("clkgen[4] 0x%x clkgen[4] addr 0x%x\n",MOON3_REG_AO->clkgen[4],&MOON3_REG_AO->clkgen[4]);
-	diag_printf("clkgen[5] 0x%x clkgen[5] addr 0x%x\n",MOON3_REG_AO->clkgen[5],&MOON3_REG_AO->clkgen[5]);
 
 	#if (0)
 	// SPI0,X1 (DVIO): 64, 65, 66, 67
@@ -577,7 +577,7 @@ static void init_hw(void)
 	//prn_string("PLLL3[0] = "); prn_dword(MOON3_REG_AO->plll3_cfg[0]);
 	//prn_string("PLLL3[1] = "); prn_dword(MOON3_REG_AO->plll3_cfg[1]);
 
-	MOON4_REG_AO->sft_cfg[1] = RF_MASK_V_SET(0x80);  // U3PHY SSC on
+	MOON4_REG_AO->sft_cfg[1] = RF_MASK_V_SET(0x80);                   // U3PHY SSC on
 
 #if 0 // CPIO analog macro mux
 	/* Switch the shared analog macros to MIPI RX mode for MIPI-CSI RX2/3 */
@@ -2713,11 +2713,20 @@ static void init_uart(void)
 	MOON0_REG_AO->reset[7] = RF_MASK_V_CLR(1 << 12);          // UA6_RESET=0
 	UART6_REG->div_l = UART_BAUD_DIV_L(BAUDRATE, UART_SRC_CLK);
 	UART6_REG->div_h = UART_BAUD_DIV_H(BAUDRATE, UART_SRC_CLK);
-#if 0  /* UADBG used for optee_os, pinmux conflict with ethernet */
+#if 0	// Enable UADBG for OP-TEE console.
+	// OP-TEE uses UADBG as console by default. Enable this conditional
+	// to enable pin-mux and settings of UADBG when needed.
+	// Note that UADBG and GMAC share the same pins. Disable GMAC in dts
+	// before enable pin-mux of UADBG or vice versa.
 	MOON1_REG_AO->sft_cfg[2] = RF_MASK_V_SET(1 << 14); /* UADBG_SEL=1 */
 	MOON0_REG_AO->reset[5] = RF_MASK_V_CLR(1 << 10);   // UADBG_RESET=0
 	UADBG_REG->div_l = UART_BAUD_DIV_L(BAUDRATE, UART_SRC_CLK);
 	UADBG_REG->div_h = UART_BAUD_DIV_H(BAUDRATE, UART_SRC_CLK);
+	UA2AXI_REG->axi_en = 0; // Disable UA2AXI and enable UADBG.
+#endif
+#if 0	// Enable UADBG for Linux ttyS5
+	MOON1_REG_AO->sft_cfg[2] = RF_MASK_V_SET(1 << 14); /* UADBG_SEL=1 */
+	MOON0_REG_AO->reset[5] = RF_MASK_V_CLR(1 << 10);   // UADBG_RESET=0
 	UA2AXI_REG->axi_en = 0; // Disable UA2AXI and enable UADBG.
 #endif
 #endif
