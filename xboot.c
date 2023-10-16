@@ -454,8 +454,8 @@ static void init_hw(void)
 
 	MOON3_REG_AO->clkgen[4] = RF_MASK_V((0x0F << 6), (0x00 << 6));   // Set source clock of I2C and SPI to 100 MHz and 400MHz, respectively.
 	MOON3_REG_AO->clkgen[5] = RF_MASK_V((0x07 << 6), (0x00 << 6));   // Set AO system clock to 200 MHz
-	diag_printf("clkgen[4] 0x%x clkgen[4] addr 0x%x\n",MOON3_REG_AO->clkgen[4], &MOON3_REG_AO->clkgen[4]);
-	diag_printf("clkgen[5] 0x%x clkgen[5] addr 0x%x\n",MOON3_REG_AO->clkgen[5], &MOON3_REG_AO->clkgen[5]);
+	//diag_printf("clkgen[4] 0x%x clkgen[4] addr 0x%x\n",MOON3_REG_AO->clkgen[4], &MOON3_REG_AO->clkgen[4]);
+	//diag_printf("clkgen[5] 0x%x clkgen[5] addr 0x%x\n",MOON3_REG_AO->clkgen[5], &MOON3_REG_AO->clkgen[5]);
 
 	/* reset stc config because AO sysclk is change from 25M to 200M */
 	STC_init();
@@ -2769,6 +2769,25 @@ static u32 read_mp_bit(void)
 	return mp_bit;
 }
 
+#if defined(PLATFORM_SP7350)
+void check_ldo(void)
+{
+	char data = 0;
+
+#ifdef CONFIG_HAVE_OTP
+	otprx_read(HB_GP_REG, SP_OTPRX_REG, 68, &data);
+#endif
+	if(data & 0x01)
+		*(volatile u32 *)(0xf88032d8) |= 0x00000004;		//SD LDO resistor mode
+	data = 0;
+#ifdef CONFIG_HAVE_OTP
+	otprx_read(HB_GP_REG, SP_OTPRX_REG, 70, &data);
+#endif
+	if(data & 0x01)
+		*(volatile u32 *)(0xf88032dc) |= 0x00000004;		//SDIO LDO resistor mod
+}
+#endif
+
 void xboot_main(void)
 {
 	/* Initialize global data */
@@ -2797,6 +2816,9 @@ void xboot_main(void)
 
 #ifdef CONFIG_HAVE_OTP
 	mon_rw_otp();
+#if defined(PLATFORM_SP7350)
+	check_ldo();
+#endif
 #endif
 
 #if 0 // Enable CPIO master mode.
