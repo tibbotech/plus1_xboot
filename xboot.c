@@ -551,10 +551,38 @@ static void init_hw(void)
 	set_pad_driving_strength(50, 4);
 	set_pad_driving_strength(51, 4);
 
+	// UA1,X1 (DVIO): 52, 53, 54, 55
+	// Set driving strength to 4 (min: 5.6mA, typ: 15.2mA).
+	set_pad_driving_strength(52, 4);
+	set_pad_driving_strength(53, 4);
+	set_pad_driving_strength(54, 4);
+	set_pad_driving_strength(55, 4);
+
+	// UA2,X1 (DVIO): 56, 57, 58, 59
+	// Set driving strength to 4 (min: 5.6mA, typ: 15.2mA).
+	set_pad_driving_strength(56, 4);
+	set_pad_driving_strength(57, 4);
+	set_pad_driving_strength(58, 4);
+	set_pad_driving_strength(59, 4);
+
+	// UA3,X1 (DVIO): 62, 63
+	// Set driving strength to 4 (min: 5.6mA, typ: 15.2mA).
+	set_pad_driving_strength(62, 4);
+	set_pad_driving_strength(63, 4);
+
+	// UADBG,X1 (GPIO): 13, 14
+	// Set driving strength to 4 (min: 4.5mA, typ: 6.6mA).
+	set_pad_driving_strength(13, 4);
+	set_pad_driving_strength(14, 4);
+
 	// UA6,X1 (GPIO): 80, 81
 	// Set driving strength to 4 (min: 4.5mA, typ: 6.6mA).
 	set_pad_driving_strength(80, 4);
 	set_pad_driving_strength(81, 4);
+	// UA7,X1 (GPIO): 82, 83
+	// Set driving strength to 4 (min: 4.5mA, typ: 6.6mA).
+	set_pad_driving_strength(82, 4);
+	set_pad_driving_strength(83, 4);
 	delay_1ms(1);
 
 	/* Set PLLC to 1.5G */
