@@ -1713,7 +1713,7 @@ int IdentifyStorage(void)
 		} else {
 			CSTAMP(0xCAD0001A);
 			//SetChipCtrlClk(CARD012_CLK,pstorage_device->dev_card.reg_CSD.max_dtr);
-#if defined(PLATFORM_Q645) || defined(PLATFORM_SP7350)
+#if defined(PLATFORM_SP7350)
 			SetChipCtrlClk(CARD012_CLK,35000000);
 #else
 			SetChipCtrlClk(CARD012_CLK,5000000); //BootCode use 5MHz for safty
