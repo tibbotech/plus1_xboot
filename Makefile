@@ -1,7 +1,8 @@
 sinclude $(O).config
 
 ifneq ($(O),)
-OD=$(O)draminit/
+CURRENT_DIR := $(shell pwd)
+OD=$(CURRENT_DIR)/$(O)draminit/
 endif
 
 ###########  ARCH CPU_PATH config ######################
@@ -572,6 +573,7 @@ MCONF=tools/mconf
 
 config_list=$(subst configs/,,$(shell find configs/ -maxdepth 1 -mindepth 1 -type f|sort))
 $(config_list):
+	@mkdir -p $(OD)
 	@if [ ! -f configs/$@ ];then \
 		echo "Not found config file for $@" ; \
 		exit 1 ; \
