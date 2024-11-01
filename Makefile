@@ -573,7 +573,9 @@ MCONF=tools/mconf
 
 config_list=$(subst configs/,,$(shell find configs/ -maxdepth 1 -mindepth 1 -type f|sort))
 $(config_list):
+ifneq ($(O),)
 	@mkdir -p $(OD)
+endif
 	@if [ ! -f configs/$@ ];then \
 		echo "Not found config file for $@" ; \
 		exit 1 ; \
