@@ -1,4 +1,9 @@
-sinclude .config
+sinclude $(O).config
+
+ifneq ($(O),)
+CURRENT_DIR := $(shell pwd)
+OD=$(CURRENT_DIR)/$(O)draminit/
+endif
 
 ###########  ARCH CPU_PATH config ######################
 ifeq ($(CONFIG_ARCH_ARM), y)
@@ -27,7 +32,7 @@ OBJDUMP = $(CROSS)objdump
 endif
 
 ###########  LDFLAGS CONFIG ######################
-LD_GEN   = arch/$(CPU_PATH)/boot.ld
+LD_GEN   = $(O)arch/$(CPU_PATH)/boot.ld
 LD_SRC   = arch/$(CPU_PATH)/boot.ldi
 LDFLAGS  = -L $(shell dirname `$(CC) -print-libgcc-file-name`) -lgcc
 #LDFLAGS += -Wl,--gc-sections,--print-gc-sections
@@ -121,51 +126,52 @@ all: chkconfig auto_config
 	@$(MAKE) $(TARGET)
 
 	@# 32-byte xboot header
+	install -d $(O)$(BIN)
 ifeq ($(CONFIG_PLATFORM_Q645),y)
-	@bash ./add_xhdr.sh ../draminit/dwc/firmware/Q645/lpddr4_pmu_train_imem.bin $(BIN)/pmu_train_imem.img 0 im1d
-	@bash ./add_xhdr.sh ../draminit/dwc/firmware/Q645/lpddr4_pmu_train_dmem.bin $(BIN)/pmu_train_dmem.img 0 dm1d
-	@bash ./add_xhdr.sh ../draminit/dwc/firmware/Q645/lpddr4_2d_pmu_train_imem.bin $(BIN)/2d_pmu_train_imem.img 0 im2d
-	@bash ./add_xhdr.sh ../draminit/dwc/firmware/Q645/lpddr4_2d_pmu_train_dmem.bin $(BIN)/2d_pmu_train_dmem.img 0 dm2d
-	@bash ./add_xhdr.sh ../draminit/dwc/firmware/Q645/lpddr4_diags_imem.bin $(BIN)/diags_imem.img 0 imda
-	@bash ./add_xhdr.sh ../draminit/dwc/firmware/Q645/lpddr4_diags_dmem.bin $(BIN)/diags_dmem.img 0 dmda
+	@bash ./add_xhdr.sh ../draminit/dwc/firmware/Q645/lpddr4_pmu_train_imem.bin $(O)$(BIN)/pmu_train_imem.img 0 im1d
+	@bash ./add_xhdr.sh ../draminit/dwc/firmware/Q645/lpddr4_pmu_train_dmem.bin $(O)$(BIN)/pmu_train_dmem.img 0 dm1d
+	@bash ./add_xhdr.sh ../draminit/dwc/firmware/Q645/lpddr4_2d_pmu_train_imem.bin $(O)$(BIN)/2d_pmu_train_imem.img 0 im2d
+	@bash ./add_xhdr.sh ../draminit/dwc/firmware/Q645/lpddr4_2d_pmu_train_dmem.bin $(O)$(BIN)/2d_pmu_train_dmem.img 0 dm2d
+	@bash ./add_xhdr.sh ../draminit/dwc/firmware/Q645/lpddr4_diags_imem.bin $(O)$(BIN)/diags_imem.img 0 imda
+	@bash ./add_xhdr.sh ../draminit/dwc/firmware/Q645/lpddr4_diags_dmem.bin $(O)$(BIN)/diags_dmem.img 0 dmda
 endif
 ifeq ($(CONFIG_PLATFORM_SP7350),y)
 ifeq ($(CONFIG_LPDDR4),y)
-	@bash ./add_xhdr.sh ../draminit/dwc/firmware/SP7350/lpddr4/lpddr4_pmu_train_imem.bin $(BIN)/pmu_train_imem.img 0 im1d
-	@bash ./add_xhdr.sh ../draminit/dwc/firmware/SP7350/lpddr4/lpddr4_pmu_train_dmem.bin $(BIN)/pmu_train_dmem.img 0 dm1d
-	@bash ./add_xhdr.sh ../draminit/dwc/firmware/SP7350/lpddr4/lpddr4_2d_pmu_train_imem.bin $(BIN)/2d_pmu_train_imem.img 0 im2d
-	@bash ./add_xhdr.sh ../draminit/dwc/firmware/SP7350/lpddr4/lpddr4_2d_pmu_train_dmem.bin $(BIN)/2d_pmu_train_dmem.img 0 dm2d
-	@bash ./add_xhdr.sh ../draminit/dwc/firmware/SP7350/lpddr4/lpddr4_diags_imem.bin $(BIN)/diags_imem.img 0 imda
-	@bash ./add_xhdr.sh ../draminit/dwc/firmware/SP7350/lpddr4/lpddr4_diags_dmem.bin $(BIN)/diags_dmem.img 0 dmda
+	@bash ./add_xhdr.sh ../draminit/dwc/firmware/SP7350/lpddr4/lpddr4_pmu_train_imem.bin $(O)$(BIN)/pmu_train_imem.img 0 im1d
+	@bash ./add_xhdr.sh ../draminit/dwc/firmware/SP7350/lpddr4/lpddr4_pmu_train_dmem.bin $(O)$(BIN)/pmu_train_dmem.img 0 dm1d
+	@bash ./add_xhdr.sh ../draminit/dwc/firmware/SP7350/lpddr4/lpddr4_2d_pmu_train_imem.bin $(O)$(BIN)/2d_pmu_train_imem.img 0 im2d
+	@bash ./add_xhdr.sh ../draminit/dwc/firmware/SP7350/lpddr4/lpddr4_2d_pmu_train_dmem.bin $(O)$(BIN)/2d_pmu_train_dmem.img 0 dm2d
+	@bash ./add_xhdr.sh ../draminit/dwc/firmware/SP7350/lpddr4/lpddr4_diags_imem.bin $(O)$(BIN)/diags_imem.img 0 imda
+	@bash ./add_xhdr.sh ../draminit/dwc/firmware/SP7350/lpddr4/lpddr4_diags_dmem.bin $(O)$(BIN)/diags_dmem.img 0 dmda
 endif
 ifeq ($(CONFIG_DDR4),y)
-	@bash ./add_xhdr.sh ../draminit/dwc/firmware/SP7350/ddr4/ddr4_pmu_train_imem.bin $(BIN)/pmu_train_imem.img 0 im1d
-	@bash ./add_xhdr.sh ../draminit/dwc/firmware/SP7350/ddr4/ddr4_pmu_train_dmem.bin $(BIN)/pmu_train_dmem.img 0 dm1d
-	@bash ./add_xhdr.sh ../draminit/dwc/firmware/SP7350/ddr4/ddr4_2d_pmu_train_imem.bin $(BIN)/2d_pmu_train_imem.img 0 im2d
-	@bash ./add_xhdr.sh ../draminit/dwc/firmware/SP7350/ddr4/ddr4_2d_pmu_train_dmem.bin $(BIN)/2d_pmu_train_dmem.img 0 dm2d
-	@bash ./add_xhdr.sh ../draminit/dwc/firmware/SP7350/ddr4/ddr4_diags_imem.bin $(BIN)/diags_imem.img 0 imda
-	@bash ./add_xhdr.sh ../draminit/dwc/firmware/SP7350/ddr4/ddr4_diags_dmem.bin $(BIN)/diags_dmem.img 0 dmda
+	@bash ./add_xhdr.sh ../draminit/dwc/firmware/SP7350/ddr4/ddr4_pmu_train_imem.bin $(O)$(BIN)/pmu_train_imem.img 0 im1d
+	@bash ./add_xhdr.sh ../draminit/dwc/firmware/SP7350/ddr4/ddr4_pmu_train_dmem.bin $(O)$(BIN)/pmu_train_dmem.img 0 dm1d
+	@bash ./add_xhdr.sh ../draminit/dwc/firmware/SP7350/ddr4/ddr4_2d_pmu_train_imem.bin $(O)$(BIN)/2d_pmu_train_imem.img 0 im2d
+	@bash ./add_xhdr.sh ../draminit/dwc/firmware/SP7350/ddr4/ddr4_2d_pmu_train_dmem.bin $(O)$(BIN)/2d_pmu_train_dmem.img 0 dm2d
+	@bash ./add_xhdr.sh ../draminit/dwc/firmware/SP7350/ddr4/ddr4_diags_imem.bin $(O)$(BIN)/diags_imem.img 0 imda
+	@bash ./add_xhdr.sh ../draminit/dwc/firmware/SP7350/ddr4/ddr4_diags_dmem.bin $(O)$(BIN)/diags_dmem.img 0 dmda
 endif
 ifeq ($(CONFIG_DDR3),y)
-	@bash ./add_xhdr.sh ../draminit/dwc/firmware/SP7350/ddr3/ddr3_pmu_train_imem.bin $(BIN)/pmu_train_imem.img 0 im1d
-	@bash ./add_xhdr.sh ../draminit/dwc/firmware/SP7350/ddr3/ddr3_pmu_train_dmem.bin $(BIN)/pmu_train_dmem.img 0 dm1d
+	@bash ./add_xhdr.sh ../draminit/dwc/firmware/SP7350/ddr3/ddr3_pmu_train_imem.bin $(O)$(BIN)/pmu_train_imem.img 0 im1d
+	@bash ./add_xhdr.sh ../draminit/dwc/firmware/SP7350/ddr3/ddr3_pmu_train_dmem.bin $(O)$(BIN)/pmu_train_dmem.img 0 dm1d
 endif
 endif
 ifeq ($(CONFIG_STANDALONE_DRAMINIT), y)
 	@# print draminit.img size
-	@sz=`du -sb $(DRAMINIT_IMG) | cut -f1` ; \
+	@sz=`du -sb $(OD)$(DRAMINIT_IMG) | cut -f1` ; \
 	    printf "$(DRAMINIT_IMG) size = %d (hex %x)\n" $$sz $$sz
 	@echo "Append $(DRAMINIT_IMG)"
 	@# xboot.img = xboot.img.orig + draminit.img
-	@mv  $(BIN)/$(TARGET).img  $(BIN)/$(TARGET).img.orig
-	@cat $(BIN)/$(TARGET).img.orig $(DRAMINIT_IMG) > $(BIN)/$(TARGET).img
+	@mv  $(O)$(BIN)/$(TARGET).img  $(O)$(BIN)/$(TARGET).img.orig
+	@cat $(O)$(BIN)/$(TARGET).img.orig $(OD)$(DRAMINIT_IMG) > $(O)$(BIN)/$(TARGET).img
 else
 	@echo "Linked with $(DRAMINIT_OBJ)"
 endif
 
 size_check:
 	@# print xboot size
-	@sz=`du -sb bin/$(TARGET).img | cut -f1` ; \
+	@sz=`du -sb $(O)bin/$(TARGET).img | cut -f1` ; \
 	 printf "xboot.img size = %d (hex %x)\n" $$sz $$sz ; \
 	 if [ $$sz -gt $(XBOOT_MAX) ];then \
 		echo -e "\033[0;1;31;40mxboot size limit is $(XBOOT_MAX). Please reduce its size.\033[0m" ; \
@@ -175,19 +181,24 @@ size_check:
 ###################
 # draminit
 
+DRAMIDIR=../draminit
+ifneq ($(O),)
+DRAMIDIR=$(OD)
+endif
+
 # If CONFIG_STANDALONE_DRAMINIT=y, use draminit.img.
 ifeq ($(CONFIG_STANDALONE_DRAMINIT), y)
-DRAMINIT_IMG := ../draminit/bin/draminit.img
+DRAMINIT_IMG := $(DRAMIDIR)/bin/draminit.img
 
 else
 # Otherwise, link xboot with plf_dram.o
 ifeq ($(CONFIG_PLATFORM_Q645),y)
-DWC_SRC_DIR = ../draminit/dwc/software/lpddr4/src
-DWC_USER_DIR = ../draminit/dwc/software/lpddr4/userCustom
+DWC_SRC_DIR = $(DRAMIDIR)/dwc/software/lpddr4/src
+DWC_USER_DIR = $(DRAMIDIR)/dwc/software/lpddr4/userCustom
 DWC = dwc_ddrphy_phyinit_
 DWC_USER = dwc_ddrphy_phyinit_userCustom_
-DRAMINIT_OBJ := ../draminit/dwc/dwc_dram.o
-DRAMINIT_OBJ += ../draminit/dwc/dwc_umctl2.o
+DRAMINIT_OBJ := $(DRAMIDIR)/dwc/dwc_dram.o
+DRAMINIT_OBJ += $(DRAMIDIR)/dwc/dwc_umctl2.o
 DRAMINIT_OBJ += $(DWC_SRC_DIR)/$(DWC)main.o
 DRAMINIT_OBJ += $(DWC_SRC_DIR)/$(DWC)globals.o
 DRAMINIT_OBJ += $(DWC_SRC_DIR)/$(DWC)sequence.o
@@ -233,12 +244,12 @@ DRAMINIT_OBJ += $(DWC_USER_DIR)/$(DWC_USER)io_read16.o
 DRAMINIT_OBJ += $(DWC_USER_DIR)/$(DWC_USER)saveRetRegs.o
 
 else ifeq ($(CONFIG_PLATFORM_SP7350),y)
-DWC_SRC_DIR = ../draminit/dwc/software/lpddr4/src
-DWC_USER_DIR = ../draminit/dwc/software/lpddr4/userCustom
+DWC_SRC_DIR = $(DRAMIDIR)/dwc/software/lpddr4/src
+DWC_USER_DIR = $(DRAMIDIR)/dwc/software/lpddr4/userCustom
 DWC = dwc_ddrphy_phyinit_
 DWC_USER = dwc_ddrphy_phyinit_userCustom_
-DRAMINIT_OBJ := ../draminit/dwc/dwc_dram.o
-DRAMINIT_OBJ += ../draminit/dwc/dwc_umctl2.o
+DRAMINIT_OBJ := $(DRAMIDIR)/dwc/dwc_dram.o
+DRAMINIT_OBJ += $(DRAMIDIR)/dwc/dwc_umctl2.o
 DRAMINIT_OBJ += $(DWC_SRC_DIR)/$(DWC)main.o
 DRAMINIT_OBJ += $(DWC_SRC_DIR)/$(DWC)globals.o
 DRAMINIT_OBJ += $(DWC_SRC_DIR)/$(DWC)sequence.o
@@ -284,7 +295,7 @@ DRAMINIT_OBJ += $(DWC_USER_DIR)/$(DWC_USER)io_read16.o
 DRAMINIT_OBJ += $(DWC_USER_DIR)/$(DWC_USER)saveRetRegs.o
 
 else
-DRAMINIT_OBJ := ../draminit/plf_dram.o
+DRAMINIT_OBJ := $(DRAMIDIR)/plf_dram.o
 endif
 
 # Use prebuilt obj if provided
@@ -299,17 +310,17 @@ debug: DRAMINIT_TARGET:=debug
 
 build_draminit:
 	@echo ">>>>>>>>>>> Build draminit"
-	$(MAKE) -C ../draminit $(DRAMINIT_TARGET) ARCH=$(ARCH) CROSS=$(CROSS) MKIMAGE=$(MKIMAGE)
+	$(MAKE) -C ../draminit $(DRAMINIT_TARGET) ARCH=$(ARCH) CROSS=$(CROSS) MKIMAGE=$(MKIMAGE) O=$(OD)
 	@echo ">>>>>>>>>>> Build draminit (done)"
 	@echo ""
 
 dwc:
 	@echo ">>>>>>>>>>> Build dwc obj"
 ifeq ($(CONFIG_PLATFORM_Q645),y)
-	$(MAKE) -C ../draminit/dwc ARCH=$(ARCH) CROSS=$(CROSS) PLATFROM=Q645
+	$(MAKE) -C ../draminit/dwc ARCH=$(ARCH) CROSS=$(CROSS) PLATFROM=Q645 O=$(OD)
 endif
 ifeq ($(CONFIG_PLATFORM_SP7350),y)
-	$(MAKE) -C ../draminit/dwc ARCH=$(ARCH) CROSS=$(CROSS) PLATFROM=SP7350
+	$(MAKE) -C ../draminit/dwc ARCH=$(ARCH) CROSS=$(CROSS) PLATFROM=SP7350 O=$(OD)
 endif
 	@echo ">>>>>>>>>>> Build dwc obj (done)"
 	@echo ""
@@ -344,7 +355,7 @@ CSOURCES += arch/$(CPU_PATH)/cpu/cpu.c arch/$(CPU_PATH)/cpu/interrupt.c lib/eabi
 ifeq ($(ARCH),arm)
 empty :=
 space += $(empty) $(empty)
-arch/$(CPU_PATH)/cpu/cpu.o: CFLAGS:=$(subst -mthumb$(space),,$(CFLAGS))
+$(O)arch/$(CPU_PATH)/cpu/cpu.o: CFLAGS:=$(subst -mthumb$(space),,$(CFLAGS))
 endif
 
 # Generic Boot Device
@@ -434,7 +445,7 @@ ifeq ($(CONFIG_PLATFORM_Q628),y)
 CSOURCES += gpio/gpio_q628.c
 endif
 
-OBJS = $(ASOURCES:.S=.o) $(CSOURCES:.c=.o)
+OBJS = $(ASOURCES:.S=.o) $(addprefix $(O),$(CSOURCES:.c=.o))
 
 $(OBJS): prepare
 
@@ -448,12 +459,14 @@ else
 $(TARGET): $(OBJS)
 endif
 	@echo ">>>>> Link $@  "
-	@$(CPP) -P $(CFLAGS) -x c $(LD_SRC) -o $(LD_GEN)
-	$(CC) $(CFLAGS) $(OBJS) $(DRAMINIT_OBJ) -T $(LD_GEN) $(LDFLAGS) -o $(BIN)/$(TARGET) -Wl,-Map,$(BIN)/$(TARGET).map
-	@$(OBJCOPY) -O binary -S $(BIN)/$(TARGET) $(BIN)/$(TARGET).bin
-	@$(OBJDUMP) -d -S $(BIN)/$(TARGET) > $(BIN)/$(TARGET).dis
+	install -d $(dir $(LD_GEN))
+	$(CPP) -P $(CFLAGS) -x c $(LD_SRC) -o $(LD_GEN)
+	install -d $(dir $(O)$(BIN)/$(TARGET))
+	$(CC) $(CFLAGS) $(OBJS) $(DRAMINIT_OBJ) -T $(LD_GEN) $(LDFLAGS) -o $(O)$(BIN)/$(TARGET) -Wl,-Map,$(O)$(BIN)/$(TARGET).map
+	@$(OBJCOPY) -O binary -S $(O)$(BIN)/$(TARGET) $(O)$(BIN)/$(TARGET).bin
+	@$(OBJDUMP) -d -S $(O)$(BIN)/$(TARGET) > $(O)$(BIN)/$(TARGET).dis
 ifeq ($(CONFIG_I143_C_P), y)
-	@dd if=$(BIN)/$(TARGET_C_P).bin of=$(BIN)/$(TARGET).bin bs=1k seek=26 conv=notrunc 2>/dev/null
+	@dd if=$(O)$(BIN)/$(TARGET_C_P).bin of=$(O)$(BIN)/$(TARGET).bin bs=1k seek=26 conv=notrunc 2>/dev/null
 endif
 ifeq ($(CONFIG_LOAD_LINUX),y)
 ifeq ($(ARCH),riscv)
@@ -470,20 +483,22 @@ else
 endif
 
 %.o: %.S
+	install -d $(dir $@)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-%.o: %.c
+$(O)%.o: %.c
+	install -d $(dir $@)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 a64bin:
 	@echo "Build a64 bin"
 ifeq ($(CONFIG_PLATFORM_Q645),y)
-	@$(MAKE) -C arch/arm/q645/a64up/
-	@$(CROSS)objcopy -I binary -O elf32-littlearm -B arm --rename-section .data=.a64bin arch/arm/q645/a64up/a64up.bin arch/arm/q645/a64up/a64bin.o
+	@$(MAKE) -C arch/arm/q645/a64up/ O=$(O)
+	@$(CROSS)objcopy -I binary -O elf32-littlearm -B arm --rename-section .data=.a64bin $(O)arch/arm/q645/a64up/a64up.bin $(O)arch/arm/q645/a64up/a64bin.o
 endif
 ifeq ($(CONFIG_PLATFORM_SP7350),y)
-	@$(MAKE) -C arch/arm/sp7350/a64up/
-	@$(CROSS)objcopy -I binary -O elf32-littlearm -B arm --rename-section .data=.a64bin arch/arm/sp7350/a64up/a64up.bin arch/arm/sp7350/a64up/a64bin.o
+	@$(MAKE) -C arch/arm/sp7350/a64up/ O=$(O)
+	@$(CROSS)objcopy -I binary -O elf32-littlearm -B arm --rename-section .data=.a64bin $(O)arch/arm/sp7350/a64up/a64up.bin $(O)arch/arm/sp7350/a64up/a64bin.o
 endif
 
 HSMK_BIN=../../build/tools/secure_hsm/secure/hsm_keys/hsmk.bin
@@ -503,42 +518,42 @@ I143_C_P:
 	@echo "build arm ca7 !!!"
 	@$(CROSS_ARM)gcc $(CFLAGS_C_P) -c -o $(START_C_P_PATH)/start_c_p.o $(START_C_P_PATH)/start_c_p.S
 	@$(CROSS_ARM)cpp -P $(CFLAGS_C_P) $(START_C_P_PATH)/boot_c_p.ldi $(START_C_P_PATH)/boot_c_p.ld
-	@$(CROSS_ARM)gcc $(CFLAGS_C_P) $(START_C_P_PATH)/start_c_p.o -T $(START_C_P_PATH)/boot_c_p.ld $(LDFLAGS_C_P) -o $(BIN)/$(TARGET_C_P) -Wl,-Map,$(BIN)/$(TARGET_C_P).map
-	@$(CROSS_ARM)objcopy -O binary -S $(BIN)/$(TARGET_C_P) $(BIN)/$(TARGET_C_P).bin
-	@$(CROSS_ARM)objdump -d -S $(BIN)/$(TARGET_C_P) > $(BIN)/$(TARGET_C_P).dis
+	@$(CROSS_ARM)gcc $(CFLAGS_C_P) $(START_C_P_PATH)/start_c_p.o -T $(START_C_P_PATH)/boot_c_p.ld $(LDFLAGS_C_P) -o $(O)$(BIN)/$(TARGET_C_P) -Wl,-Map,$(O)$(BIN)/$(TARGET_C_P).map
+	@$(CROSS_ARM)objcopy -O binary -S $(BIN)/$(TARGET_C_P) $(O)$(BIN)/$(TARGET_C_P).bin
+	@$(CROSS_ARM)objdump -d -S $(BIN)/$(TARGET_C_P) > $(O)$(BIN)/$(TARGET_C_P).dis
 
 #################
 # dependency
-.depend: $(ASOURCES) $(CSOURCES)
-	@rm -f .depend >/dev/null
-	@$(CC) $(CFLAGS) -MM $^ >> ./.depend
-sinclude .depend
+$(O).depend: $(ASOURCES) $(CSOURCES)
+	@rm -f $(O).depend >/dev/null
+	@$(CC) $(CFLAGS) -MM $^ >> $(O).depend
+sinclude $(O).depend
 
 #################
 # clean
 .PHONY: clean
 clean:
 ifeq ($(CONFIG_PLATFORM_Q645),y)
-	@$(MAKE) -C arch/arm/q645/a64up/ clean
+	@$(MAKE) -C arch/arm/q645/a64up/ clean O=$(O)
 endif
 ifeq ($(CONFIG_PLATFORM_SP7350),y)
-	@$(MAKE) -C arch/arm/sp7350/a64up/ clean
-	@$(MAKE) -C warmboot clean
+	@$(MAKE) -C arch/arm/sp7350/a64up/ clean O=$(O)
+	@$(MAKE) -C warmboot clean O=$(O)
 endif
-	@$(MAKE) -C ../draminit $(DRAMINIT_TARGET) ARCH=$(ARCH) CROSS=$(CROSS) $@
-	@rm -rf .depend $(LD_GEN) $(OBJS) *.o *.d>/dev/null
-	@if [ -d $(BIN) ];then \
-		cd $(BIN) && rm -rf $(TARGET) $(TARGET).bin $(TARGET).map $(TARGET).dis $(TARGET).img $(TARGET).img.orig $(TARGET).sig >/dev/null ;\
+	@$(MAKE) -C ../draminit $(DRAMINIT_TARGET) ARCH=$(ARCH) CROSS=$(CROSS) O=$(OD) $@
+	@rm -rf $(O).depend $(LD_GEN) $(OBJS) *.o *.d>/dev/null
+	@if [ -d $(O)$(BIN) ];then \
+		cd $(O)$(BIN) && rm -rf $(TARGET) $(TARGET).bin $(TARGET).map $(TARGET).dis $(TARGET).img $(TARGET).img.orig $(TARGET).sig >/dev/null ;\
 	 fi;
 	@echo "$@: done"
-	@$(MAKE) -C ../draminit/dwc $(DRAMINIT_TARGET) ARCH=$(ARCH) CROSS=$(CROSS) $@
+	@$(MAKE) -C ../draminit/dwc $(DRAMINIT_TARGET) ARCH=$(ARCH) CROSS=$(CROSS) O=$(OD) $@
 	@rm -rf $(OBJS) *.o *.d>/dev/null
 	@echo "$@: done"
 
 distclean: clean
-	@rm -rf .config .config.old $(BIN)/v7
-	@rm -f GPATH GTAGS GRTAGS
-	@rm -rf $(BIN)
+	@rm -rf $(O).config $(O).config.old $(O)$(BIN)/v7
+	@rm -f $(O)GPATH $(O)GTAGS $(O)GRTAGS
+	@rm -rf $(O)$(BIN)
 	@echo "$@: done"
 
 #################
@@ -551,36 +566,39 @@ prepare: dwc
 else
 prepare: build_draminit
 endif
-	@mkdir -p $(BIN)
+	@mkdir -p $(O)$(BIN)
 
 AUTOCONFH=tools/auto_config/auto_config_h
 MCONF=tools/mconf
 
 config_list=$(subst configs/,,$(shell find configs/ -maxdepth 1 -mindepth 1 -type f|sort))
 $(config_list):
+ifneq ($(O),)
+	@mkdir -p $(OD)
+endif
 	@if [ ! -f configs/$@ ];then \
 		echo "Not found config file for $@" ; \
 		exit 1 ; \
 	fi
-	@make clean >/dev/null
+	@make clean O=$(O) >/dev/null
 	@echo "Configure to $@ ..."
-	@cp configs/$@ .config
+	@cp configs/$@ $(O).config
 
 list:
 	@echo "$(config_list)" | sed 's/ /\n/g'
 
 auto_config:
 	@echo "  [KCFG] $@.h"
-	$(AUTOCONFH) .config include/$@.h
+	$(AUTOCONFH) $(O).config include/$@.h
 ifeq ($(CONFIG_PLATFORM_Q645),y)
-	$(AUTOCONFH) .config ../draminit/dwc/include/$@.h
+	$(AUTOCONFH) $(O).config ../draminit/dwc/include/$@.h
 endif
 ifeq ($(CONFIG_PLATFORM_SP7350),y)
-	$(AUTOCONFH) .config ../draminit/dwc/include/$@.h
+	$(AUTOCONFH) $(O).config ../draminit/dwc/include/$@.h
 endif
 
 chkconfig:
-	@if [ ! -f .config ];then \
+	@if [ ! -f $(O).config ];then \
 		echo "Please make XXX to generate .config. Find configs by: make list" ; \
 		exit 1; \
 	fi
